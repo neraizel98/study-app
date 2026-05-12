@@ -1,0 +1,191 @@
+/**
+ * KakaoTalk Sharing Manager
+ * - Handles SDK initialization
+ * - Study Request (Parent -> Son)
+ * - Result Report (Son -> Parent)
+ */
+
+window.KakaoShare = {
+    isInitialized: false,
+
+    init: function() {
+        if (this.isInitialized) return;
+        
+        try {
+            if (typeof Kakao === 'undefined') {
+                const script = document.createElement('script');
+                script.src = 'https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js';
+                script.integrity = 'sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4';
+                script.crossOrigin = 'anonymous';
+                script.onload = () => {
+                    Kakao.init('33ff76b2028716f69802933476e0b9cb');
+                    this.isInitialized = Kakao.isInitialized();
+                    console.log('[KakaoShare] SDK Initialized:', this.isInitialized);
+                };
+                document.head.appendChild(script);
+            } else {
+                if (!Kakao.isInitialized()) {
+                    Kakao.init('33ff76b2028716f69802933476e0b9cb');
+                }
+                this.isInitialized = Kakao.isInitialized();
+            }
+        } catch (e) {
+            console.error('[KakaoShare Init Error]', e);
+        }
+    },
+
+    /**
+     * 학습 요청 메시지 전송 (부모 -> 아들)
+     * @param {string} subject - '영어', '한자', '수학'
+     */
+    sendRequest: function(subject) {
+        if (!this.isInitialized) {
+            alert('카카오톡 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        const subjectNames = { 'english': '영어', 'hanja': '한자', 'math': '수학' };
+        const name = subjectNames[subject] || subject;
+        const url = window.location.origin + window.location.pathname.replace('index.html', subject + '.html');
+        
+        Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+                title: `📚 ${name} 학습 요청!`,
+                description: `우준아, 오늘 ${name} 퀴즈 한 번 풀어볼까? 도전해보자!`,
+                imageUrl: 'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?q=80&w=400&auto=format&fit=crop', // 공부 이미지
+                link: {
+                    mobileWebUrl: url,
+                    webUrl: url,
+                },
+            },
+            buttons: [
+                {
+                    title: '퀴즈 풀러 가기 🚀',
+                    link: {
+                        mobileWebUrl: url,
+                        webUrl: url,
+                    },
+                },
+            ],
+        });
+    },
+
+    /**
+     * 학습 결과 보고 메시지 전송 (아들 -> 부모)
+     * @param {string} subject - 과목 ID (math, english, hanja)
+     * @param {number} score - 최종 맞힌 개수
+     * @param {number} total - 전체 문제 수
+     * @param {number} pct - 정답률
+     * @param {number} initialScore - 최초 도전 시 맞힌 개수
+     * @param {number} roundCount - 총 도전 횟수
+     * @param {object} extra - { sessionId, levelInfo, startTime, endTime }
+     */
+    sendReport: function(subject, score, total, pct, initialScore, roundCount, extra = {}) {
+        if (!this.isInitialized) {
+            alert('카카오톡 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        const activeUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : '우준';
+        const isPerfect = pct === 100;
+        const emoji = isPerfect ? '🏆' : '👍';
+        const subjectNames = { 'math': '수학', 'english': '영어', 'hanja': '한자' };
+        const subjectName = subjectNames[subject] || subject;
+        
+        // 1. 과목 및 난이도 정보
+        const levelInfo = extra.levelInfo || '기본';
+        const title = `${emoji} ${activeUser}의 ${subjectName} [${levelInfo}] 결과!`;
+        
+        // 2. 테스트 시간 포맷팅 (HH:mm:ss)
+        const formatTime = (date) => {
+            if (!date) return '--:--:--';
+            const d = new Date(date);
+            return d.toTimeString().split(' ')[0];
+        };
+        const startTimeStr = formatTime(extra.startTime);
+        const endTimeStr = formatTime(extra.endTime || Date.now());
+
+        // 3. 메시지 설명 구성
+        let desc = `✅ 결과: ${score} / ${total} (${pct}%)\n`;
+        desc += `🕒 시간: ${startTimeStr} ~ ${endTimeStr}\n`;
+        
+        if (initialScore !== null && roundCount > 1) {
+            desc += `🎯 최초 점수: ${initialScore} / ${total} (${roundCount}회 도전)`;
+        } else {
+            desc += `🎯 최초 점수: ${score} / ${total}`;
+        }
+
+        // 리포트 데이터 직렬화 (상세 페이지용)
+        const reportData = {
+            sessionId: extra.sessionId || Date.now().toString(),
+            subject: subject,
+            level: levelInfo,
+            date: Date.now(),
+            totalQuestions: total,
+            initialScore: initialScore !== null ? initialScore : score,
+            finalScore: score,
+            startTime: extra.startTime,
+            endTime: extra.endTime || Date.now(),
+            isCompleted: isPerfect
+        };
+        
+        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
+        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodedData;
+
+        Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+                title: title,
+                description: desc,
+                imageUrl: isPerfect 
+                    ? 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&auto=format&fit=crop'
+                    : 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=400&auto=format&fit=crop',
+                link: { mobileWebUrl: url, webUrl: url },
+            },
+            buttons: [
+                {
+                    title: '성적표 자세히 보기 📊',
+                    link: { mobileWebUrl: url, webUrl: url },
+                },
+            ],
+        });
+    },
+
+    /**
+     * 전체 학습 기록 공유 (아들 -> 부모)
+     */
+    sendFullHistory: function() {
+        if (!this.isInitialized) return;
+        
+        const reports = typeof getQuizReports === 'function' ? getQuizReports() : [];
+        if (reports.length === 0) {
+            alert('공유할 학습 기록이 없습니다.');
+            return;
+        }
+
+        // 데이터가 너무 많으면 최신 30개로 제한 (URL 길이 제한 방어)
+        const recentReports = reports.slice(-30);
+        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
+        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodedData;
+
+        Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+                title: '📊 우준이의 전체 학습 기록부',
+                description: `지금까지 총 ${reports.length}번의 퀴즈에 도전했습니다. 전체 기록을 확인해보세요!`,
+                imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
+                link: { mobileWebUrl: url, webUrl: url },
+            },
+            buttons: [
+                {
+                    title: '종합 성적표 보기 📈',
+                    link: { mobileWebUrl: url, webUrl: url },
+                },
+            ],
+        });
+    }
+};
+
+// 초기화 즉시 시도
+KakaoShare.init();

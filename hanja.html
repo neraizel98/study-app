@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Vocab - 한자 능력검정 학습</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
+</head>
+<body>
+    <div class="background-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="container">
+        <div id="app-header"></div>
+
+        <div class="mode-toggle">
+            <button id="studyModeBtn" class="mode-btn active">📖 학습 모드</button>
+            <button id="quizModeBtn" class="mode-btn">🔍 퀴즈 모드</button>
+        </div>
+
+        <section class="level-selector">
+            <button class="level-btn active" data-level="level8">8급</button>
+            <button class="level-btn" data-level="level7">7급</button>
+            <button class="level-btn disabled" data-level="level6">6급 (예정)</button>
+        </section>
+
+        <!-- STUDY VIEW -->
+        <main id="studyView" class="study-view view-active">
+            <div class="card-wrapper">
+                <div class="study-card front-card">
+                    <span class="index" id="hanjaIndex">1 / 50</span>
+                    <div class="hanja-display-container">
+                        <div class="hanja-display" id="mainHanja">火</div>
+                        <div id="studyStrokeContainer" class="study-stroke-container"></div>
+                    </div>
+                    <button id="studyStrokeBtn" class="stroke-btn">🖌️ 획순 보기</button>
+                    <div class="hanja-meta-row">
+                        <span class="pos-badge pos-n" id="radicalBadge">부수: 火(4획)</span>
+                    </div>
+                </div>
+                <div class="study-card back-card">
+                    <div class="korean-meaning" id="hanjaMeaning">화 [불]</div>
+                    
+                    <div class="hanja-details">
+                        <div class="detail-section" id="relationSection">
+                            <div class="detail-label">유의어 / 반의어</div>
+                            <div class="relation-grid">
+                                <div class="rel-item"><span>유:</span> <span id="synonym">-</span></div>
+                                <div class="rel-item"><span>반:</span> <span id="antonym">水(수)</span></div>
+                            </div>
+                        </div>
+
+                        <div class="detail-section">
+                            <div class="detail-label">사자성어</div>
+                            <div class="idiom-box">
+                                <div class="idiom-text" id="idiomText">火中之栗</div>
+                                <div class="idiom-toggle-row">
+                                    <button class="toggle-btn" id="toggleEumBtn">🔉 독음 보기</button>
+                                    <button class="toggle-btn" id="toggleMeanBtn">📖 뜻 보기</button>
+                                </div>
+                                <div class="idiom-eum hidden" id="idiomEum"></div>
+                                <div class="idiom-mean hidden" id="idiomMean"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </main>
+
+        <!-- QUIZ VIEW -->
+        <div id="quizView" class="quiz-view">
+            <div class="quiz-header">
+                <div class="quiz-top-row">
+                    <span class="quiz-q-num" id="quizQNum">문제 1 / 10</span>
+                    <span class="phase-badge" id="phaseBadge">뜻 맞추기</span>
+                    <span class="quiz-score-label" id="quizScoreEl">0점</span>
+                </div>
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="quizProgressBar"></div>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <div id="phase1Area">
+                    <p class="quiz-question-label" id="quizQuestionLabel">이 한자의 뜻과 음은?</p>
+                    <div class="quiz-word hanja-display-sm" id="quizHanja">火</div>
+                </div>
+                <div id="phase2Area" style="display:none;">
+                    <div class="tense-badge" id="tenseBadge">사자성어 완성</div>
+                    <div class="phase2-context" id="phase2Context">
+                        <!-- Idiom matching logic will inject content here -->
+                    </div>
+                </div>
+                <div id="phase3Area" style="display:none;">
+                    <p class="quiz-question-label" id="writingQuestionLabel">제시된 한자를 써보세요</p>
+                    <p style="font-size: 0.8rem; color: var(--text-sub); margin-top: -10px; margin-bottom: 20px;">(마우스나 손가락으로 칸 안에 직접 그려보세요)</p>
+                    <div id="writingQuizContainer" class="writing-quiz-container"></div>
+                    <div class="writing-controls">
+                        <button id="writingHintBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem;">💡 힌트 보기</button>
+                        <button id="writingFinishBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem; background: var(--accent); color: white;">✅ 다 썼어요!</button>
+                        <button id="writingResetBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem;">🔄 다시 쓰기</button>
+                    </div>
+                </div>
+                <div class="phase-feedback" id="phaseFeedback" style="display:none;"></div>
+            </div>
+
+            <div class="quiz-choices" id="quizChoices">
+                <button class="choice-btn">1</button>
+                <button class="choice-btn">2</button>
+                <button class="choice-btn">3</button>
+                <button class="choice-btn">4</button>
+            </div>
+        </div>
+
+        <section id="studyControls" class="controls view-active">
+            <button id="prevBtn" class="nav-btn">이전 (Left)</button>
+            <button id="nextBtn" class="nav-btn primary">다음 (Right)</button>
+        </section>
+
+        <!-- RESULT MODAL -->
+        <div id="resultModal" class="result-modal hidden">
+            <div class="result-inner">
+                <div class="result-emoji" id="resultEmoji">🏆</div>
+                <h2 id="resultTitle">만점!</h2>
+                <div class="result-score-big" id="resultScore">10 / 10점</div>
+                <p class="result-msg" id="resultMessage">한자 박사님이시네요!</p>
+                <div class="scorecard" id="scoreCard"></div>
+                <div class="result-actions">
+                    <button id="retryWrongBtn" class="nav-btn wrong-retry">❌ 틀린 문제 다시 풀기</button>
+                    <button id="retryBtn" class="nav-btn">다시 시작하기</button>
+                    <button id="kakaoReportBtn" class="nav-btn" style="background: #FEE500; color: #3A1D1D; border: none; font-weight: bold; display: none;">💬 아빠에게 결과 전송하기 🏆</button>
+                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
+                    <button id="studyAgainBtn" class="nav-btn">학습 모드로 돌아가기</button>
+                    <a href="index.html" class="nav-btn" style="text-decoration:none; text-align:center;">🏠 메인 페이지로</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="kakao-share.js"></script>
+    <script src="utils.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // 1. UI 초기화
+                AppUI.init({
+                    title: '급수 한자 학습',
+                    subtitle: '8급부터 1급까지, 기초부터 탄탄하게!'
+                });
+
+                // 2. 엔진 초기화
+                if (window.HanjaEngine && typeof window.HanjaEngine.init === 'function') {
+                    window.HanjaEngine.init();
+                }
+            } catch (e) {
+                console.error('[Hanja Startup Error]', e);
+            }
+        });
+    </script>
+    <script src="VocabHanja.js"></script>
+    <script src="hanja.js"></script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,6 @@
+node_modules/
+scratch/
+.vscode/
+.claude/
+package-lock.json
+*.log

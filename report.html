@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Vocab - 통합 성적표</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        .report-header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .report-header h1 {
+            font-size: 2.8rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .report-header p {
+            color: var(--text-sub);
+            margin-top: 10px;
+        }
+
+        .subject-tabs {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+        .subject-tab {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid transparent;
+            padding: 12px 24px;
+            border-radius: 30px;
+            color: var(--text);
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .subject-tab.active {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+            gap: 15px;
+            margin-bottom: 40px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+        .stat-title {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            margin-bottom: 8px;
+        }
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 800;
+            font-family: 'Outfit', sans-serif;
+            color: var(--text);
+        }
+        .stat-value.highlight {
+            color: var(--accent);
+        }
+
+        .report-table-container {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 20px;
+            overflow-x: auto;
+        }
+        .report-table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 600px;
+        }
+        .report-table th, .report-table td {
+            padding: 14px 16px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.95rem;
+        }
+        .report-table th {
+            color: var(--text-sub);
+            font-weight: 600;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+        .report-table tbody tr {
+            transition: background 0.2s;
+        }
+        .report-table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+        .score-badge {
+            display: inline-block;
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            font-weight: 700;
+        }
+        .score-good { background: rgba(0, 200, 83, 0.15); color: #00e676; }
+        .score-bad { background: rgba(255, 82, 82, 0.15); color: #ff5252; }
+        .score-neutral { background: rgba(255, 255, 255, 0.1); color: var(--text); }
+        .time-text { font-family: 'Outfit', monospace; color: var(--text-sub); }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+            color: var(--text-sub);
+        }
+        .empty-state h3 { margin-bottom: 10px; color: var(--text); }
+
+        @media (max-width: 768px) {
+            .stats-grid { grid-template-columns: 1fr 1fr; }
+            .report-table-container { padding: 10px; border-radius: 12px; border: none; background: transparent; }
+            .report-table th, .report-table td { padding: 10px 8px; font-size: 0.85rem; }
+            .report-table th { font-size: 0.75rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    
+    <div class="container" style="max-width: 1000px;">
+        <div id="app-header"></div>
+
+        <div class="subject-tabs">
+            <div class="subject-tab active" data-subject="english">🇬🇧 영어</div>
+            <div class="subject-tab" data-subject="math">📐 수학</div>
+            <div class="subject-tab" data-subject="hanja">🏮 한자</div>
+            <button id="shareHistoryBtn" style="margin-left: auto; background: #FEE500; color: #3A1D1D; border: none; padding: 8px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
+                <span>💬</span> 전체 공유
+            </button>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-title">테스트 시도</div>
+                <div class="stat-value" id="statAttempts">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">테스트 완료</div>
+                <div class="stat-value highlight" id="statCompletes">0</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">최초 평균 점수</div>
+                <div class="stat-value" id="statAvg">0점</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-title">최고 / 최저</div>
+                <div class="stat-value" id="statHighLow" style="font-size: 1.4rem;">0 / 0</div>
+            </div>
+        </div>
+
+        <div class="report-table-container">
+            <table class="report-table">
+                <thead>
+                    <tr>
+                        <th>회차</th>
+                        <th>일시</th>
+                        <th>단원(난이도)</th>
+                        <th>문제(푼/총)</th>
+                        <th>최초 / 판단 점수</th>
+                        <th>소요 시간</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    <!-- 데이터 동적 렌더링 -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script src="kakao-share.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // URL 파라미터 처리 (데이터 가져오기)
+            const urlParams = new URLSearchParams(window.location.search);
+            const importData = urlParams.get('import');
+            const importAllData = urlParams.get('import_all');
+
+            if (importData || importAllData) {
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(importData || importAllData))));
+                    const userId = UserSession.getActiveUser() || '우준'; // 기본 사용자
+                    const storageKey = REPORT_KEY + "_" + userId;
+                    
+                    let currentReports = [];
+                    try {
+                        const raw = localStorage.getItem(storageKey);
+                        if (raw) currentReports = JSON.parse(raw);
+                    } catch (e) {}
+
+                    const newItems = Array.isArray(decoded) ? decoded : [decoded];
+                    let addedCount = 0;
+
+                    newItems.forEach(newItem => {
+                        // 중복 체크 (sessionId 기준)
+                        if (!currentReports.find(r => r.sessionId === newItem.sessionId)) {
+                            currentReports.push(newItem);
+                            addedCount++;
+                        }
+                    });
+
+                    if (addedCount > 0) {
+                        localStorage.setItem(storageKey, JSON.stringify(currentReports));
+                        alert(`${addedCount}개의 새로운 학습 기록을 성적표에 등록했습니다!`);
+                    } else if (importData || importAllData) {
+                        alert('이미 등록된 학습 기록입니다.');
+                    }
+                    
+                    // URL 파라미터 제거 (새로고침 시 중복 방지)
+                    window.history.replaceState({}, document.title, window.location.pathname);
+                } catch (e) {
+                    console.error('[Import Error]', e);
+                }
+            }
+
+            // 공유 버튼 이벤트
+            document.getElementById('shareHistoryBtn').addEventListener('click', () => {
+                if (window.KakaoShare) {
+                    window.KakaoShare.sendFullHistory();
+                }
+            });
+
+            AppUI.init({
+                title: '학습 성적표',
+                subtitle: '지금까지의 학습 성과를 확인하고 발전하는 모습을 지켜보세요!'
+            });
+        });
+    </script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const tabs = document.querySelectorAll('.subject-tab');
+            const allReports = getQuizReports(); // from report.js
+
+            // 날짜 포맷 함수
+            function formatDate(ts) {
+                const d = new Date(ts);
+                const pad = n => n.toString().padStart(2, '0');
+                const y = d.getFullYear();
+                const m = pad(d.getMonth() + 1);
+                const day = pad(d.getDate());
+                const hh = pad(d.getHours());
+                const mm = pad(d.getMinutes());
+                const ss = pad(d.getSeconds());
+                return `${y}. ${m}. ${day} ${hh}:${mm}:${ss}`;
+            }
+
+            // 시간 포맷 함수
+            function formatTime(secs) {
+                const m = Math.floor(secs / 60);
+                const s = secs % 60;
+                if (m > 0) return `${m}분 ${s}초`;
+                return `${s}초`;
+            }
+
+            // 성적 렌더링
+            function renderReports(subject) {
+                const logs = allReports.filter(r => r.subject === subject).sort((a,b) => a.date - b.date); // 오래된순 정렬하여 회차 부여, 최신을 나중엔 역순 표시
+                
+                // 통계 계산
+                const attempts = logs.length;
+                const completes = logs.filter(r => r.isCompleted).length;
+                
+                let avg = 0, high = 0, low = 0;
+                if (attempts > 0) {
+                    const pctList = logs.map(r => Math.round((r.initialScore / r.totalQuestions) * 100));
+                    avg = Math.round(pctList.reduce((sum, v) => sum + v, 0) / attempts);
+                    high = Math.max(...pctList);
+                    low = Math.min(...pctList);
+                }
+
+                document.getElementById('statAttempts').innerText = attempts + '회';
+                document.getElementById('statCompletes').innerText = completes + '회';
+                document.getElementById('statAvg').innerText = avg + '점';
+                document.getElementById('statHighLow').innerText = attempts > 0 ? `${high} / ${low}` : '- / -';
+
+                const tbody = document.getElementById('tableBody');
+                tbody.innerHTML = '';
+
+                if (attempts === 0) {
+                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><h3>기록이 없습니다.</h3><p>학습을 시작하여 퀴즈에 도전해보세요!</p></div></td></tr>`;
+                    return;
+                }
+
+                // 테이블은 최신이 위로 오게 (역순 렌더링)
+                [...logs].reverse().forEach((log, reversedIdx) => {
+                    const nth = logs.length - reversedIdx; // 회차 번호
+                    
+                    const tr = document.createElement('tr');
+                    
+                    // 총문제 / 푼문제 (최종스코어로 풀이)
+                    const QRatio = `${log.finalScore} / ${log.totalQuestions}`;
+                    
+                    // 점수 (최초 / 나중) 배지
+                    const vInit = Math.round((log.initialScore / log.totalQuestions) * 100);
+                    const vFinal = Math.round((log.finalScore / log.totalQuestions) * 100);
+                    // 최초 점수 클래스
+                    const initCls = vInit >= 80 ? 'score-good' : vInit < 50 ? 'score-bad' : 'score-neutral';
+                    // 재시험 점수 클래스 (100이면 굿 아니면 쏘쏘)
+                    const finalCls = vFinal === 100 || log.isCompleted ? 'score-good' : 'score-neutral';
+
+                    tr.innerHTML = `
+                        <td>${nth}회차</td>
+                        <td style="color:var(--text-sub); font-size:0.85rem;">${formatDate(log.date)}</td>
+                        <td>${log.level}</td>
+                        <td>${QRatio}</td>
+                        <td>
+                            <span class="score-badge ${initCls}">${vInit}점 <small>(${log.initialScore}/${log.totalQuestions})</small></span>
+                            <span style="color:var(--text-sub); margin:0 5px;">/</span>
+                            <span class="score-badge ${finalCls}">${vFinal}점 <small>(${log.finalScore}/${log.totalQuestions})</small>${log.isCompleted ? ' (통과)' : ''}</span>
+                        </td>
+                        <td class="time-text">${formatTime(log.timeSpentSeconds)}</td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            // 탭 클릭 이벤트
+            tabs.forEach(tab => {
+                tab.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    tab.classList.add('active');
+                    renderReports(tab.dataset.subject);
+                });
+            });
+
+            // 초기 렌더링
+            renderReports('english');
+        });
+    </script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

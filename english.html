@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Vocab - 나만의 단어장</title>
+    <link rel="stylesheet" href="styles.css">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
+        rel="stylesheet">
+</head>
+
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+    <div class="container">
+        <div id="app-header"></div>
+
+        <div class="mode-toggle">
+            <button id="studyModeBtn" class="mode-btn active">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor"
+                        d="M12 3L1 9L12 15L21 10.09V17H23V9L12 3M5 13.18V17.18L12 21L19 17.18V13.18L12 17L5 13.18Z" />
+                </svg>
+                학습 모드
+            </button>
+            <button id="quizModeBtn" class="mode-btn">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path fill="currentColor"
+                        d="M9.5,3A6.5,6.5 0 0,1 16,9.5C16,11.11 15.41,12.59 14.44,13.73L14.71,14H15.5L20.5,19L19,20.5L14,15.5V14.71L13.73,14.44C12.59,15.41 11.11,16 9.5,16A6.5,6.5 0 0,1 3,9.5A6.5,6.5 0 0,1 9.5,3M9.5,5C7,5 5,7 5,9.5C5,12 7,14 9.5,14C12,14 14,12 14,9.5C14,7 12,5 9.5,5Z" />
+                </svg>
+                퀴즈 모드
+            </button>
+        </div>
+
+        <section class="level-selector">
+            <button class="level-btn active" data-level="level1">레벨 1</button>
+            <button class="level-btn" data-level="level2">레벨 2</button>
+            <button class="level-btn" data-level="level3">레벨 3</button>
+            <button class="level-btn" data-level="level4">레벨 4</button>
+        </section>
+
+        <main id="studyView" class="study-view view-active">
+            <div class="card-wrapper">
+                <div class="study-card front-card">
+                    <span class="index" id="wordIndex">1/40</span>
+                    <div class="word-row">
+                        <h2 id="englishWord">ability</h2>
+                        <button id="speakWordBtn" class="speak-btn">
+                            <svg viewBox="0 0 24 24" width="22" height="22">
+                                <path fill="currentColor"
+                                    d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                            </svg>
+                        </button>
+                    </div>
+                    <p class="pronunciation" id="wordPronunciation"></p>
+                    <div class="word-meta-row" id="wordMetaRow">
+                        <button id="showMeaningBtn" class="show-meaning-btn">뜻 보기</button>
+                        <div id="metaContent" class="meta-content" style="display:none;">
+                            <span class="pos-badge" id="posBadge">n. 명사</span>
+                            <p class="korean-meaning" id="koreanMeaning">능력</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="study-card back-card">
+                    <div class="detail-section" id="verbFormsSection" style="display:none">
+                        <div class="detail-label">동사 변화형</div>
+                        <div class="verb-forms">
+                            <span class="vform"><span class="vform-label">현재</span><span id="vPresent"></span></span>
+                            <span class="vform-sep">-</span>
+                            <span class="vform"><span class="vform-label">과거</span><span id="vPast"></span></span>
+                            <span class="vform-sep">-</span>
+                            <span class="vform"><span class="vform-label">과거분사</span><span id="vPP"></span></span>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-label">영문 뜻</div>
+                        <div class="detail-row">
+                            <p id="englishDef" class="english-def"></p>
+                            <button class="speak-btn speak-sm" id="speakDefBtn">
+                                <svg viewBox="0 0 24 24" width="18" height="18">
+                                    <path fill="currentColor"
+                                        d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-header">
+                            <div class="detail-label">예문</div>
+                            <button id="toggleKoBtn" class="toggle-ko-btn">👁️ 한글 숨기기</button>
+                        </div>
+                        <div class="detail-row">
+                            <div>
+                                <p id="exampleSentence" class="example-en"></p>
+                                <p id="exampleKorean" class="example-ko"></p>
+                            </div>
+                            <button class="speak-btn speak-sm" id="speakExBtn">
+                                <svg viewBox="0 0 24 24" width="18" height="18">
+                                    <path fill="currentColor"
+                                        d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="detail-section" id="phrasalVerbsSection" style="display:none">
+                        <div class="detail-header">
+                            <div class="detail-label">구동사 (Phrasal Verbs)</div>
+                            <button id="togglePhrasalBtn" class="toggle-ko-btn">➕ 펼치기</button>
+                        </div>
+                        <div id="phrasalList" class="phrasal-list phrasal-collapsed">
+                            <!-- 구동사 목록이 JS에 의해 동적으로 삽입됨 -->
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+            <p class="hint">← → 이동 &nbsp;|&nbsp; P 단어 발음</p>
+        </main>
+        <nav id="studyControls" class="controls view-active">
+            <button id="prevBtn" class="nav-btn">이전</button>
+            <button id="nextBtn" class="nav-btn primary">다음</button>
+        </nav>
+
+        <section id="quizView" class="quiz-view">
+            <div class="quiz-header">
+                <div class="quiz-top-row">
+                    <span class="quiz-q-num" id="quizQNum">문제 1 / 10</span>
+                    <span class="phase-badge" id="phaseBadge">1단계</span>
+                    <span class="quiz-score-label" id="quizScoreEl">0점</span>
+                </div>
+                <div class="progress-bar-wrapper">
+                    <div class="progress-bar" id="quizProgressBar"></div>
+                </div>
+            </div>
+
+            <div class="quiz-card">
+                <p class="quiz-question-label" id="quizQuestionLabel">이 단어의 뜻은?</p>
+                <div id="phase1Area">
+                    <h2 id="quizWord" class="quiz-word"></h2>
+                    <button id="quizSpeakBtn" class="speak-btn quiz-speak">
+                        <svg viewBox="0 0 24 24" width="20" height="20">
+                            <path fill="currentColor"
+                                d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
+                        </svg>
+                    </button>
+                </div>
+                <div id="phase2Area" style="display:none">
+                    <div class="tense-badge" id="tenseBadge"></div>
+                    <p class="phase2-context" id="phase2Context"></p>
+                </div>
+
+                <div id="phaseVerbFormsArea" style="display:none; width: 100%;">
+                    <div class="verb-forms-quiz">
+                        <div class="v-input-group">
+                            <span class="v-label">Base</span>
+                            <span id="vQuizBase" class="v-base-text"></span>
+                        </div>
+                        <div class="v-input-group">
+                            <span class="v-label">Past</span>
+                            <input type="text" id="vQuizPast" class="quiz-input" placeholder="과거형" autocomplete="off">
+                        </div>
+                        <div class="v-input-group">
+                            <span class="v-label">PP</span>
+                            <input type="text" id="vQuizPP" class="quiz-input" placeholder="과거분사" autocomplete="off">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 신규: 주관식 Area -->
+                <div id="phaseSubjectiveArea" style="display:none; width: 100%;">
+                    <p class="phase2-context" id="subjectiveContext"></p>
+                    <div class="input-wrapper">
+                        <input type="text" id="subjectiveInput" class="quiz-input main-input" placeholder="정답을 입력하세요" autocomplete="off">
+                    </div>
+                </div>
+
+                <!-- 신규: 문장배열 Area -->
+                <div id="phaseUnscrambleArea" style="display:none; width: 100%;">
+                    <div class="unscramble-target" id="unscrambleTarget"></div>
+                    <div class="unscramble-chips" id="unscrambleChips"></div>
+                    <button id="resetUnscrambleBtn" class="reset-btn">
+                        <svg viewBox="0 0 24 24" width="14" height="14" style="margin-right:4px;"><path fill="currentColor" d="M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z"/></svg>
+                        다시 하기
+                    </button>
+                </div>
+                <p class="phase-feedback" id="phaseFeedback" style="display:none"></p>
+            </div>
+
+            <div id="quizSubmitArea" style="display:none; margin-bottom: 14px;">
+                <button id="quizSubmitBtn" class="nav-btn primary" style="width:100%">정답 확인</button>
+            </div>
+
+            <div class="quiz-choices" id="quizChoices">
+                <button class="choice-btn" id="choice0"></button>
+                <button class="choice-btn" id="choice1"></button>
+                <button class="choice-btn" id="choice2"></button>
+                <button class="choice-btn" id="choice3"></button>
+            </div>
+        </section>
+
+        <div id="resultModal" class="result-modal hidden">
+            <div class="result-inner">
+                <div class="result-emoji" id="resultEmoji">🎉</div>
+                <h2 id="resultTitle">퀴즈 완료!</h2>
+                <p id="resultScore" class="result-score-big"></p>
+                <p id="resultMessage" class="result-msg"></p>
+                <div class="scorecard" id="scoreCard"></div>
+                <div class="result-actions">
+                    <button id="retryWrongBtn" class="nav-btn wrong-retry" style="display:none">
+                        ❌ 틀린 문제 다시 풀기
+                    </button>
+                    <button id="retryBtn" class="nav-btn">다시 시작하기</button>
+                    <button id="kakaoReportBtn" class="nav-btn" style="background: #FEE500; color: #3A1D1D; border: none; font-weight: bold; display: none;">💬 아빠에게 결과 전송하기 🏆</button>
+                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
+                    <button id="studyAgainBtn" class="nav-btn">학습 모드로 돌아가기</button>
+                    <a href="index.html" class="nav-btn" style="text-decoration:none; text-align:center;">🏠 메인 페이지로</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="kakao-share.js"></script>
+    <script src="utils.js"></script>
+    <script src="VocabEng.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                // 1. UI 초기화
+                AppUI.init({
+                    title: 'English Vocab Mastery',
+                    subtitle: '시제와 의미를 동시에 마스터하는 스마트 앱'
+                });
+
+                // 2. 엔진 초기화 (VocabEng.js가 로드된 후 실행 보장)
+                if (window.AppEngine && typeof window.AppEngine.init === 'function') {
+                    window.AppEngine.init();
+                }
+            } catch (e) {
+                console.error('[App Startup Error]', e);
+            }
+        });
+    </script>
+    <script src="main.js"></script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+
+</html>

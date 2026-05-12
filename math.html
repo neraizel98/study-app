@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Math - 수학 원리 마스터</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        :root {
+            --math-primary: #4facfe;
+            --math-secondary: #00f2fe;
+            --math-accent: #00c853;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            overflow-y: auto;
+            min-height: 100vh;
+        }
+
+        /* 배경 Blobs */
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            filter: blur(80px);
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 600px;
+            padding: 40px 20px 100px;
+        }
+
+        /* 홈 버튼 스타일 (상단 좌측) */
+        .back-home {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid var(--card-border);
+            padding: 8px 16px;
+            border-radius: 12px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s;
+            margin-bottom: 20px;
+        }
+
+        .back-home:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(0.98);
+        }
+
+        /* 헤더 중앙 정렬 */
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        header h1 {
+            font-size: 3.2rem;
+            font-weight: 800;
+            background: linear-gradient(135deg, var(--math-primary), var(--math-secondary));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin: 0;
+            letter-spacing: -2px;
+        }
+
+        header p {
+            color: var(--text-sub);
+            font-size: 1rem;
+            margin-top: 10px;
+            font-weight: 300;
+        }
+
+        /* 모드 토글 (와이드 탭 스타일) */
+        .mode-toggle {
+            display: flex;
+            gap: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 5px;
+            margin-bottom: 12px;
+        }
+
+        .mode-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            padding: 14px;
+            border-radius: 12px;
+            border: none;
+            background: transparent;
+            color: var(--text-sub);
+            font-family: var(--font);
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .mode-btn.active {
+            background: linear-gradient(135deg, var(--math-primary), var(--math-secondary));
+            color: #0d1117;
+            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.35);
+        }
+
+        /* 레벨 선택기 (단추형 탭) */
+        .level-selector {
+            display: flex;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 14px;
+            padding: 6px;
+            margin-bottom: 40px;
+        }
+
+        .level-btn {
+            flex: 1;
+            background: transparent;
+            border: none;
+            color: var(--text-sub);
+            padding: 10px;
+            border-radius: 10px;
+            font-family: var(--font);
+            font-weight: 600;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.25s;
+            text-align: center;
+        }
+
+        .level-btn.active {
+            background: rgba(79, 172, 254, 0.15);
+            color: var(--math-primary);
+            box-shadow: inset 0 0 0 1px rgba(79, 172, 254, 0.3);
+        }
+
+        /* 목차 섹션 */
+        .toc-container {
+            display: flex;
+            flex-direction: column;
+            gap: 25px;
+        }
+
+        .unit-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            border-radius: 30px;
+            padding: 30px;
+            border: 1px solid var(--card-border);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            animation: fadeInUp 0.6s ease-out both;
+        }
+
+        .unit-title {
+            font-size: 1.4rem;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 22px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid var(--card-border);
+        }
+
+        .chapter-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .chapter-item {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px 25px;
+            border-radius: 20px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.25s;
+            border: 1px solid var(--card-border);
+        }
+
+        .chapter-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: var(--math-primary);
+            transform: scale(1.02);
+        }
+
+        .chapter-item i {
+            font-style: normal;
+            font-size: 0.8rem;
+            background: rgba(79, 172, 254, 0.15);
+            color: var(--math-primary);
+            padding: 6px 14px;
+            border-radius: 12px;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            header h1 { font-size: 2.6rem; }
+            .container { padding: 30px 15px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="container">
+        <div id="app-header"></div>
+
+        <div class="mode-toggle">
+            <button class="mode-btn active" id="studyModeBtn">
+                <span>📖</span> 학습 모드
+            </button>
+            <button class="mode-btn" id="quizModeBtn">
+                <span>📝</span> 퀴즈 모드
+            </button>
+        </div>
+
+        <div class="level-selector" id="levelSelector">
+            <button class="level-btn active" data-level="elementary-6">레벨 1</button>
+            <button class="level-btn" data-level="middle-1">레벨 2</button>
+            <button class="level-btn" data-level="middle-2">레벨 3</button>
+            <button class="level-btn" data-level="middle-3">레벨 4</button>
+        </div>
+
+        <!-- 학기 선택기 추가 -->
+        <div class="level-selector" id="semesterSelector" style="margin-bottom: 30px;">
+            <button class="level-btn active" data-semester="1">1학기</button>
+            <button class="level-btn" data-semester="2">2학기</button>
+        </div>
+
+        <main class="toc-container" id="tocContainer">
+            <!-- 목차가 동적으로 생성됩니다 -->
+        </main>
+    </div>
+
+    <script src="utils.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            AppUI.init({
+                title: 'Smart Math',
+                subtitle: '레벨 1부터 4까지 수학 원리 마스터'
+            });
+        });
+    </script>
+    <script src="MathData.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const levelBtns = document.querySelectorAll('#levelSelector .level-btn');
+            const semesterBtns = document.querySelectorAll('#semesterSelector .level-btn');
+            const tocContainer = document.getElementById('tocContainer');
+            const studyModeBtn = document.getElementById('studyModeBtn');
+            const quizModeBtn = document.getElementById('quizModeBtn');
+            const modeBtns = [studyModeBtn, quizModeBtn];
+            
+            let currentLevel = 'elementary-6';
+            let currentSemester = '1';
+            let currentMode = 'study';
+
+            function renderTOC() {
+                const levelData = MathData[currentLevel];
+                if (!levelData) return;
+
+                // 학기가 있는 경우와 없는 경우(중등 등) 대응
+                let units = [];
+                if (levelData.semesters) {
+                    units = levelData.semesters[currentSemester]?.units || [];
+                    document.getElementById('semesterSelector').style.display = 'flex';
+                } else {
+                    units = levelData.units || [];
+                    document.getElementById('semesterSelector').style.display = 'none';
+                }
+
+                tocContainer.innerHTML = '';
+                
+                if (units.length === 0) {
+                    tocContainer.innerHTML = `<div class="unit-card" style="text-align:center; opacity:0.6;">아직 준비 중인 과정입니다. 🙏</div>`;
+                    return;
+                }
+
+                units.forEach((unit, uIdx) => {
+                    const unitCard = document.createElement('div');
+                    unitCard.className = 'unit-card';
+                    unitCard.style.animationDelay = `${uIdx * 0.1}s`;
+
+                    let chaptersHtml = '';
+                    if (currentMode === 'study') {
+                        if (unit.chapters && unit.chapters.length > 0) {
+                            unit.chapters.forEach(chapter => {
+                                chaptersHtml += `
+                                    <a href="math_viewer.html?level=${currentLevel}&semester=${currentSemester}&unit=${unit.id}&chapter=${chapter.id}" class="chapter-item">
+                                        <span>${chapter.title}</span>
+                                        <i>원리 학습 →</i>
+                                    </a>
+                                `;
+                            });
+                        } else {
+                            chaptersHtml = `<div class="chapter-item" style="opacity:0.5; cursor:default;">준비 중인 단원입니다.</div>`;
+                        }
+                    } else {
+                        // 퀴즈 모드: 단원 단위로 타입별 진입
+                        chaptersHtml = `
+                            <a href="math_quiz.html?level=${currentLevel}&semester=${currentSemester}&unit=${unit.id}&type=basic" class="chapter-item">
+                                <span>📝 기본 계산 (20문제)</span>
+                                <i>시작 →</i>
+                            </a>
+                            <a href="math_quiz.html?level=${currentLevel}&semester=${currentSemester}&unit=${unit.id}&type=advanced" class="chapter-item">
+                                <span>🧩 심화 연산 (10문제)</span>
+                                <i>시작 →</i>
+                            </a>
+                            <a href="math_quiz.html?level=${currentLevel}&semester=${currentSemester}&unit=${unit.id}&type=word" class="chapter-item">
+                                <span>📖 서술형 문제 (5문제)</span>
+                                <i>시작 →</i>
+                            </a>
+                        `;
+                    }
+
+                    unitCard.innerHTML = `
+                        <div class="unit-title">${unit.title}</div>
+                        <div class="chapter-list">${chaptersHtml}</div>
+                    `;
+                    tocContainer.appendChild(unitCard);
+                });
+            }
+
+            // 학기 전환 이벤트
+            semesterBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    semesterBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSemester = btn.dataset.semester;
+                    renderTOC();
+                });
+            });
+
+            // 모드 전환 이벤트
+            modeBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    modeBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentMode = btn.id === 'studyModeBtn' ? 'study' : 'quiz';
+                    renderTOC();
+                });
+            });
+
+            // 학년 전환 이벤트
+            levelBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    levelBtns.forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentLevel = btn.dataset.level;
+                    renderTOC();
+                });
+            });
+
+            renderTOC();
+        });
+    </script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

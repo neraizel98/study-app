@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Math Quiz - 실전 테스트</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <style>
+        :root {
+            --math-primary: #00c853;
+            --math-secondary: #00e676;
+            --quiz-wrong: #ff5252;
+            --quiz-correct: #00c853;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+            overflow-y: auto;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+            box-sizing: border-box;
+        }
+
+        .bg-blobs {
+            position: fixed;
+            inset: 0;
+            filter: blur(80px);
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 600px;
+            z-index: 10;
+        }
+
+        .quiz-card {
+            background: var(--card-bg);
+            backdrop-filter: blur(25px);
+            border: 1px solid var(--card-border);
+            border-radius: 35px;
+            padding: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .quiz-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .quiz-progress {
+            font-size: 0.9rem;
+            color: var(--text-sub);
+            font-weight: 600;
+        }
+
+        .question-box {
+            font-size: 1.4rem;
+            line-height: 1.6;
+            margin-bottom: 40px;
+            color: var(--text);
+            font-weight: 700;
+            min-height: 80px;
+        }
+
+        .options-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 18px 25px;
+            border-radius: 20px;
+            color: var(--text);
+            font-size: 1.1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: var(--font);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .option-btn:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--math-primary);
+            transform: translateX(5px);
+        }
+
+        .option-btn.correct {
+            background: rgba(0, 200, 83, 0.2) !important;
+            border-color: var(--quiz-correct) !important;
+            color: var(--quiz-correct);
+        }
+
+        .option-btn.wrong {
+            background: rgba(255, 82, 82, 0.2) !important;
+            border-color: var(--quiz-wrong) !important;
+            color: var(--quiz-wrong);
+        }
+
+        .explanation-box {
+            margin-top: 30px;
+            padding: 25px;
+            background: rgba(0, 200, 83, 0.05);
+            border-radius: 20px;
+            border-left: 5px solid var(--math-primary);
+            display: none;
+            animation: fadeIn 0.4s;
+        }
+
+        .explanation-header {
+            font-weight: 800;
+            color: var(--math-primary);
+            margin-bottom: 10px;
+            font-size: 0.9rem;
+        }
+
+        .btn-next-quiz {
+            margin-top: 25px;
+            width: 100%;
+            padding: 20px;
+            background: var(--math-primary);
+            border: none;
+            border-radius: 18px;
+            color: #0d1117;
+            font-weight: 800;
+            font-size: 1.1rem;
+            cursor: pointer;
+            display: none;
+            transition: all 0.2s;
+        }
+
+        .btn-next-quiz:hover { opacity: 0.9; transform: scale(0.98); }
+
+        /* 글로벌 메뉴 */
+        .global-nav { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
+        .global-btn {
+            background: rgba(13, 17, 23, 0.8);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--card-border);
+            padding: 10px 15px;
+            border-radius: 12px;
+            color: var(--text);
+            text-decoration: none;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center; gap: 8px;
+        }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="quiz-container">
+        <div id="app-header"></div>
+
+        <div class="quiz-card">
+            <div class="quiz-header" style="display: grid; grid-template-columns: 100px 1fr 100px; align-items: center; margin-bottom: 30px;">
+                <div class="quiz-progress" id="quizIdx" style="justify-self: start; white-space: nowrap;">Question 1</div>
+                <div id="unitIndicator" style="font-size: 0.9rem; color: var(--math-primary); font-weight: 700; text-align: center; justify-self: center; display: flex; flex-direction: column; align-items: center; gap: 4px;"></div>
+                <div></div>
+            </div>
+
+            <div class="question-box" id="questionBox">문제가 로딩 중입니다...</div>
+
+            <div class="options-grid" id="optionsGrid">
+                <!-- 선택지가 여기에 생성됩니다 -->
+            </div>
+
+            <div class="explanation-box" id="explanationBox">
+                <div class="explanation-header">💡 상세 풀이</div>
+                <div id="explanationText" style="line-height: 1.6; font-size: 1rem;"></div>
+            </div>
+
+            <button class="btn-next-quiz" id="btnNextQuiz">다음 문제 풀기 →</button>
+        </div>
+    </div>
+
+    <script src="kakao-share.js"></script>
+    <script src="utils.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script src="MathData.js"></script>
+    <script src="MathQuizData.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            try {
+                const params = new URLSearchParams(window.location.search);
+                const levelId = params.get('level');
+                const semesterId = params.get('semester') || '1';
+                const unitId = params.get('unit');
+                const typeId = params.get('type') || 'basic'; // basic, advanced, word
+
+                if (!levelId || !unitId) {
+                    window.location.href = 'math.html';
+                    return;
+                }
+
+                const homeUrl = `math.html?level=${levelId}&semester=${semesterId}`;
+
+                // 공통 UI 초기화 및 뒤로가기 버튼 추가
+                AppUI.init({
+                    title: 'Math Quiz',
+                    subtitle: '실력을 뽐내는 실전 테스트'
+                });
+            const nav = document.querySelector('.nav-left');
+            if (nav) {
+                const backBtn = document.createElement('a');
+                backBtn.href = homeUrl;
+                backBtn.className = 'nav-link-item'; // 일관성 있는 스타일 적용
+                backBtn.style.marginRight = '10px';
+                backBtn.innerHTML = '← 뒤로';
+                nav.prepend(backBtn);
+            }
+
+            const isReviewMode = params.get('mode') === 'review';
+            const typeName = typeId === 'basic' ? '기본 계산' : typeId === 'advanced' ? '심화 연산' : '서술형';
+
+            const levelData = (window.MathData || {})[levelId];
+            if (!levelData) {
+                alert('해당 학년의 데이터를 찾을 수 없습니다.');
+                window.location.href = 'math.html';
+                return;
+            }
+
+            const sourceUnits = levelData.semesters ? levelData.semesters[semesterId].units : levelData.units;
+            const unit = sourceUnits.find(u => u.id === unitId);
+
+            if (!unit) {
+                alert('해당 단원의 정보를 찾을 수 없습니다.');
+                window.location.href = 'math.html';
+                return;
+            }
+
+            let quizzes = [];
+            if (isReviewMode) {
+                // [New] 오답 노트에서 유형 가져와서 생성
+                const wrongMath = WrongNote.getAll().math || [];
+                // [Stabilized] window 전역 객체 참조
+                const poolData = window.MathQuizData || {};
+                const unitPool = poolData[unitId] || {};
+                const fullPool = [
+                    ...(unitPool.basic || []),
+                    ...(unitPool.advanced || []),
+                    ...(unitPool.word || [])
+                ];
+                
+                // 오답 노트에 기록된 type(generator 함수명)과 일치하는 템플릿 필터링
+                const reviewTemplates = wrongMath
+                    .map(w => fullPool.find(q => q.generator === w.type))
+                    .filter(x => x);
+                
+                if (reviewTemplates.length === 0) {
+                    alert('복습할 오답 유형이 없습니다!');
+                    window.location.href = homeUrl;
+                    return;
+                }
+                quizzes = reviewTemplates;
+            } else if (typeof window.MathQuizData !== 'undefined' && window.MathQuizData[unitId] && window.MathQuizData[unitId][typeId]) {
+                quizzes = window.MathQuizData[unitId][typeId];
+            }
+
+            if (!quizzes || quizzes.length === 0) {
+                document.getElementById('questionBox').innerText = "이 단원에는 아직 퀴즈가 준비되지 않았습니다.";
+                return;
+            }
+            
+            // 모든 퀴즈에 대해 동적 생성기 실행 (템플릿일 경우에만) 및 셔플 (Utils 활용)
+            quizzes = quizzes.map(q => Utils.generateMathQuiz(q));
+            quizzes = Utils.shuffle(quizzes);
+
+            let quizSessionData = {
+                id: Date.now().toString(),
+                total: quizzes.length,
+                initialScore: null,
+                currentScore: 0,
+                startTime: Date.now(),
+                roundCount: 1 // 회차 정보 추가
+            };
+
+            let currentIdx = 0;
+            let results = []; // { selected, correct, isOk }
+
+            function renderQuiz(idx) {
+                const quiz = quizzes[idx];
+                document.getElementById('quizIdx').innerText = `문항 ${idx + 1} / ${quizzes.length}`;
+                
+                document.getElementById('unitIndicator').innerText = `${unit.title} - ${typeName}`;
+                
+                document.getElementById('questionBox').innerHTML = Utils.renderMath(quiz.question);
+
+                const grid = document.getElementById('optionsGrid');
+                grid.innerHTML = '';
+
+                quiz.choices.forEach((choice, i) => {
+                    const btn = document.createElement('button');
+                    btn.className = 'option-btn';
+                    btn.innerHTML = `<span style="opacity:0.3; font-weight:900;">${i+1}</span> ${Utils.renderMath(choice)}`;
+                    btn.onclick = () => handleAnswer(i, quiz.answer, btn);
+                    grid.appendChild(btn);
+                });
+
+                // 💡 3회 이상 오답 시 풀이과정 힌트 제공
+                if (quiz.wrongCount && quiz.wrongCount >= 3) {
+                    const hintBtn = document.createElement('button');
+                    hintBtn.className = 'hint-btn';
+                    hintBtn.innerText = '💡 너무 어렵나요? 힌트 (풀이 과정) 보기';
+                    hintBtn.onclick = () => {
+                        const expBox = document.getElementById('explanationBox');
+                        expBox.style.display = 'block';
+                        document.getElementById('explanationText').innerHTML = Utils.renderMath(quiz.explanation);
+                    };
+                    grid.appendChild(hintBtn);
+                } else {
+                    document.getElementById('explanationBox').style.display = 'none';
+                }
+            }
+
+            function handleAnswer(selected, correct, clickedBtn) {
+                const btns = document.querySelectorAll('.option-btn');
+                btns.forEach(b => { b.disabled = true; });
+                // 선택된 버튼만 표시 (정답/오답 색 없이)
+                clickedBtn.classList.add('selected-ans');
+
+                const isOk = selected === correct;
+                results[currentIdx] = { selected, correct, isOk };
+                
+                const quiz = quizzes[currentIdx];
+                const status = isOk ? 'correct' : 'wrong';
+
+                if (!isOk) {
+                    quiz.wrongCount = (quiz.wrongCount || 0) + 1;
+                }
+
+                // [Enhanced] 정답/오답 관계없이 히스토리 저장
+                WrongNote.save('math', { 
+                    type: quiz.generator, 
+                    question: quiz.question, 
+                    explanation: quiz.explanation,
+                    choices: quiz.choices,
+                    answer: quiz.answer,
+                    levelId, semesterId, unitId 
+                }, status, quizSessionData.id, quizSessionData.roundCount);
+
+                setTimeout(() => {
+                    currentIdx++;
+                    if (currentIdx < quizzes.length) {
+                        renderQuiz(currentIdx);
+                    } else {
+                        showResult();
+                    }
+                }, 400);
+            }
+
+            function showResult() {
+                const score = results.filter(r => r.isOk).length;
+                
+                if (quizSessionData.initialScore === null) {
+                    quizSessionData.initialScore = score;
+                    quizSessionData.currentScore = score;
+                } else {
+                    quizSessionData.currentScore += score;
+                }
+
+                const total = quizSessionData.total;
+                const currentRoundTotal = quizzes.length;
+                const pct = Math.round((quizSessionData.currentScore / total) * 100);
+                const isPerfect = pct === 100;
+
+                const grid = document.getElementById('optionsGrid');
+                grid.innerHTML = '';
+                document.getElementById('explanationBox').style.display = 'none';
+                document.getElementById('btnNextQuiz').style.display = 'none';
+
+                document.getElementById('questionBox').innerHTML = `
+                    <div style="text-align:center;">
+                        <div style="font-size:3rem; margin-bottom:10px;">${isPerfect ? '🏆' : pct >= 80 ? '🎉' : '📚'}</div>
+                        <div style="font-size:1.6rem; font-weight:800; margin-bottom:8px;">${isPerfect ? '완벽 완료!' : '성적표'}</div>
+                        <div style="font-size:1.2rem; color:var(--math-primary); font-weight:700;">${quizSessionData.currentScore} / ${total} 정답 (${pct}%)</div>
+                        <div style="font-size:0.95rem; color:var(--text-sub); margin-top:8px;">
+                            ${isPerfect ? '모든 문제를 맞혔습니다! 🎊' : '틀린 문제를 다시 풀어 100점을 완성해보세요!'}
+                        </div>
+                    </div>
+                    <div style="margin-top:24px; display:flex; flex-direction:column; gap:8px;" id="scoreList"></div>
+                `;
+                document.getElementById('quizIdx').innerText = `결과 ${score}/${total}`;
+
+                setTimeout(() => {
+                    const scoreList = document.getElementById('scoreList');
+                    if (!scoreList) return;
+                    results.forEach((r, i) => {
+                        const row = document.createElement('div');
+                        row.style.cssText = `display:flex; flex-direction:column; padding:12px 16px; border-radius:14px; background:${r.isOk ? 'rgba(0,200,83,0.08)' : 'rgba(255,82,82,0.08)'}; border:1px solid ${r.isOk ? 'rgba(0,200,83,0.3)' : 'rgba(255,82,82,0.3)'};`;
+                        
+                        const expHtml = r.isOk 
+                            ? `<button class="explanation-btn" onclick="document.getElementById('exp_${i}').classList.toggle('show');">💡 해설 보기</button>` 
+                            : `<span style="font-size:0.8rem; color:#ff5252; margin-left:auto;">다시 풀기</span>`;
+                            
+                        const expBoxHtml = r.isOk 
+                            ? `<div id="exp_${i}" class="result-explanation-box">${Utils.renderMath(quizzes[i].explanation)}</div>`
+                            : ``;
+
+                        row.innerHTML = `
+                            <div style="display:flex; align-items:center; gap:10px; width:100%;">
+                                <span style="font-size:1.2rem;">${r.isOk ? '✅' : '❌'}</span>
+                                <span style="font-size:0.9rem; color:var(--text-sub);">Q${i+1}</span>
+                                <span style="font-size:0.95rem; flex:1; color:${r.isOk ? 'var(--text)' : 'var(--text-sub)'};">${Utils.renderMath(quizzes[i].question.substring(0, 40))}${quizzes[i].question.length > 40 ? '...' : ''}</span>
+                                ${expHtml}
+                            </div>
+                            ${expBoxHtml}
+                        `;
+                        scoreList.appendChild(row);
+                    });
+
+                    // 틀린 문제 재도전 버튼
+                    const wrongIdxs = results.map((r,i) => !r.isOk ? i : -1).filter(i => i >= 0);
+                    const btnArea = document.createElement('div');
+                    btnArea.style.cssText = 'display:flex; flex-direction:column; gap:10px; margin-top:10px;';
+
+                    if (wrongIdxs.length > 0) {
+                        const retryBtn = document.createElement('button');
+                        retryBtn.className = 'btn-next-quiz';
+                        retryBtn.style.cssText = 'display:block; flex:1; margin-top:0;';
+                        retryBtn.textContent = `🔄 틀린 ${wrongIdxs.length}문제 다시 풀기`;
+                        retryBtn.onclick = () => retryWrong(wrongIdxs);
+                        btnArea.appendChild(retryBtn);
+                    } else {
+                        const homeBtn = document.createElement('button');
+                        homeBtn.className = 'btn-next-quiz';
+                        homeBtn.style.cssText = 'display:block; width:100%; margin-top:0;';
+                        homeBtn.textContent = '🏠 수학 홈으로';
+                        homeBtn.onclick = () => { window.location.href = `math.html?level=${levelId}&semester=${semesterId}`; };
+                        btnArea.appendChild(homeBtn);
+                    }
+
+                    // 카카오톡 결과 전송 버튼 추가
+                    const kakaoBtn = document.createElement('button');
+                    kakaoBtn.className = 'btn-next-quiz';
+                    kakaoBtn.style.cssText = 'display:block; width:100%; margin-top:10px; background: #FEE500; color: #3A1D1D; border: none; font-weight: bold;';
+                    kakaoBtn.innerHTML = '💬 아빠에게 결과 전송하기 🏆';
+                    kakaoBtn.onclick = () => {
+                        const pct = Math.round((quizSessionData.currentScore / quizSessionData.total) * 100);
+                        const gradeLabel = levelId === 'elementary-6' ? '초6' : (levelId === 'middle-1' ? '중1' : levelId);
+                        const levelInfo = `${gradeLabel}-${semesterId} (${unit.title})`;
+                        
+                        KakaoShare.sendReport('math', quizSessionData.currentScore, quizSessionData.total, pct, quizSessionData.initialScore, quizSessionData.roundCount, {
+                            sessionId: quizSessionData.id,
+                            levelInfo: levelInfo,
+                            startTime: quizSessionData.startTime,
+                            endTime: Date.now()
+                        });
+                    };
+                    btnArea.appendChild(kakaoBtn);
+
+                    scoreList.after(btnArea);
+
+                    const isCompleted = (wrongIdxs.length === 0);
+                    const timeSpent = Math.floor((Date.now() - quizSessionData.startTime) / 1000);
+                    if (typeof saveQuizResult === 'function') {
+                        saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+                        
+                        // [New] 경험치 지급 및 레벨업 확인
+                        const result = UserSession.addEXP(score);
+                        if (result && result.levelUp) {
+                            alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
+                        }
+                    }
+                }, 50);
+            }
+
+            function retryWrong(wrongIdxs) {
+                // 틀린 문제들만으로 재시작
+                const wrongQuizzes = wrongIdxs.map(i => quizzes[i]);
+                quizzes.length = 0;
+                wrongQuizzes.forEach(q => quizzes.push(q));
+                currentIdx = 0;
+                results = [];
+                quizSessionData.roundCount++; // 회차 증가
+                renderQuiz(0);
+            }
+
+            renderQuiz(currentIdx);
+            } catch (e) {
+                console.error('[Critical Math Engine Error]', e);
+                if (window.onerror) window.onerror(e.message, 'math_quiz.html', 0, 0, e);
+            }
+        });
+    </script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Study - 오답 노트</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;700&display=swap" rel="stylesheet">
+    <!-- KaTeX for math rendering -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script src="utils.js"></script>
+    <style>
+        .wrong-container { max-width: 1000px; margin: 0 auto; padding: 20px; }
+        .subject-tabs { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; }
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            padding: 12px 24px;
+            border-radius: 15px;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s;
+        }
+        .tab-btn.active {
+            background: rgba(79, 172, 254, 0.1);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+        .wrong-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        .wrong-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 24px;
+            position: relative;
+            animation: fadeIn 0.4s ease-out;
+            transition: all 0.3s;
+        }
+        .wrong-card.mastered {
+            border-color: rgba(0, 200, 83, 0.4);
+            background: rgba(255, 255, 255, 0.02);
+            opacity: 0.8;
+        }
+        .mastered-badge {
+            background: rgba(0, 200, 83, 0.1);
+            color: #00c853;
+            font-size: 0.7rem;
+            padding: 2px 8px;
+            border-radius: 6px;
+            margin-right: 5px;
+        }
+        
+        .wrong-card .badge {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 95, 109, 0.1);
+            color: #ff5f6d;
+            font-size: 0.7rem;
+            padding: 4px 10px;
+            border-radius: 10px;
+            font-weight: 700;
+        }
+        .wrong-main { font-size: 1.5rem; font-weight: 800; color: var(--text); margin-bottom: 8px; }
+        .wrong-sub { font-size: 1rem; color: var(--text-sub); margin-bottom: 20px; line-height: 1.5; }
+        
+        /* 히스토리 타임라인 스타일 */
+        .history-timeline {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+            flex-wrap: wrap;
+        }
+        .history-dot {
+            width: 28px;
+            height: 28px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 800;
+        }
+        .history-dot.wrong { background: rgba(255, 82, 82, 0.1); color: #ff5252; border: 1px solid rgba(255, 82, 82, 0.3); }
+        .history-dot.correct { background: rgba(0, 200, 83, 0.1); color: #00c853; border: 1px solid rgba(0, 200, 83, 0.3); }
+
+        .solution-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--card-border);
+            color: var(--text-sub);
+            padding: 8px 16px;
+            border-radius: 12px;
+            font-size: 0.85rem;
+            cursor: pointer;
+            width: 100%;
+            transition: all 0.2s;
+            margin-bottom: 10px;
+        }
+        .solution-btn:hover { background: rgba(255, 255, 255, 0.1); }
+        
+        .solution-box {
+            display: none;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            padding: 15px;
+            margin-top: 10px;
+            font-size: 0.9rem;
+            line-height: 1.6;
+            border: 1px solid rgba(255,255,255,0.05);
+            animation: slideDown 0.3s ease-out;
+        }
+        .solution-box.show { display: block; }
+        
+        .wrong-meta { font-size: 0.8rem; color: var(--text-sub); opacity: 0.6; display: flex; justify-content: space-between; align-items: center; border-top: 1px solid rgba(255,255,255,0.05); padding-top: 12px; }
+        
+        .filter-bar { margin-bottom: 20px; display: flex; justify-content: flex-end; gap: 15px; font-size: 0.85rem; color: var(--text-sub); }
+        .filter-bar label { cursor: pointer; display: flex; align-items: center; gap: 5px; }
+
+        .empty-state { text-align: center; padding: 80px 20px; color: var(--text-sub); }
+        .empty-icon { font-size: 4rem; margin-bottom: 20px; display: block; }
+        
+        .action-bar { margin-top: 40px; text-align: center; }
+        .retry-all-btn {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 15px 40px;
+            border-radius: 20px;
+            font-size: 1.1rem;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+            transition: all 0.2s;
+        }
+        .retry-all-btn:hover { transform: translateY(-3px); box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4); }
+        .retry-all-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body>
+    <div class="bg-blobs">
+        <div class="blob blob-1"></div>
+        <div class="blob blob-2"></div>
+        <div class="blob blob-3"></div>
+    </div>
+
+    <div class="wrong-container">
+        <div id="app-header"></div>
+
+        <div class="subject-tabs">
+            <button class="tab-btn active" data-subject="english">🇬🇧 영어</button>
+            <button class="tab-btn" data-subject="hanja">🏮 한자</button>
+            <button class="tab-btn" data-subject="math">📐 수학</button>
+        </div>
+
+        <div class="filter-bar">
+            <span>필터:</span>
+            <label><input type="checkbox" id="filterMastered" checked> 정복한 문항 포함</label>
+        </div>
+
+        <div id="wrongListContainer" class="wrong-list">
+            <!-- 동적 할당 -->
+        </div>
+
+        <div class="action-bar">
+            <button id="retryAllBtn" class="retry-all-btn">🔥 오답들만 모아서 다시 풀기</button>
+        </div>
+    </div>
+
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            AppUI.init({ title: '통합 오답 노트', subtitle: '각 문항의 학습 이력을 확인하고 부족함을 채우세요!' });
+
+            const container = document.getElementById('wrongListContainer');
+            const retryAllBtn = document.getElementById('retryAllBtn');
+            const tabs = document.querySelectorAll('.tab-btn');
+            const masteredFilter = document.getElementById('filterMastered');
+            
+            let currentSubject = 'english';
+
+            masteredFilter.addEventListener('change', renderWrongNote);
+
+            function renderWrongNote() {
+                const all = WrongNote.getAll();
+                let list = all[currentSubject] || [];
+                
+                // [Fix] 1회차 필터를 제거하고, 오답 기록이 하나라도 있거나 정복되지 않은 모든 항목을 표시
+                list = list.filter(item => !item.isMastered || (item.history && item.history.some(h => h.status === 'wrong')));
+
+                container.innerHTML = '';
+
+                // 필터링 적용 (정복 여부)
+                if (!masteredFilter.checked) {
+                    list = list.filter(item => !item.isMastered);
+                }
+
+                if (list.length === 0) {
+                    container.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1 / -1;">
+                            <span class="empty-icon">✨</span>
+                            <h3>표시할 문제가 없습니다!</h3>
+                            <p>모든 문제를 정복했거나 오답이 없습니다.</p>
+                        </div>
+                    `;
+                    retryAllBtn.disabled = true;
+                    return;
+                }
+
+                retryAllBtn.disabled = false;
+                list.sort((a, b) => b.date - a.date).forEach((item, idx) => {
+                    const card = document.createElement('div');
+                    card.className = `wrong-card ${item.isMastered ? 'mastered' : ''}`;
+                    
+                    let mainText = '', subText = '', metaText = '', explanation = '';
+                    if (currentSubject === 'english') {
+                        mainText = item.word;
+                        subText = item.meaning;
+                        metaText = item.level;
+                        explanation = item.explanation || `뜻: ${item.meaning}`;
+                    } else if (currentSubject === 'hanja') {
+                        mainText = `${item.hanja} (${item.eum})`;
+                        subText = item.meaning;
+                        metaText = item.level;
+                        explanation = `훈음: ${item.eum} / 뜻: ${item.meaning}`;
+                    } else if (currentSubject === 'math') {
+                        mainText = Utils.renderMath(item.type || '알 수 없는 유형');
+                        const qStr = (item.question || '문제 내용이 없습니다.').toString();
+                        subText = Utils.renderMath(qStr.substring(0, 80)) + (qStr.length > 80 ? '...' : '');
+                        metaText = `${item.levelId || '?'} ${item.semesterId || '?'}학기`;
+                        explanation = Utils.renderMath(item.explanation || '풀이 과정이 없습니다.');
+                    }
+
+                    // 히스토리 배지 생성
+                    const historyHtml = (item.history || []).map(h => `
+                        <div class="history-dot ${h.status}" title="${new Date(h.date).toLocaleString()}">
+                            ${h.status === 'wrong' ? '❌' : '✅'}
+                        </div>
+                    `).join('');
+
+                    card.innerHTML = `
+                        ${item.isMastered ? '<span class="mastered-badge">Mastered ✨</span>' : ''}
+                        <span class="badge">${item.count}회 오답</span>
+                        <div class="wrong-main">${mainText}</div>
+                        <div class="wrong-sub">${subText}</div>
+                        
+                        <div class="history-timeline">
+                            ${historyHtml}
+                        </div>
+                        
+                        <button class="solution-btn" onclick="toggleSolution(${idx})">💡 상세 풀이 과정 보기</button>
+                        <div id="solution_${idx}" class="solution-box">${explanation}</div>
+
+                        <div class="wrong-meta">
+                            <span>📅 최근 ${new Date(item.date).toLocaleDateString()}</span>
+                            <span>📍 ${metaText}</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            }
+
+            window.toggleSolution = function(idx) {
+                const box = document.getElementById(`solution_${idx}`);
+                box.classList.toggle('show');
+            };
+
+            window.retryQuestion = function(subject, identifier) {
+                let targetUrl = '';
+                if (subject === 'english') targetUrl = 'english.html?mode=review';
+                else if (subject === 'hanja') targetUrl = 'hanja.html?mode=review';
+                else if (subject === 'math') {
+                    const all = WrongNote.getAll();
+                    const target = all.math.find(m => m.type === identifier);
+                    if (target) {
+                        targetUrl = `math_quiz.html?level=${target.levelId}&semester=${target.semesterId}&unit=${target.unitId}&mode=review`;
+                    }
+                }
+                if (targetUrl) window.location.href = targetUrl;
+            };
+
+            tabs.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabs.forEach(t => t.classList.remove('active'));
+                    btn.classList.add('active');
+                    currentSubject = btn.dataset.subject;
+                    renderWrongNote();
+                });
+            });
+
+            retryAllBtn.addEventListener('click', () => {
+                let targetUrl = '';
+                if (currentSubject === 'english') targetUrl = 'english.html?mode=review';
+                else if (currentSubject === 'hanja') targetUrl = 'hanja.html?mode=review';
+                else if (currentSubject === 'math') {
+                    const all = WrongNote.getAll();
+                    const activeMath = all.math.filter(m => !m.isMastered);
+                    const first = activeMath[0] || all.math[0];
+                    if (first) {
+                        targetUrl = `math_quiz.html?level=${first.levelId}&semester=${first.semesterId}&unit=${first.unitId}&mode=review`;
+                    }
+                }
+                
+                if (targetUrl) window.location.href = targetUrl;
+            });
+
+            renderWrongNote();
+        });
+    </script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
+</body>
+</html>

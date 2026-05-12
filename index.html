@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- PWA: 홈 화면 추가 지원 (iOS + Android) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="스마트학습">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
+    <meta name="theme-color" content="#0d1117">
+    <title>Smart Study for 우준 - 나만의 스마트한 학습 포털</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            overflow-x: hidden;
+            overflow-y: auto;
+            background: var(--bg);
+            color: var(--text);
+            font-family: var(--font);
+        }
+        .landing-container {
+            width: 100%;
+            max-width: 900px;
+            padding: 40px 20px;
+            text-align: center;
+            z-index: 10;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .brand-logo {
+            margin-bottom: 40px;
+            animation: fadeInDown 0.8s ease-out;
+        }
+        .brand-logo h1 {
+            font-size: 3.8rem;
+            margin: 0;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: -2px;
+        }
+        .brand-logo p {
+            color: var(--text-sub);
+            font-size: 1.1rem;
+            margin-top: 10px;
+            opacity: 0.8;
+        }
+        .menu-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            perspective: 1000px;
+        }
+        .lang-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 40px 20px;
+            text-decoration: none;
+            color: var(--text);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
+            backdrop-filter: blur(20px);
+            position: relative;
+            overflow: hidden;
+        }
+        .lang-card:hover:not(.disabled) {
+            transform: translateY(-10px) rotateX(5deg);
+            border-color: var(--accent);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.2);
+        }
+        .lang-icon {
+            font-size: 3rem;
+            margin-bottom: 5px;
+        }
+        .lang-name {
+            font-size: 1.4rem;
+            font-weight: 700;
+        }
+        .lang-desc {
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            line-height: 1.4;
+        }
+        .disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+            filter: grayscale(1);
+        }
+        .badge {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            font-size: 0.65rem;
+            font-weight: 700;
+            padding: 4px 10px;
+            border-radius: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-sub);
+        }
+        .badge.active {
+            background: rgba(86, 211, 100, 0.15);
+            color: #56d364;
+        }
+        .kakao-request-btn {
+            position: absolute;
+            top: 25px;
+            left: 25px;
+            background: #FEE500;
+            color: #3A1D1D;
+            border: none;
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            font-size: 1rem;
+            z-index: 100;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+        }
+        .kakao-request-btn:hover {
+            transform: scale(1.1);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
+        }
+        .lang-card:hover .kakao-request-btn {
+            background: #facc15;
+        }
+
+        .footer {
+            padding: 40px 0 20px;
+            font-size: 0.85rem;
+            color: var(--text-sub);
+            opacity: 0.5;
+            width: 100%;
+            text-align: center;
+            margin-top: auto;
+        }
+        @keyframes fadeInDown {
+            from { opacity: 0; transform: translateY(-30px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        /* Dashboard Card Hovers */
+        .dash-card {
+            transition: border-color 0.2s, transform 0.2s;
+            cursor: pointer;
+            display: block;
+            text-decoration: none;
+            color: inherit;
+        }
+        .stats-widget:hover {
+            border-color: var(--accent) !important;
+            transform: scale(1.01);
+        }
+        .wrong-widget:hover {
+            border-color: #ff5f6d !important;
+            transform: scale(1.01);
+        }
+        @media (max-width: 600px) {
+            .brand-logo h1 { font-size: 2.8rem; }
+            .menu-grid { grid-template-columns: 1fr; }
+            .dashboard-grid { grid-template-columns: 1fr !important; }
+            .dash-card { grid-column: span 1 !important; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="landing-container">
+        <!-- 로그인 전: ID 입력 화면 -->
+        <div id="login-section" style="display: none;">
+            <div class="brand-logo">
+                <h1>Smart Study</h1>
+                <p>당신만의 스마트한 학습 파트너, 시작해볼까요?</p>
+            </div>
+            <div class="login-box" style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); max-width: 400px; margin: 0 auto;">
+                <input type="text" id="userIdInput" placeholder="이름을 입력하세요 (예: 우준)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.1rem; margin-bottom: 20px; outline: none; transition: border-color 0.2s;">
+                <button id="loginBtn" class="nav-btn" style="width: 100%; justify-content: center; background: var(--accent); color: white; border: none; padding: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; border-radius: 12px; transition: transform 0.2s;">학습 시작하기</button>
+                <button type="button" onclick="if(confirm('모든 학습 데이터가 초기화됩니다. 계속하시겠습니까?')){localStorage.clear(); location.reload();}" style="background:none; border:none; color:var(--text-sub); font-size:0.8rem; margin-top:20px; cursor:pointer; text-decoration:underline; opacity:0.5; width:100%; text-align:center;">⚠️ 데이터 초기화 (문제가 있을 때만 클릭)</button>
+            </div>
+        </div>
+
+        <!-- 로그인 후: 개인 대시보드 -->
+        <div id="dashboard-section" style="display: none;">
+            <div id="app-header"></div>
+            
+            <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; text-align: left;">
+                <!-- 스탯 카드 (클릭 시 성적표 이동) -->
+                <a href="report.html" class="dash-card stats-widget" style="grid-column: span 1.5; background: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 24px;">
+                    <h3 style="margin-top: 0; color: var(--accent);">📊 나의 학습 통계</h3>
+                    <div class="stats-row" style="display: flex; justify-content: space-between; margin-top: 15px;">
+                        <div class="stat-item">
+                            <div style="font-size: 0.85rem; color: var(--text-sub);">총 학습 시간</div>
+                            <div id="dashTotalTime" style="font-size: 1.2rem; font-weight: 700;">0분</div>
+                        </div>
+                        <div class="stat-item">
+                            <div style="font-size: 0.85rem; color: var(--text-sub);">퀴즈 도전</div>
+                            <div id="dashTotalAttempts" style="font-size: 1.2rem; font-weight: 700;">0회</div>
+                        </div>
+                        <div class="stat-item">
+                            <div style="font-size: 0.85rem; color: var(--text-sub);">누적 정답</div>
+                            <div id="dashTotalCorrect" style="font-size: 1.2rem; font-weight: 700;">0개</div>
+                        </div>
+                    </div>
+                </a>
+
+                <!-- 오답노트 카드 (클릭 시 오답노트 이동) -->
+                <a href="wrong_note.html" class="dash-card wrong-widget" style="background: linear-gradient(135deg, rgba(255, 95, 109, 0.05), rgba(255, 195, 113, 0.05)); border: 1px solid rgba(255, 95, 109, 0.2); padding: 25px; border-radius: 24px;">
+                    <h3 style="margin-top: 0; color: #ff5f6d;">📝 오답노트</h3>
+                    <div id="wrongSummary" style="margin-top: 10px; font-size: 0.95rem;">
+                        <!-- JS에서 동적 생성 -->
+                    </div>
+                </a>
+            </div>
+
+            </div>
+            
+            <div class="menu-grid" style="margin-top: 40px;">
+                <!-- English -->
+                <a href="english.html" class="lang-card">
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('english')" title="아들에게 학습 요청 보내기">💬</button>
+                    <span class="badge active">영단어</span>
+                    <div class="lang-icon">🇬🇧</div>
+                    <div class="lang-name">영어 학습</div>
+                    <div class="lang-desc">의미와 시제를 한 번에 완벽 정복!</div>
+                </a>
+
+                <!-- Hanja -->
+                <a href="hanja.html" class="lang-card">
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('hanja')" title="아들에게 학습 요청 보내기">💬</button>
+                    <span class="badge active">급수 한자</span>
+                    <div class="lang-icon">🏮</div>
+                    <div class="lang-name">한자 마스터</div>
+                    <div class="lang-desc">직접 쓰면서 익히는 한자 능력!</div>
+                </a>
+
+                <!-- Math -->
+                <a href="math.html" class="lang-card">
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('math')" title="아들에게 학습 요청 보내기">💬</button>
+                    <span class="badge active">수학 연산</span>
+                    <div class="lang-icon">📐</div>
+                    <div class="lang-name">수학 정글</div>
+                    <div class="lang-desc">핵심 원리를 꿰뚫는 수학 학습!</div>
+                </a>
+            </div>
+            
+            <!-- 미션 및 업적 섹션 -->
+            <div id="missionContainer" style="margin-top: 40px;"></div>
+
+            <!-- 데이터 백업/복원 -->
+            <div style="margin-top: 20px; text-align: right;">
+                <button onclick="exportUserData()" style="background:none; border:1px solid var(--card-border); color:var(--text-sub); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.8rem; margin-right:8px;">💾 데이터 내보내기</button>
+                <label style="background:none; border:1px solid var(--card-border); color:var(--text-sub); padding:8px 16px; border-radius:8px; cursor:pointer; font-size:0.8rem;">
+                    📂 데이터 가져오기
+                    <input type="file" accept=".json" style="display:none;" onchange="importUserData(this.files[0]).then(() => { alert('데이터를 불러왔습니다. 페이지를 새로고침합니다.'); location.reload(); }).catch(() => alert('파일을 읽는 중 오류가 발생했습니다.'));">
+                </label>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        &copy; 2026 Smart Study - Advanced Learning System
+    </div>
+
+    <script src="kakao-share.js"></script>
+    <script src="report.js"></script>
+    <script src="ui-core.js"></script>
+    <script src="missions.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const loginSection = document.getElementById('login-section');
+            const dashboardSection = document.getElementById('dashboard-section');
+            const userIdInput = document.getElementById('userIdInput');
+            const loginBtn = document.getElementById('loginBtn');
+
+            function updateUI() {
+                try {
+                    const activeUser = UserSession.getActiveUser();
+                    if (activeUser) {
+                        loginSection.style.display = 'none';
+                        dashboardSection.style.display = 'block';
+                        
+                        // 출석 체크 및 미션 갱신
+                        if (typeof UserSession.checkIn === 'function') UserSession.checkIn();
+                        if (typeof MissionManager.checkMissions === 'function') MissionManager.checkMissions();
+                        
+                        // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
+                        if (window.AppUI) AppUI.init({ title: '오늘의 학습 대시보드' });
+                        
+                        // 대시보드 데이터 채우기
+                        const user = UserSession.getUserData(activeUser);
+                        const rawTime = Number(user.totalStudyTime) || 0;
+                        const safeTime = (rawTime > 0 && rawTime < 259200) ? rawTime : 0;
+                        
+                        const timeEl = document.getElementById('dashTotalTime');
+                        const attemptsEl = document.getElementById('dashTotalAttempts');
+                        const correctEl = document.getElementById('dashTotalCorrect');
+                        
+                        if (timeEl) timeEl.innerText = Math.round(safeTime / 60) + '분';
+                        if (attemptsEl) attemptsEl.innerText = user.totalAttempts + '회';
+                        if (correctEl) correctEl.innerText = user.totalCorrect + '개';
+
+                        // 오답 요약
+                        const wrong = WrongNote.getAll();
+                        const totalWrong = (wrong.english?.length || 0) + (wrong.hanja?.length || 0) + (wrong.math?.length || 0);
+                        const wrongSummary = document.getElementById('wrongSummary');
+                        if (wrongSummary) {
+                            if (totalWrong > 0) {
+                                wrongSummary.innerHTML = `총 <strong>${totalWrong}개</strong>의 취약 항목이 발견되었습니다.<br><span style="color:var(--text-sub); font-size:0.8rem;">클릭해서 복습을 시작해보세요!</span>`;
+                            } else {
+                                wrongSummary.innerHTML = `<span style="color:var(--text-sub); font-size:0.9rem;">아직 오답 기록이 없습니다.<br>퀴즈를 풀면 결과가 여기 표시됩니다! 📝</span>`;
+                            }
+                        }
+
+                        // 미션 목록 렌더링
+                        if (typeof MissionManager.renderMissionList === 'function') {
+                            MissionManager.renderMissionList('missionContainer');
+                        }
+                    } else {
+                        loginSection.style.display = 'block';
+                        dashboardSection.style.display = 'none';
+                    }
+                } catch (e) {
+                    console.error('[Dashboard Error]', e);
+                    const errOverlay = document.createElement('div');
+                    errOverlay.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,0,0,0.9); color:white; padding:30px; border-radius:20px; z-index:9999; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);';
+                    errOverlay.innerHTML = `<h3>⚠️ 학습 데이터를 불러오는 중 오류가 발생했습니다.</h3><p>${e.message}</p><button onclick="localStorage.clear(); location.reload();" style="margin-top:20px; padding:10px 20px; cursor:pointer; background:white; border:none; border-radius:10px; font-weight:bold;">초기화 후 다시 시도</button>`;
+                    document.body.appendChild(errOverlay);
+                }
+            }
+
+            loginBtn.addEventListener('click', () => {
+                const id = userIdInput.value.trim();
+                if (id) {
+                    UserSession.setActiveUser(id);
+                    updateUI();
+                } else {
+                    alert('이름을 입력해주세요!');
+                }
+            });
+
+            userIdInput.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') loginBtn.click();
+            });
+
+            updateUI();
+        });
+    </script>
+
+    <script>
+        // Service Worker 등록 (PWA 오프라인 지원)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./service-worker.js')
+                    .then(reg => console.log('[SW] Registered:', reg.scope))
+                    .catch(err => console.warn('[SW] Registration failed:', err));
+            });
+        }
+    </script>
+</body>
+</html>
