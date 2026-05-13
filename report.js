@@ -204,21 +204,29 @@ const WrongNote = {
         };
 
         if (!exists) {
-            // [Refined] 1회차(최초 시도)에서 틀린 경우에만 신규 등록함
+            // 1회차(최초 시도)에서 틀린 경우에만 신규 등록
             if (round === 1 && status === 'wrong') {
-                all[subject].push({ 
-                    ...data, 
-                    date: Date.now(), 
+                all[subject].push({
+                    ...data,
+                    date: Date.now(),
                     count: 1,
+                    masteryScore: 0,  // 연속 정답 수 (0~3)
                     isMastered: false,
-                    history: [historyEntry] 
+                    history: [historyEntry]
                 });
             }
         } else {
             // 기존 데이터 업데이트
             if (status === 'wrong') exists.count++;
             exists.date = Date.now();
-            exists.isMastered = (status === 'correct');
+
+            // 연속 정답 3회 = Mastered (틀리면 0으로 리셋)
+            if (status === 'correct') {
+                exists.masteryScore = Math.min(3, (exists.masteryScore || 0) + 1);
+            } else {
+                exists.masteryScore = 0;
+            }
+            exists.isMastered = exists.masteryScore >= 3;
             
             if (!exists.history) exists.history = [];
             

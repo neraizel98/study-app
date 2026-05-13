@@ -226,6 +226,18 @@
                     </div>
                 </a>
 
+                <!-- 오늘의 학습 리포트 카드 -->
+                <div id="dailyReportCard" class="dash-card" style="display:none; background: linear-gradient(135deg, rgba(254,229,0,0.06), rgba(254,180,0,0.04)); border: 1px solid rgba(254,229,0,0.25); padding: 25px; border-radius: 24px;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:14px;">
+                        <h3 style="margin:0; color:#FEE500;">💬 오늘의 학습 리포트</h3>
+                        <span id="dailyStreakBadge" style="font-size:0.8rem; background:rgba(255,152,0,0.15); color:#ff9800; padding:4px 10px; border-radius:8px; font-weight:700;"></span>
+                    </div>
+                    <div id="dailySubjectSummary" style="font-size:0.9rem; color:var(--text-sub); line-height:1.8; margin-bottom:16px;"></div>
+                    <button onclick="KakaoShare.sendDailySummary()" style="width:100%; background:#FEE500; color:#3A1D1D; border:none; padding:12px; border-radius:14px; font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:-0.3px;">
+                        아빠에게 오늘 결과 보내기 🚀
+                    </button>
+                </div>
+
                 <!-- 오답노트 카드 (클릭 시 오답노트 이동) -->
                 <a href="wrong_note.html" class="dash-card wrong-widget" style="background: linear-gradient(135deg, rgba(255, 95, 109, 0.05), rgba(255, 195, 113, 0.05)); border: 1px solid rgba(255, 95, 109, 0.2); padding: 25px; border-radius: 24px;">
                     <h3 style="margin-top: 0; color: #ff5f6d;">📝 오답노트</h3>
@@ -332,6 +344,24 @@
                             } else {
                                 wrongSummary.innerHTML = `<span style="color:var(--text-sub); font-size:0.9rem;">아직 오답 기록이 없습니다.<br>퀴즈를 풀면 결과가 여기 표시됩니다! 📝</span>`;
                             }
+                        }
+
+                        // 오늘의 학습 리포트 카드 업데이트
+                        const dailyCard = document.getElementById('dailyReportCard');
+                        const subjectSummary = document.getElementById('dailySubjectSummary');
+                        const streakBadge = document.getElementById('dailyStreakBadge');
+                        const studied = user.dailyStats?.subjectsStudied || [];
+                        if (dailyCard && studied.length > 0) {
+                            dailyCard.style.display = 'block';
+                            const subjectEmoji = { english: '🇬🇧', hanja: '🏮', math: '📐' };
+                            const subjectNames = { english: '영어', hanja: '한자', math: '수학' };
+                            const times = user.dailyStats?.studyTime || {};
+                            const toMin = s => Math.round((times[s] || 0) / 60);
+                            subjectSummary.innerHTML = studied
+                                .map(s => `<span>${subjectEmoji[s]} ${subjectNames[s]} <strong>${toMin(s)}분</strong></span>`)
+                                .join('&nbsp;&nbsp;·&nbsp;&nbsp;');
+                            const streak = user.attendance?.currentStreak || 0;
+                            if (streakBadge) streakBadge.textContent = streak >= 2 ? `🔥 ${streak}일 연속` : '';
                         }
 
                         // 미션 목록 렌더링

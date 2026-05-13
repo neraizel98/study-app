@@ -153,6 +153,67 @@ window.KakaoShare = {
     },
 
     /**
+     * 오늘의 학습 일일 요약 전송 (아들 -> 부모)
+     * 대시보드에서 호출 — 오늘 공부한 과목·시간·스트릭 포함
+     */
+    sendDailySummary: function() {
+        if (!this.isInitialized) {
+            alert('카카오톡 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+            return;
+        }
+
+        const user = typeof UserSession !== 'undefined' ? UserSession.getUserData() : null;
+        if (!user) { alert('로그인 정보가 없습니다.'); return; }
+
+        const activeUser = user.id || '우준';
+        const streak = user.attendance?.currentStreak || 0;
+        const daily = user.dailyStats || {};
+        const times = daily.studyTime || {};
+        const subjects = daily.subjectsStudied || [];
+
+        if (subjects.length === 0) {
+            alert('오늘 학습한 기록이 없습니다. 먼저 공부하고 보내세요!');
+            return;
+        }
+
+        const subjectNames = { english: '영어', hanja: '한자', math: '수학' };
+        const subjectEmoji = { english: '🇬🇧', hanja: '🏮', math: '📐' };
+
+        const toMin = (sec) => Math.round((sec || 0) / 60);
+        const studiedLines = subjects
+            .map(s => `${subjectEmoji[s] || '📚'} ${subjectNames[s] || s} ${toMin(times[s])}분`)
+            .join('  ·  ');
+
+        const totalMin = toMin(Object.values(times).reduce((a, b) => a + b, 0));
+        const streakMsg = streak >= 3 ? ` 🔥 ${streak}일 연속 출석 중!` : '';
+        const scores = daily.quizScores || {};
+        const bestScore = Object.entries(scores).reduce((best, [subj, arr]) => {
+            if (!arr.length) return best;
+            const max = Math.max(...arr);
+            return max > (best.score || 0) ? { subj, score: max } : best;
+        }, {});
+        const scoreMsg = bestScore.score
+            ? `\n🏅 최고 점수: ${subjectNames[bestScore.subj]} ${bestScore.score}점`
+            : '';
+
+        const title = `📊 ${activeUser}의 오늘 학습 리포트`;
+        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 학습${scoreMsg}${streakMsg}`;
+
+        const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
+
+        Kakao.Share.sendDefault({
+            objectType: 'feed',
+            content: {
+                title,
+                description: desc,
+                imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
+                link: { mobileWebUrl: url, webUrl: url },
+            },
+            buttons: [{ title: '성적표 보기 📈', link: { mobileWebUrl: url, webUrl: url } }],
+        });
+    },
+
+    /**
      * 전체 학습 기록 공유 (아들 -> 부모)
      */
     sendFullHistory: function() {

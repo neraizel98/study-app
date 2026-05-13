@@ -50,19 +50,39 @@
             animation: fadeIn 0.4s ease-out;
             transition: all 0.3s;
         }
+        .wrong-card.mastery-1 { border-color: rgba(255, 152, 0, 0.3); }
+        .wrong-card.mastery-2 { border-color: rgba(79, 195, 247, 0.3); }
         .wrong-card.mastered {
-            border-color: rgba(0, 200, 83, 0.4);
-            background: rgba(255, 255, 255, 0.02);
-            opacity: 0.8;
+            border-color: rgba(0, 200, 83, 0.5);
+            background: rgba(0, 200, 83, 0.03);
+            opacity: 0.85;
         }
         .mastered-badge {
-            background: rgba(0, 200, 83, 0.1);
+            background: rgba(0, 200, 83, 0.15);
             color: #00c853;
-            font-size: 0.7rem;
-            padding: 2px 8px;
+            font-size: 0.75rem;
+            padding: 3px 10px;
             border-radius: 6px;
-            margin-right: 5px;
+            font-weight: 700;
         }
+        .mastery-gauge {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 14px;
+        }
+        .mastery-dot {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            border: 2px solid rgba(255,255,255,0.15);
+            background: rgba(255,255,255,0.05);
+            transition: all 0.3s;
+        }
+        .mastery-dot.filled-1 { background: #ff9800; border-color: #ff9800; box-shadow: 0 0 6px rgba(255,152,0,0.4); }
+        .mastery-dot.filled-2 { background: #4fc3f7; border-color: #4fc3f7; box-shadow: 0 0 6px rgba(79,195,247,0.4); }
+        .mastery-dot.filled-3 { background: #00c853; border-color: #00c853; box-shadow: 0 0 6px rgba(0,200,83,0.5); }
+        .mastery-label { font-size: 0.75rem; color: var(--text-sub); margin-left: 4px; }
         
         .wrong-card .badge {
             position: absolute;
@@ -228,8 +248,10 @@
 
                 retryAllBtn.disabled = false;
                 list.sort((a, b) => b.date - a.date).forEach((item, idx) => {
+                    const ms = item.masteryScore || 0;
+                    const masteryClass = item.isMastered ? 'mastered' : (ms > 0 ? `mastery-${ms}` : '');
                     const card = document.createElement('div');
-                    card.className = `wrong-card ${item.isMastered ? 'mastered' : ''}`;
+                    card.className = `wrong-card ${masteryClass}`;
                     
                     let mainText = '', subText = '', metaText = '', explanation = '';
                     if (currentSubject === 'english') {
@@ -257,12 +279,20 @@
                         </div>
                     `).join('');
 
+                    const ms2 = item.masteryScore || 0;
+                    const masteryGauge = `
+                        <div class="mastery-gauge">
+                            <div class="mastery-dot ${ms2 >= 1 ? 'filled-1' : ''}"></div>
+                            <div class="mastery-dot ${ms2 >= 2 ? 'filled-2' : ''}"></div>
+                            <div class="mastery-dot ${ms2 >= 3 ? 'filled-3' : ''}"></div>
+                            <span class="mastery-label">${item.isMastered ? '<span class="mastered-badge">완전 정복! ✨</span>' : `${ms2}/3 연속 정답`}</span>
+                        </div>`;
+
                     card.innerHTML = `
-                        ${item.isMastered ? '<span class="mastered-badge">Mastered ✨</span>' : ''}
                         <span class="badge">${item.count}회 오답</span>
                         <div class="wrong-main">${mainText}</div>
                         <div class="wrong-sub">${subText}</div>
-                        
+                        ${masteryGauge}
                         <div class="history-timeline">
                             ${historyHtml}
                         </div>
