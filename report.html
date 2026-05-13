@@ -158,14 +158,18 @@
         .row-toggle-icon.open { transform: rotate(90deg); }
 
         /* 상세 패널 행 */
-        .detail-row td { padding: 0 !important; border-bottom: none; }
+        .detail-row td { padding: 0 !important; border-bottom: none; width: 100%; }
         .detail-panel {
+            width: 100%;
+            box-sizing: border-box;
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.35s ease;
         }
         .detail-panel.open { max-height: 2000px; }
         .detail-inner {
+            width: 100%;
+            box-sizing: border-box;
             padding: 20px 24px 24px;
             background: rgba(0,0,0,0.18);
             border-bottom: 1px solid rgba(255,255,255,0.08);
