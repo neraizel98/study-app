@@ -117,8 +117,9 @@ window.KakaoShare = {
         }
 
         // 리포트 데이터 직렬화 (상세 페이지용)
+        const sessionId = extra.sessionId || Date.now().toString();
         const reportData = {
-            sessionId: extra.sessionId || Date.now().toString(),
+            sessionId,
             subject: subject,
             level: levelInfo,
             date: Date.now(),
@@ -129,7 +130,32 @@ window.KakaoShare = {
             endTime: extra.endTime || Date.now(),
             isCompleted: isPerfect
         };
-        
+
+        // 이 세션의 WrongNote 데이터 포함 (문제별 정답/오답 현황)
+        if (typeof WrongNote !== 'undefined') {
+            const wrongAll = WrongNote.getAll()[subject] || [];
+            const sessionItems = wrongAll
+                .filter(item => item.history?.some(h => h.sessionId === sessionId))
+                .map(item => {
+                    const rounds = item.history
+                        .filter(h => h.sessionId === sessionId)
+                        .sort((a, b) => a.round - b.round)
+                        .map(h => ({ r: h.round, s: h.status === 'correct' ? 'c' : 'w' }));
+                    return {
+                        id: item.word || item.hanja || item.type || '',
+                        display: item.word
+                            ? `${item.word} — ${item.meaning || ''}`
+                            : item.hanja
+                            ? `${item.hanja} (${item.reading || ''}) — ${item.meaning || ''}`
+                            : (item.question || item.type || ''),
+                        q: item.question || '',
+                        a: item.answer || '',
+                        rounds
+                    };
+                });
+            if (sessionItems.length > 0) reportData.wrongItems = sessionItems;
+        }
+
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodedData;
 

@@ -355,6 +355,44 @@
             const importData = urlParams.get('import');
             const importAllData = urlParams.get('import_all');
 
+            function buildSharedQuestionCards(r) {
+                if (!r.wrongItems || r.wrongItems.length === 0) return '';
+                const roundCount = Math.max(...r.wrongItems.flatMap(i => i.rounds.map(rd => rd.r)));
+                const cards = r.wrongItems.map(item => {
+                    const lastStatus = item.rounds[item.rounds.length - 1]?.s;
+                    const cls = lastStatus === 'c' ? 'retry' : 'fail';
+                    const dots = item.rounds.map(rd =>
+                        `<span class="round-dot ${rd.s === 'c' ? 'rd-correct' : 'rd-wrong'}">${rd.r}차 ${rd.s === 'c' ? '✓' : '✗'}</span>`
+                    ).join('');
+                    const qLine = item.q ? `<div class="q-meaning" style="margin-top:4px;">${item.q}</div>` : '';
+                    const aLine = item.a ? `<div style="font-size:0.78rem;color:var(--text-sub);">정답: <strong>${item.a}</strong></div>` : '';
+                    return `
+                        <div class="q-card ${cls}">
+                            <div class="q-identifier">${item.display}</div>
+                            <div class="q-rounds">${dots}</div>
+                            ${qLine}${aLine}
+                        </div>`;
+                }).join('');
+
+                const firstWrong  = r.wrongItems.filter(i => i.rounds.some(rd => rd.r === 1 && rd.s === 'w')).length;
+                const recovered   = r.wrongItems.filter(i => i.rounds[i.rounds.length-1]?.s === 'c').length;
+                const stillFailed = r.wrongItems.filter(i => i.rounds[i.rounds.length-1]?.s === 'w').length;
+                const firstOk     = r.totalQuestions - firstWrong;
+
+                return `
+                    <div style="text-align:left; margin-top:28px;">
+                        <div style="font-weight:700; font-size:1rem; margin-bottom:14px; color:var(--text);">
+                            📋 문제별 현황
+                        </div>
+                        <div class="summary-chips" style="margin-bottom:16px;">
+                            <span class="summary-chip chip-ok">✅ 첫 시도 정답 ${firstOk}문제</span>
+                            ${recovered > 0 ? `<span class="summary-chip chip-retry">🔄 재도전 후 정답 ${recovered}문제</span>` : ''}
+                            ${stillFailed > 0 ? `<span class="summary-chip chip-fail">✗ 미해결 ${stillFailed}문제</span>` : ''}
+                        </div>
+                        <div class="question-grid">${cards}</div>
+                    </div>`;
+            }
+
             if (importData) {
                 // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
@@ -412,6 +450,7 @@
                                 <div class="shared-meta-value" style="color:${isPerfect ? '#56d364' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
                             </div>
                         </div>
+                        ${buildSharedQuestionCards(r)}
                     `;
                 } catch (e) {
                     console.error('[Shared View Error]', e);
