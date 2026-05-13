@@ -157,9 +157,17 @@
         }
         .row-toggle-icon.open { transform: rotate(90deg); }
 
-        /* 상세 패널 행 */
-        .detail-row td { padding: 0 !important; border-bottom: none; width: 100%; }
+        /* 상세 패널 행 — 테이블 레이아웃에서 꺼내 블록으로 처리 */
+        .detail-row { display: block; width: 100%; }
+        .detail-row td {
+            display: block;
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0 !important;
+            border-bottom: none;
+        }
         .detail-panel {
+            display: block;
             width: 100%;
             box-sizing: border-box;
             overflow: hidden;
@@ -168,6 +176,7 @@
         }
         .detail-panel.open { max-height: 2000px; }
         .detail-inner {
+            display: block;
             width: 100%;
             box-sizing: border-box;
             padding: 20px 24px 24px;
