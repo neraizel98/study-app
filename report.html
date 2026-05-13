@@ -246,6 +246,45 @@
             .report-table th { font-size: 0.75rem; }
             .question-grid { grid-template-columns: repeat(2, 1fr); }
         }
+
+        /* 공유 결과 뷰 */
+        .shared-view { padding: 20px 0; }
+        .shared-notice {
+            display: inline-flex; align-items: center; gap: 8px;
+            background: rgba(254, 229, 0, 0.12); border: 1px solid rgba(254, 229, 0, 0.3);
+            color: #fde68a; font-size: 0.85rem; font-weight: 600;
+            padding: 8px 18px; border-radius: 20px; margin-bottom: 28px;
+        }
+        .shared-subject-header {
+            font-size: 1.1rem; color: var(--text-sub); margin-bottom: 6px;
+        }
+        .shared-title {
+            font-size: 2rem; font-weight: 700; margin-bottom: 6px;
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            -webkit-background-clip: text; background-clip: text; -webkit-text-fill-color: transparent;
+        }
+        .shared-date { font-size: 0.9rem; color: var(--text-sub); margin-bottom: 36px; }
+        .shared-score-wrap { margin-bottom: 36px; }
+        .shared-score-main {
+            font-size: 5rem; font-weight: 800; line-height: 1;
+            color: var(--accent);
+        }
+        .shared-score-main.perfect { color: #56d364; }
+        .shared-score-sub { font-size: 1.1rem; color: var(--text-sub); margin-top: 8px; }
+        .shared-meta-grid {
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 16px; margin-bottom: 32px;
+        }
+        .shared-meta-card {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 16px;
+        }
+        .shared-meta-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; }
+        .shared-meta-value { font-size: 1.2rem; font-weight: 700; }
+        @media (max-width: 600px) {
+            .shared-meta-grid { grid-template-columns: 1fr 1fr; }
+            .shared-score-main { font-size: 3.5rem; }
+        }
     </style>
 </head>
 <body>
@@ -258,6 +297,11 @@
     <div class="container" style="max-width: 1000px;">
         <div id="app-header"></div>
 
+        <!-- 공유 결과 뷰 (카카오 링크로 열었을 때) -->
+        <div id="sharedView" class="shared-view" style="display:none; text-align:center;"></div>
+
+        <!-- 일반 성적표 뷰 -->
+        <div id="normalView">
         <div class="subject-tabs">
             <div class="subject-tab active" data-subject="english">🇬🇧 영어</div>
             <div class="subject-tab" data-subject="math">📐 수학</div>
@@ -297,6 +341,7 @@
             </div>
             <div id="tableBody"></div>
         </div>
+        </div> <!-- /normalView -->
     </div>
 
     <script src="utils.js"></script>
@@ -310,41 +355,86 @@
             const importData = urlParams.get('import');
             const importAllData = urlParams.get('import_all');
 
-            if (importData || importAllData) {
+            if (importData) {
+                // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(importData || importAllData))));
-                    const userId = UserSession.getActiveUser() || '우준'; // 기본 사용자
-                    const storageKey = REPORT_KEY + "_" + userId;
-                    
-                    let currentReports = [];
-                    try {
-                        const raw = localStorage.getItem(storageKey);
-                        if (raw) currentReports = JSON.parse(raw);
-                    } catch (e) {}
+                    const r = JSON.parse(decodeURIComponent(escape(atob(importData))));
+                    const subjectNames = { english: '영어', math: '수학', hanja: '한자' };
+                    const subjectEmoji = { english: '🇬🇧', math: '📐', hanja: '🏮' };
+                    const subjectName = subjectNames[r.subject] || r.subject;
+                    const emoji = subjectEmoji[r.subject] || '📚';
+                    const vFinal = Math.round((r.finalScore / r.totalQuestions) * 100);
+                    const vInit  = Math.round((r.initialScore / r.totalQuestions) * 100);
+                    const isPerfect = r.isCompleted || vFinal === 100;
 
+                    const formatTs = ts => {
+                        if (!ts) return '--';
+                        const d = new Date(ts);
+                        const pad = n => n.toString().padStart(2,'0');
+                        return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+                    };
+                    const elapsed = r.startTime && r.endTime
+                        ? Math.round((r.endTime - r.startTime) / 1000)
+                        : null;
+                    const formatSec = s => {
+                        if (!s) return '-';
+                        const m = Math.floor(s / 60), sec = s % 60;
+                        return m > 0 ? `${m}분 ${sec}초` : `${sec}초`;
+                    };
+
+                    const activeUser = UserSession.getActiveUser();
+                    const sharedFrom = activeUser ? '' : '우준';
+
+                    document.getElementById('sharedView').style.display = 'block';
+                    document.getElementById('normalView').style.display = 'none';
+                    window.__sharedMode = true;
+
+                    document.getElementById('sharedView').innerHTML = `
+                        <div class="shared-notice">💬 카카오톡으로 공유된 학습 결과</div>
+                        <div class="shared-subject-header">${emoji} ${subjectName} · ${r.level || '기본'}</div>
+                        <div class="shared-title">우준의 학습 결과</div>
+                        <div class="shared-date">${formatTs(r.date)}</div>
+                        <div class="shared-score-wrap">
+                            <div class="shared-score-main ${isPerfect ? 'perfect' : ''}">${vFinal}점</div>
+                            <div class="shared-score-sub">${r.finalScore} / ${r.totalQuestions} 문제 정답</div>
+                        </div>
+                        <div class="shared-meta-grid">
+                            <div class="shared-meta-card">
+                                <div class="shared-meta-label">최초 점수</div>
+                                <div class="shared-meta-value">${vInit}점 <small style="font-size:0.8rem;color:var(--text-sub);">(${r.initialScore}/${r.totalQuestions})</small></div>
+                            </div>
+                            <div class="shared-meta-card">
+                                <div class="shared-meta-label">소요 시간</div>
+                                <div class="shared-meta-value">${formatSec(elapsed)}</div>
+                            </div>
+                            <div class="shared-meta-card">
+                                <div class="shared-meta-label">완료 여부</div>
+                                <div class="shared-meta-value" style="color:${isPerfect ? '#56d364' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
+                            </div>
+                        </div>
+                    `;
+                } catch (e) {
+                    console.error('[Shared View Error]', e);
+                }
+            } else if (importAllData) {
+                // 전체 기록 공유 → 기존처럼 localStorage에 저장
+                try {
+                    const decoded = JSON.parse(decodeURIComponent(escape(atob(importAllData))));
+                    const userId = UserSession.getActiveUser() || '우준';
+                    const storageKey = REPORT_KEY + "_" + userId;
+                    let currentReports = [];
+                    try { const raw = localStorage.getItem(storageKey); if (raw) currentReports = JSON.parse(raw); } catch(e) {}
                     const newItems = Array.isArray(decoded) ? decoded : [decoded];
                     let addedCount = 0;
-
-                    newItems.forEach(newItem => {
-                        // 중복 체크 (sessionId 기준)
-                        if (!currentReports.find(r => r.sessionId === newItem.sessionId)) {
-                            currentReports.push(newItem);
-                            addedCount++;
-                        }
+                    newItems.forEach(item => {
+                        if (!currentReports.find(r => r.sessionId === item.sessionId)) { currentReports.push(item); addedCount++; }
                     });
-
                     if (addedCount > 0) {
                         localStorage.setItem(storageKey, JSON.stringify(currentReports));
-                        alert(`${addedCount}개의 새로운 학습 기록을 성적표에 등록했습니다!`);
-                    } else if (importData || importAllData) {
-                        alert('이미 등록된 학습 기록입니다.');
+                        alert(`${addedCount}개의 학습 기록을 불러왔습니다.`);
                     }
-                    
-                    // URL 파라미터 제거 (새로고침 시 중복 방지)
                     window.history.replaceState({}, document.title, window.location.pathname);
-                } catch (e) {
-                    console.error('[Import Error]', e);
-                }
+                } catch(e) { console.error('[Import All Error]', e); }
             }
 
             // 공유 버튼 이벤트
@@ -362,6 +452,8 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
+
             const tabs = document.querySelectorAll('.subject-tab');
             const allReports = getQuizReports(); // from report.js
 
