@@ -7,18 +7,18 @@ const MissionManager = {
     // 미션 정의
     DEFINITIONS: {
         daily: [
-            { id: 'd_checkin', title: '오늘의 시작', desc: '오늘 앱에 접속하기', target: 1, exp: 20 },
-            { id: 'd_study_15', title: '열정 학습자', desc: '한 과목 15분 이상 학습하기', target: 900, exp: 50, type: 'time_any' },
-            { id: 'd_all_subjects', title: '팔방미인', desc: '영어, 수학, 한자 모두 학습하기', target: 3, exp: 100, type: 'all_subjects' },
-            { id: 'd_perfect_quiz', title: '퀴즈 마스터', desc: '퀴즈에서 100점 맞기', target: 1, exp: 50, type: 'perfect_score' }
+            { id: 'd_checkin', icon: '🌅', title: '오늘의 시작', desc: '오늘 앱에 접속하기', target: 1, exp: 20 },
+            { id: 'd_study_15', icon: '⏱️', title: '열정 학습자', desc: '한 과목 15분 이상 학습하기', target: 900, exp: 50, type: 'time_any' },
+            { id: 'd_all_subjects', icon: '🌟', title: '팔방미인', desc: '영어, 수학, 한자 모두 학습하기', target: 3, exp: 100, type: 'all_subjects' },
+            { id: 'd_perfect_quiz', icon: '💯', title: '퀴즈 마스터', desc: '퀴즈에서 100점 맞기', target: 1, exp: 50, type: 'perfect_score' }
         ],
         weekly: [
-            { id: 'w_attendance_5', title: '성실한 일주일', desc: '이번 주 5일 이상 출석하기', target: 5, exp: 200, type: 'attendance_count' },
-            { id: 'w_total_time_3h', title: '공부 벌레', desc: '주간 총 학습 시간 3시간 달성', target: 10800, exp: 300, type: 'total_time' }
+            { id: 'w_attendance_5', icon: '📆', title: '성실한 일주일', desc: '이번 주 5일 이상 출석하기', target: 5, exp: 200, type: 'attendance_count' },
+            { id: 'w_total_time_3h', icon: '🕐', title: '공부 벌레', desc: '주간 총 학습 시간 3시간 달성', target: 10800, exp: 300, type: 'total_time' }
         ],
         achievements: [
-            { id: 'a_streak_7', title: '7일 연속 출석', desc: '일주일 내내 쉬지 않고 공부했어요!', target: 7, exp: 500, type: 'streak' },
-            { id: 'a_total_correct_1000', title: '천재의 탄생', desc: '누적 정답 수 1,000개 돌파', target: 1000, exp: 1000, type: 'total_correct' }
+            { id: 'a_streak_7', icon: '🔥', title: '7일 연속 출석', desc: '일주일 내내 쉬지 않고 공부했어요!', target: 7, exp: 500, type: 'streak' },
+            { id: 'a_total_correct_1000', icon: '🧠', title: '천재의 탄생', desc: '누적 정답 수 1,000개 돌파', target: 1000, exp: 1000, type: 'total_correct' }
         ]
     },
 
@@ -98,50 +98,73 @@ const MissionManager = {
         const container = document.getElementById(containerId);
         if (!container || !user) return;
 
+        const makeSection = (emoji, label, defs, progressMap, isTwoCol) => {
+            const done = defs.filter(m => progressMap[m.id]?.completed).length;
+            let html = `
+                <div class="mission-section-header">
+                    <span>${emoji} <span class="mission-section-label">${label}</span></span>
+                    <span class="mission-section-count">${done}/${defs.length} 완료</span>
+                </div>
+                <div class="mission-grid${isTwoCol ? '' : ' single-col'}">
+            `;
+            defs.forEach(m => {
+                const prog = progressMap[m.id] || { progress: 0, completed: false };
+                const pct = Math.min(100, Math.round((prog.progress / m.target) * 100));
+                html += this.generateMissionItemHtml(m, prog, pct);
+            });
+            html += '</div>';
+            return html;
+        };
+
         let html = '<div class="mission-list">';
-        
-        // 일일 미션 섹션
-        html += '<h3 class="mission-section-title">📅 오늘의 미션</h3>';
-        this.DEFINITIONS.daily.forEach(m => {
-            const prog = user.missionProgress.daily[m.id] || { progress: 0, completed: false };
-            const pct = Math.min(100, Math.round((prog.progress / m.target) * 100));
-            html += this.generateMissionItemHtml(m, prog, pct);
-        });
-
-        // 주간 미션 섹션
-        html += '<h3 class="mission-section-title" style="margin-top:20px;">📆 이번 주 미션</h3>';
-        this.DEFINITIONS.weekly.forEach(m => {
-            const prog = user.missionProgress.weekly[m.id] || { progress: 0, completed: false };
-            const pct = Math.min(100, Math.round((prog.progress / m.target) * 100));
-            html += this.generateMissionItemHtml(m, prog, pct);
-        });
-
-        // 업적 섹션
-        html += '<h3 class="mission-section-title" style="margin-top:20px;">🏆 명예의 전당</h3>';
-        this.DEFINITIONS.achievements.forEach(m => {
-            const prog = user.missionProgress.achievements[m.id] || { progress: 0, completed: false };
-            const pct = Math.min(100, Math.round((prog.progress / m.target) * 100));
-            html += this.generateMissionItemHtml(m, prog, pct);
-        });
-
+        html += makeSection('📅', '오늘의 미션', this.DEFINITIONS.daily, user.missionProgress.daily, true);
+        html += makeSection('📆', '이번 주 미션', this.DEFINITIONS.weekly, user.missionProgress.weekly, false);
+        html += makeSection('🏆', '명예의 전당', this.DEFINITIONS.achievements, user.missionProgress.achievements, false);
         html += '</div>';
+
         container.innerHTML = html;
     },
 
     generateMissionItemHtml: function(m, prog, pct) {
         const isDone = prog.completed;
+        const progressText = isDone ? '완료! ✅' : this.formatProgress(m, prog.progress);
         return `
             <div class="mission-item ${isDone ? 'completed' : ''}">
-                <div class="mission-info">
-                    <div class="mission-title">${m.title} ${isDone ? '✅' : ''}</div>
+                <div class="mission-icon">${m.icon || '🎯'}</div>
+                <div class="mission-body">
+                    <div class="mission-title-row">
+                        <span class="mission-title">${m.title}</span>
+                        <span class="mission-reward">+${m.exp} EXP</span>
+                    </div>
                     <div class="mission-desc">${m.desc}</div>
-                </div>
-                <div class="mission-reward">+${m.exp} EXP</div>
-                <div class="mission-progress-bar">
-                    <div class="mission-progress-fill" style="width: ${pct}%"></div>
+                    <div class="mission-footer">
+                        <div class="mission-progress-bar">
+                            <div class="mission-progress-fill" style="width:${pct}%"></div>
+                        </div>
+                        <span class="mission-progress-text">${progressText}</span>
+                    </div>
                 </div>
             </div>
         `;
+    },
+
+    formatProgress: function(m, value) {
+        const v = value || 0;
+        switch(m.type || m.id) {
+            case 'd_checkin':     return '미완';
+            case 'perfect_score': return '도전 중';
+            case 'time_any':
+            case 'total_time': {
+                const min = Math.floor(v / 60);
+                const targetMin = Math.floor(m.target / 60);
+                return `${min}분 / ${targetMin}분`;
+            }
+            case 'all_subjects':     return `${v} / ${m.target}과목`;
+            case 'attendance_count': return `${v} / ${m.target}일`;
+            case 'streak':           return `${v} / ${m.target}일`;
+            case 'total_correct':    return `${v} / ${m.target}개`;
+            default:                 return `${v} / ${m.target}`;
+        }
     }
 };
 

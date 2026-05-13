@@ -1466,66 +1466,112 @@ header p {
 /* ============================================================
 MISSIONS & ACHIEVEMENTS
 ============================================================ */
-.mission-section-title {
-    font-size: 1.1rem;
-    font-weight: 700;
-    margin-bottom: 15px;
+.mission-list { width: 100%; }
+
+.mission-section-header {
     display: flex;
     align-items: center;
+    gap: 10px;
+    margin: 24px 0 12px;
+}
+.mission-section-header:first-child { margin-top: 0; }
+
+.mission-section-label {
+    font-size: 1rem;
+    font-weight: 700;
+    color: var(--text);
 }
 
-.mission-item {
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.08);
-    border-radius: 16px;
-    padding: 16px;
-    margin-bottom: 12px;
+.mission-section-count {
+    margin-left: auto;
+    font-size: 0.78rem;
+    font-weight: 600;
+    color: var(--text-sub);
+    background: rgba(255,255,255,0.06);
+    padding: 3px 10px;
+    border-radius: 20px;
+}
+
+.mission-grid {
     display: grid;
-    grid-template-columns: 1fr auto;
-    gap: 8px;
-    transition: all 0.3s ease;
-    position: relative;
-    overflow: hidden;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+}
+.mission-grid.single-col { grid-template-columns: 1fr; }
+
+.mission-item {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 14px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    transition: border-color 0.2s, background 0.2s;
 }
 
 .mission-item.completed {
-    background: linear-gradient(135deg, rgba(0, 242, 254, 0.05), rgba(79, 172, 254, 0.05));
-    border-color: rgba(79, 172, 254, 0.3);
+    background: rgba(79, 172, 254, 0.08);
+    border-color: rgba(79, 172, 254, 0.35);
 }
 
-.mission-info {
+.mission-icon {
+    font-size: 1.5rem;
+    line-height: 1;
+    flex-shrink: 0;
+    margin-top: 2px;
+}
+
+.mission-body { flex: 1; min-width: 0; }
+
+.mission-title-row {
     display: flex;
-    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
 }
 
 .mission-title {
     font-weight: 700;
-    font-size: 1rem;
+    font-size: 0.95rem;
     color: var(--text);
 }
 
-.mission-desc {
-    font-size: 0.85rem;
-    color: var(--text-sub);
-    margin-top: 4px;
-}
-
 .mission-reward {
-    font-size: 0.8rem;
+    font-size: 0.72rem;
     font-weight: 700;
     color: var(--accent);
-    background: rgba(0, 242, 254, 0.1);
-    padding: 4px 8px;
-    border-radius: 8px;
-    height: fit-content;
+    background: rgba(79, 172, 254, 0.12);
+    padding: 2px 8px;
+    border-radius: 20px;
+    white-space: nowrap;
+}
+
+.mission-item.completed .mission-reward {
+    background: rgba(86, 211, 100, 0.15);
+    color: #56d364;
+}
+
+.mission-desc {
+    font-size: 0.82rem;
+    color: var(--text-sub);
+    margin-top: 4px;
+    line-height: 1.4;
+}
+
+.mission-footer {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-top: 10px;
 }
 
 .mission-progress-bar {
-    grid-column: span 2;
-    height: 6px;
-    background: rgba(255, 255, 255, 0.05);
+    flex: 1;
+    height: 5px;
+    background: rgba(255, 255, 255, 0.07);
     border-radius: 3px;
-    margin-top: 8px;
+    overflow: hidden;
 }
 
 .mission-progress-fill {
@@ -1533,4 +1579,20 @@ MISSIONS & ACHIEVEMENTS
     background: linear-gradient(90deg, #4facfe, #00f2fe);
     border-radius: 3px;
     transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.mission-item.completed .mission-progress-fill {
+    background: linear-gradient(90deg, #56d364, #00f2c0);
+}
+
+.mission-progress-text {
+    font-size: 0.75rem;
+    color: var(--text-sub);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.mission-item.completed .mission-progress-text {
+    color: #56d364;
+    font-weight: 600;
 }
