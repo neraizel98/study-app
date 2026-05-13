@@ -157,28 +157,15 @@
         }
         .row-toggle-icon.open { transform: rotate(90deg); }
 
-        /* 상세 패널 행 — 테이블 레이아웃에서 꺼내 블록으로 처리 */
-        .detail-row { display: block; width: 100%; }
-        .detail-row td {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0 !important;
-            border-bottom: none;
-        }
+        /* 상세 패널 행 */
+        .detail-row td { padding: 0 !important; border-bottom: none; }
         .detail-panel {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
             overflow: hidden;
             max-height: 0;
             transition: max-height 0.35s ease;
         }
         .detail-panel.open { max-height: 2000px; }
         .detail-inner {
-            display: block;
-            width: 100%;
-            box-sizing: border-box;
             padding: 20px 24px 24px;
             background: rgba(0,0,0,0.18);
             border-bottom: 1px solid rgba(255,255,255,0.08);
@@ -558,6 +545,7 @@
                         } else {
                             // 내용이 없을 때만 생성 (캐싱)
                             if (!panel.innerHTML) {
+                                detailTd.style.width = tbody.closest('table').offsetWidth + 'px';
                                 panel.innerHTML = `<div class="detail-inner">${buildDetailHTML(log, subject)}</div>`;
                             }
                             panel.classList.add('open');
