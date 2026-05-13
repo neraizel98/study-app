@@ -18,9 +18,15 @@ window.KakaoShare = {
                 script.integrity = 'sha384-TiCUE00h649CAMonG018J2ujOgDKW/kVWlChEuu4jK2vxfAAD0eZxzCKakxg55G4';
                 script.crossOrigin = 'anonymous';
                 script.onload = () => {
-                    Kakao.init('33ff76b2028716f69802933476e0b9cb');
-                    this.isInitialized = Kakao.isInitialized();
-                    console.log('[KakaoShare] SDK Initialized:', this.isInitialized);
+                    try {
+                        if (!Kakao.isInitialized()) {
+                            Kakao.init('33ff76b2028716f69802933476e0b9cb');
+                        }
+                        this.isInitialized = Kakao.isInitialized();
+                        console.log('[KakaoShare] SDK Initialized:', this.isInitialized);
+                    } catch (e) {
+                        console.error('[KakaoShare SDK onload Error]', e);
+                    }
                 };
                 document.head.appendChild(script);
             } else {
@@ -159,12 +165,12 @@ window.KakaoShare = {
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodedData;
 
-        Kakao.Share.sendDefault({
+        try { Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
                 title: title,
                 description: desc,
-                imageUrl: isPerfect 
+                imageUrl: isPerfect
                     ? 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&auto=format&fit=crop'
                     : 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=400&auto=format&fit=crop',
                 link: { mobileWebUrl: url, webUrl: url },
@@ -175,7 +181,10 @@ window.KakaoShare = {
                     link: { mobileWebUrl: url, webUrl: url },
                 },
             ],
-        });
+        }); } catch (e) {
+            console.error('[KakaoShare sendReport Error]', e);
+            alert('카카오톡 전송 중 오류가 발생했습니다.\n브라우저 콘솔(F12)에서 상세 오류를 확인하세요.\n오류: ' + e.message);
+        }
     },
 
     /**
