@@ -408,7 +408,7 @@
                         const pad = n => n.toString().padStart(2,'0');
                         return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
                     };
-                    const elapsed = r.startTime && r.endTime
+                    const elapsed = (r.startTime > 0 && r.endTime > r.startTime)
                         ? Math.round((r.endTime - r.startTime) / 1000)
                         : null;
                     const formatSec = s => {
