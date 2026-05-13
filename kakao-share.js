@@ -138,6 +138,7 @@ window.KakaoShare = {
         };
 
         // 이 세션의 WrongNote 데이터 포함 (문제별 정답/오답 현황)
+        // URL 길이 제한 주의: display만 포함하고 문제 전문(q/a)은 제외
         if (typeof WrongNote !== 'undefined') {
             const wrongAll = WrongNote.getAll()[subject] || [];
             const sessionItems = wrongAll
@@ -147,18 +148,14 @@ window.KakaoShare = {
                         .filter(h => h.sessionId === sessionId)
                         .sort((a, b) => a.round - b.round)
                         .map(h => ({ r: h.round, s: h.status === 'correct' ? 'c' : 'w' }));
-                    return {
-                        id: item.word || item.hanja || item.type || '',
-                        display: item.word
-                            ? `${item.word} — ${item.meaning || ''}`
-                            : item.hanja
-                            ? `${item.hanja} (${item.reading || ''}) — ${item.meaning || ''}`
-                            : (item.question || item.type || ''),
-                        q: item.question || '',
-                        a: item.answer || '',
-                        rounds
-                    };
-                });
+                    const display = item.word
+                        ? `${item.word} — ${item.meaning || ''}`
+                        : item.hanja
+                        ? `${item.hanja} (${item.reading || ''}) — ${item.meaning || ''}`
+                        : (item.type || '');
+                    return { id: item.word || item.hanja || item.type || '', display, rounds };
+                })
+                .slice(0, 20); // 최대 20개로 제한
             if (sessionItems.length > 0) reportData.wrongItems = sessionItems;
         }
 

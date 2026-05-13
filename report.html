@@ -364,13 +364,10 @@
                     const dots = item.rounds.map(rd =>
                         `<span class="round-dot ${rd.s === 'c' ? 'rd-correct' : 'rd-wrong'}">${rd.r}차 ${rd.s === 'c' ? '✓' : '✗'}</span>`
                     ).join('');
-                    const qLine = item.q ? `<div class="q-meaning" style="margin-top:4px;">${item.q}</div>` : '';
-                    const aLine = item.a ? `<div style="font-size:0.78rem;color:var(--text-sub);">정답: <strong>${item.a}</strong></div>` : '';
                     return `
                         <div class="q-card ${cls}">
                             <div class="q-identifier">${item.display}</div>
                             <div class="q-rounds">${dots}</div>
-                            ${qLine}${aLine}
                         </div>`;
                 }).join('');
 
