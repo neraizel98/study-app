@@ -91,42 +91,76 @@
             color: var(--accent);
         }
 
-        .report-table-container {
+        /* ── 그리드 기반 리포트 레이아웃 ── */
+        .report-grid-container {
             background: rgba(255, 255, 255, 0.02);
             border: 1px solid var(--card-border);
             border-radius: 20px;
-            padding: 20px;
-            overflow-x: auto;
+            overflow: hidden;
         }
-        .report-table {
-            width: 100%;
-            border-collapse: collapse;
-            min-width: 600px;
+        /* 공통 그리드 컬럼 정의 */
+        .report-grid-header,
+        .report-data-row {
+            display: grid;
+            grid-template-columns: 80px 150px 1fr 80px 220px 85px;
+            align-items: center;
+            padding: 0 20px;
+            gap: 0;
         }
-        .report-table th, .report-table td {
-            padding: 14px 16px;
-            text-align: left;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-            font-size: 0.95rem;
-        }
-        .report-table th {
+        .report-grid-header {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
             color: var(--text-sub);
             font-weight: 600;
+            font-size: 0.8rem;
             text-transform: uppercase;
-            font-size: 0.85rem;
             letter-spacing: 1px;
         }
-        .report-table tbody tr {
+        .report-grid-header > span,
+        .report-data-row > div {
+            padding: 0 8px;
+            font-size: 0.9rem;
+        }
+        .report-row-wrapper {
+            border-bottom: 1px solid rgba(255,255,255,0.07);
+        }
+        .report-row-wrapper:last-child { border-bottom: none; }
+        .report-data-row {
+            padding-top: 14px;
+            padding-bottom: 14px;
+            cursor: pointer;
             transition: background 0.2s;
         }
-        .report-table tbody tr:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .report-data-row:hover { background: rgba(79,172,254,0.06); }
+
+        .row-toggle-icon {
+            display: inline-block;
+            transition: transform 0.25s;
+            margin-right: 6px;
+            color: var(--text-sub);
+            font-style: normal;
         }
+        .row-toggle-icon.open { transform: rotate(90deg); }
+
+        /* 상세 패널 — div이므로 자연스럽게 100% 너비 */
+        .detail-panel {
+            overflow: hidden;
+            max-height: 0;
+            transition: max-height 0.35s ease;
+        }
+        .detail-panel.open { max-height: 2000px; }
+        .detail-inner {
+            padding: 20px 28px 24px;
+            background: rgba(0,0,0,0.18);
+            border-top: 1px solid rgba(255,255,255,0.06);
+        }
+
         .score-badge {
             display: inline-block;
             padding: 4px 10px;
             border-radius: 12px;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
             font-weight: 700;
         }
         .score-good { background: rgba(0, 200, 83, 0.15); color: #00e676; }
@@ -140,36 +174,6 @@
             color: var(--text-sub);
         }
         .empty-state h3 { margin-bottom: 10px; color: var(--text); }
-
-        /* 클릭 가능한 행 */
-        .report-table tbody tr.data-row {
-            cursor: pointer;
-        }
-        .report-table tbody tr.data-row:hover td {
-            background: rgba(79, 172, 254, 0.06);
-        }
-        .row-toggle-icon {
-            display: inline-block;
-            transition: transform 0.25s;
-            margin-right: 6px;
-            color: var(--text-sub);
-            font-style: normal;
-        }
-        .row-toggle-icon.open { transform: rotate(90deg); }
-
-        /* 상세 패널 행 */
-        .detail-row td { padding: 0 !important; border-bottom: none; }
-        .detail-panel {
-            overflow: hidden;
-            max-height: 0;
-            transition: max-height 0.35s ease;
-        }
-        .detail-panel.open { max-height: 2000px; }
-        .detail-inner {
-            padding: 20px 24px 24px;
-            background: rgba(0,0,0,0.18);
-            border-bottom: 1px solid rgba(255,255,255,0.08);
-        }
 
         /* 풀이 현황 요약 바 */
         .detail-summary {
@@ -281,22 +285,16 @@
             </div>
         </div>
 
-        <div class="report-table-container">
-            <table class="report-table">
-                <thead>
-                    <tr>
-                        <th>회차</th>
-                        <th>일시</th>
-                        <th>단원(난이도)</th>
-                        <th>문제(푼/총)</th>
-                        <th>최초 / 판단 점수</th>
-                        <th>소요 시간</th>
-                    </tr>
-                </thead>
-                <tbody id="tableBody">
-                    <!-- 데이터 동적 렌더링 -->
-                </tbody>
-            </table>
+        <div class="report-grid-container">
+            <div class="report-grid-header">
+                <span>회차</span>
+                <span>일시</span>
+                <span>단원(난이도)</span>
+                <span>문제(푼/총)</span>
+                <span>최초 / 판단 점수</span>
+                <span>소요 시간</span>
+            </div>
+            <div id="tableBody"></div>
         </div>
     </div>
 
@@ -412,7 +410,7 @@
                 tbody.innerHTML = '';
 
                 if (attempts === 0) {
-                    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state"><h3>기록이 없습니다.</h3><p>학습을 시작하여 퀴즈에 도전해보세요!</p></div></td></tr>`;
+                    tbody.innerHTML = `<div class="empty-state"><h3>기록이 없습니다.</h3><p>학습을 시작하여 퀴즈에 도전해보세요!</p></div>`;
                     return;
                 }
 
@@ -492,41 +490,39 @@
                 [...logs].reverse().forEach((log, reversedIdx) => {
                     const nth = logs.length - reversedIdx;
 
-                    const tr = document.createElement('tr');
-                    tr.className = 'data-row';
-
                     const QRatio = `${log.finalScore} / ${log.totalQuestions}`;
                     const vInit  = Math.round((log.initialScore / log.totalQuestions) * 100);
                     const vFinal = Math.round((log.finalScore  / log.totalQuestions) * 100);
                     const initCls  = vInit  >= 80 ? 'score-good' : vInit  < 50 ? 'score-bad' : 'score-neutral';
                     const finalCls = vFinal === 100 || log.isCompleted ? 'score-good' : 'score-neutral';
 
-                    tr.innerHTML = `
-                        <td><i class="row-toggle-icon">▶</i>${nth}회차</td>
-                        <td style="color:var(--text-sub); font-size:0.85rem;">${formatDate(log.date)}</td>
-                        <td>${log.level}</td>
-                        <td>${QRatio}</td>
-                        <td>
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'report-row-wrapper';
+
+                    const row = document.createElement('div');
+                    row.className = 'report-data-row';
+                    row.innerHTML = `
+                        <div><i class="row-toggle-icon">▶</i>${nth}회차</div>
+                        <div style="color:var(--text-sub); font-size:0.85rem;">${formatDate(log.date)}</div>
+                        <div>${log.level}</div>
+                        <div>${QRatio}</div>
+                        <div>
                             <span class="score-badge ${initCls}">${vInit}점 <small>(${log.initialScore}/${log.totalQuestions})</small></span>
                             <span style="color:var(--text-sub); margin:0 5px;">/</span>
                             <span class="score-badge ${finalCls}">${vFinal}점 <small>(${log.finalScore}/${log.totalQuestions})</small>${log.isCompleted ? ' (통과)' : ''}</span>
-                        </td>
-                        <td class="time-text">${formatTime(log.timeSpentSeconds)}</td>
+                        </div>
+                        <div class="time-text">${formatTime(log.timeSpentSeconds)}</div>
                     `;
 
-                    // 상세 패널 행
-                    const detailTr = document.createElement('tr');
-                    detailTr.className = 'detail-row';
-                    const detailTd = document.createElement('td');
-                    detailTd.colSpan = 6;
                     const panel = document.createElement('div');
                     panel.className = 'detail-panel';
-                    detailTd.appendChild(panel);
-                    detailTr.appendChild(detailTd);
+
+                    wrapper.appendChild(row);
+                    wrapper.appendChild(panel);
 
                     // 클릭 시 토글
-                    tr.addEventListener('click', () => {
-                        const icon = tr.querySelector('.row-toggle-icon');
+                    row.addEventListener('click', () => {
+                        const icon = row.querySelector('.row-toggle-icon');
                         const isOpen = panel.classList.contains('open');
 
                         // 이전에 열린 패널 닫기
@@ -543,9 +539,7 @@
                             activeDetailRow = null;
                             activeIcon = null;
                         } else {
-                            // 내용이 없을 때만 생성 (캐싱)
                             if (!panel.innerHTML) {
-                                detailTd.style.width = tbody.closest('table').offsetWidth + 'px';
                                 panel.innerHTML = `<div class="detail-inner">${buildDetailHTML(log, subject)}</div>`;
                             }
                             panel.classList.add('open');
@@ -555,8 +549,7 @@
                         }
                     });
 
-                    tbody.appendChild(tr);
-                    tbody.appendChild(detailTr);
+                    tbody.appendChild(wrapper);
                 });
             }
 
