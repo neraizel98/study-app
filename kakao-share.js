@@ -233,7 +233,7 @@ window.KakaoShare = {
 
         const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
 
-        Kakao.Share.sendDefault({
+        try { Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
                 title,
@@ -242,7 +242,10 @@ window.KakaoShare = {
                 link: { mobileWebUrl: url, webUrl: url },
             },
             buttons: [{ title: '성적표 보기 📈', link: { mobileWebUrl: url, webUrl: url } }],
-        });
+        }); } catch (e) {
+            console.error('[KakaoShare sendDailySummary Error]', e);
+            alert('카카오톡 전송 중 오류가 발생했습니다.\n오류: ' + e.message);
+        }
     },
 
     /**
@@ -250,19 +253,19 @@ window.KakaoShare = {
      */
     sendFullHistory: function() {
         if (!this.isInitialized) return;
-        
+
         const reports = typeof getQuizReports === 'function' ? getQuizReports() : [];
         if (reports.length === 0) {
             alert('공유할 학습 기록이 없습니다.');
             return;
         }
 
-        // 데이터가 너무 많으면 최신 30개로 제한 (URL 길이 제한 방어)
-        const recentReports = reports.slice(-30);
+        // 최신 10개로 제한 (URL 길이 초과 방지)
+        const recentReports = reports.slice(-10);
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodedData;
 
-        Kakao.Share.sendDefault({
+        try { Kakao.Share.sendDefault({
             objectType: 'feed',
             content: {
                 title: '📊 우준이의 전체 학습 기록부',
@@ -276,7 +279,10 @@ window.KakaoShare = {
                     link: { mobileWebUrl: url, webUrl: url },
                 },
             ],
-        });
+        }); } catch (e) {
+            console.error('[KakaoShare sendFullHistory Error]', e);
+            alert('카카오톡 전송 중 오류가 발생했습니다.\n오류: ' + e.message);
+        }
     }
 };
 
