@@ -1,0 +1,577 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1117">
+    <title>학습 통계 - Smart Study</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 60px;
+        }
+        .stats-wrap {
+            width: 100%;
+            max-width: 900px;
+            padding: 20px;
+        }
+
+        /* ── Header ── */
+        .page-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 24px;
+            padding-top: 10px;
+        }
+        .back-btn, .report-link {
+            text-decoration: none;
+            color: var(--text-sub);
+            font-size: 0.85rem;
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            padding: 6px 14px;
+            border-radius: 20px;
+            transition: color 0.2s, border-color 0.2s;
+            white-space: nowrap;
+        }
+        .back-btn:hover, .report-link:hover { color: var(--accent); border-color: var(--accent); }
+        .page-title { font-size: 1.5rem; font-weight: 700; flex: 1; }
+
+        /* ── Week nav ── */
+        .week-nav {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            margin-bottom: 20px;
+        }
+        .week-btn {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            color: var(--text);
+            width: 36px; height: 36px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1rem;
+            font-family: var(--font);
+            transition: border-color 0.2s, transform 0.1s;
+            display: flex; align-items: center; justify-content: center;
+        }
+        .week-btn:hover:not(:disabled) { border-color: var(--accent); transform: scale(1.1); }
+        .week-btn:disabled { opacity: 0.25; cursor: not-allowed; transform: none; }
+        .week-label {
+            font-size: 1rem; font-weight: 600;
+            min-width: 190px; text-align: center;
+        }
+
+        /* ── Summary cards ── */
+        .summary-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+        .summary-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 16px;
+            padding: 16px 12px;
+            text-align: center;
+        }
+        .s-icon  { font-size: 1.5rem; margin-bottom: 6px; line-height: 1; }
+        .s-value { font-size: 1.4rem; font-weight: 700; }
+        .s-label { font-size: 0.73rem; color: var(--text-sub); margin-top: 4px; }
+
+        /* ── Chart card ── */
+        .chart-card {
+            background: var(--card-bg);
+            border: 1px solid var(--card-border);
+            border-radius: 20px;
+            padding: 22px 24px;
+            margin-bottom: 20px;
+        }
+        .chart-title { font-size: 1.05rem; font-weight: 700; margin-bottom: 3px; }
+        .chart-sub   { font-size: 0.78rem; color: var(--text-sub); margin-bottom: 16px; }
+        .chart-wrap  { position: relative; height: 220px; }
+        .chart-empty {
+            position: absolute; inset: 0;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.9rem; color: var(--text-sub);
+            pointer-events: none;
+        }
+
+        /* ── Subject tabs (level chart) ── */
+        .subj-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .subj-tab {
+            padding: 5px 16px;
+            border-radius: 20px;
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-family: var(--font);
+            transition: all 0.2s;
+        }
+        .subj-tab.active {
+            background: rgba(79,172,254,0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+            font-weight: 700;
+        }
+
+        /* ── Recent sessions ── */
+        .session-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 10px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.05);
+        }
+        .session-row:last-child { border-bottom: none; }
+        .session-badge {
+            width: 36px; height: 36px;
+            border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1rem; flex-shrink: 0;
+        }
+        .session-info  { flex: 1; min-width: 0; }
+        .session-name  { font-size: 0.88rem; font-weight: 600; }
+        .session-level { font-size: 0.76rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .session-score { font-size: 1rem; font-weight: 700; flex-shrink: 0; }
+        .session-date  { font-size: 0.72rem; color: var(--text-sub); flex-shrink: 0; }
+
+        .empty-msg {
+            text-align: center;
+            padding: 36px 20px;
+            color: var(--text-sub);
+            font-size: 0.9rem;
+            line-height: 1.7;
+        }
+
+        @media (max-width: 600px) {
+            .summary-grid { grid-template-columns: repeat(2, 1fr); }
+            .chart-wrap   { height: 180px; }
+            .page-title   { font-size: 1.2rem; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="stats-wrap">
+
+        <!-- Header -->
+        <div class="page-header">
+            <a href="index.html" class="back-btn">← 홈</a>
+            <h1 class="page-title">📈 학습 통계</h1>
+            <a href="report.html" class="report-link">퀴즈 기록 →</a>
+        </div>
+
+        <!-- Week nav -->
+        <div class="week-nav">
+            <button class="week-btn" id="prevWeekBtn" title="이전 주">‹</button>
+            <span class="week-label" id="weekLabel">—</span>
+            <button class="week-btn" id="nextWeekBtn" title="다음 주" disabled>›</button>
+        </div>
+
+        <!-- Summary cards -->
+        <div class="summary-grid" id="summaryGrid"></div>
+
+        <!-- Chart 1 : daily study time -->
+        <div class="chart-card">
+            <div class="chart-title">📅 일별 학습 시간</div>
+            <div class="chart-sub">요일별 과목 학습 시간 (분, 이번 주 기준)</div>
+            <div class="chart-wrap">
+                <canvas id="studyTimeChart"></canvas>
+                <div class="chart-empty" id="studyTimeEmpty" style="display:none">이번 주 학습 기록이 없습니다</div>
+            </div>
+        </div>
+
+        <!-- Chart 2 : 8-week score trend -->
+        <div class="chart-card">
+            <div class="chart-title">📈 주간 점수 추이</div>
+            <div class="chart-sub">최근 8주간 과목별 평균 정답률 (%)</div>
+            <div class="chart-wrap">
+                <canvas id="scoreTrendChart"></canvas>
+                <div class="chart-empty" id="scoreTrendEmpty" style="display:none">퀴즈 기록이 없습니다</div>
+            </div>
+        </div>
+
+        <!-- Chart 3 : level / unit performance -->
+        <div class="chart-card">
+            <div class="chart-title">🎯 레벨·단원별 달성률</div>
+            <div class="subj-tabs" id="subjTabs">
+                <button class="subj-tab active" data-subj="english">🇬🇧 영어</button>
+                <button class="subj-tab"        data-subj="hanja">🏮 한자</button>
+                <button class="subj-tab"        data-subj="math">📐 수학</button>
+            </div>
+            <div class="chart-wrap">
+                <canvas id="levelChart"></canvas>
+                <div class="chart-empty" id="levelEmpty" style="display:none">해당 과목 퀴즈 기록이 없습니다</div>
+            </div>
+        </div>
+
+        <!-- Recent sessions -->
+        <div class="chart-card">
+            <div class="chart-title">📋 최근 퀴즈 기록</div>
+            <div id="recentList"></div>
+        </div>
+
+    </div><!-- .stats-wrap -->
+
+    <script src="report.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+    <script>
+    // ─────────────────────────────────────────────
+    //  Constants
+    // ─────────────────────────────────────────────
+    const SUBJ_NAMES  = { english: '영어', hanja: '한자', math: '수학' };
+    const SUBJ_ICONS  = { english: '🇬🇧', hanja: '🏮', math: '📐' };
+    const SUBJ_COLOR  = {
+        english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
+        hanja:   { bg: 'rgba(249,130,108,0.6)', bd: '#f9826c' },
+        math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' }
+    };
+    const DAYS = ['월','화','수','목','금','토','일'];
+
+    const CHART_DEFAULTS = {
+        responsive: true,
+        maintainAspectRatio: false,
+        animation: { duration: 350 },
+        plugins: {
+            legend: { labels: { color: '#f0f6fc', font: { family: 'Outfit', size: 12 }, boxWidth: 12, padding: 14 } },
+            tooltip: { backgroundColor: '#161b22', titleColor: '#f0f6fc', bodyColor: '#8b949e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }
+        }
+    };
+    const AXIS_BASE = {
+        ticks:  { color: '#8b949e', font: { family: 'Outfit', size: 11 } },
+        grid:   { color: 'rgba(255,255,255,0.06)' },
+        border: { color: 'rgba(255,255,255,0.1)' }
+    };
+
+    // ─────────────────────────────────────────────
+    //  State
+    // ─────────────────────────────────────────────
+    let weekOffset    = 0;   // 0 = current week
+    let levelSubject  = 'english';
+    const charts      = {};
+
+    // ─────────────────────────────────────────────
+    //  Data helpers
+    // ─────────────────────────────────────────────
+    function loadReports() {
+        const uid = UserSession.getActiveUser();
+        if (!uid) return [];
+        try { return JSON.parse(localStorage.getItem('SmartVocab_Reports_' + uid) || '[]'); }
+        catch(e) { return []; }
+    }
+
+    function weekStart(offset) {
+        const now = new Date();
+        const dow = (now.getDay() + 6) % 7;  // 0=Mon
+        const d   = new Date(now);
+        d.setDate(now.getDate() - dow + offset * 7);
+        d.setHours(0, 0, 0, 0);
+        return d;
+    }
+
+    function weekRangeLabel(ws) {
+        const we = new Date(ws); we.setDate(ws.getDate() + 6);
+        const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+        const prefix = weekOffset === 0 ? '이번 주 · ' : '';
+        return `${prefix}${ws.getFullYear()}년 ${fmt(ws)}~${fmt(we)}`;
+    }
+
+    function filterWeek(reports, ws) {
+        const s = ws.getTime(), e = s + 7 * 86400000;
+        return reports.filter(r => r.date >= s && r.date < e);
+    }
+
+    function pct(r) {
+        return r.totalQuestions > 0 ? Math.round(r.finalScore / r.totalQuestions * 100) : 0;
+    }
+
+    // ─────────────────────────────────────────────
+    //  Summary cards
+    // ─────────────────────────────────────────────
+    function renderSummary(weekReports) {
+        const user   = UserSession.getUserData();
+        const sec    = weekReports.reduce((a, r) => a + (r.timeSpentSeconds || 0), 0);
+        const count  = weekReports.length;
+        const avgPct = count > 0
+            ? Math.round(weekReports.reduce((a, r) => a + pct(r), 0) / count)
+            : 0;
+        const streak = user?.attendance?.currentStreak || 0;
+
+        const items = [
+            { icon:'⏱', val: Math.round(sec / 60) + '분',  lbl:'이번 주 학습 시간' },
+            { icon:'📝', val: count + '회',                  lbl:'이번 주 퀴즈 횟수' },
+            { icon:'🎯', val: avgPct + '%',                  lbl:'이번 주 평균 정답률' },
+            { icon:'🔥', val: streak + '일',                 lbl:'연속 출석' }
+        ];
+        document.getElementById('summaryGrid').innerHTML = items.map(i => `
+            <div class="summary-card">
+                <div class="s-icon">${i.icon}</div>
+                <div class="s-value">${i.val}</div>
+                <div class="s-label">${i.lbl}</div>
+            </div>`).join('');
+    }
+
+    // ─────────────────────────────────────────────
+    //  Chart 1 — daily study time (stacked bar)
+    // ─────────────────────────────────────────────
+    function buildStudyTimeChart(weekReports) {
+        const d = { english: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
+        weekReports.forEach(r => {
+            const dow = (new Date(r.date).getDay() + 6) % 7;
+            if (d[r.subject] !== undefined) d[r.subject][dow] += (r.timeSpentSeconds || 0) / 60;
+        });
+
+        const hasData = weekReports.length > 0;
+        document.getElementById('studyTimeEmpty').style.display = hasData ? 'none' : '';
+
+        if (charts.studyTime) charts.studyTime.destroy();
+        const ctx = document.getElementById('studyTimeChart').getContext('2d');
+        charts.studyTime = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: DAYS,
+                datasets: ['english','hanja','math'].map(s => ({
+                    label: SUBJ_NAMES[s],
+                    data:  d[s].map(v => +v.toFixed(1)),
+                    backgroundColor: SUBJ_COLOR[s].bg,
+                    borderColor:     SUBJ_COLOR[s].bd,
+                    borderWidth: 1,
+                    borderRadius: 3
+                }))
+            },
+            options: {
+                ...CHART_DEFAULTS,
+                scales: {
+                    x: { ...AXIS_BASE, stacked: true },
+                    y: { ...AXIS_BASE, stacked: true, beginAtZero: true,
+                         title: { display: true, text: '분', color: '#8b949e', font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────
+    //  Chart 2 — 8-week score trend (line)
+    // ─────────────────────────────────────────────
+    function buildScoreTrendChart(allReports) {
+        const N = 8;
+        const labels = [];
+        const series = { english: [], hanja: [], math: [] };
+        let anyData = false;
+
+        for (let i = N - 1; i >= 0; i--) {
+            const ws = weekStart(weekOffset - i);
+            const mn = ws.getMonth() + 1, dn = ws.getDate();
+            labels.push(`${mn}/${dn}`);
+            const wr = filterWeek(allReports, ws);
+            ['english','hanja','math'].forEach(s => {
+                const sub = wr.filter(r => r.subject === s);
+                if (sub.length > 0) {
+                    series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
+                    anyData = true;
+                } else {
+                    series[s].push(null);
+                }
+            });
+        }
+
+        document.getElementById('scoreTrendEmpty').style.display = anyData ? 'none' : '';
+
+        if (charts.scoreTrend) charts.scoreTrend.destroy();
+        const ctx = document.getElementById('scoreTrendChart').getContext('2d');
+        charts.scoreTrend = new Chart(ctx, {
+            type: 'line',
+            data: {
+                labels,
+                datasets: ['english','hanja','math'].map(s => ({
+                    label: SUBJ_NAMES[s],
+                    data:  series[s],
+                    borderColor:     SUBJ_COLOR[s].bd,
+                    backgroundColor: SUBJ_COLOR[s].bd + '18',
+                    borderWidth: 2,
+                    pointRadius: 4,
+                    pointBackgroundColor: SUBJ_COLOR[s].bd,
+                    tension: 0.3,
+                    spanGaps: false
+                }))
+            },
+            options: {
+                ...CHART_DEFAULTS,
+                scales: {
+                    x: { ...AXIS_BASE },
+                    y: { ...AXIS_BASE, beginAtZero: true, max: 100,
+                         title: { display: true, text: '%', color: '#8b949e', font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────
+    //  Chart 3 — level / unit performance (bar)
+    // ─────────────────────────────────────────────
+    function buildLevelChart(allReports, subject) {
+        const sub = allReports.filter(r => r.subject === subject && r.totalQuestions > 0);
+
+        // group by level key
+        const map = {};
+        sub.forEach(r => {
+            // Math: "1. 분수의 나눗셈 - 유형명" → extract "1. 분수의 나눗셈"
+            const key = subject === 'math'
+                ? (r.level || '').split(' - ')[0].trim()
+                : (r.level || '').trim();
+            if (!key) return;
+            if (!map[key]) map[key] = { sum: 0, n: 0 };
+            map[key].sum += pct(r);
+            map[key].n++;
+        });
+
+        let entries = Object.entries(map)
+            .map(([k, v]) => ({ key: k, avg: Math.round(v.sum / v.n), n: v.n }));
+
+        // sort
+        if (subject === 'math') {
+            // natural sort by leading number "1. " "2. " etc.
+            entries.sort((a, b) => {
+                const na = parseInt(a.key) || 999, nb = parseInt(b.key) || 999;
+                return na !== nb ? na - nb : a.key.localeCompare(b.key, 'ko');
+            });
+            // show top 8 by attempt count if too many
+            if (entries.length > 8)
+                entries = entries.sort((a,b) => b.n - a.n).slice(0, 8)
+                                 .sort((a,b) => (parseInt(a.key)||999) - (parseInt(b.key)||999));
+        } else {
+            // "레벨 1" … "레벨 4"  →  sort by trailing number
+            entries.sort((a, b) => {
+                const na = parseInt(a.key.replace(/\D/g,'')) || 0;
+                const nb = parseInt(b.key.replace(/\D/g,'')) || 0;
+                return na - nb;
+            });
+        }
+
+        const isEmpty = entries.length === 0;
+        document.getElementById('levelEmpty').style.display = isEmpty ? '' : 'none';
+
+        if (charts.level) charts.level.destroy();
+        const ctx = document.getElementById('levelChart').getContext('2d');
+        if (isEmpty) { charts.level = null; ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
+
+        const isHorizontal = subject === 'math';  // horizontal bars look better with long unit names
+        const c = SUBJ_COLOR[subject];
+        charts.level = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: entries.map(e => e.key),
+                datasets: [{
+                    label: SUBJ_NAMES[subject] + ' 평균 정답률',
+                    data:  entries.map(e => e.avg),
+                    backgroundColor: c.bg,
+                    borderColor:     c.bd,
+                    borderWidth: 1,
+                    borderRadius: 4
+                }]
+            },
+            options: {
+                ...CHART_DEFAULTS,
+                indexAxis: isHorizontal ? 'y' : 'x',
+                scales: {
+                    x: { ...AXIS_BASE, beginAtZero: true, ...(isHorizontal ? { max: 100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) },
+                    y: { ...AXIS_BASE, beginAtZero: true, ...(!isHorizontal ? { max: 100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) }
+                },
+                plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } }
+            }
+        });
+    }
+
+    // ─────────────────────────────────────────────
+    //  Recent sessions list
+    // ─────────────────────────────────────────────
+    function renderRecent(allReports) {
+        const el = document.getElementById('recentList');
+        const rows = [...allReports].sort((a,b) => b.date - a.date).slice(0, 10);
+        if (!rows.length) {
+            el.innerHTML = '<div class="empty-msg">아직 퀴즈 기록이 없습니다.<br>퀴즈를 풀면 여기에 기록이 쌓여요! 📝</div>';
+            return;
+        }
+        el.innerHTML = rows.map(r => {
+            const p = pct(r);
+            const scoreColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
+            const c = SUBJ_COLOR[r.subject] || { bg:'rgba(255,255,255,0.1)', bd:'#888' };
+            const d = new Date(r.date);
+            const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            const levelShort = r.level ? (r.level.length > 18 ? r.level.slice(0,18) + '…' : r.level) : '-';
+            return `
+                <div class="session-row">
+                    <div class="session-badge" style="background:${c.bd}22; color:${c.bd}">${SUBJ_ICONS[r.subject] || '📚'}</div>
+                    <div class="session-info">
+                        <div class="session-name">${SUBJ_NAMES[r.subject] || r.subject}</div>
+                        <div class="session-level">${levelShort}</div>
+                    </div>
+                    <div class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions}</div>
+                    <div class="session-date">${ds}</div>
+                </div>`;
+        }).join('');
+    }
+
+    // ─────────────────────────────────────────────
+    //  Main render
+    // ─────────────────────────────────────────────
+    function render() {
+        const all  = loadReports();
+        const ws   = weekStart(weekOffset);
+        const week = filterWeek(all, ws);
+
+        document.getElementById('weekLabel').textContent    = weekRangeLabel(ws);
+        document.getElementById('nextWeekBtn').disabled     = weekOffset >= 0;
+
+        renderSummary(week);
+        buildStudyTimeChart(week);
+        buildScoreTrendChart(all);
+        buildLevelChart(all, levelSubject);
+        renderRecent(all);
+    }
+
+    // ─────────────────────────────────────────────
+    //  Event listeners
+    // ─────────────────────────────────────────────
+    document.getElementById('prevWeekBtn').addEventListener('click', () => { weekOffset--; render(); });
+    document.getElementById('nextWeekBtn').addEventListener('click', () => { if (weekOffset < 0) { weekOffset++; render(); } });
+
+    document.getElementById('subjTabs').addEventListener('click', e => {
+        const btn = e.target.closest('.subj-tab');
+        if (!btn) return;
+        document.querySelectorAll('.subj-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        levelSubject = btn.dataset.subj;
+        buildLevelChart(loadReports(), levelSubject);
+    });
+
+    // ─────────────────────────────────────────────
+    //  Init
+    // ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!UserSession.getActiveUser()) {
+            window.location.href = 'index.html';
+            return;
+        }
+        render();
+    });
+    </script>
+</body>
+</html>
