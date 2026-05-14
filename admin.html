@@ -309,6 +309,8 @@
                     </div>`).join('')}
             </div>
 
+            ${buildDailyStatsBar(ud)}
+
             <div class="detail-tabs">
                 <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
                 <button class="d-tab"        data-tab="subject" onclick="switchTab(this,'subject', '${userId}')">📊 과목별 통계</button>
@@ -335,6 +337,35 @@
         if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
         if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
+    }
+
+    // ── 오늘의 학습 바 ──
+    function buildDailyStatsBar(ud) {
+        const ds = ud.dailyStats;
+        if (!ds || !ds.date) return '';
+
+        const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'-').replace('.','');
+        const isToday = ds.date === today || ds.date === new Date().toISOString().slice(0,10);
+        const label = isToday ? '오늘의 학습' : `${ds.date} 학습`;
+
+        const SUBJ_ORDER = ['english','hanja','math'];
+        const subjects = (ds.subjectsStudied || []).filter(s => SUBJ_ORDER.includes(s));
+        if (!subjects.length) return '';
+
+        const items = subjects.map(s => {
+            const sec = ds.studyTime?.[s] || 0;
+            const min = Math.floor(sec / 60);
+            const rem = sec % 60;
+            const timeStr = min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
+            return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
+                ${SUBJ_ICONS[s]} ${SUBJ_NAMES[s]} <strong style="color:${SUBJ_COLORS[s]}">${timeStr}</strong>
+            </span>`;
+        }).join('');
+
+        return `<div style="background:rgba(79,172,254,0.06);border:1px solid rgba(79,172,254,0.2);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+            <span style="font-size:0.78rem;font-weight:700;color:var(--text-sub);white-space:nowrap;">📅 ${label}</span>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">${items}</div>
+        </div>`;
     }
 
     // ── 퀴즈 기록 탭 ──

@@ -78,9 +78,7 @@ async function _uploadUserData(userId) {
         const raw = localStorage.getItem('SmartStudy_UserData_' + userId);
         if (!raw) return;
         const data = JSON.parse(raw);
-        // dailyStats / missionProgress 는 디바이스별로 다르므로 클라우드에 올리지 않음
-        const { dailyStats, missionProgress, ...cloudData } = data;
-        await _uDoc(userId).set({ ...cloudData, _updatedAt: Date.now() }, { merge: true });
+        await _uDoc(userId).set({ ...data, _updatedAt: Date.now() }, { merge: true });
     } catch (e) { console.warn('[FireSync] userData 업로드 실패:', e.message); }
 }
 
@@ -126,19 +124,19 @@ async function _downloadAndMerge(userId) {
             _wDoc(userId).get()
         ]);
 
-        let changed = false;
+        let needsUpload = false;
 
         // 1. userData 병합
         if (uSnap.exists) {
-            const cloud = uSnap.data();
+            const cloud    = uSnap.data();
             const localRaw = localStorage.getItem('SmartStudy_UserData_' + userId);
             const local    = localRaw ? JSON.parse(localRaw) : null;
+            // 로컬이 더 최신이면 클라우드에 다시 올려야 함
+            if ((local?._localUpdatedAt || 0) > (cloud._updatedAt || 0)) needsUpload = true;
             const merged   = _mergeUserData(local, cloud, userId);
             localStorage.setItem('SmartStudy_UserData_' + userId, JSON.stringify(merged));
-            changed = true;
         } else {
-            // 첫 디바이스 → 현재 데이터를 클라우드에 올림
-            await _uploadUserData(userId);
+            needsUpload = true;
         }
 
         // 2. reports 병합
@@ -146,11 +144,12 @@ async function _downloadAndMerge(userId) {
             const cloudReports = rSnap.data().reports;
             const localRaw     = localStorage.getItem('SmartVocab_Reports_' + userId);
             const localReports = localRaw ? JSON.parse(localRaw) : [];
-            const merged       = _mergeReports(localReports, cloudReports);
+            // 로컬에만 있는 레포트가 있으면 업로드 필요
+            if (localReports.some(r => !cloudReports.find(c => c.sessionId === r.sessionId))) needsUpload = true;
+            const merged = _mergeReports(localReports, cloudReports);
             localStorage.setItem('SmartVocab_Reports_' + userId, JSON.stringify(merged));
-            changed = true;
         } else {
-            await _uploadReports(userId);
+            needsUpload = true;
         }
 
         // 3. wrongAnswers 병합
@@ -160,17 +159,24 @@ async function _downloadAndMerge(userId) {
             const local      = localRaw ? JSON.parse(localRaw) : {};
             const merged     = _mergeWrong(local, cloudWrong);
             localStorage.setItem('SmartStudy_WrongAnswers_' + userId, JSON.stringify(merged));
-            changed = true;
         } else {
-            await _uploadWrong(userId);
+            needsUpload = true;
         }
 
-        if (changed) {
-            console.log('[FireSync] 클라우드 데이터 병합 완료');
-            window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
+        // 로컬이 더 최신이거나 첫 디바이스 → 클라우드에 즉시 업로드
+        if (needsUpload) {
+            await Promise.all([
+                _uploadUserData(userId),
+                _uploadReports(userId),
+                _uploadWrong(userId)
+            ]);
+            console.log('[FireSync] 로컬→클라우드 업로드 완료');
         }
+
+        console.log('[FireSync] 동기화 완료');
+        window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
     } catch (e) {
-        console.warn('[FireSync] 다운로드 실패:', e.message);
+        console.warn('[FireSync] 동기화 실패:', e.message);
     }
 }
 
@@ -178,17 +184,14 @@ async function _downloadAndMerge(userId) {
 //  병합 전략
 // ─────────────────────────────────────────────
 function _mergeUserData(local, cloud, userId) {
-    const l = local  || {};
-    const c = cloud  || {};
-
-    const localLevel  = l.level || 1;
-    const cloudLevel  = c.level || 1;
-    const localExp    = l.exp   || 0;
-    const cloudExp    = c.exp   || 0;
+    const l = local || {};
+    const c = cloud || {};
 
     // 레벨이 높은 쪽 기준으로 EXP 선택
-    let finalLevel = Math.max(localLevel, cloudLevel);
-    let finalExp   = localLevel >= cloudLevel ? localExp : cloudExp;
+    const localLevel = l.level || 1;
+    const cloudLevel = c.level || 1;
+    const finalLevel = Math.max(localLevel, cloudLevel);
+    const finalExp   = localLevel >= cloudLevel ? (l.exp || 0) : (c.exp || 0);
 
     // 출석: totalDays 가 더 많은 쪽 선택
     const localDays = l.attendance?.totalDays || 0;
@@ -196,16 +199,73 @@ function _mergeUserData(local, cloud, userId) {
     const finalAttendance = localDays >= cloudDays ? (l.attendance || {}) : (c.attendance || {});
 
     return {
-        ...l,                          // 로컬 우선 (dailyStats, missionProgress 포함)
-        id:             userId,
-        level:          finalLevel,
-        exp:            finalExp,
-        totalStudyTime: Math.max(l.totalStudyTime || 0, c.totalStudyTime || 0),
-        totalAttempts:  Math.max(l.totalAttempts  || 0, c.totalAttempts  || 0),
-        totalCorrect:   Math.max(l.totalCorrect   || 0, c.totalCorrect   || 0),
-        badges:         _unionArr(l.badges || [], c.badges || []),
-        attendance:     finalAttendance
+        ...c,                           // 클라우드 기반 (알 수 없는 필드 보존)
+        ...l,                           // 로컬로 덮어씀
+        id:              userId,
+        level:           finalLevel,
+        exp:             finalExp,
+        totalStudyTime:  Math.max(l.totalStudyTime || 0, c.totalStudyTime || 0),
+        totalAttempts:   Math.max(l.totalAttempts  || 0, c.totalAttempts  || 0),
+        totalCorrect:    Math.max(l.totalCorrect   || 0, c.totalCorrect   || 0),
+        badges:          _unionArr(l.badges || [], c.badges || []),
+        attendance:      finalAttendance,
+        dailyStats:      _mergeDailyStats(l.dailyStats, c.dailyStats),
+        missionProgress: _mergeMissionProgress(l.missionProgress, c.missionProgress),
     };
+}
+
+function _mergeDailyStats(local, cloud) {
+    const l = local || {};
+    const c = cloud || {};
+
+    // 같은 날짜면 과목별 시간을 max로 병합
+    if (l.date && l.date === c.date) {
+        const studyTime = {};
+        const subjects = new Set([
+            ...Object.keys(l.studyTime || {}),
+            ...Object.keys(c.studyTime || {})
+        ]);
+        subjects.forEach(s => {
+            studyTime[s] = Math.max(l.studyTime?.[s] || 0, c.studyTime?.[s] || 0);
+        });
+        return {
+            date: l.date,
+            studyTime,
+            subjectsStudied: [...new Set([
+                ...(l.subjectsStudied || []),
+                ...(c.subjectsStudied || [])
+            ])]
+        };
+    }
+
+    // 다른 날짜면 더 최근 날짜를 선택
+    if ((l.date || '') >= (c.date || '')) return l;
+    return c;
+}
+
+function _mergeMissionProgress(local, cloud) {
+    const l = local || {};
+    const c = cloud || {};
+    const result = {};
+    const keys = new Set([...Object.keys(l), ...Object.keys(c)]);
+    keys.forEach(k => {
+        const lv = l[k];
+        const cv = c[k];
+        if (lv === undefined) { result[k] = cv; return; }
+        if (cv === undefined) { result[k] = lv; return; }
+        if (typeof lv === 'object' && lv !== null) {
+            result[k] = {
+                ...cv, ...lv,
+                count:     Math.max(lv.count || 0, cv.count || 0),
+                completed: lv.completed || cv.completed || false
+            };
+        } else if (typeof lv === 'number') {
+            result[k] = Math.max(lv, typeof cv === 'number' ? cv : 0);
+        } else {
+            result[k] = lv;
+        }
+    });
+    return result;
 }
 
 function _mergeReports(local, cloud) {
@@ -253,7 +313,16 @@ function _patchSaveFunctions() {
     const origSaveUser = UserSession.saveUserData.bind(UserSession);
     UserSession.saveUserData = function(data) {
         origSaveUser(data);
-        if (data.id) _debounce('userData_' + data.id, () => _uploadUserData(data.id), 2000);
+        if (data.id) {
+            // 로컬 저장 시각 스탬프 — 클라우드와 최신 여부 비교에 사용
+            const raw = localStorage.getItem('SmartStudy_UserData_' + data.id);
+            if (raw) {
+                const parsed = JSON.parse(raw);
+                parsed._localUpdatedAt = Date.now();
+                localStorage.setItem('SmartStudy_UserData_' + data.id, JSON.stringify(parsed));
+            }
+            _debounce('userData_' + data.id, () => _uploadUserData(data.id), 2000);
+        }
     };
 
     // 2. saveQuizResult (전역 함수)
