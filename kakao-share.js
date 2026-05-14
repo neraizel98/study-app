@@ -160,7 +160,7 @@ window.KakaoShare = {
         }
 
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
-        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodedData;
+        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodeURIComponent(encodedData);
 
         try { Kakao.Share.sendDefault({
             objectType: 'feed',
@@ -263,7 +263,7 @@ window.KakaoShare = {
         // 최신 10개로 제한 (URL 길이 초과 방지)
         const recentReports = reports.slice(-10);
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
-        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodedData;
+        const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodeURIComponent(encodedData);
 
         try { Kakao.Share.sendDefault({
             objectType: 'feed',
