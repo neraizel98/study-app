@@ -325,6 +325,7 @@
 
     <script src="kakao-share.js"></script>
     <script src="report.js"></script>
+    <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
     <script src="missions.js"></script>
     <script>
@@ -408,14 +409,18 @@
                 }
             }
 
-            loginBtn.addEventListener('click', () => {
+            loginBtn.addEventListener('click', async () => {
                 const id = userIdInput.value.trim();
-                if (id) {
-                    UserSession.setActiveUser(id);
-                    updateUI();
-                } else {
-                    alert('이름을 입력해주세요!');
+                if (!id) { alert('이름을 입력해주세요!'); return; }
+                UserSession.setActiveUser(id);
+                if (window.FireSync) {
+                    loginBtn.disabled = true;
+                    loginBtn.textContent = '☁️ 동기화 중...';
+                    await FireSync.onLogin(id);
+                    loginBtn.disabled = false;
+                    loginBtn.textContent = '학습 시작하기';
                 }
+                updateUI();
             });
 
             userIdInput.addEventListener('keypress', (e) => {

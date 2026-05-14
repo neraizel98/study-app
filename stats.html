@@ -234,6 +234,7 @@
     </div><!-- .stats-wrap -->
 
     <script src="report.js"></script>
+    <script src="firebase-sync.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -574,6 +575,9 @@
             return;
         }
         render();
+
+        // 동기화 완료 시 차트/카드 재렌더링
+        window.addEventListener('firesynced', () => render());
     });
     </script>
 </body>

@@ -349,6 +349,7 @@
 
     <script src="utils.js"></script>
     <script src="report.js"></script>
+    <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
     <script src="kakao-share.js"></script>
     <script>
@@ -504,7 +505,14 @@
             if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
 
             const tabs = document.querySelectorAll('.subject-tab');
-            const allReports = getQuizReports(); // from report.js
+            let allReports = getQuizReports(); // from report.js
+
+            // 동기화 완료 시 데이터 갱신 후 현재 탭 재렌더링
+            window.addEventListener('firesynced', () => {
+                allReports = getQuizReports();
+                const activeTab = document.querySelector('.subject-tab.active');
+                if (activeTab) renderReports(activeTab.dataset.subject);
+            });
 
             // 날짜 포맷 함수
             function formatDate(ts) {
