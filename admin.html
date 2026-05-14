@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -312,6 +312,7 @@
             <div class="detail-tabs">
                 <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
                 <button class="d-tab"        data-tab="subject" onclick="switchTab(this,'subject', '${userId}')">📊 과목별 통계</button>
+                <button class="d-tab"        data-tab="level"   onclick="switchTab(this,'level',   '${userId}')">📈 레벨별 학습</button>
                 <button class="d-tab"        data-tab="wrong"   onclick="switchTab(this,'wrong',   '${userId}')">📝 오답 현황</button>
             </div>
 
@@ -332,6 +333,7 @@
         const el = document.getElementById('tabContent');
         if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports);
         if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
+        if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
     }
 
@@ -393,6 +395,81 @@
         }).join('');
 
         return `<div class="chart-title">과목별 평균 정답률</div>${bars}`;
+    }
+
+    // ── 레벨별 학습 탭 ──
+    function buildStudyDetailTab(reports) {
+        if (!reports.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
+
+        const subjects = ['english', 'hanja', 'math'];
+        let html = '<div class="chart-title">레벨별 학습 현황</div>';
+        let anyData = false;
+
+        subjects.forEach(subj => {
+            const subjReports = reports.filter(r => r.subject === subj);
+            if (!subjReports.length) return;
+            anyData = true;
+
+            // Group by level → typeName
+            const levelMap = {};
+            subjReports.forEach(r => {
+                const lvl = r.level || '기타';
+                const type = r.typeName || '기본';
+                if (!levelMap[lvl]) levelMap[lvl] = {};
+                if (!levelMap[lvl][type]) levelMap[lvl][type] = { attempts: [], totalTime: 0 };
+                levelMap[lvl][type].attempts.push(r);
+                levelMap[lvl][type].totalTime += (r.timeSpentSeconds || 0);
+            });
+
+            const color = SUBJ_COLORS[subj];
+            html += `<div style="margin-bottom:24px;">
+                <div style="font-size:0.85rem;font-weight:700;color:${color};margin-bottom:12px;">${SUBJ_ICONS[subj]} ${SUBJ_NAMES[subj]}</div>`;
+
+            Object.entries(levelMap).forEach(([level, types]) => {
+                html += `<div style="margin-bottom:14px;">
+                    <div style="font-size:0.78rem;font-weight:600;color:var(--text-sub);margin-bottom:6px;padding-left:4px;border-left:3px solid ${color}44;padding-left:8px;">${level}</div>`;
+
+                Object.entries(types).forEach(([typeName, data]) => {
+                    const { attempts, totalTime } = data;
+                    const count = attempts.length;
+                    const avgPct = Math.round(attempts.reduce((a, r) => a + (r.totalQuestions > 0 ? r.finalScore / r.totalQuestions * 100 : 0), 0) / count);
+                    const bestPct = Math.round(Math.max(...attempts.map(r => r.totalQuestions > 0 ? r.finalScore / r.totalQuestions * 100 : 0)));
+                    const timeMin = Math.floor(totalTime / 60);
+                    const timeSec = totalTime % 60;
+                    const pctColor = avgPct >= 80 ? '#56d364' : avgPct >= 50 ? '#f9826c' : '#ff5f6d';
+
+                    // Round breakdown
+                    const rounds = {};
+                    attempts.forEach(r => {
+                        const rnd = r.round || 1;
+                        if (!rounds[rnd]) rounds[rnd] = [];
+                        rounds[rnd].push(r);
+                    });
+                    const roundStr = Object.entries(rounds)
+                        .sort((a, b) => a[0] - b[0])
+                        .map(([rnd, rs]) => {
+                            const rPct = Math.round(rs.reduce((a, r) => a + (r.totalQuestions > 0 ? r.finalScore / r.totalQuestions * 100 : 0), 0) / rs.length);
+                            return `${rnd}회차 ${rPct}%`;
+                        }).join(' · ');
+
+                    html += `<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
+                            <span style="font-size:0.82rem;font-weight:600;flex:1;">${typeName}</span>
+                            <span style="font-size:0.73rem;color:var(--text-sub);">${count}회 · ${timeMin}분${timeSec ? ' ' + timeSec + '초' : ''}</span>
+                            <span style="font-size:0.9rem;font-weight:700;color:${pctColor};">${avgPct}%</span>
+                        </div>
+                        <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;margin-bottom:5px;">
+                            <div style="height:100%;width:${avgPct}%;background:${color};border-radius:3px;"></div>
+                        </div>
+                        <div style="font-size:0.7rem;color:var(--text-sub);">${roundStr}${bestPct !== avgPct ? ` · 최고 <span style="color:#56d364">${bestPct}%</span>` : ''}</div>
+                    </div>`;
+                });
+                html += `</div>`;
+            });
+            html += `</div>`;
+        });
+
+        return anyData ? html : '<div class="empty-msg">데이터가 없습니다.</div>';
     }
 
     // ── 오답 현황 탭 ──
@@ -463,5 +540,6 @@
         }
     });
     </script>
+<script src="version-check.js"></script>
 </body>
 </html>

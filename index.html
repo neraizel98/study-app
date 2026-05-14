@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -232,13 +232,7 @@
         <!-- 로그인 후: 개인 대시보드 -->
         <div id="dashboard-section" style="display: none;">
             <div id="app-header"></div>
-            <!-- 관리자 전용 버튼 (우준아빠만 표시) -->
-            <div id="adminBanner" style="display:none; margin-bottom:16px;">
-                <a href="admin.html" style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,200,50,0.1); border:1px solid rgba(255,200,50,0.35); color:#ffd700; text-decoration:none; padding:10px 20px; border-radius:14px; font-weight:700; font-size:0.9rem; transition:background 0.2s;">
-                    🛠️ 관리자 대시보드 — 학습자 현황 보기
-                </a>
-            </div>
-            
+
             <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; text-align: left;">
                 <!-- 스탯 카드 (클릭 시 성적표 이동) -->
                 <a href="stats.html" class="dash-card stats-widget" style="grid-column: span 1.5; background: var(--card-bg); border: 1px solid var(--card-border); padding: 25px; border-radius: 24px;">
@@ -321,6 +315,13 @@
                     📂 데이터 가져오기
                     <input type="file" accept=".json" style="display:none;" onchange="importUserData(this.files[0]).then(() => { alert('데이터를 불러왔습니다. 페이지를 새로고침합니다.'); location.reload(); }).catch(() => alert('파일을 읽는 중 오류가 발생했습니다.'));">
                 </label>
+            </div>
+
+            <!-- 관리자 전용 버튼 (우준아빠만 표시) -->
+            <div id="adminBanner" style="display:none; margin-top:24px; text-align:center;">
+                <a href="admin.html" style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,200,50,0.08); border:1px solid rgba(255,200,50,0.25); color:#ffd700; text-decoration:none; padding:10px 20px; border-radius:14px; font-weight:700; font-size:0.85rem; transition:background 0.2s; opacity:0.7;">
+                    🛠️ 관리자 대시보드 — 학습자 현황 보기
+                </a>
             </div>
         </div>
     </div>
@@ -451,5 +452,6 @@
             });
         }
     </script>
+<script src="version-check.js"></script>
 </body>
 </html>

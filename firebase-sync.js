@@ -98,26 +98,18 @@ async function _uploadWrong(userId) {
     try {
         const raw = localStorage.getItem('SmartStudy_WrongAnswers_' + userId);
         const wrongAnswers = raw ? JSON.parse(raw) : {};
-        // 히스토리에서 용량이 큰 필드 제거 후 업로드
-        const slim = _slimWrong(wrongAnswers);
-        await _wDoc(userId).set({ wrongAnswers: slim, _updatedAt: Date.now() });
+        const trimmed = _trimWrongHistory(wrongAnswers);
+        await _wDoc(userId).set({ wrongAnswers: trimmed, _updatedAt: Date.now() });
     } catch (e) { console.warn('[FireSync] wrongAnswers 업로드 실패:', e.message); }
 }
 
-function _slimWrong(wrongAnswers) {
+function _trimWrongHistory(wrongAnswers) {
     const result = {};
     Object.entries(wrongAnswers).forEach(([subj, items]) => {
-        result[subj] = (items || []).map(item => {
-            const history = (item.history || []).slice(-10).map(h => ({
-                sessionId: h.sessionId,
-                round:     h.round,
-                status:    h.status,
-                date:      h.date
-                // question / explanation / answer / choices 는 용량 절약을 위해 제외
-            }));
-            const { question, explanation, choices, ...rest } = item;
-            return { ...rest, history };
-        });
+        result[subj] = (items || []).map(item => ({
+            ...item,
+            history: (item.history || []).slice(-20)
+        }));
     });
     return result;
 }
