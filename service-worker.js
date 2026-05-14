@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v4';
+const CACHE_NAME = 'smart-study-v5';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -70,10 +70,10 @@ self.addEventListener('install', event => {
 self.addEventListener('fetch', event => {
     const url = new URL(event.request.url);
     
-    // JS 데이터 파일이나 HTML은 가급적 최신 버전을 확인하도록 시도 (Network First)
+    // JS 데이터 파일이나 HTML은 항상 최신 버전 사용 (CDN 캐시 우회)
     if (url.pathname.endsWith('.js') || url.pathname.endsWith('.html')) {
         event.respondWith(
-            fetch(event.request)
+            fetch(new Request(event.request, { cache: 'no-cache' }))
                 .then(response => {
                     const clonedResponse = response.clone();
                     caches.open(CACHE_NAME).then(cache => {
