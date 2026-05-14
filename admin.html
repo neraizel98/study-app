@@ -12,6 +12,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <style>
         body { display:flex; flex-direction:column; align-items:center; min-height:100vh; padding-bottom:60px; }
         .wrap { width:100%; max-width:960px; padding:20px; }
@@ -68,7 +69,8 @@
         .ds-lbl   { font-size:0.72rem; color:var(--text-sub); margin-top:4px; }
 
         /* tabs */
-        .detail-tabs { display:flex; gap:8px; margin-bottom:16px; }
+        .detail-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
+        .detail-tabs::-webkit-scrollbar { display:none; }
         .d-tab { padding:7px 18px; border-radius:20px; border:1px solid var(--card-border); background:transparent; color:var(--text-sub); cursor:pointer; font-size:0.88rem; font-family:var(--font); transition:all 0.2s; }
         .d-tab.active { background:rgba(79,172,254,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
 
@@ -313,6 +315,7 @@
 
             <div class="detail-tabs">
                 <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
+                <button class="d-tab"        data-tab="weekly"  onclick="switchTab(this,'weekly',  '${userId}')">📅 주간 통계</button>
                 <button class="d-tab"        data-tab="subject" onclick="switchTab(this,'subject', '${userId}')">📊 과목별 통계</button>
                 <button class="d-tab"        data-tab="level"   onclick="switchTab(this,'level',   '${userId}')">📈 레벨별 학습</button>
                 <button class="d-tab"        data-tab="wrong"   onclick="switchTab(this,'wrong',   '${userId}')">📝 오답 현황</button>
@@ -331,12 +334,22 @@
         document.querySelectorAll('.d-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         _currentTab = tab;
+        // 이전 차트 인스턴스 정리
+        if (window._adminWeekCharts) {
+            Object.values(window._adminWeekCharts).forEach(c => c && c.destroy());
+            window._adminWeekCharts = {};
+        }
         const { reports, wrongAnswers } = window._adminData;
         const el = document.getElementById('tabContent');
         if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports);
         if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
         if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
+        if (tab === 'weekly') {
+            _weeklyOffset = 0;
+            el.innerHTML = _weeklyHTML(reports, 0);
+            requestAnimationFrame(() => _drawWeeklyCharts(reports, 0));
+        }
     }
 
     // ── 오늘의 학습 바 ──
@@ -538,6 +551,182 @@
         if (!anyData) return '<div class="empty-msg">오답 데이터가 없습니다.</div>';
         return html;
     }
+
+    // ─────────────────────────────────────────────
+    //  주간 통계 탭
+    // ─────────────────────────────────────────────
+    let _weeklyOffset = 0;
+
+    function _weekRange(offset) {
+        const now = new Date();
+        const dow = now.getDay();
+        const mon = new Date(now);
+        mon.setDate(now.getDate() - (dow === 0 ? 6 : dow - 1) + offset * 7);
+        mon.setHours(0, 0, 0, 0);
+        const sun = new Date(mon);
+        sun.setDate(mon.getDate() + 6);
+        sun.setHours(23, 59, 59, 999);
+        return { start: mon, end: sun };
+    }
+
+    function _weeklyHTML(reports, offset) {
+        const { start, end } = _weekRange(offset);
+        const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
+
+        const wr = reports.filter(r => r.date >= start.getTime() && r.date <= end.getTime());
+        const totalMin = Math.round(wr.reduce((a,r) => a + (r.timeSpentSeconds||0), 0) / 60);
+        const quizCount = wr.length;
+        const avgPct = quizCount > 0
+            ? Math.round(wr.reduce((a,r) => a + (r.totalQuestions > 0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / quizCount)
+            : 0;
+        const studyDays = new Set(wr.map(r => new Date(r.date).toDateString())).size;
+
+        const weekMonth = start.getMonth() + 1;
+        const weekNum   = Math.ceil(start.getDate() / 7);
+        const weekLabel = offset === 0 ? '이번 주' : `${start.getFullYear()}년 ${weekMonth}월 ${weekNum}주차`;
+
+        const summaries = [
+            { icon:'⏱', val: totalMin+'분',              lbl:'학습 시간' },
+            { icon:'📝', val: quizCount+'회',             lbl:'퀴즈 횟수' },
+            { icon:'🎯', val: quizCount ? avgPct+'%':'-', lbl:'평균 정답률' },
+            { icon:'📅', val: studyDays+'일',             lbl:'학습 일수' },
+        ];
+
+        return `
+        <div style="font-size:0.95rem;font-weight:700;margin-bottom:14px;">주간 학습 통계</div>
+
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <button onclick="window._navWeek(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:var(--text-sub);padding:6px 16px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.82rem;">← 이전</button>
+            <div style="text-align:center;">
+                <div style="font-size:0.92rem;font-weight:700;">${weekLabel}</div>
+                <div style="font-size:0.72rem;color:var(--text-sub);margin-top:2px;">${fmt(start)} ~ ${fmt(end)}</div>
+            </div>
+            <button onclick="window._navWeek(1)" ${offset >= 0 ? 'disabled' : ''} style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:${offset >= 0 ? 'rgba(255,255,255,0.15)' : 'var(--text-sub)'};padding:6px 16px;border-radius:20px;cursor:${offset >= 0 ? 'default' : 'pointer'};font-family:inherit;font-size:0.82rem;">다음 →</button>
+        </div>
+
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
+            ${summaries.map(c => `
+            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 6px;text-align:center;">
+                <div style="font-size:1.05rem;margin-bottom:4px;">${c.icon}</div>
+                <div style="font-size:0.95rem;font-weight:700;">${c.val}</div>
+                <div style="font-size:0.62rem;color:var(--text-sub);margin-top:3px;">${c.lbl}</div>
+            </div>`).join('')}
+        </div>
+
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;margin-bottom:12px;">
+            <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">일별 학습 시간 (분)</div>
+            <canvas id="adminChartDaily" height="150"></canvas>
+        </div>
+
+        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;">
+            <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">8주 정답률 추이</div>
+            <canvas id="adminChartTrend" height="150"></canvas>
+        </div>`;
+    }
+
+    function _drawWeeklyCharts(reports, offset) {
+        if (window._adminWeekCharts) {
+            Object.values(window._adminWeekCharts).forEach(c => c && c.destroy());
+        }
+        window._adminWeekCharts = {};
+
+        const SUBJ   = ['english','hanja','math'];
+        const NAMES  = { english:'영어', hanja:'한자', math:'수학' };
+        const COLORS = { english:'#4facfe', hanja:'#f9826c', math:'#56d364' };
+        const FILL   = { english:'rgba(79,172,254,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)' };
+        const gridColor = 'rgba(255,255,255,0.06)';
+        const tickColor = '#8b949e';
+        const fontCfg   = { family:'Outfit', size:11 };
+
+        // ── Chart 1: 일별 학습 시간 (stacked bar) ──
+        const { start, end } = _weekRange(offset);
+        const wr = reports.filter(r => r.date >= start.getTime() && r.date <= end.getTime());
+
+        const dailyMin = {};
+        SUBJ.forEach(s => { dailyMin[s] = [0,0,0,0,0,0,0]; });
+        wr.forEach(r => {
+            const dow = new Date(r.date).getDay();
+            const idx = dow === 0 ? 6 : dow - 1;
+            if (dailyMin[r.subject]) dailyMin[r.subject][idx] += Math.round((r.timeSpentSeconds||0) / 60);
+        });
+
+        const ctx1 = document.getElementById('adminChartDaily')?.getContext('2d');
+        if (ctx1) {
+            window._adminWeekCharts.daily = new Chart(ctx1, {
+                type: 'bar',
+                data: {
+                    labels: ['월','화','수','목','금','토','일'],
+                    datasets: SUBJ.map(s => ({
+                        label: NAMES[s], data: dailyMin[s],
+                        backgroundColor: FILL[s], borderRadius: 4, borderSkipped: false,
+                    }))
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: tickColor, font: fontCfg, boxWidth: 12 } } },
+                    scales: {
+                        x: { stacked: true, ticks: { color: tickColor, font: fontCfg }, grid: { color: gridColor } },
+                        y: { stacked: true, ticks: { color: tickColor, font: fontCfg }, grid: { color: gridColor },
+                             title: { display: true, text: '분', color: tickColor, font: fontCfg } }
+                    }
+                }
+            });
+        }
+
+        // ── Chart 2: 8주 정답률 추이 (line) ──
+        const weekLabels = [];
+        const trendData  = {};
+        SUBJ.forEach(s => { trendData[s] = []; });
+
+        for (let i = -7; i <= 0; i++) {
+            const { start: ws, end: we } = _weekRange(offset + i);
+            weekLabels.push(`${ws.getMonth()+1}/${ws.getDate()}`);
+            SUBJ.forEach(s => {
+                const sr = reports.filter(r => r.subject === s && r.date >= ws.getTime() && r.date <= we.getTime());
+                const avg = sr.length > 0
+                    ? Math.round(sr.reduce((a,r) => a + (r.totalQuestions>0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / sr.length)
+                    : null;
+                trendData[s].push(avg);
+            });
+        }
+
+        const ctx2 = document.getElementById('adminChartTrend')?.getContext('2d');
+        if (ctx2) {
+            window._adminWeekCharts.trend = new Chart(ctx2, {
+                type: 'line',
+                data: {
+                    labels: weekLabels,
+                    datasets: SUBJ.map(s => ({
+                        label: NAMES[s], data: trendData[s],
+                        borderColor: COLORS[s], backgroundColor: COLORS[s]+'22',
+                        fill: false, tension: 0.35, spanGaps: true,
+                        pointRadius: 4, pointBackgroundColor: COLORS[s],
+                    }))
+                },
+                options: {
+                    responsive: true, maintainAspectRatio: true,
+                    plugins: { legend: { labels: { color: tickColor, font: fontCfg, boxWidth: 12 } } },
+                    scales: {
+                        x: { ticks: { color: tickColor, font: fontCfg }, grid: { color: gridColor } },
+                        y: { min: 0, max: 100,
+                             ticks: { color: tickColor, font: fontCfg, callback: v => v+'%' },
+                             grid: { color: gridColor } }
+                    }
+                }
+            });
+        }
+    }
+
+    window._navWeek = function(delta) {
+        const next = _weeklyOffset + delta;
+        if (next > 0) return;
+        _weeklyOffset = next;
+        const { reports } = window._adminData;
+        const el = document.getElementById('tabContent');
+        if (!el) return;
+        el.innerHTML = _weeklyHTML(reports, _weeklyOffset);
+        requestAnimationFrame(() => _drawWeeklyCharts(reports, _weeklyOffset));
+    };
 
     // ─────────────────────────────────────────────
     //  이벤트
