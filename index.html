@@ -232,6 +232,12 @@
         <!-- 로그인 후: 개인 대시보드 -->
         <div id="dashboard-section" style="display: none;">
             <div id="app-header"></div>
+            <!-- 관리자 전용 버튼 (우준아빠만 표시) -->
+            <div id="adminBanner" style="display:none; margin-bottom:16px;">
+                <a href="admin.html" style="display:inline-flex; align-items:center; gap:8px; background:rgba(255,200,50,0.1); border:1px solid rgba(255,200,50,0.35); color:#ffd700; text-decoration:none; padding:10px 20px; border-radius:14px; font-weight:700; font-size:0.9rem; transition:background 0.2s;">
+                    🛠️ 관리자 대시보드 — 학습자 현황 보기
+                </a>
+            </div>
             
             <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; text-align: left;">
                 <!-- 스탯 카드 (클릭 시 성적표 이동) -->
@@ -348,6 +354,10 @@
                         
                         // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
                         if (window.AppUI) AppUI.init({ title: '오늘의 학습 대시보드' });
+
+                        // 관리자 배너 표시 여부
+                        const adminBanner = document.getElementById('adminBanner');
+                        if (adminBanner) adminBanner.style.display = ['우준아빠'].includes(activeUser) ? 'block' : 'none';
                         
                         // 대시보드 데이터 채우기
                         const user = UserSession.getUserData(activeUser);

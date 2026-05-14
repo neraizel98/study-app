@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+    <meta http-equiv="Pragma" content="no-cache">
+    <meta http-equiv="Expires" content="0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0d1117">
+    <title>관리자 대시보드 - Smart Study</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { display:flex; flex-direction:column; align-items:center; min-height:100vh; padding-bottom:60px; }
+        .wrap { width:100%; max-width:960px; padding:20px; }
+
+        /* ── Header ── */
+        .page-header { display:flex; align-items:center; gap:12px; margin-bottom:28px; padding-top:10px; }
+        .back-btn { text-decoration:none; color:var(--text-sub); font-size:0.85rem; background:var(--card-bg); border:1px solid var(--card-border); padding:6px 14px; border-radius:20px; transition:color 0.2s, border-color 0.2s; }
+        .back-btn:hover { color:var(--accent); border-color:var(--accent); }
+        .page-title { font-size:1.5rem; font-weight:700; flex:1; }
+
+        /* ── Section title ── */
+        .section-title { font-size:1rem; font-weight:700; color:var(--text-sub); margin-bottom:14px; letter-spacing:0.5px; }
+
+        /* ── User cards (list view) ── */
+        .user-grid { display:grid; grid-template-columns:repeat(auto-fill, minmax(260px,1fr)); gap:16px; }
+        .user-card {
+            background:var(--card-bg); border:1px solid var(--card-border);
+            border-radius:20px; padding:20px; cursor:pointer;
+            transition:border-color 0.2s, transform 0.2s;
+            text-decoration:none; color:inherit;
+        }
+        .user-card:hover { border-color:var(--accent); transform:translateY(-3px); }
+        .user-card-top { display:flex; align-items:center; gap:12px; margin-bottom:14px; }
+        .user-avatar {
+            width:44px; height:44px; border-radius:14px;
+            background:linear-gradient(135deg, var(--accent), var(--accent2));
+            display:flex; align-items:center; justify-content:center;
+            font-size:1.3rem; font-weight:700; color:#fff; flex-shrink:0;
+        }
+        .user-name { font-size:1.1rem; font-weight:700; }
+        .user-level { font-size:0.78rem; color:var(--text-sub); margin-top:2px; }
+        .user-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
+        .u-stat { text-align:center; background:rgba(255,255,255,0.04); border-radius:10px; padding:8px 4px; }
+        .u-stat-val { font-size:1rem; font-weight:700; }
+        .u-stat-lbl { font-size:0.65rem; color:var(--text-sub); margin-top:2px; }
+        .user-last { font-size:0.74rem; color:var(--text-sub); margin-top:12px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; }
+
+        /* ── Detail view ── */
+        #userDetailView { display:none; }
+        .detail-back { display:inline-flex; align-items:center; gap:6px; background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:7px 16px; cursor:pointer; font-size:0.85rem; color:var(--text-sub); margin-bottom:20px; transition:color 0.2s; }
+        .detail-back:hover { color:var(--accent); border-color:var(--accent); }
+
+        /* detail header */
+        .detail-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
+        .detail-avatar { width:56px; height:56px; border-radius:18px; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; color:#fff; flex-shrink:0; }
+        .detail-name { font-size:1.4rem; font-weight:700; }
+        .detail-sub  { font-size:0.85rem; color:var(--text-sub); margin-top:3px; }
+
+        /* summary cards row */
+        .detail-summary { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+        .ds-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; padding:16px 12px; text-align:center; }
+        .ds-icon  { font-size:1.4rem; margin-bottom:6px; }
+        .ds-val   { font-size:1.3rem; font-weight:700; }
+        .ds-lbl   { font-size:0.72rem; color:var(--text-sub); margin-top:4px; }
+
+        /* tabs */
+        .detail-tabs { display:flex; gap:8px; margin-bottom:16px; }
+        .d-tab { padding:7px 18px; border-radius:20px; border:1px solid var(--card-border); background:transparent; color:var(--text-sub); cursor:pointer; font-size:0.88rem; font-family:var(--font); transition:all 0.2s; }
+        .d-tab.active { background:rgba(79,172,254,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
+
+        /* chart card */
+        .chart-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:22px 24px; margin-bottom:16px; }
+        .chart-title { font-size:1rem; font-weight:700; margin-bottom:16px; }
+
+        /* quiz records */
+        .quiz-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .quiz-row:last-child { border-bottom:none; }
+        .subj-badge { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; }
+        .quiz-info { flex:1; min-width:0; }
+        .quiz-level { font-size:0.82rem; font-weight:600; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .quiz-date  { font-size:0.72rem; color:var(--text-sub); }
+        .quiz-score { font-size:1rem; font-weight:700; flex-shrink:0; }
+        .quiz-time  { font-size:0.72rem; color:var(--text-sub); flex-shrink:0; }
+
+        /* subject stats bar */
+        .subj-stat-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .subj-stat-row:last-child { border-bottom:none; }
+        .subj-stat-name { width:60px; font-weight:600; font-size:0.9rem; flex-shrink:0; }
+        .subj-bar-wrap { flex:1; }
+        .subj-bar-track { height:8px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
+        .subj-bar-fill  { height:100%; border-radius:4px; transition:width 0.6s; }
+        .subj-stat-pct  { width:40px; text-align:right; font-size:0.85rem; font-weight:700; flex-shrink:0; }
+        .subj-stat-cnt  { font-size:0.75rem; color:var(--text-sub); flex-shrink:0; }
+
+        /* wrong items */
+        .wrong-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .wrong-row:last-child { border-bottom:none; }
+        .wrong-identifier { flex:1; font-size:0.88rem; }
+        .wrong-count { font-size:0.78rem; color:#f9826c; background:rgba(249,130,108,0.12); padding:2px 8px; border-radius:12px; flex-shrink:0; }
+        .mastered-badge { font-size:0.72rem; color:#56d364; background:rgba(86,211,100,0.12); padding:2px 8px; border-radius:12px; }
+
+        .empty-msg { text-align:center; padding:36px; color:var(--text-sub); font-size:0.9rem; }
+        .loading    { text-align:center; padding:60px; color:var(--text-sub); }
+        .error-msg  { text-align:center; padding:40px; color:#f9826c; font-size:0.9rem; }
+
+        @media (max-width:600px) {
+            .detail-summary { grid-template-columns:repeat(2,1fr); }
+            .user-grid { grid-template-columns:1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="blob blob-1"></div>
+    <div class="blob blob-2"></div>
+    <div class="blob blob-3"></div>
+
+    <div class="wrap">
+        <div class="page-header">
+            <a href="index.html" class="back-btn">← 홈</a>
+            <h1 class="page-title">🛠️ 관리자 대시보드</h1>
+        </div>
+
+        <!-- ── 유저 목록 ── -->
+        <div id="userListView">
+            <div class="section-title">등록된 학습자</div>
+            <div id="userList" class="user-grid">
+                <div class="loading">☁️ 데이터 불러오는 중...</div>
+            </div>
+        </div>
+
+        <!-- ── 유저 상세 ── -->
+        <div id="userDetailView">
+            <button class="detail-back" id="backBtn">← 목록으로</button>
+            <div id="detailContent"></div>
+        </div>
+    </div>
+
+    <script src="report.js"></script>
+    <script>
+    // ─────────────────────────────────────────────
+    //  Admin 설정
+    // ─────────────────────────────────────────────
+    const ADMIN_IDS = ['우준아빠'];
+    const FIREBASE_CONFIG = {
+        apiKey:            "AIzaSyDQBCqKxumH-NOdAETKhY6_9xGX_AsVKWg",
+        authDomain:        "smart-study-wj.firebaseapp.com",
+        projectId:         "smart-study-wj",
+        storageBucket:     "smart-study-wj.firebasestorage.app",
+        messagingSenderId: "994757323327",
+        appId:             "1:994757323327:web:c0f68e95bbeea72a12e68a"
+    };
+
+    const SUBJ_NAMES  = { english:'영어', hanja:'한자', math:'수학' };
+    const SUBJ_ICONS  = { english:'🇬🇧', hanja:'🏮',   math:'📐'  };
+    const SUBJ_COLORS = { english:'#4facfe', hanja:'#f9826c', math:'#56d364' };
+
+    let db = null;
+
+    // ─────────────────────────────────────────────
+    //  Firebase 초기화
+    // ─────────────────────────────────────────────
+    function loadScript(src) {
+        return new Promise((res, rej) => {
+            if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
+            const s = document.createElement('script');
+            s.src = src; s.onload = res; s.onerror = rej;
+            document.head.appendChild(s);
+        });
+    }
+
+    async function initFirebase() {
+        await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+        await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
+        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+        db = firebase.firestore();
+    }
+
+    // ─────────────────────────────────────────────
+    //  데이터 로드
+    // ─────────────────────────────────────────────
+    async function loadAllUsers() {
+        const snap = await db.collection('users').get();
+        const users = [];
+        snap.forEach(doc => {
+            const d = doc.data();
+            if (d.id) users.push({ userId: doc.id, ...d });
+        });
+        return users.sort((a, b) => (b._updatedAt || 0) - (a._updatedAt || 0));
+    }
+
+    async function loadUserDetail(userId) {
+        const [uSnap, rSnap, wSnap] = await Promise.all([
+            db.collection('users').doc(userId).get(),
+            db.collection('users').doc(userId).collection('data').doc('reports').get(),
+            db.collection('users').doc(userId).collection('data').doc('wrongAnswers').get()
+        ]);
+        return {
+            userData:     uSnap.exists     ? uSnap.data()                         : {},
+            reports:      rSnap.exists     ? (rSnap.data().reports || [])          : [],
+            wrongAnswers: wSnap.exists     ? (wSnap.data().wrongAnswers || {})     : {}
+        };
+    }
+
+    // ─────────────────────────────────────────────
+    //  유저 목록 렌더링
+    // ─────────────────────────────────────────────
+    function renderUserList(users) {
+        const el = document.getElementById('userList');
+        const learners = users.filter(u => !ADMIN_IDS.includes(u.userId));
+
+        if (!learners.length) {
+            el.innerHTML = '<div class="empty-msg">등록된 학습자가 없습니다.</div>';
+            return;
+        }
+
+        el.innerHTML = learners.map(u => {
+            const streak = u.attendance?.currentStreak || 0;
+            const lastRaw = u._updatedAt;
+            const lastStr = lastRaw
+                ? new Date(lastRaw).toLocaleDateString('ko-KR', { month:'short', day:'numeric', hour:'2-digit', minute:'2-digit' })
+                : '-';
+            const initials = (u.id || u.userId || '?').slice(0, 2);
+            const lvl = u.level || 1;
+            const exp = u.exp || 0;
+
+            return `
+                <div class="user-card" onclick="openUserDetail('${u.userId}')">
+                    <div class="user-card-top">
+                        <div class="user-avatar">${initials}</div>
+                        <div>
+                            <div class="user-name">${u.id || u.userId}</div>
+                            <div class="user-level">Lv.${lvl} · ${exp} EXP</div>
+                        </div>
+                    </div>
+                    <div class="user-stats">
+                        <div class="u-stat">
+                            <div class="u-stat-val">${u.totalAttempts || 0}</div>
+                            <div class="u-stat-lbl">퀴즈 횟수</div>
+                        </div>
+                        <div class="u-stat">
+                            <div class="u-stat-val" style="color:#56d364">${streak}🔥</div>
+                            <div class="u-stat-lbl">연속 출석</div>
+                        </div>
+                        <div class="u-stat">
+                            <div class="u-stat-val">${u.totalCorrect || 0}</div>
+                            <div class="u-stat-lbl">누적 정답</div>
+                        </div>
+                    </div>
+                    <div class="user-last">마지막 활동: ${lastStr}</div>
+                </div>`;
+        }).join('');
+    }
+
+    // ─────────────────────────────────────────────
+    //  유저 상세 렌더링
+    // ─────────────────────────────────────────────
+    let _currentTab = 'quiz';
+
+    function openUserDetail(userId) {
+        document.getElementById('userListView').style.display   = 'none';
+        document.getElementById('userDetailView').style.display = 'block';
+        document.getElementById('detailContent').innerHTML      = '<div class="loading">☁️ 불러오는 중...</div>';
+
+        loadUserDetail(userId).then(({ userData, reports, wrongAnswers }) => {
+            _currentTab = 'quiz';
+            renderDetailContent(userId, userData, reports, wrongAnswers);
+        }).catch(e => {
+            document.getElementById('detailContent').innerHTML =
+                `<div class="error-msg">⚠️ 데이터 로드 실패: ${e.message}</div>`;
+        });
+    }
+
+    function renderDetailContent(userId, ud, reports, wrongAnswers) {
+        const name    = ud.id || userId;
+        const lvl     = ud.level || 1;
+        const streak  = ud.attendance?.currentStreak || 0;
+        const totalDay = ud.attendance?.totalDays || 0;
+        const studyMin = Math.round((ud.totalStudyTime || 0) / 60);
+        const initials = name.slice(0, 2);
+
+        const summaryCards = [
+            { icon:'🏅', val:`Lv.${lvl}`, lbl:'레벨' },
+            { icon:'⏱',  val:`${studyMin}분`, lbl:'총 학습 시간' },
+            { icon:'📝',  val:`${ud.totalAttempts||0}회`, lbl:'퀴즈 도전' },
+            { icon:'🔥',  val:`${streak}일`, lbl:'연속 출석' },
+            { icon:'🧠',  val:`${ud.totalCorrect||0}개`, lbl:'누적 정답' },
+            { icon:'📅',  val:`${totalDay}일`, lbl:'총 출석' }
+        ];
+
+        const html = `
+            <div class="detail-header">
+                <div class="detail-avatar">${initials}</div>
+                <div>
+                    <div class="detail-name">${name}</div>
+                    <div class="detail-sub">EXP ${ud.exp||0} · 마지막 체크인 ${ud.attendance?.lastCheckIn || '-'}</div>
+                </div>
+            </div>
+
+            <div class="detail-summary" style="grid-template-columns:repeat(3,1fr)">
+                ${summaryCards.map(c => `
+                    <div class="ds-card">
+                        <div class="ds-icon">${c.icon}</div>
+                        <div class="ds-val">${c.val}</div>
+                        <div class="ds-lbl">${c.lbl}</div>
+                    </div>`).join('')}
+            </div>
+
+            <div class="detail-tabs">
+                <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
+                <button class="d-tab"        data-tab="subject" onclick="switchTab(this,'subject', '${userId}')">📊 과목별 통계</button>
+                <button class="d-tab"        data-tab="wrong"   onclick="switchTab(this,'wrong',   '${userId}')">📝 오답 현황</button>
+            </div>
+
+            <div class="chart-card" id="tabContent">
+                ${buildQuizTab(reports)}
+            </div>`;
+
+        document.getElementById('detailContent').innerHTML = html;
+        // Store data on window for tab switching
+        window._adminData = { userId, ud, reports, wrongAnswers };
+    }
+
+    function switchTab(btn, tab, userId) {
+        document.querySelectorAll('.d-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _currentTab = tab;
+        const { reports, wrongAnswers } = window._adminData;
+        const el = document.getElementById('tabContent');
+        if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports);
+        if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
+        if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
+    }
+
+    // ── 퀴즈 기록 탭 ──
+    function buildQuizTab(reports) {
+        if (!reports.length) return '<div class="empty-msg">퀴즈 기록이 없습니다.</div>';
+        const sorted = [...reports].sort((a,b) => b.date - a.date).slice(0, 30);
+        const rows = sorted.map(r => {
+            const pct   = r.totalQuestions > 0 ? Math.round(r.finalScore / r.totalQuestions * 100) : 0;
+            const color = pct >= 80 ? '#56d364' : pct >= 50 ? '#f9826c' : '#ff5f6d';
+            const c     = SUBJ_COLORS[r.subject] || '#888';
+            const d     = new Date(r.date);
+            const ds    = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            const sec   = r.timeSpentSeconds || 0;
+            const timeStr = sec > 0 ? (Math.floor(sec/60) + '분 ' + (sec%60) + '초') : '-';
+            const lvlShort = (r.level||'-').length > 16 ? (r.level||'-').slice(0,16)+'…' : (r.level||'-');
+            return `
+                <div class="quiz-row">
+                    <div class="subj-badge" style="background:${c}22; color:${c}">${SUBJ_ICONS[r.subject]||'📚'}</div>
+                    <div class="quiz-info">
+                        <div class="quiz-level">${SUBJ_NAMES[r.subject]||r.subject} · ${lvlShort}</div>
+                        <div class="quiz-date">${ds}</div>
+                    </div>
+                    <div class="quiz-score" style="color:${color}">${r.finalScore}/${r.totalQuestions}</div>
+                    <div class="quiz-time">${timeStr}</div>
+                </div>`;
+        }).join('');
+        return `<div class="chart-title">최근 퀴즈 기록 (최대 30회)</div>${rows}`;
+    }
+
+    // ── 과목별 통계 탭 ──
+    function buildSubjectTab(reports) {
+        const subjects = ['english', 'hanja', 'math'];
+        const stats = {};
+        subjects.forEach(s => {
+            const sub = reports.filter(r => r.subject === s);
+            if (!sub.length) return;
+            const avgPct = Math.round(sub.reduce((a,r) => a + (r.totalQuestions > 0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / sub.length);
+            const totalTime = Math.round(sub.reduce((a,r) => a + (r.timeSpentSeconds||0), 0) / 60);
+            stats[s] = { count: sub.length, avgPct, totalTime };
+        });
+
+        if (!Object.keys(stats).length) return '<div class="empty-msg">데이터가 없습니다.</div>';
+
+        const bars = subjects.filter(s => stats[s]).map(s => {
+            const { count, avgPct, totalTime } = stats[s];
+            const color = SUBJ_COLORS[s];
+            return `
+                <div class="subj-stat-row">
+                    <div class="subj-stat-name">${SUBJ_ICONS[s]} ${SUBJ_NAMES[s]}</div>
+                    <div class="subj-bar-wrap">
+                        <div style="font-size:0.72rem; color:var(--text-sub); margin-bottom:4px;">${count}회 도전 · ${totalTime}분</div>
+                        <div class="subj-bar-track">
+                            <div class="subj-bar-fill" style="width:${avgPct}%; background:${color}"></div>
+                        </div>
+                    </div>
+                    <div class="subj-stat-pct" style="color:${color}">${avgPct}%</div>
+                </div>`;
+        }).join('');
+
+        return `<div class="chart-title">과목별 평균 정답률</div>${bars}`;
+    }
+
+    // ── 오답 현황 탭 ──
+    function buildWrongTab(wrongAnswers) {
+        const subjects = ['english', 'hanja', 'math'];
+        let html = '<div class="chart-title">오답 현황</div>';
+        let anyData = false;
+
+        subjects.forEach(s => {
+            const items = (wrongAnswers[s] || []).sort((a,b) => (b.count||0) - (a.count||0));
+            if (!items.length) return;
+            anyData = true;
+            const mastered = items.filter(i => i.isMastered).length;
+            html += `
+                <div style="margin-bottom:20px;">
+                    <div style="font-size:0.85rem; font-weight:700; color:${SUBJ_COLORS[s]}; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                        ${SUBJ_ICONS[s]} ${SUBJ_NAMES[s]}
+                        <span style="font-size:0.72rem; font-weight:400; color:var(--text-sub);">
+                            ${items.length}개 · 마스터 ${mastered}개
+                        </span>
+                    </div>
+                    ${items.slice(0,20).map(item => {
+                        const id = item.word || item.hanja || item.type || '?';
+                        const meaning = item.meaning ? ` (${item.meaning})` : '';
+                        return `
+                            <div class="wrong-row">
+                                <div class="wrong-identifier">${id}${meaning}</div>
+                                <span class="wrong-count">오답 ${item.count||0}회</span>
+                                ${item.isMastered ? '<span class="mastered-badge">✅ 마스터</span>' : ''}
+                            </div>`;
+                    }).join('')}
+                </div>`;
+        });
+
+        if (!anyData) return '<div class="empty-msg">오답 데이터가 없습니다.</div>';
+        return html;
+    }
+
+    // ─────────────────────────────────────────────
+    //  이벤트
+    // ─────────────────────────────────────────────
+    document.getElementById('backBtn').addEventListener('click', () => {
+        document.getElementById('userDetailView').style.display = 'none';
+        document.getElementById('userListView').style.display   = 'block';
+    });
+
+    // ─────────────────────────────────────────────
+    //  초기화
+    // ─────────────────────────────────────────────
+    document.addEventListener('DOMContentLoaded', async () => {
+        const me = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
+        if (!me || !ADMIN_IDS.includes(me)) {
+            document.querySelector('.wrap').innerHTML = `
+                <div style="text-align:center; padding:80px 20px; color:var(--text-sub);">
+                    🔒 관리자 전용 페이지입니다.<br>
+                    <a href="index.html" style="color:var(--accent); text-decoration:none; margin-top:20px; display:inline-block;">← 홈으로</a>
+                </div>`;
+            return;
+        }
+
+        try {
+            await initFirebase();
+            const users = await loadAllUsers();
+            renderUserList(users);
+        } catch(e) {
+            document.getElementById('userList').innerHTML =
+                `<div class="error-msg">⚠️ Firebase 연결 실패: ${e.message}</div>`;
+        }
+    });
+    </script>
+</body>
+</html>
