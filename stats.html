@@ -48,6 +48,31 @@
         .back-btn:hover, .report-link:hover { color: var(--accent); border-color: var(--accent); }
         .page-title { font-size: 1.5rem; font-weight: 700; flex: 1; }
 
+        /* ── Page tabs ── */
+        .page-tabs {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 22px;
+        }
+        .page-tab {
+            padding: 9px 24px;
+            border-radius: 22px;
+            border: 1px solid var(--card-border);
+            background: transparent;
+            color: var(--text-sub);
+            cursor: pointer;
+            font-size: 0.92rem;
+            font-family: var(--font);
+            font-weight: 600;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+        .page-tab.active {
+            background: rgba(79,172,254,0.15);
+            border-color: var(--accent);
+            color: var(--accent);
+        }
+
         /* ── Week nav ── */
         .week-nav {
             display: flex;
@@ -177,9 +202,17 @@
         <!-- Header -->
         <div class="page-header">
             <a href="index.html" class="back-btn">← 홈</a>
-            <h1 class="page-title">📈 학습 통계</h1>
-            <a href="report.html" class="report-link">퀴즈 기록 →</a>
+            <h1 class="page-title">📈 나의 학습</h1>
         </div>
+
+        <!-- Page tabs -->
+        <div class="page-tabs" id="pageTabs">
+            <button class="page-tab active" data-tab="stats">📈 학습 통계</button>
+            <button class="page-tab"        data-tab="quiz" >📋 퀴즈 기록</button>
+        </div>
+
+        <!-- ── Stats view ── -->
+        <div id="statsView">
 
         <!-- Week nav -->
         <div class="week-nav">
@@ -229,6 +262,19 @@
         <div class="chart-card">
             <div class="chart-title">📋 최근 퀴즈 기록</div>
             <div id="recentList"></div>
+        </div>
+
+        </div><!-- #statsView -->
+
+        <!-- ── Quiz records view ── -->
+        <div id="quizView" style="display:none">
+            <div class="subj-tabs" id="quizSubjTabs">
+                <button class="subj-tab active" data-subj="all">전체</button>
+                <button class="subj-tab" data-subj="english">📚 영어</button>
+                <button class="subj-tab" data-subj="hanja">✍️ 한자</button>
+                <button class="subj-tab" data-subj="math">🧮 수학</button>
+            </div>
+            <div id="quizList"></div>
         </div>
 
     </div><!-- .stats-wrap -->
@@ -552,6 +598,51 @@
     }
 
     // ─────────────────────────────────────────────
+    //  퀴즈 기록 탭 렌더링
+    // ─────────────────────────────────────────────
+    let _quizSubj = 'all';
+
+    function renderQuizList(allReports, subjFilter) {
+        const el = document.getElementById('quizList');
+        let rows = [...allReports].sort((a, b) => b.date - a.date);
+        if (subjFilter !== 'all') rows = rows.filter(r => r.subject === subjFilter);
+
+        if (!rows.length) {
+            el.innerHTML = '<div class="empty-msg">퀴즈 기록이 없습니다.<br>퀴즈를 풀면 여기에 기록이 쌓여요! 📝</div>';
+            return;
+        }
+
+        const html = rows.map(r => {
+            const p = pct(r);
+            const scoreColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
+            const c = SUBJ_COLOR[r.subject] || { bg:'rgba(255,255,255,0.1)', bd:'#888' };
+            const d = new Date(r.date);
+            const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+            const sec = r.timeSpentSeconds || 0;
+            const timeStr = sec > 0 ? `${Math.floor(sec/60)}분 ${sec%60 ? sec%60+'초' : ''}`.trim() : '';
+            const roundBadge = r.round > 1
+                ? `<span style="font-size:0.68rem;color:${c.bd};background:${c.bd}22;padding:2px 7px;border-radius:10px;margin-left:6px;">${r.round}회차</span>`
+                : '';
+            const levelShort = (r.level || '-').length > 22 ? (r.level||'').slice(0,22)+'…' : (r.level||'-');
+            return `
+                <div class="session-row">
+                    <div class="session-badge" style="background:${c.bd}22;color:${c.bd}">${SUBJ_ICONS[r.subject]||'📚'}</div>
+                    <div class="session-info">
+                        <div class="session-name">${SUBJ_NAMES[r.subject]||r.subject}${roundBadge}</div>
+                        <div class="session-level">${levelShort}</div>
+                    </div>
+                    <div style="text-align:right;flex-shrink:0;">
+                        <div class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions} <span style="font-size:0.78em;opacity:0.65">${p}%</span></div>
+                        ${timeStr ? `<div class="session-date">${timeStr}</div>` : ''}
+                    </div>
+                    <div class="session-date" style="min-width:48px;text-align:right">${ds}</div>
+                </div>`;
+        }).join('');
+
+        el.innerHTML = `<div class="chart-card" style="padding:16px 20px;">${html}</div>`;
+    }
+
+    // ─────────────────────────────────────────────
     //  Event listeners
     // ─────────────────────────────────────────────
     document.getElementById('prevWeekBtn').addEventListener('click', () => { weekOffset--; render(); });
@@ -560,10 +651,30 @@
     document.getElementById('subjTabs').addEventListener('click', e => {
         const btn = e.target.closest('.subj-tab');
         if (!btn) return;
-        document.querySelectorAll('.subj-tab').forEach(b => b.classList.remove('active'));
+        document.querySelectorAll('#subjTabs .subj-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         levelSubject = btn.dataset.subj;
         buildLevelChart(loadReports(), levelSubject);
+    });
+
+    document.getElementById('pageTabs').addEventListener('click', e => {
+        const btn = e.target.closest('.page-tab');
+        if (!btn) return;
+        document.querySelectorAll('.page-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        const tab = btn.dataset.tab;
+        document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
+        document.getElementById('quizView').style.display  = tab === 'quiz'  ? '' : 'none';
+        if (tab === 'quiz') renderQuizList(loadReports(), _quizSubj);
+    });
+
+    document.getElementById('quizSubjTabs').addEventListener('click', e => {
+        const btn = e.target.closest('.subj-tab');
+        if (!btn) return;
+        document.querySelectorAll('#quizSubjTabs .subj-tab').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        _quizSubj = btn.dataset.subj;
+        renderQuizList(loadReports(), _quizSubj);
     });
 
     // ─────────────────────────────────────────────
