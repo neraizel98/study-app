@@ -205,6 +205,13 @@
             <h1 class="page-title">📈 나의 학습</h1>
         </div>
 
+        <!-- Week nav — 공통 상단 (탭보다 위) -->
+        <div class="week-nav">
+            <button class="week-btn" id="prevWeekBtn" title="이전 주">‹</button>
+            <span class="week-label" id="weekLabel">—</span>
+            <button class="week-btn" id="nextWeekBtn" title="다음 주" disabled>›</button>
+        </div>
+
         <!-- Page tabs -->
         <div class="page-tabs" id="pageTabs">
             <button class="page-tab active" data-tab="stats">📈 학습 통계</button>
@@ -213,13 +220,6 @@
 
         <!-- ── Stats view ── -->
         <div id="statsView">
-
-        <!-- Week nav -->
-        <div class="week-nav">
-            <button class="week-btn" id="prevWeekBtn" title="이전 주">‹</button>
-            <span class="week-label" id="weekLabel">—</span>
-            <button class="week-btn" id="nextWeekBtn" title="다음 주" disabled>›</button>
-        </div>
 
         <!-- Summary cards -->
         <div class="summary-grid" id="summaryGrid"></div>
@@ -552,11 +552,11 @@
     // ─────────────────────────────────────────────
     //  Recent sessions list
     // ─────────────────────────────────────────────
-    function renderRecent(allReports) {
+    function renderRecent(weekReports) {
         const el = document.getElementById('recentList');
-        const rows = [...allReports].sort((a,b) => b.date - a.date).slice(0, 10);
+        const rows = [...weekReports].sort((a,b) => b.date - a.date);
         if (!rows.length) {
-            el.innerHTML = '<div class="empty-msg">아직 퀴즈 기록이 없습니다.<br>퀴즈를 풀면 여기에 기록이 쌓여요! 📝</div>';
+            el.innerHTML = '<div class="empty-msg">이 기간의 퀴즈 기록이 없습니다.<br>퀴즈를 풀면 여기에 기록이 쌓여요! 📝</div>';
             return;
         }
         el.innerHTML = rows.map(r => {
@@ -594,7 +594,12 @@
         buildStudyTimeChart(week);
         buildScoreTrendChart(all);
         buildLevelChart(all, levelSubject);
-        renderRecent(all);
+        renderRecent(week);
+
+        // 퀴즈 기록 탭이 활성화 상태면 해당 주 데이터로 함께 갱신
+        if (document.getElementById('quizView').style.display !== 'none') {
+            renderQuizList(week, _quizSubj);
+        }
     }
 
     // ─────────────────────────────────────────────
@@ -665,7 +670,10 @@
         const tab = btn.dataset.tab;
         document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
         document.getElementById('quizView').style.display  = tab === 'quiz'  ? '' : 'none';
-        if (tab === 'quiz') renderQuizList(loadReports(), _quizSubj);
+        if (tab === 'quiz') {
+            const week = filterWeek(loadReports(), weekStart(weekOffset));
+            renderQuizList(week, _quizSubj);
+        }
     });
 
     document.getElementById('quizSubjTabs').addEventListener('click', e => {
@@ -674,7 +682,8 @@
         document.querySelectorAll('#quizSubjTabs .subj-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         _quizSubj = btn.dataset.subj;
-        renderQuizList(loadReports(), _quizSubj);
+        const week = filterWeek(loadReports(), weekStart(weekOffset));
+        renderQuizList(week, _quizSubj);
     });
 
     // ─────────────────────────────────────────────
@@ -687,7 +696,7 @@
         }
         render();
 
-        // 동기화 완료 시 차트/카드 재렌더링
+        // 동기화 완료 시 차트/카드 재렌더링 (퀴즈 탭 활성 시 함께 갱신됨)
         window.addEventListener('firesynced', () => render());
     });
     </script>
