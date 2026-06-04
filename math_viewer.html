@@ -403,53 +403,6 @@
             margin-bottom: 10px;
         }
 
-        /* 자주 하는 실수 카드 */
-        .mistakes-card {
-            background: linear-gradient(135deg, rgba(255,82,82,0.07), rgba(255,152,0,0.04));
-            border: 1px solid rgba(255,82,82,0.3);
-            border-radius: 28px;
-            padding: 36px;
-            margin-top: 36px;
-        }
-        .mistakes-header {
-            font-size: 1.2rem;
-            font-weight: 800;
-            color: #ff7043;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .mistake-item {
-            background: rgba(255,255,255,0.03);
-            border-radius: 16px;
-            padding: 18px 20px;
-            margin-bottom: 14px;
-            border: 1px solid rgba(255,82,82,0.15);
-        }
-        .mistake-row {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex-wrap: wrap;
-            margin-bottom: 8px;
-        }
-        .mistake-wrong {
-            background: rgba(255,82,82,0.15);
-            color: #ff5252;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-        }
-        .mistake-right {
-            background: rgba(0,200,83,0.15);
-            color: #00c853;
-            padding: 4px 12px;
-            border-radius: 8px;
-            font-weight: 700;
-        }
-        .mistake-arrow { color: var(--text-sub); font-size: 1.2rem; }
-        .mistake-reason { font-size: 0.9rem; color: var(--text-sub); line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -492,12 +445,6 @@
                 </div>
 
                 <div class="steps-container" id="stepsContainer"></div>
-            </div>
-
-            <!-- 자주 하는 실수 -->
-            <div id="mistakesSection" class="mistakes-card" style="display:none;">
-                <div class="mistakes-header">⚠️ 자주 하는 실수</div>
-                <div id="mistakesContent"></div>
             </div>
 
             <!-- 심화 학습 -->
@@ -610,26 +557,6 @@
                     document.getElementById('svgDiagramCaption').textContent = chapter.svgDiagram.caption;
                 }
                 svgBox.style.display = 'block';
-            }
-
-            // 자주 하는 실수
-            if (chapter.commonMistakes && chapter.commonMistakes.length > 0) {
-                const sec = document.getElementById('mistakesSection');
-                const cont = document.getElementById('mistakesContent');
-                sec.style.display = 'block';
-                chapter.commonMistakes.forEach(m => {
-                    const item = document.createElement('div');
-                    item.className = 'mistake-item';
-                    item.innerHTML = `
-                        <div class="mistake-row">
-                            <span class="mistake-wrong">❌ ${renderMath(m.wrong)}</span>
-                            <span class="mistake-arrow">→</span>
-                            <span class="mistake-right">✅ ${renderMath(m.right)}</span>
-                        </div>
-                        <div class="mistake-reason">${renderMath(m.reason)}</div>
-                    `;
-                    cont.appendChild(item);
-                });
             }
 
             // 심화 학습
