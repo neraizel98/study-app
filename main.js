@@ -295,15 +295,16 @@ function startQuiz(wordList) {
                         w.qType = 3 + Math.floor(Math.random() * 4); // 3~6: 구동사
                     } else if (isVerb(w) && w.forms && rand < 0.5) {
                         w.qType = 7; // 동사 3단 변화
-                    } else if (w.ex && rand < 0.7) {
-                        // 6학년은 주관식이 너무 어려울 수 있으니 확률 조정
-                        const subjectiveProb = currentLevel === 'level1' ? 0.2 : 0.4;
+                    } else if (w.comp && w.sup && rand < 0.65) {
+                        w.qType = 11; // 비교급/최상급
+                    } else if (w.ex && rand < 0.85) {
+                        const subjectiveProb = currentLevel === 'level1' ? 0.45 : 0.65;
                         if (Math.random() < subjectiveProb) {
                             w.qType = 8; // 주관식 빈칸
                         } else {
                             w.qType = 9; // 문장 배열
                         }
-                    } else if (rand < 0.85) {
+                    } else if (rand < 0.93) {
                         w.qType = 10; // 품사 맞히기
                     } else {
                         w.qType = Math.random() < 0.5 ? 1 : 2; // 기존 뜻/객관식 빈칸
@@ -527,7 +528,7 @@ function showQuestion() {
             const otherPos = posOptions.filter(p => p.id !== cur.pos);
             const choices = Utils.shuffle([correctPos, ...Utils.shuffle(otherPos).slice(0, 3)]);
 
-            questionResults[quizIndex] = { 
+            questionResults[quizIndex] = {
                 word: cur.word, meaning: cur.meaning, qType: 10,
                 correctValue: cur.pos,
                 displayCorrect: correctPos.label
@@ -538,8 +539,46 @@ function showQuestion() {
                 btn.dataset.answer = choices[i].id;
                 btn.className = 'choice-btn'; btn.disabled = false; btn.style.display = '';
             });
+        } else if (quizPhase === 11) {
+            // 11. 비교급/최상급
+            phaseBadgeEl.textContent = '비교급/최상급'; phaseBadgeEl.className = 'phase-badge phase2';
+            phaseVerbFormsArea.style.display = 'block';
+            quizChoicesParent.style.display = 'none';
+            quizSubmitArea.style.display = 'block';
+
+            // 라벨을 비교급/최상급용으로 변경
+            const lBase = document.getElementById('vLabelBase');
+            const l1 = document.getElementById('vLabel1');
+            const l2 = document.getElementById('vLabel2');
+            if (lBase) lBase.textContent = '원급';
+            if (l1) l1.textContent = '비교급';
+            if (l2) l2.textContent = '최상급';
+
+            vQuizBaseEl.textContent = cur.word;
+            vQuizPastEl.value = ''; vQuizPastEl.placeholder = '비교급 (예: harder)';
+            vQuizPPEl.value = '';   vQuizPPEl.placeholder = '최상급 (예: hardest)';
+            vQuizPastEl.focus();
+
+            quizQuestionLabel.textContent = `"${cur.word}"의 비교급과 최상급을 입력하세요`;
+            questionResults[quizIndex] = {
+                word: cur.word, meaning: cur.meaning, qType: 11,
+                correctValue: `${cur.comp}|${cur.sup}`,
+                displayCorrect: `${cur.comp} / ${cur.sup}`
+            };
         }
-        
+
+        // 동사 3단 변화 이후 라벨 원상복구 (qType 7에서 변경됐을 수 있으므로)
+        if (quizPhase === 7) {
+            const lBase = document.getElementById('vLabelBase');
+            const l1 = document.getElementById('vLabel1');
+            const l2 = document.getElementById('vLabel2');
+            if (lBase) lBase.textContent = 'Base';
+            if (l1) l1.textContent = 'Past';
+            if (l2) l2.textContent = 'PP';
+            vQuizPastEl.placeholder = '과거형';
+            vQuizPPEl.placeholder = '과거분사';
+        }
+
         // 💡 3회 이상 오답 시 힌트 추가
         const oldHint = document.getElementById('engHintWrap');
         if (oldHint) oldHint.remove();
@@ -617,7 +656,14 @@ function handleQuizSubmit() {
     let ok = false;
     let userVal = '';
 
-    if (res.qType === 7) {
+    if (res.qType === 11) {
+        // 비교급/최상급 체크
+        const compVal = vQuizPastEl.value.trim().toLowerCase();
+        const supVal  = vQuizPPEl.value.trim().toLowerCase();
+        const [correctComp, correctSup] = res.correctValue.split('|');
+        ok = (compVal === correctComp.toLowerCase() && supVal === correctSup.toLowerCase());
+        userVal = `${compVal} / ${supVal}`;
+    } else if (res.qType === 7) {
         // 동사 3단 변화 체크
         const pVal = vQuizPastEl.value.trim().toLowerCase();
         const ppVal = vQuizPPEl.value.trim().toLowerCase();
@@ -629,9 +675,11 @@ function handleQuizSubmit() {
         userVal = subjectiveInputEl.value.trim().toLowerCase();
         const correct = res.correctValue.toLowerCase();
         const base = (res.word || '').toLowerCase();
-        
-        // 문장 내의 실제 형태(correct)와 일치하거나, 단어의 기본형(base)과 일치하면 정답 인정
-        ok = (userVal === correct || (base && userVal === base));
+        const wData = (vocabData[currentLevel] || []).find(w => w.word === res.word);
+        const altWords = (wData && wData.altWords) ? wData.altWords.map(w => w.toLowerCase()) : [];
+
+        // 문장 내 실제 형태, 기본형, 또는 등록된 유사어와 일치하면 정답 인정
+        ok = (userVal === correct || (base && userVal === base) || altWords.includes(userVal));
     }
 
     finishQuestion(ok, userVal);
