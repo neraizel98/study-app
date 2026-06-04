@@ -127,8 +127,41 @@
             <h1 class="page-title">🛠️ 관리자 대시보드</h1>
         </div>
 
-        <!-- ── 유저 목록 ── -->
+        <!-- ── 학습 시간 설정 ── -->
         <div id="userListView">
+        <div class="chart-card" id="studyTimeConfig" style="margin-bottom:20px;">
+            <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
+            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px;" id="studyTimeInputs">
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🇬🇧 영어</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <input type="number" id="stcEnglish" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
+                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🏮 한자</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <input type="number" id="stcHanja" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
+                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📐 수학</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <input type="number" id="stcMath" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
+                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
+                    </div>
+                </div>
+            </div>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d1117;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
+                <span id="stcSavedMsg" style="font-size:0.8rem;color:#56d364;display:none;">✅ 저장됨</span>
+            </div>
+            <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">0분으로 설정하면 해당 과목은 시간 제한 없이 바로 퀴즈 가능</div>
+        </div>
+
+        <!-- ── 유저 목록 ── -->
             <div class="section-title">등록된 학습자</div>
             <div id="userList" class="user-grid">
                 <div class="loading">☁️ 데이터 불러오는 중...</div>
@@ -143,6 +176,7 @@
     </div>
 
     <script src="report.js"></script>
+    <script src="study-timer.js"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Admin 설정
@@ -742,6 +776,29 @@
     // ─────────────────────────────────────────────
     //  초기화
     // ─────────────────────────────────────────────
+    // ─────────────────────────────────────────────
+    //  학습 시간 설정 저장/로드
+    // ─────────────────────────────────────────────
+    function loadStudyTimeConfig() {
+        const cfg = StudyTimer.getConfig();
+        document.getElementById('stcEnglish').value = cfg.english ?? 5;
+        document.getElementById('stcHanja').value   = cfg.hanja   ?? 5;
+        document.getElementById('stcMath').value    = cfg.math    ?? 5;
+    }
+
+    function saveStudyTimeConfig() {
+        const cfg = {
+            english: parseInt(document.getElementById('stcEnglish').value, 10) || 0,
+            hanja:   parseInt(document.getElementById('stcHanja').value,   10) || 0,
+            math:    parseInt(document.getElementById('stcMath').value,    10) || 0,
+        };
+        StudyTimer.setConfig(cfg);
+        const msg = document.getElementById('stcSavedMsg');
+        msg.style.display = 'inline';
+        setTimeout(() => { msg.style.display = 'none'; }, 2000);
+    }
+    window.saveStudyTimeConfig = saveStudyTimeConfig;
+
     document.addEventListener('DOMContentLoaded', async () => {
         const me = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
         if (!me || !ADMIN_IDS.includes(me)) {
@@ -752,6 +809,8 @@
                 </div>`;
             return;
         }
+
+        loadStudyTimeConfig();
 
         try {
             await initFirebase();

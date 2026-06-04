@@ -790,6 +790,8 @@ function showResult() {
 // ============================================================
 // MODE
 // ============================================================
+let _studyTimerCtrl = null;
+
 function setMode(mode) {
     try {
         if (mode === 'study') {
@@ -800,6 +802,7 @@ function setMode(mode) {
             quizView.classList.remove('view-active');
             currentMode = 'study';
             updateCard();
+            if (_studyTimerCtrl) _studyTimerCtrl.startTimer();
         } else {
             quizModeBtn.classList.add('active');
             studyModeBtn.classList.remove('active');
@@ -807,6 +810,7 @@ function setMode(mode) {
             studyControls.classList.remove('view-active');
             quizView.classList.add('view-active');
             currentMode = 'quiz';
+            if (_studyTimerCtrl) _studyTimerCtrl.stopTimer();
             startQuiz();
         }
     } catch (e) {
@@ -901,9 +905,14 @@ window.AppEngine = {
             return false;
         }
 
+        // 학습 타이머 초기화
+        if (typeof StudyTimer !== 'undefined') {
+            _studyTimerCtrl = StudyTimer.initBar('english', quizModeBtn);
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode') === 'review' ? 'quiz' : 'study';
-        
+
         console.log(`[AppEngine] Starting in ${mode} mode`);
         setMode(mode);
         return true;

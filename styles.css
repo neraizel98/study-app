@@ -181,6 +181,61 @@ header p {
     display: block !important;
 }
 
+/* ── 학습 타이머 바 ── */
+#studyTimerBar {
+    margin-bottom: 12px;
+    border-radius: 12px;
+    overflow: hidden;
+    font-family: var(--font);
+    font-size: 0.82rem;
+}
+
+.stb-inner {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--card-bg);
+    border: 1px solid var(--card-border);
+    border-radius: 12px;
+    padding: 8px 14px;
+}
+
+.stb-label  { color: var(--text-sub); white-space: nowrap; flex-shrink: 0; }
+.stb-remain { color: #f9826c; white-space: nowrap; flex-shrink: 0; font-weight: 700; }
+
+.stb-track {
+    flex: 1;
+    height: 6px;
+    background: rgba(255,255,255,0.08);
+    border-radius: 3px;
+    overflow: hidden;
+}
+
+.stb-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--accent), var(--accent2));
+    border-radius: 3px;
+    transition: width 0.8s ease;
+}
+
+.stb-unlocked {
+    background: rgba(86, 211, 100, 0.12);
+    border: 1px solid rgba(86, 211, 100, 0.35);
+    border-radius: 12px;
+    padding: 8px 14px;
+    color: #56d364;
+    font-weight: 700;
+    text-align: center;
+}
+
+/* 잠긴 퀴즈 버튼 */
+.mode-btn.stb-locked {
+    opacity: 0.38;
+    cursor: not-allowed;
+    filter: grayscale(0.6);
+}
+.mode-btn:disabled { pointer-events: none; }
+
 #studyView,
 #studyControls,
 #quizView {

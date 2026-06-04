@@ -330,6 +330,8 @@ function showResult() {
 // ============================================================
 // MODE & EVENTS
 // ============================================================
+let _hanjaTimerCtrl = null;
+
 function setMode(mode) {
     currentMode = mode;
     isPhaseTransition = false;
@@ -340,10 +342,12 @@ function setMode(mode) {
         studyWords = Utils.shuffle([...vocabHanja[currentLevel]]);
         currentIndex = 0;
         updateCard();
+        if (_hanjaTimerCtrl) _hanjaTimerCtrl.startTimer();
     } else {
         quizModeBtn.classList.add('active'); studyModeBtn.classList.remove('active');
         quizView.classList.add('view-active');
         studyView.classList.remove('view-active'); studyControls.classList.remove('view-active');
+        if (_hanjaTimerCtrl) _hanjaTimerCtrl.stopTimer();
         startQuiz();
     }
 }
@@ -435,6 +439,12 @@ window.HanjaEngine = {
         console.log('[HanjaEngine] Initializing...');
         const data = window.vocabHanja || {};
         if (Object.keys(data).length === 0) return false;
+
+        // 학습 타이머 초기화
+        if (typeof StudyTimer !== 'undefined') {
+            _hanjaTimerCtrl = StudyTimer.initBar('hanja', quizModeBtn);
+        }
+
         const urlParams = new URLSearchParams(window.location.search);
         const mode = urlParams.get('mode') === 'review' ? 'quiz' : 'study';
         setMode(mode);

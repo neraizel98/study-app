@@ -287,6 +287,7 @@
     <script src="report.js"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
+    <script src="study-timer.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             AppUI.init({
@@ -385,12 +386,23 @@
                 });
             });
 
+            // 학습 타이머 초기화
+            let _mathTimerCtrl = null;
+            if (typeof StudyTimer !== 'undefined') {
+                _mathTimerCtrl = StudyTimer.initBar('math', quizModeBtn);
+                _mathTimerCtrl.startTimer(); // 수학은 목차 페이지가 곧 학습 모드
+            }
+
             // 모드 전환 이벤트
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     modeBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     currentMode = btn.id === 'studyModeBtn' ? 'study' : 'quiz';
+                    if (_mathTimerCtrl) {
+                        if (currentMode === 'study') _mathTimerCtrl.startTimer();
+                        else _mathTimerCtrl.stopTimer();
+                    }
                     renderTOC();
                 });
             });
