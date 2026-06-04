@@ -236,7 +236,7 @@ function setupIdiomQuiz(q) {
     $('phase2Area').style.display = 'block';
     $('tenseBadge').textContent = '사자성어 완성';
 
-    const blanked = idiomChars.map((c, i) => i === blankIdx ? '<span style="color:var(--accent)">?</span>' : c).join('');
+    const blanked = idiomChars.map((c, i) => i === blankIdx ? '<span style="display:inline-block; width:1.1em; height:1.15em; border:2.5px solid var(--accent); border-radius:4px; vertical-align:middle; margin:0 2px;"></span>' : c).join('');
     $('phase2Context').innerHTML = `
         <p style="color:var(--text-sub); font-size:0.9rem; margin-bottom:12px;">빈칸에 들어갈 한자를 고르세요</p>
         <div style="font-size:2.2rem; letter-spacing:8px; font-family:'Noto Serif KR',serif; color:var(--text);">${blanked}</div>
