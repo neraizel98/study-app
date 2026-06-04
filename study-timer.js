@@ -46,18 +46,57 @@ const StudyTimer = (() => {
         return req <= 0 || getAccumulated(subject) >= req;
     }
 
+    // ── 비활동 감지 ───────────────────────────────────
+    const IDLE_LIMIT = 15; // 초: 이 시간 동안 입력 없으면 타이머 일시정지
+    const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+
+    // onIdle(isIdle) 콜백과 함께 비활동 감지 시작, stop 함수 반환
+    function watchActivity(onIdle) {
+        let idleSec = 0;
+        let idle = false;
+
+        function onActivity() {
+            idleSec = 0;
+            if (idle) { idle = false; onIdle(false); }
+        }
+
+        ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }));
+
+        const id = setInterval(() => {
+            idleSec++;
+            if (!idle && idleSec >= IDLE_LIMIT) { idle = true; onIdle(true); }
+        }, 1000);
+
+        return () => {
+            clearInterval(id);
+            ACTIVITY_EVENTS.forEach(ev => window.removeEventListener(ev, onActivity));
+        };
+    }
+
     // ── 타이머 시작 ───────────────────────────────────
-    // onTick(accSec, reqSec) 1초마다 호출, stop 함수 반환
+    // onTick(accSec, reqSec, isIdle) 1초마다 호출, stop 함수 반환
     function start(subject, onTick) {
         let lastTs = Date.now();
-        onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject));
+        let paused = false;
+
+        onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), false);
+
+        const stopActivity = watchActivity((isIdle) => {
+            paused = isIdle;
+            if (!isIdle) lastTs = Date.now(); // 재개 시 기준 시각 초기화
+            onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), isIdle);
+        });
+
         const id = setInterval(() => {
-            const now = Date.now();
-            const elapsed = Math.floor((now - lastTs) / 1000);
-            if (elapsed > 0) { _addSeconds(subject, elapsed); lastTs = now; }
-            onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject));
+            if (!paused) {
+                const now = Date.now();
+                const elapsed = Math.floor((now - lastTs) / 1000);
+                if (elapsed > 0) { _addSeconds(subject, elapsed); lastTs = now; }
+            }
+            onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), paused);
         }, 1000);
-        return () => clearInterval(id);
+
+        return () => { clearInterval(id); stopActivity(); };
     }
 
     // ── UI 바 초기화 ──────────────────────────────────
@@ -75,7 +114,7 @@ const StudyTimer = (() => {
 
         let stopFn = null;
 
-        function updateUI(accSec, reqSec) {
+        function updateUI(accSec, reqSec, isIdle = false) {
             const unlocked = accSec >= reqSec;
             const pct = reqSec > 0 ? Math.min(100, Math.round(accSec / reqSec * 100)) : 100;
             const remaining = Math.max(0, reqSec - accSec);
@@ -89,6 +128,15 @@ const StudyTimer = (() => {
                 quizBtn.disabled = false;
                 quizBtn.classList.remove('stb-locked');
                 quizBtn.title = '';
+            } else if (isIdle) {
+                bar.innerHTML = `
+                    <div class="stb-inner stb-idle">
+                        <span class="stb-label">💤 자리 비움 감지 — 타이머 일시정지</span>
+                        <div class="stb-track"><div class="stb-fill" style="width:${pct}%; opacity:0.4;"></div></div>
+                        <span class="stb-remain" style="color:var(--text-sub);">화면을 터치하세요</span>
+                    </div>`;
+                quizBtn.disabled = true;
+                quizBtn.classList.add('stb-locked');
             } else {
                 bar.innerHTML = `
                     <div class="stb-inner">

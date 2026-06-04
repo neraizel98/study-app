@@ -218,6 +218,11 @@ header p {
     transition: width 0.8s ease;
 }
 
+.stb-idle {
+    border-color: rgba(255,255,255,0.1) !important;
+    opacity: 0.7;
+}
+
 .stb-unlocked {
     background: rgba(86, 211, 100, 0.12);
     border: 1px solid rgba(86, 211, 100, 0.35);
