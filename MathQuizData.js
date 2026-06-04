@@ -2,9 +2,20 @@ var MathQuizData = {
     // v6-2-v1
     // 1단원. 분수의 나눗셈
     "e6-1-u1": {
-        basic: Array(15).fill({ type: "dynamic", generator: "fraction_div_int_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "fraction_div_int_advanced", difficulty: "medium" }),
-        word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
+        basic: [
+            ...Array(6).fill({ type: "dynamic", generator: "fraction_div_int_basic", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "fraction_div_int_advanced", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "medium" }),
+        ],
+        word: [
+            ...Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" }),
+            ...Array(5).fill({ type: "dynamic", generator: "frac_div_int_word2", difficulty: "medium" }),
+        ]
     },
 
     // 2단원. 각기둥과 각뿔
@@ -33,33 +44,64 @@ var MathQuizData = {
 
     // 3단원. 소수의 나눗셈
     "e6-1-u3": {
-        basic: Array(20).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "medium" }),
+        basic: [
+            ...Array(8).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "easy" }),
+            ...Array(6).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "easy" }),
+            ...Array(6).fill({ type: "dynamic", generator: "decimal_div_int_place", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_estimate", difficulty: "medium" }),
+        ],
         word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
 
     // 4단원. 비와 비율
     "e6-1-u4": {
-        basic: Array(20).fill({ type: "dynamic", generator: "ratio_percentage_basic", difficulty: "easy" }),
+        basic: [
+            ...Array(8).fill({ type: "dynamic", generator: "ratio_percentage_basic", difficulty: "easy" }),
+            ...Array(6).fill({ type: "dynamic", generator: "ratio_find_part", difficulty: "easy" }),
+            ...Array(6).fill({ type: "dynamic", generator: "ratio_to_fraction", difficulty: "easy" }),
+        ],
         advanced: [
             { type: "dynamic", generator: "ratio_percentage_basic", difficulty: "medium" },
+            { type: "dynamic", generator: "ratio_find_part", difficulty: "medium" },
+            { type: "dynamic", generator: "ratio_compare", difficulty: "medium" },
             { question: "어느 야구팀의 올 시즌 승률이 $60\\%$ 입니다. 이 팀이 총 20경기를 치렀다면, 승리한 경기는 몇 경기입니까?", choices: ["$12$경기", "$6$경기", "$14$경기", "$8$경기"], answer: 0, explanation: "승리한 경기 수 = $20 \\times 0.6 = 12$경기 입니다.", difficulty: "medium" },
-            { question: "상자 안에 사과가 300개 들어있는데, 그 중 $15\\%$가 상했습니다. 상한 사과는 몇 개입니까?", choices: ["$45$개", "$15$개", "$30$개", "$50$개"], answer: 0, explanation: "$300 \\times 0.15 = 45$개 입니다.", difficulty: "medium" }
+            { question: "상자 안에 사과가 300개 들어있는데, 그 중 $15\\%$가 상했습니다. 상한 사과는 몇 개입니까?", choices: ["$45$개", "$15$개", "$30$개", "$50$개"], answer: 0, explanation: "$300 \\times 0.15 = 45$개 입니다.", difficulty: "medium" },
+            ...Array(5).fill({ type: "dynamic", generator: "ratio_compare", difficulty: "medium" }),
         ],
         word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
 
     // 5단원. 여러 가지 그래프
     "e6-1-u5": {
-        basic: Array(15).fill({ type: "dynamic", generator: "graph_percentage_problem", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "graph_value_problem", difficulty: "medium" }),
+        basic: [
+            ...Array(6).fill({ type: "dynamic", generator: "graph_percentage_problem", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "graph_rank", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "graph_find_total", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "graph_value_problem", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "graph_find_total", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "graph_rank", difficulty: "medium" }),
+        ],
         word: Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
 
     // 6단원. 직육면체의 부피와 겉넓이
     "e6-1-u6": {
-        basic: Array(15).fill({ type: "dynamic", generator: "volume_calculation", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "surface_area_calculation", difficulty: "medium" }),
+        basic: [
+            ...Array(6).fill({ type: "dynamic", generator: "volume_calculation", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "volume_reverse", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "volume_unit_convert", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(5).fill({ type: "dynamic", generator: "surface_area_calculation", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "volume_reverse", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "volume_unit_convert", difficulty: "medium" }),
+        ],
         word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
     // =============================================
@@ -68,15 +110,34 @@ var MathQuizData = {
 
     // 1단원. 분수의 나눗셈
     "e6-2-u1": {
-        basic: Array(15).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "medium" }),
-        word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
+        basic: [
+            ...Array(6).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "frac_div_frac_fill", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "frac_div_frac_compare", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_frac_fill", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_frac_compare", difficulty: "medium" }),
+        ],
+        word: [
+            ...Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" }),
+            ...Array(5).fill({ type: "dynamic", generator: "frac_div_frac_word", difficulty: "medium" }),
+        ]
     },
 
     // 2단원. 소수의 나눗셈
     "e6-2-u2": {
-        basic: Array(15).fill({ type: "dynamic", generator: "decimal_div_decimal_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "decimal_div_decimal_basic", difficulty: "medium" }),
+        basic: [
+            ...Array(7).fill({ type: "dynamic", generator: "decimal_div_decimal_basic", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "decimal_div_decimal_fill", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "decimal_div_decimal_compare", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(5).fill({ type: "dynamic", generator: "decimal_div_decimal_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_decimal_fill", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "decimal_div_decimal_compare", difficulty: "medium" }),
+        ],
         word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
 
@@ -96,23 +157,58 @@ var MathQuizData = {
 
     // 4단원. 비례식과 비례배분
     "e6-2-u4": {
-        basic: Array(15).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "medium" }),
-        word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
+        basic: [
+            ...Array(7).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "proportion_word", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_word", difficulty: "medium" }),
+        ],
+        word: [
+            ...Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" }),
+            ...Array(5).fill({ type: "dynamic", generator: "proportion_word", difficulty: "medium" }),
+        ]
     },
 
     // 5단원. 원의 넓이
     "e6-2-u5": {
-        basic: Array(15).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "medium" }),
-        word: Array(10).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "hard" })
+        basic: [
+            ...Array(5).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "circle_circumference", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "circle_diameter_from_circumference", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "circle_reverse_radius", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "circle_circumference", difficulty: "medium" }),
+        ],
+        word: [
+            ...Array(4).fill({ type: "dynamic", generator: "circle_area_basic", difficulty: "hard" }),
+            ...Array(3).fill({ type: "dynamic", generator: "circle_reverse_radius", difficulty: "hard" }),
+            ...Array(3).fill({ type: "dynamic", generator: "circle_diameter_from_circumference", difficulty: "hard" }),
+        ]
     },
 
     // 6단원. 원기둥, 원뿔, 구
     "e6-2-u6": {
-        basic: Array(15).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "easy" }),
-        advanced: Array(10).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "medium" }),
-        word: Array(10).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "hard" })
+        basic: [
+            ...Array(5).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "cylinder_lateral_area", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "cone_vs_cylinder", difficulty: "easy" }),
+        ],
+        advanced: [
+            ...Array(4).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "cylinder_total_surface", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "cylinder_lateral_area", difficulty: "medium" }),
+        ],
+        word: [
+            ...Array(4).fill({ type: "dynamic", generator: "cylinder_volume_basic", difficulty: "hard" }),
+            ...Array(3).fill({ type: "dynamic", generator: "cylinder_total_surface", difficulty: "hard" }),
+            ...Array(3).fill({ type: "dynamic", generator: "cone_vs_cylinder", difficulty: "hard" }),
+        ]
     }
 };
 
