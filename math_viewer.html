@@ -345,6 +345,111 @@
         }
 
         .katex { color: var(--text) !important; }
+
+        /* SVG 다이어그램 */
+        .svg-diagram-box {
+            background: rgba(255,255,255,0.03);
+            border: 1px solid var(--card-border);
+            border-radius: 24px;
+            padding: 28px 20px;
+            margin: 30px 0;
+            text-align: center;
+        }
+        .svg-diagram-box svg { max-width: 100%; height: auto; }
+        .svg-diagram-caption {
+            font-size: 0.82rem;
+            color: var(--text-sub);
+            margin-top: 12px;
+        }
+
+        /* 심화 학습 카드 */
+        .deep-dive-card {
+            background: linear-gradient(135deg, rgba(79,172,254,0.07), rgba(0,242,254,0.04));
+            border: 1px solid rgba(79,172,254,0.35);
+            border-radius: 28px;
+            padding: 36px;
+            margin-top: 36px;
+        }
+        .deep-dive-header {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #4facfe;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .deep-dive-content { display: flex; flex-direction: column; gap: 14px; }
+        .deep-dive-item {
+            font-size: 1rem;
+            line-height: 1.7;
+            color: var(--text-sub);
+            padding-left: 16px;
+            border-left: 3px solid rgba(79,172,254,0.5);
+        }
+        .deep-dive-example {
+            background: rgba(255,255,255,0.04);
+            border-radius: 16px;
+            padding: 20px;
+            margin-top: 16px;
+            border: 1px solid rgba(79,172,254,0.2);
+        }
+        .deep-dive-example-label {
+            font-size: 0.8rem;
+            font-weight: 700;
+            color: #4facfe;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            margin-bottom: 10px;
+        }
+
+        /* 자주 하는 실수 카드 */
+        .mistakes-card {
+            background: linear-gradient(135deg, rgba(255,82,82,0.07), rgba(255,152,0,0.04));
+            border: 1px solid rgba(255,82,82,0.3);
+            border-radius: 28px;
+            padding: 36px;
+            margin-top: 36px;
+        }
+        .mistakes-header {
+            font-size: 1.2rem;
+            font-weight: 800;
+            color: #ff7043;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .mistake-item {
+            background: rgba(255,255,255,0.03);
+            border-radius: 16px;
+            padding: 18px 20px;
+            margin-bottom: 14px;
+            border: 1px solid rgba(255,82,82,0.15);
+        }
+        .mistake-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin-bottom: 8px;
+        }
+        .mistake-wrong {
+            background: rgba(255,82,82,0.15);
+            color: #ff5252;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .mistake-right {
+            background: rgba(0,200,83,0.15);
+            color: #00c853;
+            padding: 4px 12px;
+            border-radius: 8px;
+            font-weight: 700;
+        }
+        .mistake-arrow { color: var(--text-sub); font-size: 1.2rem; }
+        .mistake-reason { font-size: 0.9rem; color: var(--text-sub); line-height: 1.6; }
     </style>
 </head>
 <body>
@@ -380,7 +485,25 @@
                     <img src="" alt="개념 이미지" class="concept-image" id="conceptImg">
                 </div>
 
+                <!-- SVG 다이어그램 -->
+                <div id="svgDiagramContainer" class="svg-diagram-box" style="display:none;">
+                    <div id="svgDiagram"></div>
+                    <div class="svg-diagram-caption" id="svgDiagramCaption"></div>
+                </div>
+
                 <div class="steps-container" id="stepsContainer"></div>
+            </div>
+
+            <!-- 자주 하는 실수 -->
+            <div id="mistakesSection" class="mistakes-card" style="display:none;">
+                <div class="mistakes-header">⚠️ 자주 하는 실수</div>
+                <div id="mistakesContent"></div>
+            </div>
+
+            <!-- 심화 학습 -->
+            <div id="deepDiveSection" class="deep-dive-card" style="display:none;">
+                <div class="deep-dive-header">🚀 심화 학습</div>
+                <div id="deepDiveContent" class="deep-dive-content"></div>
             </div>
 
             <div class="example-section" id="exampleSection">
@@ -398,6 +521,7 @@
     </div>
 
     <script src="MathData.js?v=20260507-1855"></script>
+    <script src="MathDataExtra.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const params = new URLSearchParams(window.location.search);
@@ -443,12 +567,17 @@
                 return;
             }
 
-            const chapter = unit.chapters.find(c => c.id === chapterId);
+            let chapter = unit.chapters.find(c => c.id === chapterId);
 
             if (!chapter) {
                 alert('해당 소단원 정보를 찾을 수 없습니다.');
                 window.location.href = 'math.html';
                 return;
+            }
+
+            // MathDataExtra로 심화 콘텐츠 병합
+            if (window.MathDataExtra && window.MathDataExtra[chapterId]) {
+                chapter = Object.assign({}, chapter, window.MathDataExtra[chapterId]);
             }
 
             // 기본 정보 렌더링
@@ -471,6 +600,63 @@
                 const img = document.getElementById('conceptImg');
                 img.src = chapter.image;
                 imgContainer.style.display = 'block';
+            }
+
+            // SVG 다이어그램
+            if (chapter.svgDiagram) {
+                const svgBox = document.getElementById('svgDiagramContainer');
+                document.getElementById('svgDiagram').innerHTML = chapter.svgDiagram.svg || chapter.svgDiagram;
+                if (chapter.svgDiagram.caption) {
+                    document.getElementById('svgDiagramCaption').textContent = chapter.svgDiagram.caption;
+                }
+                svgBox.style.display = 'block';
+            }
+
+            // 자주 하는 실수
+            if (chapter.commonMistakes && chapter.commonMistakes.length > 0) {
+                const sec = document.getElementById('mistakesSection');
+                const cont = document.getElementById('mistakesContent');
+                sec.style.display = 'block';
+                chapter.commonMistakes.forEach(m => {
+                    const item = document.createElement('div');
+                    item.className = 'mistake-item';
+                    item.innerHTML = `
+                        <div class="mistake-row">
+                            <span class="mistake-wrong">❌ ${renderMath(m.wrong)}</span>
+                            <span class="mistake-arrow">→</span>
+                            <span class="mistake-right">✅ ${renderMath(m.right)}</span>
+                        </div>
+                        <div class="mistake-reason">${renderMath(m.reason)}</div>
+                    `;
+                    cont.appendChild(item);
+                });
+            }
+
+            // 심화 학습
+            if (chapter.deepDive) {
+                const sec = document.getElementById('deepDiveSection');
+                const cont = document.getElementById('deepDiveContent');
+                sec.style.display = 'block';
+                (chapter.deepDive.content || []).forEach(text => {
+                    const item = document.createElement('div');
+                    item.className = 'deep-dive-item';
+                    item.innerHTML = renderMath(text);
+                    cont.appendChild(item);
+                });
+                (chapter.deepDive.examples || []).forEach((ex, i) => {
+                    const box = document.createElement('div');
+                    box.className = 'deep-dive-example';
+                    let solHtml = '';
+                    if (ex.solution) {
+                        ex.solution.forEach(s => { solHtml += `<div style="color:var(--text-sub); margin-top:6px; font-size:0.95rem;">${renderMath(s)}</div>`; });
+                    }
+                    box.innerHTML = `
+                        <div class="deep-dive-example-label">심화 예제 ${i + 1}</div>
+                        <div style="font-weight:600; color:var(--text);">${renderMath(ex.problem)}</div>
+                        ${solHtml}
+                    `;
+                    cont.appendChild(box);
+                });
             }
 
             // 단계별 계산

@@ -46,6 +46,7 @@ const STATIC_ASSETS = [
     './VocabHanja.js',
     './MathData.js',
     './MathQuizData.js',
+    './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
     './icons/icon-512.png',
