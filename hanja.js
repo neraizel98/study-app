@@ -344,6 +344,7 @@ function setMode(mode) {
         updateCard();
         if (_hanjaTimerCtrl) _hanjaTimerCtrl.startTimer();
     } else {
+        if (quizModeBtn.classList.contains('stb-locked')) return;
         quizModeBtn.classList.add('active'); studyModeBtn.classList.remove('active');
         quizView.classList.add('view-active');
         studyView.classList.remove('view-active'); studyControls.classList.remove('view-active');

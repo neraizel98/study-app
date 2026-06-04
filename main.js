@@ -804,6 +804,7 @@ function setMode(mode) {
             updateCard();
             if (_studyTimerCtrl) _studyTimerCtrl.startTimer();
         } else {
+            if (quizModeBtn.classList.contains('stb-locked')) return;
             quizModeBtn.classList.add('active');
             studyModeBtn.classList.remove('active');
             studyView.classList.remove('view-active');

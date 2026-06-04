@@ -398,7 +398,9 @@
                 btn.addEventListener('click', () => {
                     modeBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    currentMode = btn.id === 'studyModeBtn' ? 'study' : 'quiz';
+                    const nextMode = btn.id === 'studyModeBtn' ? 'study' : 'quiz';
+                    if (nextMode === 'quiz' && quizModeBtn.classList.contains('stb-locked')) return;
+                    currentMode = nextMode;
                     if (_mathTimerCtrl) {
                         if (currentMode === 'study') _mathTimerCtrl.startTimer();
                         else _mathTimerCtrl.stopTimer();

@@ -99,6 +99,21 @@ const StudyTimer = (() => {
         return () => { clearInterval(id); stopActivity(); };
     }
 
+    // ── 토스트 메시지 ─────────────────────────────────
+    function _showToast(msg) {
+        let toast = document.getElementById('stbToast');
+        if (!toast) {
+            toast = document.createElement('div');
+            toast.id = 'stbToast';
+            toast.className = 'stb-toast';
+            document.body.appendChild(toast);
+        }
+        toast.textContent = msg;
+        toast.classList.add('stb-toast-show');
+        clearTimeout(toast._hideTimer);
+        toast._hideTimer = setTimeout(() => toast.classList.remove('stb-toast-show'), 2500);
+    }
+
     // ── UI 바 초기화 ──────────────────────────────────
     // quizBtn: 퀴즈 모드 버튼 엘리먼트
     // 반환: { startTimer(), stopTimer() }
@@ -113,11 +128,26 @@ const StudyTimer = (() => {
         }
 
         let stopFn = null;
+        let _lastRemain = 0; // 잠금 클릭 시 메시지용
+
+        // 잠긴 상태에서 클릭 시 안내 메시지
+        quizBtn.addEventListener('click', (e) => {
+            if (quizBtn.classList.contains('stb-locked')) {
+                e.stopImmediatePropagation();
+                const remMin = Math.floor(_lastRemain / 60);
+                const remSec = _lastRemain % 60;
+                const timeStr = remMin > 0
+                    ? `${remMin}분 ${String(remSec).padStart(2,'0')}초`
+                    : `${remSec}초`;
+                _showToast(`📚 퀴즈를 풀려면 ${timeStr} 더 학습해야 해요!`);
+            }
+        }, true); // capture 단계에서 처리
 
         function updateUI(accSec, reqSec, isIdle = false) {
             const unlocked = accSec >= reqSec;
             const pct = reqSec > 0 ? Math.min(100, Math.round(accSec / reqSec * 100)) : 100;
             const remaining = Math.max(0, reqSec - accSec);
+            _lastRemain = remaining;
             const remMin = Math.floor(remaining / 60);
             const remSec = remaining % 60;
             const accMin = Math.floor(accSec / 60);
@@ -135,7 +165,7 @@ const StudyTimer = (() => {
                         <div class="stb-track"><div class="stb-fill" style="width:${pct}%; opacity:0.4;"></div></div>
                         <span class="stb-remain" style="color:var(--text-sub);">화면을 터치하세요</span>
                     </div>`;
-                quizBtn.disabled = true;
+                quizBtn.disabled = false; // 클릭 이벤트는 살려둠
                 quizBtn.classList.add('stb-locked');
             } else {
                 bar.innerHTML = `
@@ -144,9 +174,8 @@ const StudyTimer = (() => {
                         <div class="stb-track"><div class="stb-fill" style="width:${pct}%"></div></div>
                         <span class="stb-remain">🔒 ${remMin}분 ${String(remSec).padStart(2,'0')}초 남음</span>
                     </div>`;
-                quizBtn.disabled = true;
+                quizBtn.disabled = false; // 클릭 이벤트는 살려둠
                 quizBtn.classList.add('stb-locked');
-                quizBtn.title = `퀴즈까지 ${remMin}분 ${String(remSec).padStart(2,'0')}초 더 학습하세요`;
             }
         }
 

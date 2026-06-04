@@ -239,7 +239,31 @@ header p {
     cursor: not-allowed;
     filter: grayscale(0.6);
 }
-.mode-btn:disabled { pointer-events: none; }
+
+/* 학습 필요 토스트 */
+.stb-toast {
+    position: fixed;
+    bottom: 80px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px);
+    background: rgba(20, 26, 36, 0.95);
+    border: 1px solid rgba(249, 130, 108, 0.5);
+    color: #f9826c;
+    font-family: var(--font);
+    font-size: 0.9rem;
+    font-weight: 700;
+    padding: 12px 20px;
+    border-radius: 14px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.25s, transform 0.25s;
+    z-index: 9999;
+}
+.stb-toast.stb-toast-show {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
 
 #studyView,
 #studyControls,
