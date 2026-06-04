@@ -60,6 +60,8 @@ let isIdiomMeanVisible = false;
 let studyWriterInstance = null;
 let writerInstance = null; // 퀴즈용
 let isPhaseTransition = false;
+let currentQuizType = 'meaning'; // 'meaning' | 'reverse' | 'radical' | 'idiom' | 'relation' | 'writing'
+let currentCorrectAnswer = '';
 
 function $(id) { return document.getElementById(id); }
 
@@ -151,36 +153,118 @@ function showQuestion() {
     quizQNum.textContent = `문제 ${quizIndex + 1} / ${quizWords.length}`;
     quizScoreEl.textContent = `${quizScore}점`;
     quizProgressBar.style.width = `${((quizIndex) / quizWords.length) * 100}%`;
-    
-    // 한자 쓰기 퀴즈 여부 결정 (약 30% 확률)
-    const isWriting = Math.random() < 0.3;
-    
-    if (isWriting) {
-        setupWritingQuiz(q);
-    } else {
-        setupMeaningQuiz(q);
-    }
+
+    // 모든 영역 초기화
+    $('phase1Area').style.display = 'none';
+    $('phase2Area').style.display = 'none';
+    $('phase3Area').style.display = 'none';
+    $('quizChoices').style.display = 'none';
+    phaseFeedback.style.display = 'none';
+    quizHanja.style.fontSize = '';
+
+    currentQuizType = pickQuizType(q);
+    const dispatch = {
+        meaning: setupMeaningQuiz,
+        reverse: setupReverseQuiz,
+        radical: setupRadicalQuiz,
+        idiom:   setupIdiomQuiz,
+        relation: setupRelationQuiz,
+        writing: setupWritingQuiz
+    };
+    dispatch[currentQuizType](q);
+}
+
+function pickQuizType(q) {
+    if (Math.random() < 0.18) return 'writing';
+    const pool = ['meaning', 'meaning', 'reverse', 'radical'];
+    if (q.idiom) pool.push('idiom');
+    if (q.antonym || q.synonym) pool.push('relation');
+    return pool[Math.floor(Math.random() * pool.length)];
+}
+
+function showChoices(choiceList, correct) {
+    currentCorrectAnswer = correct;
+    const shuffled = Utils.shuffle([...choiceList]);
+    const btns = document.querySelectorAll('.choice-btn');
+    $('quizChoices').style.display = 'grid';
+    btns.forEach((btn, i) => {
+        btn.textContent = shuffled[i];
+        btn.onclick = () => checkAnswer(shuffled[i], correct);
+    });
 }
 
 function setupMeaningQuiz(q) {
-    phaseBadge.textContent = '뜻 맞추기';
+    phaseBadge.textContent = '뜻·음 맞추기';
     $('phase1Area').style.display = 'block';
-    $('phase3Area').style.display = 'none';
-    $('quizChoices').style.display = 'grid';
+    $('quizQuestionLabel').textContent = '이 한자의 뜻과 음은?';
     quizHanja.textContent = q.hanja;
-    phaseFeedback.style.display = 'none';
+    const correct = `${q.eum} [${q.meaning}]`;
+    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    showChoices([correct, ...others.map(o => `${o.eum} [${o.meaning}]`)], correct);
+}
 
-    // 선택지 생성
-    const others = vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja);
-    const choices = Utils.shuffle([
-        `${q.eum} [${q.meaning}]`,
-        ...Utils.shuffle(others).slice(0, 3).map(o => `${o.eum} [${o.meaning}]`)
-    ]);
+function setupReverseQuiz(q) {
+    phaseBadge.textContent = '한자 찾기';
+    $('phase1Area').style.display = 'block';
+    $('quizQuestionLabel').textContent = '다음 훈음에 해당하는 한자는?';
+    quizHanja.textContent = `${q.eum} [${q.meaning}]`;
+    quizHanja.style.fontSize = '1.6rem';
+    const correct = q.hanja;
+    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    showChoices([correct, ...others.map(o => o.hanja)], correct);
+}
 
-    quizChoices.forEach((btn, i) => {
-        btn.textContent = choices[i];
-        btn.onclick = () => checkAnswer(choices[i], `${q.eum} [${q.meaning}]`);
-    });
+function setupRadicalQuiz(q) {
+    phaseBadge.textContent = '부수 맞추기';
+    $('phase1Area').style.display = 'block';
+    $('quizQuestionLabel').textContent = '이 한자의 부수는?';
+    quizHanja.textContent = q.hanja;
+    const correct = q.radical;
+    const others = Utils.shuffle(
+        vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja && v.radical !== q.radical)
+    ).slice(0, 3);
+    showChoices([correct, ...others.map(o => o.radical)], correct);
+}
+
+function setupIdiomQuiz(q) {
+    // q.hanja가 사자성어 안에 없는 경우 fallback
+    const idiomChars = [...q.idiom];
+    const blankIdx = idiomChars.indexOf(q.hanja);
+    if (blankIdx === -1) { setupMeaningQuiz(q); return; }
+
+    phaseBadge.textContent = '사자성어 완성';
+    $('phase2Area').style.display = 'block';
+    $('tenseBadge').textContent = '사자성어 완성';
+
+    const blanked = idiomChars.map((c, i) => i === blankIdx ? '<span style="color:var(--accent)">?</span>' : c).join('');
+    $('phase2Context').innerHTML = `
+        <p style="color:var(--text-sub); font-size:0.9rem; margin-bottom:12px;">빈칸에 들어갈 한자를 고르세요</p>
+        <div style="font-size:2.2rem; letter-spacing:8px; font-family:'Noto Serif KR',serif; color:var(--text);">${blanked}</div>
+        <p style="color:var(--text-sub); font-size:0.82rem; margin-top:10px;">(${q.idiomEum}) — ${q.idiomMean}</p>
+    `;
+
+    const correct = q.hanja;
+    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    showChoices([correct, ...others.map(o => o.hanja)], correct);
+}
+
+function setupRelationQuiz(q) {
+    phaseBadge.textContent = '유의어·반의어';
+    $('phase1Area').style.display = 'block';
+
+    const useAntonym = q.antonym && (!q.synonym || Math.random() < 0.5);
+    const relType = useAntonym ? '반의어' : '유의어';
+    const correct = useAntonym ? q.antonym : q.synonym; // "水(수)" 형태
+
+    $('quizQuestionLabel').textContent = `다음 한자의 ${relType}는?`;
+    quizHanja.textContent = `${q.hanja}(${q.eum})`;
+    quizHanja.style.fontSize = '2.8rem';
+
+    // 오답: 같은 포맷으로 vocab에서 랜덤 3개
+    const others = Utils.shuffle(
+        vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja && `${v.hanja}(${v.eum})` !== correct)
+    ).slice(0, 3).map(v => `${v.hanja}(${v.eum})`);
+    showChoices([correct, ...others], correct);
 }
 
 const writingQuizContainer = $('writingQuizContainer');
@@ -190,9 +274,7 @@ const writingResetBtn = $('writingResetBtn');
 
 function setupWritingQuiz(q) {
     phaseBadge.textContent = '한자 쓰기';
-    $('phase1Area').style.display = 'none';
     $('phase3Area').style.display = 'block';
-    $('quizChoices').style.display = 'none';
     $('writingQuestionLabel').textContent = `[ ${q.eum} (${q.meaning}) ] 을(를) 써보세요`;
     phaseFeedback.style.display = 'none';
 
@@ -236,7 +318,8 @@ function checkAnswer(selected, correct) {
         }, status, quizSessionData.id, quizSessionData.roundCount);
     }
     
-    phaseFeedback.textContent = isOk ? '정답입니다! ✨' : `아쉬워요! 정답은 [ ${correct} ] 입니다.`;
+    const feedbackOk = isOk ? '정답입니다! ✨' : `아쉬워요! 정답은 [ ${correct} ] 입니다.`;
+    phaseFeedback.textContent = (currentQuizType === 'writing') ? '수고했어요! 다음 문제로 넘어갑니다 ✏️' : feedbackOk;
     phaseFeedback.className = `phase-feedback ${isOk ? 'correct' : 'wrong'}`;
     phaseFeedback.style.display = 'block';
 
@@ -388,8 +471,8 @@ writingHintBtn.addEventListener('click', () => {
 
 writingFinishBtn.addEventListener('click', () => {
     if (isPhaseTransition) return;
-    const q = quizWords[quizIndex];
-    checkAnswer(`${q.eum} [${q.meaning}]`, `${q.eum} [${q.meaning}]`); // 한자 쓰기는 일단 완료하면 정답 처리 (HanziWriter 내부 체크 로직 연동 가능하나 간소화)
+    // 쓰기 퀴즈는 완료 시 정답 처리 (HanziWriter 내부 체크와 별도로 완료 인정)
+    checkAnswer('__writing_done__', '__writing_done__');
 });
 
 writingResetBtn.addEventListener('click', () => { if (writerInstance) writerInstance.quiz(); });
