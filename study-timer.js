@@ -131,7 +131,7 @@ const StudyTimer = (() => {
         let _lastRemain = 0; // 잠금 클릭 시 메시지용
 
         // 잠긴 상태에서 클릭 시 안내 메시지
-        quizBtn.addEventListener('click', (e) => {
+        if (quizBtn) quizBtn.addEventListener('click', (e) => {
             if (quizBtn.classList.contains('stb-locked')) {
                 e.stopImmediatePropagation();
                 const remMin = Math.floor(_lastRemain / 60);
@@ -155,9 +155,7 @@ const StudyTimer = (() => {
 
             if (unlocked) {
                 bar.innerHTML = `<div class="stb-unlocked">✅ 오늘 학습 완료! 퀴즈를 풀 수 있어요 🎉</div>`;
-                quizBtn.disabled = false;
-                quizBtn.classList.remove('stb-locked');
-                quizBtn.title = '';
+                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.remove('stb-locked'); quizBtn.title = ''; }
             } else if (isIdle) {
                 bar.innerHTML = `
                     <div class="stb-inner stb-idle">
@@ -165,8 +163,7 @@ const StudyTimer = (() => {
                         <div class="stb-track"><div class="stb-fill" style="width:${pct}%; opacity:0.4;"></div></div>
                         <span class="stb-remain" style="color:var(--text-sub);">화면을 터치하세요</span>
                     </div>`;
-                quizBtn.disabled = false; // 클릭 이벤트는 살려둠
-                quizBtn.classList.add('stb-locked');
+                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.add('stb-locked'); }
             } else {
                 bar.innerHTML = `
                     <div class="stb-inner">
@@ -174,8 +171,7 @@ const StudyTimer = (() => {
                         <div class="stb-track"><div class="stb-fill" style="width:${pct}%"></div></div>
                         <span class="stb-remain">🔒 ${remMin}분 ${String(remSec).padStart(2,'0')}초 남음</span>
                     </div>`;
-                quizBtn.disabled = false; // 클릭 이벤트는 살려둠
-                quizBtn.classList.add('stb-locked');
+                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.add('stb-locked'); }
             }
         }
 

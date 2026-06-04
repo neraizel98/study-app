@@ -467,10 +467,17 @@
         </main>
     </div>
 
+    <script src="study-timer.js"></script>
     <script src="MathData.js?v=20260507-1855"></script>
     <script src="MathDataExtra.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
+            if (typeof StudyTimer !== 'undefined') {
+                const timerCtrl = StudyTimer.initBar('math', null);
+                timerCtrl.startTimer();
+                window.addEventListener('beforeunload', () => timerCtrl.stopTimer());
+            }
+
             const params = new URLSearchParams(window.location.search);
             const levelId = params.get('level') || 'elementary-6';
             const semesterId = params.get('semester') || '1';
