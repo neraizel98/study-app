@@ -72,6 +72,7 @@
         .detail-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
         .detail-tabs::-webkit-scrollbar { display:none; }
         .d-tab { padding:7px 18px; border-radius:20px; border:1px solid var(--card-border); background:transparent; color:var(--text-sub); cursor:pointer; font-size:0.88rem; font-family:var(--font); transition:all 0.2s; }
+        .d-tab:hover:not(.active) { border-color:rgba(79,172,254,0.5); color:var(--text); background:rgba(255,255,255,0.05); }
         .d-tab.active { background:rgba(79,172,254,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
 
         /* chart card */
@@ -716,6 +717,8 @@
             });
         }
     }
+
+    window.switchTab = switchTab;
 
     window._navWeek = function(delta) {
         const next = _weeklyOffset + delta;
