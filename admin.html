@@ -431,11 +431,15 @@
             const sec   = r.timeSpentSeconds || 0;
             const timeStr = sec > 0 ? (Math.floor(sec/60) + '분 ' + (sec%60) + '초') : '-';
             const lvlShort = (r.level||'-').length > 16 ? (r.level||'-').slice(0,16)+'…' : (r.level||'-');
+            const round = r.round || 1;
+            const roundBadge = round <= 2
+                ? `<span style="font-size:0.65rem;padding:1px 6px;border-radius:8px;background:${round===1?'rgba(79,172,254,0.15)':'rgba(249,130,108,0.15)'};color:${round===1?'#4facfe':'#f9826c'};margin-left:4px;">${round}회차</span>`
+                : '';
             return `
                 <div class="quiz-row">
                     <div class="subj-badge" style="background:${c}22; color:${c}">${SUBJ_ICONS[r.subject]||'📚'}</div>
                     <div class="quiz-info">
-                        <div class="quiz-level">${SUBJ_NAMES[r.subject]||r.subject} · ${lvlShort}</div>
+                        <div class="quiz-level">${SUBJ_NAMES[r.subject]||r.subject} · ${lvlShort}${roundBadge}</div>
                         <div class="quiz-date">${ds}</div>
                     </div>
                     <div class="quiz-score" style="color:${color}">${r.finalScore}/${r.totalQuestions}</div>
