@@ -448,34 +448,77 @@
     // ── 과목별 통계 탭 ──
     function buildSubjectTab(reports) {
         const subjects = ['english', 'hanja', 'math'];
-        const stats = {};
-        subjects.forEach(s => {
+        const pct = r => r.totalQuestions > 0 ? r.finalScore / r.totalQuestions * 100 : 0;
+        const avg = arr => arr.length ? Math.round(arr.reduce((a, r) => a + pct(r), 0) / arr.length) : null;
+
+        const ROUND_LABELS = ['1회차', '2회차', '3회차+'];
+
+        const cards = subjects.map(s => {
             const sub = reports.filter(r => r.subject === s);
-            if (!sub.length) return;
-            const avgPct = Math.round(sub.reduce((a,r) => a + (r.totalQuestions > 0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / sub.length);
-            const totalTime = Math.round(sub.reduce((a,r) => a + (r.timeSpentSeconds||0), 0) / 60);
-            stats[s] = { count: sub.length, avgPct, totalTime };
-        });
+            if (!sub.length) return null;
 
-        if (!Object.keys(stats).length) return '<div class="empty-msg">데이터가 없습니다.</div>';
+            const totalCount = sub.length;
+            const totalTime  = Math.round(sub.reduce((a, r) => a + (r.timeSpentSeconds || 0), 0) / 60);
+            const overallPct = avg(sub);
+            const color      = SUBJ_COLORS[s];
 
-        const bars = subjects.filter(s => stats[s]).map(s => {
-            const { count, avgPct, totalTime } = stats[s];
-            const color = SUBJ_COLORS[s];
-            return `
-                <div class="subj-stat-row">
-                    <div class="subj-stat-name">${SUBJ_ICONS[s]} ${SUBJ_NAMES[s]}</div>
-                    <div class="subj-bar-wrap">
-                        <div style="font-size:0.72rem; color:var(--text-sub); margin-bottom:4px;">${count}회 도전 · ${totalTime}분</div>
-                        <div class="subj-bar-track">
-                            <div class="subj-bar-fill" style="width:${avgPct}%; background:${color}"></div>
-                        </div>
+            // 회차별 분류: 1회차, 2회차, 3회차+
+            const byRound = [
+                sub.filter(r => (r.round || 1) === 1),
+                sub.filter(r => (r.round || 1) === 2),
+                sub.filter(r => (r.round || 1) >= 3),
+            ];
+
+            const roundBars = byRound.map((arr, i) => {
+                if (!arr.length) return '';
+                const p = avg(arr);
+                const pctColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
+                return `
+                <div style="margin-bottom:10px;">
+                    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
+                        <span style="font-size:0.75rem;color:var(--text-sub);">${ROUND_LABELS[i]} <span style="color:var(--text-sub);opacity:0.6;">(${arr.length}회)</span></span>
+                        <span style="font-size:0.82rem;font-weight:700;color:${pctColor};">${p}%</span>
                     </div>
-                    <div class="subj-stat-pct" style="color:${color}">${avgPct}%</div>
+                    <div class="subj-bar-track">
+                        <div class="subj-bar-fill" style="width:${p}%;background:${pctColor};"></div>
+                    </div>
                 </div>`;
-        }).join('');
+            }).join('');
 
-        return `<div class="chart-title">과목별 평균 정답률</div>${bars}`;
+            // 회차 간 성장 화살표
+            const r1 = avg(byRound[0]), r2 = avg(byRound[1]), r3 = avg(byRound[2]);
+            let growthStr = '';
+            if (r1 !== null && r2 !== null) {
+                const diff = r2 - r1;
+                growthStr += `<span style="font-size:0.72rem;margin-right:8px;">${diff >= 0 ? '📈' : '📉'} 1→2회차 ${diff >= 0 ? '+' : ''}${diff}%p</span>`;
+            }
+            if (r2 !== null && r3 !== null) {
+                const diff = r3 - r2;
+                growthStr += `<span style="font-size:0.72rem;">${diff >= 0 ? '📈' : '📉'} 2→3회차+ ${diff >= 0 ? '+' : ''}${diff}%p</span>`;
+            } else if (r1 !== null && r3 !== null) {
+                const diff = r3 - r1;
+                growthStr += `<span style="font-size:0.72rem;">${diff >= 0 ? '📈' : '📉'} 1→3회차+ ${diff >= 0 ? '+' : ''}${diff}%p</span>`;
+            }
+
+            return `
+            <div style="background:var(--card-bg);border:1px solid var(--card-border);border-radius:16px;padding:16px 18px;margin-bottom:12px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+                    <div style="display:flex;align-items:center;gap:8px;">
+                        <span style="font-size:1.1rem;">${SUBJ_ICONS[s]}</span>
+                        <span style="font-size:1rem;font-weight:700;">${SUBJ_NAMES[s]}</span>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:1.2rem;font-weight:700;color:${color};">${overallPct}%</div>
+                        <div style="font-size:0.68rem;color:var(--text-sub);">${totalCount}회 · ${totalTime}분</div>
+                    </div>
+                </div>
+                ${roundBars}
+                ${growthStr ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">${growthStr}</div>` : ''}
+            </div>`;
+        }).filter(Boolean);
+
+        if (!cards.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
+        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}`;
     }
 
     // ── 레벨별 학습 탭 ──
