@@ -359,7 +359,7 @@
             </div>
 
             <div class="chart-card" id="tabContent">
-                ${buildQuizTab(reports)}
+                ${buildQuizTab(reports, wrongAnswers)}
             </div>`;
 
         document.getElementById('detailContent').innerHTML = html;
@@ -378,7 +378,7 @@
         }
         const { reports, wrongAnswers } = window._adminData;
         const el = document.getElementById('tabContent');
-        if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports);
+        if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports, wrongAnswers);
         if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
         if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
@@ -419,10 +419,11 @@
     }
 
     // ── 퀴즈 기록 탭 ──
-    function buildQuizTab(reports) {
+    function buildQuizTab(reports, wrongAnswers) {
         if (!reports.length) return '<div class="empty-msg">퀴즈 기록이 없습니다.</div>';
+        const wa = wrongAnswers || {};
         const sorted = [...reports].sort((a,b) => b.date - a.date).slice(0, 30);
-        const rows = sorted.map(r => {
+        const rows = sorted.map((r, idx) => {
             const pct   = r.totalQuestions > 0 ? Math.round(r.finalScore / r.totalQuestions * 100) : 0;
             const color = pct >= 80 ? '#56d364' : pct >= 50 ? '#f9826c' : '#ff5f6d';
             const c     = SUBJ_COLORS[r.subject] || '#888';
@@ -435,15 +436,42 @@
             const roundBadge = round <= 2
                 ? `<span style="font-size:0.65rem;padding:1px 6px;border-radius:8px;background:${round===1?'rgba(79,172,254,0.15)':'rgba(249,130,108,0.15)'};color:${round===1?'#4facfe':'#f9826c'};margin-left:4px;">${round}회차</span>`
                 : '';
+
+            // 영어/한자: 문제별 정답/오답 상세 (WrongNote에서 sessionId 매칭)
+            let detailBtn = '';
+            let detailDiv = '';
+            if ((r.subject === 'english' || r.subject === 'hanja') && r.sessionId) {
+                const items = (wa[r.subject] || []).filter(item =>
+                    (item.history || []).some(h => h.sessionId === r.sessionId && (h.round||1) === round)
+                );
+                if (items.length) {
+                    const detailId = `qd_${idx}`;
+                    const chips = items.map(item => {
+                        const h = item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
+                        const ok = h?.status === 'correct';
+                        const label = r.subject === 'hanja'
+                            ? `${item.hanja}(${item.eum||''}) ${item.meaning||''}`
+                            : (item.word || item.identifier || '?');
+                        return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 8px;border-radius:10px;margin:2px;background:${ok?'rgba(86,211,100,0.12)':'rgba(255,95,109,0.12)'};color:${ok?'#56d364':'#ff5f6d'};">${ok?'✅':'❌'} ${label}</span>`;
+                    }).join('');
+                    detailBtn = `<button onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none';this.textContent=this.textContent==='▼ 문제 보기'?'▲ 닫기':'▼ 문제 보기';" style="font-size:0.7rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text-sub);cursor:pointer;margin-top:4px;">▼ 문제 보기</button>`;
+                    detailDiv = `<div id="${detailId}" style="display:none;padding:10px 0 4px;flex-wrap:wrap;display:none;">${chips}</div>`;
+                }
+            }
+
             return `
-                <div class="quiz-row">
-                    <div class="subj-badge" style="background:${c}22; color:${c}">${SUBJ_ICONS[r.subject]||'📚'}</div>
-                    <div class="quiz-info">
-                        <div class="quiz-level">${SUBJ_NAMES[r.subject]||r.subject} · ${lvlShort}${roundBadge}</div>
-                        <div class="quiz-date">${ds}</div>
+                <div style="border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 0;">
+                    <div class="quiz-row" style="border:none;padding:0;">
+                        <div class="subj-badge" style="background:${c}22; color:${c}">${SUBJ_ICONS[r.subject]||'📚'}</div>
+                        <div class="quiz-info">
+                            <div class="quiz-level">${SUBJ_NAMES[r.subject]||r.subject} · ${lvlShort}${roundBadge}</div>
+                            <div class="quiz-date">${ds}</div>
+                            ${detailBtn}
+                        </div>
+                        <div class="quiz-score" style="color:${color}">${r.finalScore}/${r.totalQuestions}</div>
+                        <div class="quiz-time">${timeStr}</div>
                     </div>
-                    <div class="quiz-score" style="color:${color}">${r.finalScore}/${r.totalQuestions}</div>
-                    <div class="quiz-time">${timeStr}</div>
+                    ${detailDiv}
                 </div>`;
         }).join('');
         return `<div class="chart-title">최근 퀴즈 기록 (최대 30회)</div>${rows}`;
