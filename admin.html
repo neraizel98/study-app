@@ -787,34 +787,49 @@
 
         // ── Chart 2: 8주 정답률 추이 (line) ──
         const weekLabels = [];
-        const trendData  = {};
-        SUBJ.forEach(s => { trendData[s] = []; });
+        // 과목 × 회차별 8주 추이 데이터
+        const trendData = {};
+        SUBJ.forEach(s => { trendData[s] = { r1: [], r2: [] }; });
 
         for (let i = -7; i <= 0; i++) {
             const { start: ws, end: we } = _weekRange(offset + i);
             weekLabels.push(`${ws.getMonth()+1}/${ws.getDate()}`);
             SUBJ.forEach(s => {
                 const sr = reports.filter(r => r.subject === s && r.date >= ws.getTime() && r.date <= we.getTime());
-                const avg = sr.length > 0
-                    ? Math.round(sr.reduce((a,r) => a + (r.totalQuestions>0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / sr.length)
+                const calcAvg = arr => arr.length > 0
+                    ? Math.round(arr.reduce((a,r) => a + (r.totalQuestions>0 ? r.finalScore/r.totalQuestions*100 : 0), 0) / arr.length)
                     : null;
-                trendData[s].push(avg);
+                trendData[s].r1.push(calcAvg(sr.filter(r => (r.round||1) === 1)));
+                trendData[s].r2.push(calcAvg(sr.filter(r => (r.round||1) === 2)));
             });
         }
 
         const ctx2 = document.getElementById('adminChartTrend')?.getContext('2d');
         if (ctx2) {
+            const datasets = [];
+            SUBJ.forEach(s => {
+                const hasR1 = trendData[s].r1.some(v => v !== null);
+                const hasR2 = trendData[s].r2.some(v => v !== null);
+                if (hasR1) datasets.push({
+                    label: `${NAMES[s]} 1회차`,
+                    data: trendData[s].r1,
+                    borderColor: COLORS[s], backgroundColor: COLORS[s]+'22',
+                    fill: false, tension: 0.35, spanGaps: true,
+                    pointRadius: 4, pointBackgroundColor: COLORS[s],
+                    borderDash: [],
+                });
+                if (hasR2) datasets.push({
+                    label: `${NAMES[s]} 2회차`,
+                    data: trendData[s].r2,
+                    borderColor: COLORS[s], backgroundColor: COLORS[s]+'11',
+                    fill: false, tension: 0.35, spanGaps: true,
+                    pointRadius: 3, pointBackgroundColor: COLORS[s],
+                    borderDash: [5, 4],
+                });
+            });
             window._adminWeekCharts.trend = new Chart(ctx2, {
                 type: 'line',
-                data: {
-                    labels: weekLabels,
-                    datasets: SUBJ.map(s => ({
-                        label: NAMES[s], data: trendData[s],
-                        borderColor: COLORS[s], backgroundColor: COLORS[s]+'22',
-                        fill: false, tension: 0.35, spanGaps: true,
-                        pointRadius: 4, pointBackgroundColor: COLORS[s],
-                    }))
-                },
+                data: { labels: weekLabels, datasets },
                 options: {
                     responsive: true, maintainAspectRatio: true,
                     plugins: { legend: { labels: { color: tickColor, font: fontCfg, boxWidth: 12 } } },
