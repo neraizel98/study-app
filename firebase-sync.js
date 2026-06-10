@@ -63,6 +63,7 @@ const _col  = (uid) => _db.collection('users').doc(uid).collection('data');
 const _uDoc = (uid) => _db.collection('users').doc(uid);              // userData
 const _rDoc = (uid) => _col(uid).doc('reports');                      // 퀴즈 기록
 const _wDoc = (uid) => _col(uid).doc('wrongAnswers');                 // 오답노트
+const _studyConfigDoc = () => _db.collection('config').doc('studyTime'); // 전역 학습 시간 설정
 
 // ─────────────────────────────────────────────
 //  업로드 (localStorage → Firestore)
@@ -89,6 +90,24 @@ async function _uploadReports(userId) {
         const reports = raw ? JSON.parse(raw) : [];
         await _rDoc(userId).set({ reports, _updatedAt: Date.now() });
     } catch (e) { console.warn('[FireSync] reports 업로드 실패:', e.message); }
+}
+
+async function _uploadStudyConfig(cfg) {
+    if (!_syncReady) return;
+    try {
+        await _studyConfigDoc().set({ ...cfg, _updatedAt: Date.now() });
+    } catch (e) { console.warn('[FireSync] studyConfig 업로드 실패:', e.message); }
+}
+
+async function _downloadStudyConfig() {
+    if (!_syncReady) return;
+    try {
+        const snap = await _studyConfigDoc().get();
+        if (!snap.exists) return;
+        const { _updatedAt, ...cfg } = snap.data();
+        localStorage.setItem('SmartStudy_MinStudyConfig', JSON.stringify(cfg));
+        console.log('[FireSync] 학습 시간 설정 다운로드 완료:', cfg);
+    } catch (e) { console.warn('[FireSync] studyConfig 다운로드 실패:', e.message); }
 }
 
 async function _uploadWrong(userId) {
@@ -123,6 +142,9 @@ async function _downloadAndMerge(userId) {
             _rDoc(userId).get(),
             _wDoc(userId).get()
         ]);
+
+        // 전역 학습 시간 설정 항상 최신으로 받아옴 (관리자가 공유한 설정)
+        await _downloadStudyConfig();
 
         let needsUpload = false;
 
@@ -391,6 +413,16 @@ window.FireSync = {
         await _downloadAndMerge(userId);
         _patchSaveFunctions();
         _showSyncBadge('✅ 동기화 완료', '#56d364');
+    },
+
+    /**
+     * 관리자 학습 시간 설정을 전체 유저에게 공유 (admin.html에서 호출)
+     */
+    uploadStudyConfig: async function(cfg) {
+        const db = await _initDB();
+        if (!db) return;
+        await _uploadStudyConfig(cfg);
+        _showSyncBadge('✅ 학습 시간 설정 저장됨', '#56d364');
     },
 
     /**

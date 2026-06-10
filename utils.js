@@ -815,11 +815,16 @@ const Utils = {
             // 그래프에서 순위/관계 파악
             case 'graph_rank': {
                 let grItems = p([["축구", "농구", "야구", "배구"], ["독서", "운동", "게임", "잠"], ["사과", "바나나", "포도", "딸기"]]);
-                let grVals = [r(25, 40), r(20, 30), r(15, 25), r(5, 15)];
-                // 합이 100이 되도록 조정
-                let grSum = grVals.reduce((a, b) => a + b, 0);
-                grVals[3] = 100 - grVals[0] - grVals[1] - grVals[2];
-                if (grVals[3] <= 0) { grVals[0] = 30; grVals[1] = 25; grVals[2] = 20; grVals[3] = 25; }
+                // 4개 값이 모두 다르도록 생성 (동점 방지)
+                let grVals;
+                for (let _try = 0; _try < 20; _try++) {
+                    let v = [r(25, 40), r(20, 30), r(15, 25), 0];
+                    v[3] = 100 - v[0] - v[1] - v[2];
+                    if (v[3] < 5) continue; // 4번째 값이 너무 작으면 재시도
+                    const unique = new Set(v).size === 4;
+                    if (unique) { grVals = v; break; }
+                }
+                if (!grVals) { grVals = [35, 28, 22, 15]; } // 모두 다른 안전값으로 fallback
                 // 정렬하여 1위 찾기
                 let grRanked = grItems.map((item, i) => ({ item, val: grVals[i] })).sort((a, b) => b.val - a.val);
                 let grType = r(0, 1);

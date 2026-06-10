@@ -19,6 +19,10 @@ const StudyTimer = (() => {
 
     function setConfig(cfg) {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+        // 관리자 설정을 전체 유저에게 공유 (Firestore 전역 config)
+        if (typeof FireSync !== 'undefined' && FireSync.uploadStudyConfig) {
+            FireSync.uploadStudyConfig(cfg);
+        }
     }
 
     // ── 누적 시간 ─────────────────────────────────────
