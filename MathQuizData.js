@@ -3,14 +3,18 @@ var MathQuizData = {
     // 1단원. 분수의 나눗셈
     "e6-1-u1": {
         basic: [
-            ...Array(6).fill({ type: "dynamic", generator: "fraction_div_int_basic", difficulty: "easy" }),
-            ...Array(5).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "easy" }),
-            ...Array(4).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "fraction_div_int_basic", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "fraction_div_int_advanced", difficulty: "medium" }),
+            ...Array(4).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "easy" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "easy" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_int_word2", difficulty: "medium" }),
         ],
         advanced: [
-            ...Array(4).fill({ type: "dynamic", generator: "fraction_div_int_advanced", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "fraction_div_int_advanced", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_chain_div", difficulty: "hard" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_int_fill_blank", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_int_compare", difficulty: "medium" }),
         ],
         word: [
             ...Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" }),
@@ -45,14 +49,18 @@ var MathQuizData = {
     // 3단원. 소수의 나눗셈
     "e6-1-u3": {
         basic: [
-            ...Array(8).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "easy" }),
-            ...Array(6).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "easy" }),
-            ...Array(6).fill({ type: "dynamic", generator: "decimal_div_int_place", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_place", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_estimate", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "medium" }),
         ],
         advanced: [
-            ...Array(4).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_estimate", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_div_int_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "decimal_two_step", difficulty: "hard" }),
+            ...Array(2).fill({ type: "dynamic", generator: "decimal_div_int_fill", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "decimal_div_int_estimate", difficulty: "medium" }),
         ],
         word: Array(10).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" })
     },
@@ -60,9 +68,12 @@ var MathQuizData = {
     // 4단원. 비와 비율
     "e6-1-u4": {
         basic: [
-            ...Array(8).fill({ type: "dynamic", generator: "ratio_percentage_basic", difficulty: "easy" }),
-            ...Array(6).fill({ type: "dynamic", generator: "ratio_find_part", difficulty: "easy" }),
-            ...Array(6).fill({ type: "dynamic", generator: "ratio_to_fraction", difficulty: "easy" }),
+            ...Array(5).fill({ type: "dynamic", generator: "ratio_percentage_basic", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "ratio_find_part", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "ratio_to_fraction", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "ratio_compare", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "ratio_find_part", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "ratio_percentage_basic", difficulty: "medium" }),
         ],
         advanced: [
             { type: "dynamic", generator: "ratio_percentage_basic", difficulty: "medium" },
@@ -93,9 +104,11 @@ var MathQuizData = {
     // 6단원. 직육면체의 부피와 겉넓이
     "e6-1-u6": {
         basic: [
-            ...Array(6).fill({ type: "dynamic", generator: "volume_calculation", difficulty: "easy" }),
-            ...Array(5).fill({ type: "dynamic", generator: "volume_reverse", difficulty: "easy" }),
-            ...Array(4).fill({ type: "dynamic", generator: "volume_unit_convert", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "volume_calculation", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "volume_reverse", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "volume_unit_convert", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "surface_area_calculation", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "volume_reverse", difficulty: "medium" }),
         ],
         advanced: [
             ...Array(5).fill({ type: "dynamic", generator: "surface_area_calculation", difficulty: "medium" }),
@@ -111,9 +124,12 @@ var MathQuizData = {
     // 1단원. 분수의 나눗셈
     "e6-2-u1": {
         basic: [
-            ...Array(6).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "easy" }),
-            ...Array(5).fill({ type: "dynamic", generator: "frac_div_frac_fill", difficulty: "easy" }),
-            ...Array(4).fill({ type: "dynamic", generator: "frac_div_frac_compare", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_frac_fill", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_frac_compare", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_frac_fill", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "frac_div_frac_word", difficulty: "medium" }),
         ],
         advanced: [
             ...Array(4).fill({ type: "dynamic", generator: "frac_div_frac_basic", difficulty: "medium" }),
@@ -158,14 +174,17 @@ var MathQuizData = {
     // 4단원. 비례식과 비례배분
     "e6-2-u4": {
         basic: [
-            ...Array(7).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "easy" }),
-            ...Array(4).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "easy" }),
-            ...Array(4).fill({ type: "dynamic", generator: "proportion_word", difficulty: "easy" }),
+            ...Array(4).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_word", difficulty: "easy" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "proportion_word", difficulty: "medium" }),
         ],
         advanced: [
-            ...Array(4).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "medium" }),
-            ...Array(3).fill({ type: "dynamic", generator: "proportion_word", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_basic", difficulty: "medium" }),
+            ...Array(3).fill({ type: "dynamic", generator: "proportion_diff", difficulty: "hard" }),
+            ...Array(2).fill({ type: "dynamic", generator: "proportion_simplify", difficulty: "medium" }),
+            ...Array(2).fill({ type: "dynamic", generator: "proportion_word", difficulty: "medium" }),
         ],
         word: [
             ...Array(5).fill({ type: "dynamic", generator: "math_word_problem", difficulty: "medium" }),

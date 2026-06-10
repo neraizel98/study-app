@@ -84,15 +84,15 @@ const Utils = {
                 let num, den, whole = 0;
                 
                 if (isMixed) {
-                    whole = r(1, 3);
-                    den = r(2, 6);
+                    whole = r(1, 5);
+                    den = r(2, 9);
                     num = r(1, den - 1);
                 } else {
-                    den = r(3, 12);
+                    den = r(3, 15);
                     num = r(1, den - 1);
                 }
-                
-                let div = r(2, 9);
+
+                let div = r(2, 12);
                 let totalNum = (whole * den) + num;
                 let ansNum = totalNum;
                 let ansDen = den * div;
@@ -147,8 +147,8 @@ const Utils = {
 
             // [3단원] 소수의 나눗셈 (소수 ÷ 자연수)
             case 'decimal_div_int_basic': {
-                let dAns = r(5, 45) / 10; // 0.5 ~ 4.5
-                let dDiv = r(2, 5);
+                let dAns = r(5, 95) / 10; // 0.5 ~ 9.5
+                let dDiv = r(2, 9);
                 let dDividend = dAns * dDiv;
                 
                 q = `$${dDividend.toFixed(1)} \\div ${dDiv}$ 의 값은?`;
@@ -178,8 +178,8 @@ const Utils = {
 
             // [1단원] (분수) ÷ (분수)
             case 'frac_div_frac_basic':
-                let n1 = r(1, 5), d1 = r(2, 6);
-                let n2 = r(1, 5), d2 = r(2, 6);
+                let n1 = r(1, 8), d1 = r(2, 9);
+                let n2 = r(1, 8), d2 = r(2, 9);
                 // 중복 방지 및 계산 편의를 위해 다른 값 유도
                 if (n1 === n2 && d1 === d2) n2++;
 
@@ -193,8 +193,8 @@ const Utils = {
 
             // [2단원] (소수) ÷ (소수)
             case 'decimal_div_decimal_basic':
-                let dDiv2 = r(2, 12); // 나누는 수 (자연수 환산)
-                let dQuot2 = r(5, 25); // 몫
+                let dDiv2 = r(2, 18); // 나누는 수 (자연수 환산)
+                let dQuot2 = r(5, 40); // 몫
                 let factor = p([10, 100]);
                 let dDivVal = dDiv2 / 10;
                 let dDividendVal = (dDiv2 * dQuot2) / 100;
@@ -207,9 +207,9 @@ const Utils = {
 
             // [4단원] 비례식과 비례배분
             case 'proportion_basic':
-                let ratioA = r(1, 5), ratioB = r(2, 6);
+                let ratioA = r(1, 8), ratioB = r(2, 9);
                 if (ratioA === ratioB) ratioB++;
-                let mult = r(2, 5);
+                let mult = r(2, 8);
                 let valA = ratioA * mult;
                 let valB = ratioB * mult;
 
@@ -227,7 +227,7 @@ const Utils = {
 
             // [5단원] 원의 넓이 (원주율 3.1)
             case 'circle_area_basic':
-                let radius = r(2, 10);
+                let radius = r(3, 15);
                 let pi = 3.1;
                 q = `반지름이 ${radius}cm인 원의 넓이는 몇 $cm^2$입니까? (원주율: ${pi})`;
                 let area = radius * radius * pi;
@@ -238,8 +238,8 @@ const Utils = {
 
             // [6단원] 원기둥의 부피 (원주율 3)
             case 'cylinder_volume_basic':
-                let cR = r(2, 5);
-                let cH = r(5, 15);
+                let cR = r(2, 8);
+                let cH = r(5, 20);
                 let cPi = 3;
                 q = `밑면의 반지름이 ${cR}cm이고 높이가 ${cH}cm인 원기둥의 부피는 몇 $cm^3$입니까? (원주율: ${cPi})`;
                 let cVol = cR * cR * cPi * cH;
@@ -306,9 +306,9 @@ const Utils = {
 
             // [6단원] 부피와 겉넓이
             case 'volume_calculation':
-                let w = r(2, 10);
-                let l = r(2, 10);
-                let h = r(2, 10);
+                let w = r(3, 15);
+                let l = r(3, 15);
+                let h = r(3, 15);
                 let isCube = r(0, 1) === 1;
                 if (isCube) l = h = w;
 
@@ -320,9 +320,9 @@ const Utils = {
                 break;
 
             case 'surface_area_calculation':
-                let w2 = r(2, 6);
-                let l2 = r(2, 6);
-                let h2 = r(2, 6);
+                let w2 = r(2, 10);
+                let l2 = r(2, 10);
+                let h2 = r(2, 10);
                 let isCube2 = r(0, 1) === 1;
                 if (isCube2) l2 = h2 = w2;
 
@@ -839,6 +839,67 @@ const Utils = {
                     exp = `두 번째로 비율이 높은 것은 ${grRanked[1].val}\\%인 ${grRanked[1].item} 입니다.`;
                     wrong = [grRanked[0].item, grRanked[2].item, grRanked[3].item];
                 }
+                break;
+            }
+
+            // =============================================
+            // [방법 3] 2단계 연산 generator
+            // =============================================
+
+            // 분수 연속 나눗셈: (a/b ÷ c) ÷ d
+            case 'frac_chain_div': {
+                let fcN = r(1, 6), fcD = r(2, 8);
+                let fcC = r(2, 6), fcE = r(2, 5);
+                // 결과: fcN / (fcD * fcC * fcE)
+                let fcAnsN = fcN;
+                let fcAnsD = fcD * fcC * fcE;
+                let fcFrac = this.formatFraction(fcN, fcD);
+                q = `$\\left(${fcFrac} \\div ${fcC}\\right) \\div ${fcE}$ 를 기약분수로 나타내면?`;
+                ans = `$${this.formatFraction(fcAnsN, fcAnsD)}$`;
+                exp = `먼저 $${fcFrac} \\div ${fcC} = ${this.formatFraction(fcN, fcD * fcC)}$, 이어서 $\\div ${fcE}$ 하면 $${this.formatFraction(fcAnsN, fcAnsD)}$ 입니다.`;
+                wrong = [
+                    `$${this.formatFraction(fcAnsN, fcD * fcC)}$`,
+                    `$${this.formatFraction(fcAnsN + 1, fcAnsD)}$`,
+                    `$${this.formatFraction(fcN * fcC * fcE, fcD)}$`
+                ];
+                break;
+            }
+
+            // 소수 2단계: a.b ÷ c + d.e (또는 빼기)
+            case 'decimal_two_step': {
+                let dtQ1 = r(5, 45) / 10; // 0.5 ~ 4.5
+                let dtDiv = r(2, 6);
+                let dtStep1 = parseFloat((dtQ1 / dtDiv).toFixed(2));
+                let dtAdd = r(1, 9) / 10; // 0.1 ~ 0.9
+                let dtOp = r(0, 1) === 0 ? '+' : '-';
+                let dtFinal = parseFloat((dtOp === '+' ? dtStep1 + dtAdd : dtStep1 - dtAdd).toFixed(2));
+                if (dtFinal <= 0) { dtOp = '+'; dtFinal = parseFloat((dtStep1 + dtAdd).toFixed(2)); }
+                q = `$${dtQ1.toFixed(1)} \\div ${dtDiv} ${dtOp} ${dtAdd.toFixed(1)}$ 의 값은?`;
+                ans = `$${dtFinal.toFixed(2)}$`;
+                exp = `먼저 $${dtQ1.toFixed(1)} \\div ${dtDiv} = ${dtStep1.toFixed(2)}$, 여기에 $${dtOp === '+' ? '+' : '-'} ${dtAdd.toFixed(1)}$ 하면 $${dtFinal.toFixed(2)}$ 입니다.`;
+                wrong = [
+                    `$${(dtFinal + 0.1).toFixed(2)}$`,
+                    `$${parseFloat((dtQ1 / dtDiv).toFixed(2))}$`,
+                    `$${(dtFinal * 2).toFixed(2)}$`
+                ];
+                break;
+            }
+
+            // 비례배분 후 차이 계산: A:B로 나눌 때 두 몫의 차
+            case 'proportion_diff': {
+                let pdA = r(1, 5), pdB = r(1, 5);
+                while (pdA === pdB) pdB = r(1, 5);
+                let pdSum = pdA + pdB;
+                let pdTotal = pdSum * r(3, 8); // 나누어 떨어지도록
+                let pdPartA = pdTotal * pdA / pdSum;
+                let pdPartB = pdTotal * pdB / pdSum;
+                let pdDiff = Math.abs(pdPartA - pdPartB);
+                let pdItem = p(ITEMS);
+                let pdName1 = p(NAMES), pdName2 = p(NAMES.filter(n => n !== pdName1));
+                q = `${pdItem} ${pdTotal}개를 ${pdName1}와 ${pdName2}가 ${pdA} : ${pdB}로 나눌 때, 두 사람이 받은 양의 차는 몇 개입니까?`;
+                ans = `${pdDiff}개`;
+                exp = `${pdName1}는 $${pdTotal} \\times \\frac{${pdA}}{${pdSum}} = ${pdPartA}$개, ${pdName2}는 $${pdPartB}$개이므로 차는 $|${pdPartA} - ${pdPartB}| = ${pdDiff}$개 입니다.`;
+                wrong = [`${pdDiff + pdSum}개`, `${Math.min(pdPartA, pdPartB)}개`, `${pdTotal}개`];
                 break;
             }
 
