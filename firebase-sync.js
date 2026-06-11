@@ -70,7 +70,7 @@ const _col  = (uid) => _db.collection('users').doc(uid).collection('data');
 const _uDoc = (uid) => _db.collection('users').doc(uid);              // userData
 const _rDoc = (uid) => _col(uid).doc('reports');                      // 퀴즈 기록
 const _wDoc = (uid) => _col(uid).doc('wrongAnswers');                 // 오답노트
-const _studyConfigDoc = () => _db.collection('config').doc('studyTime'); // 전역 학습 시간 설정
+const ADMIN_UID = '우준아빠'; // 학습 시간 설정은 관리자 문서에 저장
 
 // ─────────────────────────────────────────────
 //  업로드 (localStorage → Firestore)
@@ -102,18 +102,17 @@ async function _uploadReports(userId) {
 async function _uploadStudyConfig(cfg) {
     if (!_syncReady) return;
     try {
-        await _studyConfigDoc().set({ ...cfg, _updatedAt: Date.now() });
+        // 관리자(우준아빠) 문서에 studyTimeConfig 필드로 저장 (기존 경로 재사용)
+        await _uDoc(ADMIN_UID).set({ studyTimeConfig: cfg }, { merge: true });
     } catch (e) { console.warn('[FireSync] studyConfig 업로드 실패:', e.message); }
 }
 
 async function _downloadStudyConfig() {
     if (!_syncReady) return;
     try {
-        const snap = await _studyConfigDoc().get();
-        if (!snap.exists) return;
-        const { _updatedAt, ...cfg } = snap.data();
-        localStorage.setItem('SmartStudy_MinStudyConfig', JSON.stringify(cfg));
-        console.log('[FireSync] 학습 시간 설정 다운로드 완료:', cfg);
+        const snap = await _uDoc(ADMIN_UID).get();
+        if (!snap.exists || !snap.data().studyTimeConfig) return;
+        localStorage.setItem('SmartStudy_MinStudyConfig', JSON.stringify(snap.data().studyTimeConfig));
     } catch (e) { console.warn('[FireSync] studyConfig 다운로드 실패:', e.message); }
 }
 

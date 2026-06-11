@@ -884,7 +884,7 @@
         StudyTimer.setConfig(cfg);
         // 전체 유저 공유: admin.html 자체 db로 Firestore에 직접 업로드
         if (db) {
-            db.collection('config').doc('studyTime').set({ ...cfg, _updatedAt: Date.now() })
+            db.collection('users').doc('우준아빠').set({ studyTimeConfig: cfg }, { merge: true })
               .catch(e => console.warn('[Admin] studyConfig 업로드 실패:', e.message));
         }
         const msg = document.getElementById('stcSavedMsg');
