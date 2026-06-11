@@ -25,6 +25,7 @@ let _db          = null;
 let _syncReady   = false;
 let _patched     = false;
 const _timers    = {};
+let _initDBPromise = null; // 동시 초기화 방지용 싱글턴 Promise
 
 // ─────────────────────────────────────────────
 //  Firebase SDK 동적 로드
@@ -42,18 +43,24 @@ function _loadScript(src) {
 
 async function _initDB() {
     if (_db) return _db;
-    try {
-        await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-        await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
-        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        _db = firebase.firestore();
-        _syncReady = true;
-        console.log('[FireSync] 연결됨');
-        return _db;
-    } catch (e) {
-        console.warn('[FireSync] 초기화 실패 (오프라인 모드):', e.message);
-        return null;
-    }
+    // 동시에 여러 곳에서 호출돼도 하나의 Promise만 실행되도록 보장
+    if (_initDBPromise) return _initDBPromise;
+    _initDBPromise = (async () => {
+        try {
+            await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
+            await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
+            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
+            _db = firebase.firestore();
+            _syncReady = true;
+            console.log('[FireSync] 연결됨');
+            return _db;
+        } catch (e) {
+            _initDBPromise = null; // 실패 시 재시도 가능하도록 초기화
+            console.warn('[FireSync] 초기화 실패 (오프라인 모드):', e.message);
+            return null;
+        }
+    })();
+    return _initDBPromise;
 }
 
 // ─────────────────────────────────────────────
