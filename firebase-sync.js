@@ -423,6 +423,13 @@ window.FireSync = {
     },
 
     /**
+     * 초기화된 Firestore DB 인스턴스 반환 (admin.html 등 외부에서 재사용)
+     */
+    getDB: async function() {
+        return await _initDB();
+    },
+
+    /**
      * 관리자 학습 시간 설정을 전체 유저에게 공유 (admin.html에서 호출)
      */
     uploadStudyConfig: async function(cfg) {

@@ -213,6 +213,11 @@
     }
 
     async function initFirebase() {
+        // firebase-sync.js가 이미 로드된 경우 동일한 DB 인스턴스 재사용 (타이밍 충돌 방지)
+        if (typeof FireSync !== 'undefined') {
+            db = await FireSync.getDB();
+            return;
+        }
         await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
         await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
         if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
