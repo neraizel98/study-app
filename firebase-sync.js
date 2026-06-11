@@ -332,44 +332,51 @@ function _patchSaveFunctions() {
     _patched = true;
 
     // 1. UserSession.saveUserData
-    const origSaveUser = UserSession.saveUserData.bind(UserSession);
-    UserSession.saveUserData = function(data) {
-        origSaveUser(data);
-        if (data.id) {
-            // 로컬 저장 시각 스탬프 — 클라우드와 최신 여부 비교에 사용
-            const raw = localStorage.getItem('SmartStudy_UserData_' + data.id);
-            if (raw) {
-                const parsed = JSON.parse(raw);
-                parsed._localUpdatedAt = Date.now();
-                localStorage.setItem('SmartStudy_UserData_' + data.id, JSON.stringify(parsed));
+    if (typeof UserSession !== 'undefined' && UserSession.saveUserData) {
+        const origSaveUser = UserSession.saveUserData.bind(UserSession);
+        UserSession.saveUserData = function(data) {
+            origSaveUser(data);
+            if (data.id) {
+                const raw = localStorage.getItem('SmartStudy_UserData_' + data.id);
+                if (raw) {
+                    const parsed = JSON.parse(raw);
+                    parsed._localUpdatedAt = Date.now();
+                    localStorage.setItem('SmartStudy_UserData_' + data.id, JSON.stringify(parsed));
+                }
+                _debounce('userData_' + data.id, () => _uploadUserData(data.id), 2000);
             }
-            _debounce('userData_' + data.id, () => _uploadUserData(data.id), 2000);
-        }
-    };
+        };
+    }
 
-    // 2. saveQuizResult (전역 함수)
-    const origSaveQuiz = window.saveQuizResult;
-    window.saveQuizResult = function(...args) {
-        origSaveQuiz(...args);
-        const uid = UserSession.getActiveUser();
-        if (uid) _debounce('reports_' + uid, () => _uploadReports(uid), 2000);
-    };
+    // 2. saveQuizResult (전역 함수) — 없는 페이지(admin 등)에서는 건너뜀
+    if (typeof window.saveQuizResult === 'function') {
+        const origSaveQuiz = window.saveQuizResult;
+        window.saveQuizResult = function(...args) {
+            origSaveQuiz(...args);
+            const uid = UserSession.getActiveUser();
+            if (uid) _debounce('reports_' + uid, () => _uploadReports(uid), 2000);
+        };
+    }
 
-    // 3. WrongNote.save
-    const origWrongSave = WrongNote.save.bind(WrongNote);
-    WrongNote.save = function(...args) {
-        origWrongSave(...args);
-        const uid = UserSession.getActiveUser();
-        if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
-    };
+    // 3. WrongNote.save — 없는 페이지에서는 건너뜀
+    if (typeof WrongNote !== 'undefined' && WrongNote.save) {
+        const origWrongSave = WrongNote.save.bind(WrongNote);
+        WrongNote.save = function(...args) {
+            origWrongSave(...args);
+            const uid = UserSession.getActiveUser();
+            if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
+        };
+    }
 
-    // 4. WrongNote.remove
-    const origWrongRemove = WrongNote.remove.bind(WrongNote);
-    WrongNote.remove = function(...args) {
-        origWrongRemove(...args);
-        const uid = UserSession.getActiveUser();
-        if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
-    };
+    // 4. WrongNote.remove — 없는 페이지에서는 건너뜀
+    if (typeof WrongNote !== 'undefined' && WrongNote.remove) {
+        const origWrongRemove = WrongNote.remove.bind(WrongNote);
+        WrongNote.remove = function(...args) {
+            origWrongRemove(...args);
+            const uid = UserSession.getActiveUser();
+            if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
+        };
+    }
 
     console.log('[FireSync] 저장 함수 패치 완료');
 }
