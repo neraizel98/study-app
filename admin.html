@@ -178,7 +178,6 @@
     </div>
 
     <script src="report.js"></script>
-    <script src="firebase-sync.js"></script>
     <script src="study-timer.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -883,6 +882,11 @@
             math:    parseInt(document.getElementById('stcMath').value,    10) || 0,
         };
         StudyTimer.setConfig(cfg);
+        // 전체 유저 공유: admin.html 자체 db로 Firestore에 직접 업로드
+        if (db) {
+            db.collection('config').doc('studyTime').set({ ...cfg, _updatedAt: Date.now() })
+              .catch(e => console.warn('[Admin] studyConfig 업로드 실패:', e.message));
+        }
         const msg = document.getElementById('stcSavedMsg');
         msg.style.display = 'inline';
         setTimeout(() => { msg.style.display = 'none'; }, 2000);
