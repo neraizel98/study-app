@@ -59,6 +59,7 @@ let isIdiomEumVisible = false;
 let isIdiomMeanVisible = false;
 let studyWriterInstance = null;
 let writerInstance = null; // 퀴즈용
+let writingCapableChars = new Set();
 let isPhaseTransition = false;
 let currentQuizType = 'meaning'; // 'meaning' | 'reverse' | 'radical' | 'idiom' | 'relation' | 'writing'
 let currentCorrectAnswer = '';
@@ -124,13 +125,13 @@ function handlePrev() {
 // ============================================================
 // QUIZ MODE
 // ============================================================
-function startQuiz(customList) {
+async function startQuiz(customList) {
     quizWords = customList || Utils.shuffle([...vocabHanja[currentLevel]]).slice(0, 10);
     quizIndex = 0;
     quizScore = 0;
     quizHistory = [];
     retryWrongList = [];
-    
+
     // 세션 정보 초기화
     if (!customList) {
         quizSessionData = {
@@ -144,6 +145,15 @@ function startQuiz(customList) {
     } else {
         quizSessionData.roundCount++;
     }
+
+    // HanziWriter 데이터가 없는 글자는 쓰기 퀴즈에서 제외
+    const checks = quizWords.map(w =>
+        fetch(`https://cdn.jsdelivr.net/npm/hanzi-writer-data@latest/${encodeURIComponent(w.hanja)}.json`, { method: 'HEAD' })
+            .then(r => r.ok ? w.hanja : null)
+            .catch(() => null)
+    );
+    const results = await Promise.all(checks);
+    writingCapableChars = new Set(results.filter(Boolean));
 
     showQuestion();
 }
@@ -175,7 +185,7 @@ function showQuestion() {
 }
 
 function pickQuizType(q) {
-    if (Math.random() < 0.18) return 'writing';
+    if (Math.random() < 0.18 && writingCapableChars.has(q.hanja)) return 'writing';
     const pool = ['meaning', 'meaning', 'reverse', 'radical'];
     if (q.idiom) pool.push('idiom');
     if (q.antonym || q.synonym) pool.push('relation');
