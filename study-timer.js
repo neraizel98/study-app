@@ -32,6 +32,16 @@ const StudyTimer = (() => {
         return String(value || '').replace(/\s+/g, '').toLowerCase();
     }
 
+    function matchesAlias(level, target) {
+        if (level === target) return true;
+        if (!level.startsWith(target)) return false;
+
+        // 퀴즈 유형처럼 단원명 뒤에 구분자가 붙는 경우만 허용한다.
+        // 단순 부분 일치는 "6급"과 "준6급" 같은 서로 다른 급수를 섞는다.
+        const suffix = level.slice(target.length);
+        return /^[-:()[\]{}]/.test(suffix);
+    }
+
     function contextKey(subject, context) {
         return `${subject}:${context || 'default'}`;
     }
@@ -69,7 +79,7 @@ const StudyTimer = (() => {
             .filter(r => r.subject === subject && r.totalQuestions > 0)
             .filter(r => {
                 const level = normalize(r.level);
-                return targets.some(target => level === target || level.includes(target));
+                return targets.some(target => matchesAlias(level, target));
             })
             .sort((a, b) => (b.date || 0) - (a.date || 0));
 
