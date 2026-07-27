@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v7-middle1-quiz';
+const CACHE_NAME = 'smart-study-v8-middle1-semester2';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -48,6 +48,8 @@ const STATIC_ASSETS = [
     './MathQuizData.js',
     './MathDataMiddle1.js',
     './MathQuizMiddle1.js',
+    './MathDataMiddle1Semester2.js',
+    './MathQuizMiddle1Semester2.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
