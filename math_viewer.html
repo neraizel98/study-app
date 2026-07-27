@@ -475,12 +475,6 @@
     <script src="MathDataExtra.js"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
-            if (typeof StudyTimer !== 'undefined') {
-                const timerCtrl = StudyTimer.initBar('math', null);
-                timerCtrl.startTimer();
-                window.addEventListener('beforeunload', () => timerCtrl.stopTimer());
-            }
-
             const params = new URLSearchParams(window.location.search);
             const levelId = params.get('level') || 'elementary-6';
             const semesterId = params.get('semester') || '1';
@@ -522,6 +516,18 @@
                 alert('해당 단원 정보를 찾을 수 없습니다.');
                 window.location.href = 'math.html';
                 return;
+            }
+
+            if (typeof StudyTimer !== 'undefined') {
+                const mathContext = `${levelId}:${semesterId}:${unitId}`;
+                const timerCtrl = StudyTimer.initBar('math', null, {
+                    getContext: () => mathContext,
+                    getAliases: () => [unit.title],
+                    getLabel: () => unit.title,
+                    isLearningActive: () => true
+                });
+                timerCtrl.startTimer();
+                window.addEventListener('beforeunload', () => timerCtrl.stopTimer());
             }
 
             let chapter = unit.chapters.find(c => c.id === chapterId);

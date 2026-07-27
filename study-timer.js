@@ -1,19 +1,26 @@
 /**
- * StudyTimer — 과목별 최소 학습 시간 관리
+ * 과목/단원별 적응형 학습 잠금
  *
- * - 관리자가 각 과목별 최소 학습 시간(분)을 설정
- * - 오늘 날짜 기준 유저별/과목별 누적 학습 시간 추적 (LocalStorage)
- * - 최소 시간 미충족 시 퀴즈 버튼 잠금
+ * - 관리자 기본시간과 최근 최초 점수를 함께 사용
+ * - 90점 이상: 면제 / 80점 이상: 5분 / 70점 이상: 10분 / 70점 미만: 15분
+ * - 90점 미만은 관리자 기본시간과 점수별 시간 중 더 긴 시간을 적용
+ * - 화면이 보이고 실제 학습 모드이며 최근 학습 행동이 있을 때만 시간 누적
  */
 const StudyTimer = (() => {
-    const CONFIG_KEY  = 'SmartStudy_MinStudyConfig';
-    const TIME_PREFIX = 'SmartStudy_DailyTime_';
-
+    const CONFIG_KEY = 'SmartStudy_MinStudyConfig';
+    const TIME_PREFIX = 'SmartStudy_UnitTime_';
+    const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
+    const REPORT_PREFIX = 'SmartVocab_Reports_';
     const DEFAULTS = { english: 5, hanja: 5, math: 5 };
+    const ACTIVITY_LIMIT_MS = 45 * 1000;
+    const ACTIVITY_EVENTS = ['click', 'keydown', 'touchstart', 'scroll'];
 
-    // ── 설정 ──────────────────────────────────────────
+    function getUserId() {
+        return (typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null) || 'guest';
+    }
+
     function getConfig() {
-        try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(CONFIG_KEY))); }
+        try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}')); }
         catch { return { ...DEFAULTS }; }
     }
 
@@ -21,86 +28,110 @@ const StudyTimer = (() => {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
     }
 
-    // ── 누적 시간 ─────────────────────────────────────
-    function _todayKey(subject) {
-        const user  = (typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null) || 'guest';
+    function normalize(value) {
+        return String(value || '').replace(/\s+/g, '').toLowerCase();
+    }
+
+    function contextKey(subject, context) {
+        return `${subject}:${context || 'default'}`;
+    }
+
+    function timeKey(subject, context) {
         const today = new Date().toISOString().slice(0, 10);
-        return `${TIME_PREFIX}${user}_${subject}_${today}`;
+        return `${TIME_PREFIX}${getUserId()}_${encodeURIComponent(contextKey(subject, context))}_${today}`;
     }
 
-    function getAccumulated(subject) {
-        return parseInt(localStorage.getItem(_todayKey(subject)) || '0', 10);
+    function getAccumulated(subject, context = 'default') {
+        return parseInt(localStorage.getItem(timeKey(subject, context)) || '0', 10);
     }
 
-    function _addSeconds(subject, seconds) {
-        localStorage.setItem(_todayKey(subject), String(getAccumulated(subject) + seconds));
+    function addSeconds(subject, context, seconds) {
+        localStorage.setItem(timeKey(subject, context), String(getAccumulated(subject, context) + seconds));
     }
 
-    // ── 잠금 판단 ─────────────────────────────────────
-    function getRequiredSeconds(subject) {
-        return (getConfig()[subject] ?? DEFAULTS[subject]) * 60;
+    function resetAccumulated(subject, context = 'default') {
+        localStorage.setItem(timeKey(subject, context), '0');
     }
 
-    function isUnlocked(subject) {
-        const req = getRequiredSeconds(subject);
-        return req <= 0 || getAccumulated(subject) >= req;
+    function getScoreStore() {
+        try { return JSON.parse(localStorage.getItem(SCORE_PREFIX + getUserId()) || '{}'); }
+        catch { return {}; }
     }
 
-    // ── 비활동 감지 ───────────────────────────────────
-    const IDLE_LIMIT = 15; // 초: 이 시간 동안 입력 없으면 타이머 일시정지
-    const ACTIVITY_EVENTS = ['mousemove', 'mousedown', 'keydown', 'touchstart', 'scroll', 'click'];
+    function getReportScore(subject, aliases) {
+        if (!aliases || aliases.length === 0) return null;
+        let reports = [];
+        try { reports = JSON.parse(localStorage.getItem(REPORT_PREFIX + getUserId()) || '[]'); }
+        catch { return null; }
 
-    // onIdle(isIdle) 콜백과 함께 비활동 감지 시작, stop 함수 반환
-    function watchActivity(onIdle) {
-        let idleSec = 0;
-        let idle = false;
+        const targets = aliases.map(normalize).filter(Boolean);
+        const matches = reports
+            .filter(r => r.subject === subject && r.totalQuestions > 0)
+            .filter(r => {
+                const level = normalize(r.level);
+                return targets.some(target => level === target || level.includes(target));
+            })
+            .sort((a, b) => (b.date || 0) - (a.date || 0));
 
-        function onActivity() {
-            idleSec = 0;
-            if (idle) { idle = false; onIdle(false); }
-        }
-
-        ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }));
-
-        const id = setInterval(() => {
-            idleSec++;
-            if (!idle && idleSec >= IDLE_LIMIT) { idle = true; onIdle(true); }
-        }, 1000);
-
-        return () => {
-            clearInterval(id);
-            ACTIVITY_EVENTS.forEach(ev => window.removeEventListener(ev, onActivity));
+        if (!matches.length) return null;
+        const latest = matches[0];
+        return {
+            pct: Math.round((latest.initialScore / latest.totalQuestions) * 100),
+            date: latest.date || 0
         };
     }
 
-    // ── 타이머 시작 ───────────────────────────────────
-    // onTick(accSec, reqSec, isIdle) 1초마다 호출, stop 함수 반환
-    function start(subject, onTick) {
-        let lastTs = Date.now();
-        let paused = false;
-
-        onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), false);
-
-        const stopActivity = watchActivity((isIdle) => {
-            paused = isIdle;
-            if (!isIdle) lastTs = Date.now(); // 재개 시 기준 시각 초기화
-            onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), isIdle);
-        });
-
-        const id = setInterval(() => {
-            if (!paused) {
-                const now = Date.now();
-                const elapsed = Math.floor((now - lastTs) / 1000);
-                if (elapsed > 0) { _addSeconds(subject, elapsed); lastTs = now; }
-            }
-            onTick && onTick(getAccumulated(subject), getRequiredSeconds(subject), paused);
-        }, 1000);
-
-        return () => { clearInterval(id); stopActivity(); };
+    function getLatestScore(subject, context = 'default', aliases = []) {
+        const saved = getScoreStore()[contextKey(subject, context)] || null;
+        const report = getReportScore(subject, aliases);
+        if (!saved) return report;
+        if (!report) return saved;
+        return (saved.date || 0) >= (report.date || 0) ? saved : report;
     }
 
-    // ── 토스트 메시지 ─────────────────────────────────
-    function _showToast(msg) {
+    function getRequiredSeconds(subject, context = 'default', aliases = []) {
+        const baseMinutes = Math.max(0, Number(getConfig()[subject] ?? DEFAULTS[subject]));
+        const score = getLatestScore(subject, context, aliases);
+        if (score && score.pct >= 90) return 0;
+
+        let adaptiveMinutes = 0;
+        if (score) {
+            if (score.pct >= 80) adaptiveMinutes = 5;
+            else if (score.pct >= 70) adaptiveMinutes = 10;
+            else adaptiveMinutes = 15;
+        }
+        return Math.max(baseMinutes, adaptiveMinutes) * 60;
+    }
+
+    function isUnlocked(subject, context = 'default', aliases = []) {
+        const required = getRequiredSeconds(subject, context, aliases);
+        return required <= 0 || getAccumulated(subject, context) >= required;
+    }
+
+    function recordResult(subject, context, initialScore, totalQuestions) {
+        if (!context || !totalQuestions) return;
+        const store = getScoreStore();
+        store[contextKey(subject, context)] = {
+            pct: Math.round((initialScore / totalQuestions) * 100),
+            date: Date.now()
+        };
+        localStorage.setItem(SCORE_PREFIX + getUserId(), JSON.stringify(store));
+        resetAccumulated(subject, context);
+    }
+
+    function getStatus(subject, context = 'default', aliases = []) {
+        const score = getLatestScore(subject, context, aliases);
+        const requiredSeconds = getRequiredSeconds(subject, context, aliases);
+        const accumulatedSeconds = getAccumulated(subject, context);
+        return {
+            score: score ? score.pct : null,
+            requiredSeconds,
+            accumulatedSeconds,
+            unlocked: requiredSeconds <= 0 || accumulatedSeconds >= requiredSeconds
+        };
+    }
+
+    function showToast(msg) {
         let toast = document.getElementById('stbToast');
         if (!toast) {
             toast = document.createElement('div');
@@ -111,85 +142,130 @@ const StudyTimer = (() => {
         toast.textContent = msg;
         toast.classList.add('stb-toast-show');
         clearTimeout(toast._hideTimer);
-        toast._hideTimer = setTimeout(() => toast.classList.remove('stb-toast-show'), 2500);
+        toast._hideTimer = setTimeout(() => toast.classList.remove('stb-toast-show'), 3000);
     }
 
-    // ── UI 바 초기화 ──────────────────────────────────
-    // quizBtn: 퀴즈 모드 버튼 엘리먼트
-    // 반환: { startTimer(), stopTimer() }
-    function initBar(subject, quizBtn) {
-        // 기존 바 제거 후 재생성
+    function initBar(subject, quizBtn, options = {}) {
+        const getContext = options.getContext || (() => 'default');
+        const getAliases = options.getAliases || (() => []);
+        const getLabel = options.getLabel || (() => '현재 단원');
+        const isLearningActive = options.isLearningActive || (() => true);
+
         let bar = document.getElementById('studyTimerBar');
         if (!bar) {
             bar = document.createElement('div');
             bar.id = 'studyTimerBar';
-            const modeToggle = document.querySelector('.mode-toggle');
-            if (modeToggle) modeToggle.insertAdjacentElement('afterend', bar);
+            const anchor = document.querySelector('.mode-toggle') || document.querySelector('main');
+            if (anchor) anchor.insertAdjacentElement('afterend', bar);
         }
 
-        let stopFn = null;
-        let _lastRemain = 0; // 잠금 클릭 시 메시지용
+        let timerId = null;
+        let lastTs = Date.now();
+        let lastActivityAt = Date.now();
 
-        // 잠긴 상태에서 클릭 시 안내 메시지
-        if (quizBtn) quizBtn.addEventListener('click', (e) => {
-            if (quizBtn.classList.contains('stb-locked')) {
-                e.stopImmediatePropagation();
-                const remMin = Math.floor(_lastRemain / 60);
-                const remSec = _lastRemain % 60;
-                const timeStr = remMin > 0
-                    ? `${remMin}분 ${String(remSec).padStart(2,'0')}초`
-                    : `${remSec}초`;
-                _showToast(`📚 퀴즈를 풀려면 ${timeStr} 더 학습해야 해요!`);
-            }
-        }, true); // capture 단계에서 처리
+        const onActivity = () => { lastActivityAt = Date.now(); };
+        ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }));
 
-        function updateUI(accSec, reqSec, isIdle = false) {
-            const unlocked = accSec >= reqSec;
-            const pct = reqSec > 0 ? Math.min(100, Math.round(accSec / reqSec * 100)) : 100;
-            const remaining = Math.max(0, reqSec - accSec);
-            _lastRemain = remaining;
-            const remMin = Math.floor(remaining / 60);
-            const remSec = remaining % 60;
-            const accMin = Math.floor(accSec / 60);
-            const accSecDisp = accSec % 60;
+        function current() {
+            const context = getContext() || 'default';
+            return {
+                context,
+                aliases: getAliases(context) || [],
+                status: getStatus(subject, context, getAliases(context) || [])
+            };
+        }
 
-            if (unlocked) {
-                bar.innerHTML = `<div class="stb-unlocked">✅ 오늘 학습 완료! 퀴즈를 풀 수 있어요 🎉</div>`;
-                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.remove('stb-locked'); quizBtn.title = ''; }
-            } else if (isIdle) {
-                bar.innerHTML = `
-                    <div class="stb-inner stb-idle">
-                        <span class="stb-label">💤 자리 비움 감지 — 타이머 일시정지</span>
-                        <div class="stb-track"><div class="stb-fill" style="width:${pct}%; opacity:0.4;"></div></div>
-                        <span class="stb-remain" style="color:var(--text-sub);">화면을 터치하세요</span>
-                    </div>`;
-                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.add('stb-locked'); }
+        function updateUI(paused = false) {
+            const { status } = current();
+            const remaining = Math.max(0, status.requiredSeconds - status.accumulatedSeconds);
+            const pct = status.requiredSeconds > 0
+                ? Math.min(100, Math.round(status.accumulatedSeconds / status.requiredSeconds * 100))
+                : 100;
+            const scoreText = status.score === null ? '첫 퀴즈 전' : `최근 최초 점수 ${status.score}점`;
+
+            if (status.unlocked) {
+                bar.innerHTML = `<div class="stb-unlocked">✅ ${getLabel()} 학습 완료 · ${scoreText} · 퀴즈 가능</div>`;
+                if (quizBtn) quizBtn.classList.remove('stb-locked');
             } else {
+                const remMin = Math.floor(remaining / 60);
+                const remSec = remaining % 60;
+                const pauseText = paused ? ' · 학습 행동을 확인하면 다시 시작' : '';
                 bar.innerHTML = `
-                    <div class="stb-inner">
-                        <span class="stb-label">📚 ${accMin}분 ${String(accSecDisp).padStart(2,'0')}초 학습</span>
+                    <div class="stb-inner ${paused ? 'stb-idle' : ''}">
+                        <span class="stb-label">📚 ${getLabel()} · ${scoreText}${pauseText}</span>
                         <div class="stb-track"><div class="stb-fill" style="width:${pct}%"></div></div>
-                        <span class="stb-remain">🔒 ${remMin}분 ${String(remSec).padStart(2,'0')}초 남음</span>
+                        <span class="stb-remain">⏳ ${remMin}분 ${String(remSec).padStart(2, '0')}초 남음</span>
                     </div>`;
-                if (quizBtn) { quizBtn.disabled = false; quizBtn.classList.add('stb-locked'); }
+                if (quizBtn) quizBtn.classList.add('stb-locked');
             }
+        }
+
+        function canCount() {
+            return document.visibilityState === 'visible'
+                && document.hasFocus()
+                && isLearningActive()
+                && Date.now() - lastActivityAt <= ACTIVITY_LIMIT_MS;
+        }
+
+        function tick() {
+            const now = Date.now();
+            const elapsed = Math.floor((now - lastTs) / 1000);
+            lastTs = now;
+            if (elapsed > 0 && canCount()) {
+                const { context, status } = current();
+                if (!status.unlocked) addSeconds(subject, context, Math.min(elapsed, 2));
+            }
+            updateUI(!canCount());
         }
 
         function startTimer() {
-            if (stopFn) stopFn();
-            stopFn = start(subject, updateUI);
+            if (timerId) clearInterval(timerId);
+            lastTs = Date.now();
+            lastActivityAt = Date.now();
+            timerId = setInterval(tick, 1000);
+            updateUI(false);
         }
 
         function stopTimer() {
-            if (stopFn) { stopFn(); stopFn = null; }
-            updateUI(getAccumulated(subject), getRequiredSeconds(subject));
+            if (timerId) clearInterval(timerId);
+            timerId = null;
+            updateUI(true);
         }
 
-        // 초기 렌더 (타이머 없이)
-        updateUI(getAccumulated(subject), getRequiredSeconds(subject));
+        function refresh() {
+            lastTs = Date.now();
+            lastActivityAt = Date.now();
+            updateUI(false);
+        }
 
-        return { startTimer, stopTimer };
+        if (quizBtn) {
+            quizBtn.addEventListener('click', e => {
+                const { status } = current();
+                if (!status.unlocked) {
+                    e.preventDefault();
+                    e.stopImmediatePropagation();
+                    const remaining = status.requiredSeconds - status.accumulatedSeconds;
+                    showToast(`🔒 ${getLabel()}을(를) ${Math.ceil(remaining / 60)}분 더 학습해야 합니다.`);
+                }
+            }, true);
+        }
+
+        updateUI(false);
+        return { startTimer, stopTimer, refresh, getStatus: () => current().status };
     }
 
-    return { getConfig, setConfig, getAccumulated, getRequiredSeconds, isUnlocked, start, initBar, DEFAULTS };
+    return {
+        DEFAULTS,
+        getConfig,
+        setConfig,
+        getAccumulated,
+        getLatestScore,
+        getRequiredSeconds,
+        getStatus,
+        isUnlocked,
+        recordResult,
+        resetAccumulated,
+        initBar,
+        showToast
+    };
 })();

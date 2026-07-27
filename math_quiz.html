@@ -225,6 +225,7 @@
     <script src="report.js"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
+    <script src="study-timer.js"></script>
     <script src="MathData.js"></script>
     <script src="MathQuizData.js"></script>
     <script>
@@ -274,6 +275,18 @@
             if (!unit) {
                 alert('해당 단원의 정보를 찾을 수 없습니다.');
                 window.location.href = 'math.html';
+                return;
+            }
+
+            const mathContext = `${levelId}:${semesterId}:${unitId}`;
+            if (!isReviewMode && typeof StudyTimer !== 'undefined'
+                && !StudyTimer.isUnlocked('math', mathContext, [unit.title])) {
+                const status = StudyTimer.getStatus('math', mathContext, [unit.title]);
+                const firstChapter = unit.chapters && unit.chapters[0];
+                alert(`${unit.title} 학습 시간이 ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 부족합니다.`);
+                window.location.href = firstChapter
+                    ? `math_viewer.html?level=${levelId}&semester=${semesterId}&unit=${unitId}&chapter=${firstChapter.id}`
+                    : homeUrl;
                 return;
             }
 
@@ -503,6 +516,9 @@
                     const timeSpent = Math.floor((Date.now() - quizSessionData.startTime) / 1000);
                     if (typeof saveQuizResult === 'function') {
                         saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+                        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+                            StudyTimer.recordResult('math', mathContext, quizSessionData.initialScore, quizSessionData.total);
+                        }
                         
                         // [New] 경험치 지급 및 레벨업 확인
                         const result = UserSession.addEXP(score);

@@ -390,6 +390,10 @@ function showResult() {
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'hanja', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+            StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total);
+            if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();
+        }
         
         const result = UserSession.addEXP(quizScore);
         if (result && result.levelUp) {
@@ -484,6 +488,7 @@ levelBtns.forEach(btn => {
         btn.classList.add('active');
         currentLevel = btn.dataset.level;
         currentIndex = 0;
+        if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();
         if (currentMode === 'study') { studyWords = Utils.shuffle([...vocabHanja[currentLevel]]); updateCard(); }
         else { startQuiz(); }
     });
@@ -526,7 +531,12 @@ window.HanjaEngine = {
 
         // 학습 타이머 초기화
         if (typeof StudyTimer !== 'undefined') {
-            _hanjaTimerCtrl = StudyTimer.initBar('hanja', quizModeBtn);
+            _hanjaTimerCtrl = StudyTimer.initBar('hanja', quizModeBtn, {
+                getContext: () => currentLevel,
+                getAliases: () => [document.querySelector('.level-btn.active')?.textContent],
+                getLabel: () => document.querySelector('.level-btn.active')?.textContent || currentLevel,
+                isLearningActive: () => currentMode === 'study'
+            });
         }
 
         const urlParams = new URLSearchParams(window.location.search);

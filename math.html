@@ -386,27 +386,45 @@
                 });
             });
 
-            // 학습 타이머 초기화
-            let _mathTimerCtrl = null;
-            if (typeof StudyTimer !== 'undefined') {
-                _mathTimerCtrl = StudyTimer.initBar('math', quizModeBtn);
-                _mathTimerCtrl.startTimer(); // 수학은 목차 페이지가 곧 학습 모드
-            }
-
             // 모드 전환 이벤트
             modeBtns.forEach(btn => {
                 btn.addEventListener('click', () => {
                     modeBtns.forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
                     const nextMode = btn.id === 'studyModeBtn' ? 'study' : 'quiz';
-                    if (nextMode === 'quiz' && quizModeBtn.classList.contains('stb-locked')) return;
                     currentMode = nextMode;
-                    if (_mathTimerCtrl) {
-                        if (currentMode === 'study') _mathTimerCtrl.startTimer();
-                        else _mathTimerCtrl.stopTimer();
-                    }
                     renderTOC();
                 });
+            });
+
+            // 퀴즈 링크는 선택한 단원의 학습 조건을 다시 확인한다.
+            tocContainer.addEventListener('click', e => {
+                const link = e.target.closest('a[href*="math_quiz.html"]');
+                if (!link || typeof StudyTimer === 'undefined') return;
+
+                const url = new URL(link.href);
+                const levelId = url.searchParams.get('level');
+                const semesterId = url.searchParams.get('semester') || '1';
+                const unitId = url.searchParams.get('unit');
+                const levelData = MathData[levelId];
+                const units = levelData?.semesters
+                    ? (levelData.semesters[semesterId]?.units || [])
+                    : (levelData?.units || []);
+                const unit = units.find(item => item.id === unitId);
+                if (!unit) return;
+
+                const context = `${levelId}:${semesterId}:${unitId}`;
+                if (StudyTimer.isUnlocked('math', context, [unit.title])) return;
+
+                e.preventDefault();
+                const status = StudyTimer.getStatus('math', context, [unit.title]);
+                StudyTimer.showToast(`🔒 ${unit.title}을(를) ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 더 학습해야 합니다.`);
+                const firstChapter = unit.chapters && unit.chapters[0];
+                if (firstChapter) {
+                    setTimeout(() => {
+                        window.location.href = `math_viewer.html?level=${levelId}&semester=${semesterId}&unit=${unitId}&chapter=${firstChapter.id}`;
+                    }, 700);
+                }
             });
 
             // 학년 전환 이벤트

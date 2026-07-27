@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v5';
+const CACHE_NAME = 'smart-study-v6-adaptive-lock';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

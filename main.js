@@ -811,6 +811,10 @@ function showResult() {
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'english', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+            StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total);
+            if (_studyTimerCtrl) _studyTimerCtrl.refresh();
+        }
 
         // [New] 경험치 지급 및 레벨업 확인
         const result = UserSession.addEXP(quizScore);
@@ -956,7 +960,12 @@ window.AppEngine = {
 
         // 학습 타이머 초기화
         if (typeof StudyTimer !== 'undefined') {
-            _studyTimerCtrl = StudyTimer.initBar('english', quizModeBtn);
+            _studyTimerCtrl = StudyTimer.initBar('english', quizModeBtn, {
+                getContext: () => currentLevel,
+                getAliases: () => [currentLevel.replace('level', '레벨 '), document.querySelector('.level-btn.active')?.textContent],
+                getLabel: () => document.querySelector('.level-btn.active')?.textContent || currentLevel,
+                isLearningActive: () => currentMode === 'study'
+            });
         }
 
         const urlParams = new URLSearchParams(window.location.search);
@@ -1006,6 +1015,7 @@ window.AppEngine = {
                 btn.classList.add('active');
                 currentLevel = btn.dataset.level;
                 currentIndex = 0;
+                if (_studyTimerCtrl) _studyTimerCtrl.refresh();
                 
                 if (currentMode === 'study') {
                     refreshStudyOrder();
