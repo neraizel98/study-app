@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v8-middle1-semester2';
+const CACHE_NAME = 'smart-study-v9-english-grammar';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -50,6 +50,10 @@ const STATIC_ASSETS = [
     './MathQuizMiddle1.js',
     './MathDataMiddle1Semester2.js',
     './MathQuizMiddle1Semester2.js',
+    './english_grammar.html',
+    './EnglishGrammarData.js',
+    './EnglishGrammarQuiz.js',
+    './EnglishGrammarApp.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
