@@ -60,6 +60,14 @@
                 unit('m6', '6. 비교와 문장 연결', '대상을 비교하고 접속사·전치사로 의미를 연결합니다.', [
                     lesson('비교급과 최상급', '두 대상은 비교급, 셋 이상은 최상급으로 비교합니다.', ['비교급 + than', 'the + 최상급', 'as + 원급 + as'], [['Tom is taller than Jim.', '톰은 짐보다 키가 크다.'], ['This is the most useful tool.', '이것은 가장 유용한 도구다.']], '비교 범위가 셋 이상이면 최상급을 검토하세요.'),
                     lesson('접속사와 전치사', '접속사는 말·구·절을 연결하고, 전치사는 명사 앞에서 시간·장소 관계를 나타냅니다.', ['and/but/or/because', 'when/before/after/if', '시간: at 7, on Monday, in July', '장소: at the station, on the desk, in the room'], [['I stayed home because it rained.', '비가 와서 집에 있었다.'], ['Call me when you arrive.', '도착하면 전화해 줘.']], '접속사 뒤에는 주어+동사, 전치사 뒤에는 명사(구)가 옵니다.')
+                ]),
+                unit('m7', '7. 의문문과 문장의 종류', '의문사와 문장의 목적에 맞는 어순을 익힙니다.', [
+                    lesson('의문사 의문문', '알고 싶은 정보에 맞는 의문사를 문장 맨 앞에 둡니다.', ['사람 who', '사물·내용 what', '장소 where', '시간 when', '이유 why', '방법 how'], [['Where do you live?', '너는 어디에 사니?'], ['Why is she late?', '그녀는 왜 늦었니?']], '의문사 뒤에도 be동사 의문문 또는 do/does 의문문의 어순을 지킵니다.'),
+                    lesson('선택·부가·부정 의문문', '선택지는 or로 연결하고, 부가의문문은 앞 문장의 반대 형태를 덧붙입니다.', ['A or B?', '긍정문, 부정 부가의문?', '부정문, 긍정 부가의문?', '부정의문문은 놀람·확인을 나타낼 수 있음'], [['Do you want tea or juice?', '차와 주스 중 무엇을 원하니?'], ['You are ready, aren’t you?', '너는 준비됐지, 그렇지?']], '앞 문장의 동사와 주어에 맞춰 부가의문문을 만드세요.')
+                ]),
+                unit('m8', '8. There is와 비인칭 주어', '존재·날씨·시간·거리 표현을 자연스럽게 만듭니다.', [
+                    lesson('There is / are', '처음 언급하는 사람이나 사물의 존재는 There is/are로 표현합니다.', ['단수·셀 수 없는 명사: There is', '복수명사: There are', '부정: There is/are not', '의문: Is/Are there ...?'], [['There is a park near my house.', '우리 집 근처에 공원이 있다.'], ['There are two cats outside.', '밖에 고양이 두 마리가 있다.']], 'be동사는 뒤에 오는 진짜 주어의 수에 맞춥니다.'),
+                    lesson('날씨·시간·거리의 it', '날씨·시간·요일·거리에서 it은 특별한 대상을 가리키지 않는 비인칭 주어입니다.', ['날씨: It is sunny.', '시간: It is seven.', '요일: It is Monday.', '거리: It is five kilometers.'], [['It is cold today.', '오늘은 춥다.'], ['It is ten minutes from here.', '여기서 10분 거리다.']], '비인칭 it을 ‘그것’이라고 직접 해석하지 않습니다.')
                 ])
             ]
         },

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v9-english-grammar';
+const CACHE_NAME = 'smart-study-v10-grammar-ui';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

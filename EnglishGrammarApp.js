@@ -21,7 +21,7 @@
 
     function renderSelectors() {
         $('stageTabs').innerHTML = allowedStages.map(id =>
-            `<button class="chip ${id === stageId ? 'active' : ''}" data-stage="${id}">${EnglishGrammarData[id].title}</button>`
+            `<button class="level-btn ${id === stageId ? 'active' : ''}" data-stage="${id}">${EnglishGrammarData[id].title}</button>`
         ).join('');
         $('unitTabs').innerHTML = stage().units.map(item =>
             `<button class="unit-chip ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`
@@ -46,6 +46,8 @@
         $('studyPanel').hidden = false;
         $('quizPanel').hidden = true;
         mode = 'study';
+        $('studyModeBtn').classList.add('active');
+        $('quizModeBtn').classList.remove('active');
         setUrl();
         timerController?.refresh();
     }
@@ -66,6 +68,8 @@
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
         $('studyPanel').hidden = true;
         $('quizPanel').hidden = false;
+        $('studyModeBtn').classList.remove('active');
+        $('quizModeBtn').classList.add('active');
         setUrl();
         renderQuestion();
         timerController?.refresh();
@@ -109,9 +113,11 @@
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(`grammar-${Date.now()}`, 'english', `영문법 ${stage().title} ${unit().title}`, questions.length, initialScore, initialScore, 0, true);
         }
-        $('quizPanel').innerHTML = `<section class="result"><div class="result-icon">${score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚'}</div><h2>${score}점</h2><p>${unit().title} 퀴즈를 완료했습니다.</p><button id="retryQuiz" class="primary">다시 풀기</button><button id="backStudy">학습으로 돌아가기</button></section>`;
-        $('retryQuiz').addEventListener('click', startQuiz);
-        $('backStudy').addEventListener('click', renderStudy);
+        $('resultEmoji').textContent = score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚';
+        $('resultTitle').textContent = score >= 90 ? '문법 마스터!' : score >= 70 ? '잘했어요!' : '조금 더 연습해요!';
+        $('resultScore').textContent = `${initialScore} / ${questions.length}점`;
+        $('resultMessage').textContent = `${stage().title} · ${unit().title} 퀴즈를 완료했습니다.`;
+        $('resultModal').classList.remove('hidden');
     }
 
     function bind() {
@@ -143,6 +149,10 @@
             if (questionIndex < questions.length - 1) { questionIndex++; renderQuestion(); } else finishQuiz();
         });
         $('backToStudy').addEventListener('click', renderStudy);
+        $('studyModeBtn').addEventListener('click', renderStudy);
+        $('quizModeBtn').addEventListener('click', startQuiz);
+        $('retryBtn').addEventListener('click', () => { $('resultModal').classList.add('hidden'); startQuiz(); });
+        $('studyAgainBtn').addEventListener('click', () => { $('resultModal').classList.add('hidden'); renderStudy(); });
     }
 
     document.addEventListener('DOMContentLoaded', () => {
