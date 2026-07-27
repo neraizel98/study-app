@@ -65,8 +65,29 @@ const Utils = {
     // ----------------------------------------------------
     // 동적 퀴즈 생성 엔진
     // ----------------------------------------------------
-    generateMathQuiz: function (qTemplate) {
+    mathQuizGenerators: {},
+
+    registerMathQuizGenerator: function (name, generator) {
+        if (name && typeof generator === 'function') this.mathQuizGenerators[name] = generator;
+    },
+
+    generateMathQuiz: function (qTemplate, retryCount = 0) {
         if (qTemplate.type !== 'dynamic') return qTemplate;
+
+        const customGenerator = this.mathQuizGenerators[qTemplate.generator];
+        if (customGenerator) {
+            const generated = customGenerator(qTemplate, this);
+            const normalized = (generated.choices || []).map(value => String(value).trim());
+            if (new Set(normalized).size !== normalized.length) {
+                if (retryCount < 12) return this.generateMathQuiz(qTemplate, retryCount + 1);
+                throw new Error(`중복 선택지를 제거하지 못했습니다: ${qTemplate.generator}`);
+            }
+            return Object.assign({
+                difficulty: qTemplate.difficulty || "medium",
+                generator: qTemplate.generator,
+                wrongCount: qTemplate.wrongCount || 0
+            }, generated);
+        }
 
         let q, ans, exp, wrong = [];
         const r = this.randomInt.bind(this);
@@ -915,6 +936,11 @@ const Utils = {
         }
 
         let choices = [ans, ...wrong];
+        const normalizedChoices = choices.map(value => String(value).trim());
+        if (new Set(normalizedChoices).size !== normalizedChoices.length) {
+            if (retryCount < 12) return this.generateMathQuiz(qTemplate, retryCount + 1);
+            throw new Error(`중복 선택지를 제거하지 못했습니다: ${qTemplate.generator}`);
+        }
         this.shuffle(choices);
         let ansIdx = choices.indexOf(ans);
 

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v6-adaptive-lock';
+const CACHE_NAME = 'smart-study-v7-middle1-quiz';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -46,6 +46,8 @@ const STATIC_ASSETS = [
     './VocabHanja.js',
     './MathData.js',
     './MathQuizData.js',
+    './MathDataMiddle1.js',
+    './MathQuizMiddle1.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
