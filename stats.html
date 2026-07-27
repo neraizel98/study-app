@@ -249,6 +249,7 @@
             <div class="chart-title">🎯 레벨·단원별 달성률</div>
             <div class="subj-tabs" id="subjTabs">
                 <button class="subj-tab active" data-subj="english">🇬🇧 영어</button>
+                <button class="subj-tab"        data-subj="grammar">📘 영문법</button>
                 <button class="subj-tab"        data-subj="hanja">🏮 한자</button>
                 <button class="subj-tab"        data-subj="math">📐 수학</button>
             </div>
@@ -271,6 +272,7 @@
             <div class="subj-tabs" id="quizSubjTabs">
                 <button class="subj-tab active" data-subj="all">전체</button>
                 <button class="subj-tab" data-subj="english">📚 영어</button>
+                <button class="subj-tab" data-subj="grammar">📘 영문법</button>
                 <button class="subj-tab" data-subj="hanja">✍️ 한자</button>
                 <button class="subj-tab" data-subj="math">🧮 수학</button>
             </div>
@@ -286,10 +288,11 @@
     // ─────────────────────────────────────────────
     //  Constants
     // ─────────────────────────────────────────────
-    const SUBJ_NAMES  = { english: '영어', hanja: '한자', math: '수학' };
-    const SUBJ_ICONS  = { english: '🇬🇧', hanja: '🏮', math: '📐' };
+    const SUBJ_NAMES  = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학' };
+    const SUBJ_ICONS  = { english: '🇬🇧', grammar: '📘', hanja: '🏮', math: '📐' };
     const SUBJ_COLOR  = {
         english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
+        grammar: { bg: 'rgba(167,139,250,0.6)', bd: '#a78bfa' },
         hanja:   { bg: 'rgba(249,130,108,0.6)', bd: '#f9826c' },
         math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' }
     };
@@ -382,7 +385,7 @@
     //  Chart 1 — daily study time (stacked bar)
     // ─────────────────────────────────────────────
     function buildStudyTimeChart(weekReports) {
-        const d = { english: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
+        const d = { english: Array(7).fill(0), grammar: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
         weekReports.forEach(r => {
             const dow = (new Date(r.date).getDay() + 6) % 7;
             if (d[r.subject] !== undefined) d[r.subject][dow] += (r.timeSpentSeconds || 0) / 60;
@@ -397,7 +400,7 @@
             type: 'bar',
             data: {
                 labels: DAYS,
-                datasets: ['english','hanja','math'].map(s => ({
+                datasets: ['english','grammar','hanja','math'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  d[s].map(v => +v.toFixed(1)),
                     backgroundColor: SUBJ_COLOR[s].bg,
@@ -423,7 +426,7 @@
     function buildScoreTrendChart(allReports) {
         const N = 8;
         const labels = [];
-        const series = { english: [], hanja: [], math: [] };
+        const series = { english: [], grammar: [], hanja: [], math: [] };
         let anyData = false;
 
         for (let i = N - 1; i >= 0; i--) {
@@ -431,7 +434,7 @@
             const mn = ws.getMonth() + 1, dn = ws.getDate();
             labels.push(`${mn}/${dn}`);
             const wr = filterWeek(allReports, ws);
-            ['english','hanja','math'].forEach(s => {
+            ['english','grammar','hanja','math'].forEach(s => {
                 const sub = wr.filter(r => r.subject === s);
                 if (sub.length > 0) {
                     series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
@@ -450,7 +453,7 @@
             type: 'line',
             data: {
                 labels,
-                datasets: ['english','hanja','math'].map(s => ({
+                datasets: ['english','grammar','hanja','math'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  series[s],
                     borderColor:     SUBJ_COLOR[s].bd,

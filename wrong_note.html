@@ -190,6 +190,7 @@
 
         <div class="subject-tabs">
             <button class="tab-btn active" data-subject="english">🇬🇧 영어</button>
+            <button class="tab-btn" data-subject="grammar">📘 영문법</button>
             <button class="tab-btn" data-subject="hanja">🏮 한자</button>
             <button class="tab-btn" data-subject="math">📐 수학</button>
         </div>
@@ -263,6 +264,11 @@
                         subText = item.meaning;
                         metaText = item.level;
                         explanation = item.explanation || `뜻: ${item.meaning}`;
+                    } else if (currentSubject === 'grammar') {
+                        mainText = item.question || '문법 문제';
+                        subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
+                        metaText = `${item.stageTitle || ''} · ${item.unitTitle || ''}`;
+                        explanation = item.explanation || '문법 해설이 없습니다.';
                     } else if (currentSubject === 'hanja') {
                         mainText = `${item.hanja} (${item.eum})`;
                         subText = item.meaning;
@@ -321,6 +327,11 @@
             window.retryQuestion = function(subject, identifier) {
                 let targetUrl = '';
                 if (subject === 'english') targetUrl = 'english.html?mode=review';
+                else if (subject === 'grammar') {
+                    const all = WrongNote.getAll();
+                    const target = all.grammar.find(g => g.type === identifier);
+                    if (target) targetUrl = `english_grammar.html?stage=${target.stageId}&unit=${target.unitId}&mode=quiz`;
+                }
                 else if (subject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (subject === 'math') {
                     const all = WrongNote.getAll();
@@ -344,6 +355,11 @@
             retryAllBtn.addEventListener('click', () => {
                 let targetUrl = '';
                 if (currentSubject === 'english') targetUrl = 'english.html?mode=review';
+                else if (currentSubject === 'grammar') {
+                    const all = WrongNote.getAll();
+                    const first = (all.grammar || []).find(g => !g.isMastered) || (all.grammar || [])[0];
+                    if (first) targetUrl = `english_grammar.html?stage=${first.stageId}&unit=${first.unitId}&mode=quiz`;
+                }
                 else if (currentSubject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (currentSubject === 'math') {
                     const all = WrongNote.getAll();

@@ -11,7 +11,7 @@ const StudyTimer = (() => {
     const TIME_PREFIX = 'SmartStudy_UnitTime_';
     const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
     const REPORT_PREFIX = 'SmartVocab_Reports_';
-    const DEFAULTS = { english: 5, hanja: 5, math: 5 };
+    const DEFAULTS = { english: 5, grammar: 5, hanja: 5, math: 5 };
     const ACTIVITY_LIMIT_MS = 45 * 1000;
     const ACTIVITY_EVENTS = ['click', 'keydown', 'touchstart', 'scroll'];
 

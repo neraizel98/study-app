@@ -164,12 +164,12 @@ const WrongNote = {
     getAll: function() {
         try {
             const key = this.getStorageKey();
-            if (!key) return { english: [], hanja: [], math: [] };
+            if (!key) return { english: [], grammar: [], hanja: [], math: [] };
             const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : { english: [], hanja: [], math: [] };
+            return raw ? JSON.parse(raw) : { english: [], grammar: [], hanja: [], math: [] };
         } catch (e) {
             console.error('[WrongNote Error]', e);
-            return { english: [], hanja: [], math: [] };
+            return { english: [], grammar: [], hanja: [], math: [] };
         }
     },
 
@@ -189,7 +189,7 @@ const WrongNote = {
         if (!all[subject]) all[subject] = [];
         
         // 중복 방지 (English/Hanja는 word/hanja 기준, Math는 type 기준)
-        const identifier = subject === 'math' ? data.type : (data.word || data.hanja);
+        const identifier = (subject === 'math' || subject === 'grammar') ? data.type : (data.word || data.hanja);
         const exists = all[subject].find(item => (item.word || item.hanja || item.type) === identifier);
         
         const historyEntry = {
@@ -244,6 +244,10 @@ const WrongNote = {
             // 문항 데이터 필드 최신화 (마지막 문제나 풀이가 바뀔 수 있으므로)
             if (data.question) exists.question = data.question;
             if (data.explanation) exists.explanation = data.explanation;
+            if (data.selectedAnswer !== undefined) exists.selectedAnswer = data.selectedAnswer;
+            if (data.correctAnswer !== undefined) exists.correctAnswer = data.correctAnswer;
+            if (data.unitTitle) exists.unitTitle = data.unitTitle;
+            if (data.stageTitle) exists.stageTitle = data.stageTitle;
         }
         
         localStorage.setItem(key, JSON.stringify(all));
@@ -262,7 +266,7 @@ const WrongNote = {
 /**
  * 퀴즈 성적 저장 (기존 함수 유지하되 ID 연동)
  */
-function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore, initialScore, timeSpentSeconds, isCompleted) {
+function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore, initialScore, timeSpentSeconds, isCompleted, metadata = null) {
     const userId = UserSession.getActiveUser();
     if (!userId) return;
 
@@ -286,9 +290,10 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         data[existingIdx].finalScore = currentScore;
         data[existingIdx].isCompleted = data[existingIdx].isCompleted || isCompleted;
         data[existingIdx].timeSpentSeconds = timeSpentSeconds;
+        if (metadata) data[existingIdx].metadata = metadata;
         // totalQuestions는 최초 기록 값을 보존함
     } else {
-        data.push({ sessionId, subject, level, date: Date.now(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted });
+        data.push({ sessionId, subject, level, date: Date.now(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted, metadata });
     }
 
     localStorage.setItem(REPORT_KEY + "_" + userId, JSON.stringify(data));

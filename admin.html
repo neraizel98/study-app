@@ -133,11 +133,18 @@
         <div id="userListView">
         <div class="chart-card" id="studyTimeConfig" style="margin-bottom:20px;">
             <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
-            <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:12px; margin-bottom:14px;" id="studyTimeInputs">
+            <div style="display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:14px;" id="studyTimeInputs">
                 <div style="text-align:center;">
                     <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🇬🇧 영어</div>
                     <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
                         <input type="number" id="stcEnglish" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
+                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
+                    </div>
+                </div>
+                <div style="text-align:center;">
+                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📘 영문법</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <input type="number" id="stcGrammar" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
                         <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
                     </div>
                 </div>
@@ -193,9 +200,9 @@
         appId:             "1:994757323327:web:c0f68e95bbeea72a12e68a"
     };
 
-    const SUBJ_NAMES  = { english:'영어', hanja:'한자', math:'수학' };
-    const SUBJ_ICONS  = { english:'🇬🇧', hanja:'🏮',   math:'📐'  };
-    const SUBJ_COLORS = { english:'#4facfe', hanja:'#f9826c', math:'#56d364' };
+    const SUBJ_NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학' };
+    const SUBJ_ICONS  = { english:'🇬🇧', grammar:'📘', hanja:'🏮', math:'📐' };
+    const SUBJ_COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364' };
 
     let db = null;
 
@@ -403,7 +410,7 @@
         const isToday = ds.date === today || ds.date === new Date().toISOString().slice(0,10);
         const label = isToday ? '오늘의 학습' : `${ds.date} 학습`;
 
-        const SUBJ_ORDER = ['english','hanja','math'];
+        const SUBJ_ORDER = ['english','grammar','hanja','math'];
         const subjects = (ds.subjectsStudied || []).filter(s => SUBJ_ORDER.includes(s));
         if (!subjects.length) return '';
 
@@ -442,21 +449,25 @@
                 ? `<span style="font-size:0.65rem;padding:1px 6px;border-radius:8px;background:${round===1?'rgba(79,172,254,0.15)':'rgba(249,130,108,0.15)'};color:${round===1?'#4facfe':'#f9826c'};margin-left:4px;">${round}회차</span>`
                 : '';
 
-            // 영어/한자: 문제별 정답/오답 상세 (WrongNote에서 sessionId 매칭)
+            // 단어/한자/문법: 문제별 정답/오답 상세
             let detailBtn = '';
             let detailDiv = '';
-            if ((r.subject === 'english' || r.subject === 'hanja') && r.sessionId) {
-                const items = (wa[r.subject] || []).filter(item =>
-                    (item.history || []).some(h => h.sessionId === r.sessionId && (h.round||1) === round)
-                );
+            if ((r.subject === 'english' || r.subject === 'hanja' || r.subject === 'grammar') && r.sessionId) {
+                const items = r.subject === 'grammar'
+                    ? (r.metadata?.attempts || [])
+                    : (wa[r.subject] || []).filter(item =>
+                        (item.history || []).some(h => h.sessionId === r.sessionId && (h.round||1) === round)
+                    );
                 if (items.length) {
                     const detailId = `qd_${idx}`;
                     const chips = items.map(item => {
-                        const h = item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
-                        const ok = h?.status === 'correct';
+                        const h = r.subject === 'grammar' ? null : item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
+                        const ok = r.subject === 'grammar' ? item.correct : h?.status === 'correct';
                         const label = r.subject === 'hanja'
                             ? `${item.hanja}(${item.eum||''}) ${item.meaning||''}`
-                            : (item.word || item.identifier || '?');
+                            : r.subject === 'grammar'
+                                ? `${item.unitTitle || ''} · ${item.question || '?'}`
+                                : (item.word || item.identifier || '?');
                         return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 8px;border-radius:10px;margin:2px;background:${ok?'rgba(86,211,100,0.12)':'rgba(255,95,109,0.12)'};color:${ok?'#56d364':'#ff5f6d'};">${ok?'✅':'❌'} ${label}</span>`;
                     }).join('');
                     detailBtn = `<button onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none';this.textContent=this.textContent==='▼ 문제 보기'?'▲ 닫기':'▼ 문제 보기';" style="font-size:0.7rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text-sub);cursor:pointer;margin-top:4px;">▼ 문제 보기</button>`;
@@ -484,7 +495,7 @@
 
     // ── 과목별 통계 탭 ──
     function buildSubjectTab(reports) {
-        const subjects = ['english', 'hanja', 'math'];
+        const subjects = ['english', 'grammar', 'hanja', 'math'];
         const pctOf = (r, field) => r.totalQuestions > 0 ? (r[field] ?? r.initialScore) / r.totalQuestions * 100 : 0;
         const avg = (arr, field = 'initialScore') => arr.length ? Math.round(arr.reduce((a, r) => a + pctOf(r, field), 0) / arr.length) : null;
 
@@ -546,14 +557,58 @@
         }).filter(Boolean);
 
         if (!cards.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
-        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}`;
+        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}${buildGrammarAnalysis(reports)}`;
+    }
+
+    function buildGrammarAnalysis(reports) {
+        const grammarReports = reports.filter(r => r.subject === 'grammar');
+        const units = {};
+        grammarReports.forEach(r => {
+            const meta = r.metadata || {};
+            const attempts = meta.attempts || [];
+            if (attempts.length) {
+                attempts.forEach(a => {
+                    const key = a.unitId || meta.unitId || r.level || '기타';
+                    if (!units[key]) units[key] = { title: a.unitTitle || meta.unitTitle || r.level || key, correct: 0, total: 0, wrongQuestions: {} };
+                    units[key].total++;
+                    if (a.correct) units[key].correct++;
+                    else units[key].wrongQuestions[a.question || '문법 문제'] = (units[key].wrongQuestions[a.question || '문법 문제'] || 0) + 1;
+                });
+            } else {
+                const key = meta.unitId || r.level || '기타';
+                if (!units[key]) units[key] = { title: meta.unitTitle || r.level || key, correct: 0, total: 0, wrongQuestions: {} };
+                units[key].correct += r.initialScore || 0;
+                units[key].total += r.totalQuestions || 0;
+            }
+        });
+        const rows = Object.values(units).map(u => ({ ...u, pct: u.total ? Math.round(u.correct / u.total * 100) : 0 }))
+            .sort((a,b) => a.pct - b.pct);
+        if (!rows.length) return '';
+        const weak = rows.filter(r => r.pct < 70);
+        const strong = rows.filter(r => r.pct >= 80);
+        const list = rows.map(r => {
+            const color = r.pct >= 80 ? '#56d364' : r.pct >= 70 ? '#f0c674' : '#ff5f6d';
+            const topWrong = Object.entries(r.wrongQuestions).sort((a,b) => b[1]-a[1])[0];
+            return `<div style="margin-bottom:10px;">
+                <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:4px;"><span>${r.title}</span><strong style="color:${color}">${r.pct}% (${r.correct}/${r.total})</strong></div>
+                <div class="subj-bar-track"><div class="subj-bar-fill" style="width:${r.pct}%;background:${color}"></div></div>
+                ${topWrong ? `<div style="font-size:0.7rem;color:var(--text-sub);margin-top:3px;">자주 틀림: ${topWrong[0]} (${topWrong[1]}회)</div>` : ''}
+            </div>`;
+        }).join('');
+        return `<div style="background:var(--card-bg);border:1px solid rgba(167,139,250,.35);border-radius:16px;padding:18px;margin-top:18px;">
+            <div class="chart-title">📘 영어 문법 강점·약점 분석</div>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;font-size:.78rem;">
+                <span style="background:rgba(86,211,100,.12);color:#56d364;padding:5px 9px;border-radius:10px;">강점: ${strong.map(r=>r.title).join(', ') || '데이터 축적 중'}</span>
+                <span style="background:rgba(255,95,109,.12);color:#ff5f6d;padding:5px 9px;border-radius:10px;">약점: ${weak.map(r=>r.title).join(', ') || '뚜렷한 약점 없음'}</span>
+            </div>${list}
+        </div>`;
     }
 
     // ── 레벨별 학습 탭 ──
     function buildStudyDetailTab(reports) {
         if (!reports.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
 
-        const subjects = ['english', 'hanja', 'math'];
+        const subjects = ['english', 'grammar', 'hanja', 'math'];
         let html = '<div class="chart-title">레벨별 학습 현황</div>';
         let anyData = false;
 
@@ -626,7 +681,7 @@
 
     // ── 오답 현황 탭 ──
     function buildWrongTab(wrongAnswers) {
-        const subjects = ['english', 'hanja', 'math'];
+        const subjects = ['english', 'grammar', 'hanja', 'math'];
         let html = '<div class="chart-title">오답 현황</div>';
         let anyData = false;
 
@@ -644,8 +699,10 @@
                         </span>
                     </div>
                     ${items.slice(0,20).map(item => {
-                        const id = item.word || item.hanja || item.type || '?';
-                        const meaning = item.meaning ? ` (${item.meaning})` : '';
+                        const id = s === 'grammar' ? (item.question || '문법 문제') : (item.word || item.hanja || item.type || '?');
+                        const meaning = s === 'grammar'
+                            ? ` · ${item.unitTitle || ''} · 내 답 ${item.selectedAnswer || '-'} / 정답 ${item.correctAnswer || item.answer || '-'}`
+                            : (item.meaning ? ` (${item.meaning})` : '');
                         return `
                             <div class="wrong-row">
                                 <div class="wrong-identifier">${id}${meaning}</div>
@@ -738,10 +795,10 @@
         }
         window._adminWeekCharts = {};
 
-        const SUBJ   = ['english','hanja','math'];
-        const NAMES  = { english:'영어', hanja:'한자', math:'수학' };
-        const COLORS = { english:'#4facfe', hanja:'#f9826c', math:'#56d364' };
-        const FILL   = { english:'rgba(79,172,254,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)' };
+        const SUBJ   = ['english','grammar','hanja','math'];
+        const NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학' };
+        const COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364' };
+        const FILL   = { english:'rgba(79,172,254,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)' };
         const gridColor = 'rgba(255,255,255,0.06)';
         const tickColor = '#8b949e';
         const fontCfg   = { family:'Outfit', size:11 };
@@ -871,6 +928,7 @@
     function loadStudyTimeConfig() {
         const cfg = StudyTimer.getConfig();
         document.getElementById('stcEnglish').value = cfg.english ?? 5;
+        document.getElementById('stcGrammar').value = cfg.grammar ?? 5;
         document.getElementById('stcHanja').value   = cfg.hanja   ?? 5;
         document.getElementById('stcMath').value    = cfg.math    ?? 5;
     }
@@ -878,6 +936,7 @@
     function saveStudyTimeConfig() {
         const cfg = {
             english: parseInt(document.getElementById('stcEnglish').value, 10) || 0,
+            grammar: parseInt(document.getElementById('stcGrammar').value, 10) || 0,
             hanja:   parseInt(document.getElementById('stcHanja').value,   10) || 0,
             math:    parseInt(document.getElementById('stcMath').value,    10) || 0,
         };

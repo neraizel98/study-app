@@ -8,6 +8,7 @@
     const requestedQuiz = params.get('mode') === 'quiz';
     let mode = requestedQuiz ? 'quiz' : 'study';
     let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null;
+    let sessionId = '', attempts = [];
 
     const stage = () => EnglishGrammarData[stageId];
     const unit = () => stage().units.find(item => item.id === unitId) || stage().units[0];
@@ -53,12 +54,12 @@
     }
 
     function quizUnlocked() {
-        return typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked('english', context(), aliases());
+        return typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked('grammar', context(), aliases());
     }
 
     function startQuiz() {
         if (!quizUnlocked()) {
-            const status = StudyTimer.getStatus('english', context(), aliases());
+            const status = StudyTimer.getStatus('grammar', context(), aliases());
             alert(`${unit().title} 학습 시간이 ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 부족합니다.`);
             mode = 'study';
             renderStudy();
@@ -66,6 +67,7 @@
         }
         questions = EnglishGrammarQuiz.generate(unit().id, 10);
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
+        sessionId = `grammar-${Date.now()}`; attempts = [];
         $('studyPanel').hidden = true;
         $('quizPanel').hidden = false;
         $('studyModeBtn').classList.remove('active');
@@ -94,6 +96,25 @@
         const q = questions[questionIndex];
         const correct = index === q.answerIndex;
         if (correct) score += 10;
+        const detail = {
+            type: `${unit().id}:${q.question}`,
+            category: 'grammar',
+            stageId,
+            stageTitle: stage().title,
+            unitId: unit().id,
+            unitTitle: unit().title,
+            question: q.question,
+            selectedAnswer: q.choices[index],
+            correctAnswer: q.choices[q.answerIndex],
+            answer: q.choices[q.answerIndex],
+            choices: q.choices,
+            explanation: q.explanation,
+            correct
+        };
+        attempts.push(detail);
+        if (typeof WrongNote !== 'undefined') {
+            WrongNote.save('grammar', detail, correct ? 'correct' : 'wrong', sessionId, 1);
+        }
         [...$('quizChoices').children].forEach((button, i) => {
             button.disabled = true;
             if (i === q.answerIndex) button.classList.add('correct');
@@ -109,9 +130,16 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
-        if (typeof StudyTimer !== 'undefined') StudyTimer.recordResult('english', context(), initialScore, questions.length);
+        if (typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length);
         if (typeof saveQuizResult === 'function') {
-            saveQuizResult(`grammar-${Date.now()}`, 'english', `영문법 ${stage().title} ${unit().title}`, questions.length, initialScore, initialScore, 0, true);
+            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, 0, true, {
+                category: 'grammar',
+                stageId,
+                stageTitle: stage().title,
+                unitId: unit().id,
+                unitTitle: unit().title,
+                attempts
+            });
         }
         $('resultEmoji').textContent = score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚';
         $('resultTitle').textContent = score >= 90 ? '문법 마스터!' : score >= 70 ? '잘했어요!' : '조금 더 연습해요!';
@@ -160,7 +188,7 @@
         lessonIndex = Math.min(lessonIndex, unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();
         if (typeof StudyTimer !== 'undefined') {
-            timerController = StudyTimer.initBar('english', $('startQuiz'), {
+            timerController = StudyTimer.initBar('grammar', $('startQuiz'), {
                 getContext: context,
                 getAliases: aliases,
                 getLabel: () => `영문법 · ${unit().title}`,

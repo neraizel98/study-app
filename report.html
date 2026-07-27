@@ -307,6 +307,7 @@
         <div id="normalView">
         <div class="subject-tabs">
             <div class="subject-tab active" data-subject="english">🇬🇧 영어</div>
+            <div class="subject-tab" data-subject="grammar">📘 영문법</div>
             <div class="subject-tab" data-subject="math">📐 수학</div>
             <div class="subject-tab" data-subject="hanja">🏮 한자</div>
             <button id="shareHistoryBtn" style="margin-left: auto; background: #FEE500; color: #3A1D1D; border: none; padding: 8px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
@@ -398,8 +399,8 @@
                 // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
                     const r = JSON.parse(decodeURIComponent(escape(atob(importData))));
-                    const subjectNames = { english: '영어', math: '수학', hanja: '한자' };
-                    const subjectEmoji = { english: '🇬🇧', math: '📐', hanja: '🏮' };
+                    const subjectNames = { english: '영어 단어', grammar: '영어 문법', math: '수학', hanja: '한자' };
+                    const subjectEmoji = { english: '🇬🇧', grammar: '📘', math: '📐', hanja: '🏮' };
                     const subjectName = subjectNames[r.subject] || r.subject;
                     const emoji = subjectEmoji[r.subject] || '📚';
                     const vFinal = Math.round((r.finalScore / r.totalQuestions) * 100);
@@ -580,7 +581,7 @@
                 // 상세 패널 HTML 생성
                 function buildDetailHTML(log, subject) {
                     const details = getSessionDetails(subject, log.sessionId);
-                    const subjectName = { english: '영어', hanja: '한자', math: '수학' }[subject] || subject;
+                    const subjectName = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학' }[subject] || subject;
 
                     // 분류: 재도전 정답 / 미해결
                     const retryOk   = details.filter(d => d.hist[d.hist.length - 1].status === 'correct');
@@ -598,6 +599,7 @@
                     // 식별자·의미 추출 헬퍼
                     function getLabel(item) {
                         if (subject === 'english') return { id: item.word || '', sub: item.meaning || '' };
+                        if (subject === 'grammar') return { id: item.question || '문법 문제', sub: `${item.unitTitle || ''} · 정답: ${item.correctAnswer || item.answer || ''}` };
                         if (subject === 'hanja')   return { id: `${item.hanja || ''} (${item.eum || ''})`, sub: item.meaning || '' };
                         return { id: item.type || '', sub: '' };
                     }
