@@ -50,7 +50,7 @@
         $('studyModeBtn').classList.add('active');
         $('quizModeBtn').classList.remove('active');
         setUrl();
-        timerController?.refresh();
+        timerController?.startTimer();
     }
 
     function quizUnlocked() {
@@ -74,7 +74,7 @@
         $('quizModeBtn').classList.add('active');
         setUrl();
         renderQuestion();
-        timerController?.refresh();
+        timerController?.stopTimer();
     }
 
     function renderQuestion() {
@@ -194,6 +194,8 @@
                 getLabel: () => `영문법 · ${unit().title}`,
                 isLearningActive: () => mode === 'study' && !$('studyPanel').hidden
             });
+            timerController.startTimer();
+            window.addEventListener('beforeunload', () => timerController?.stopTimer());
         }
         if (requestedQuiz) startQuiz();
     });
