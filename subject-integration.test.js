@@ -11,6 +11,8 @@ const missions = read('missions.js');
 const wrongNote = read('wrong_note.html');
 const home = read('index.html');
 const timer = read('study-timer.js');
+const readingPage = read('reading.html');
+const grammarPage = read('english_grammar.html');
 
 subjects.forEach(subject => {
     assert(report.includes(`${subject}: { name:`), `SubjectRegistry missing ${subject}`);
@@ -33,8 +35,12 @@ assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their 
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');
 assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note handling is missing');
 assert(timer.includes("UserSession.updateDailyStat('time', subject, safeSeconds)"), 'Active study time must update user/admin statistics');
-assert(read('reading.html').includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
-assert(!read('reading.html').includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');
-assert(read('reading.html').includes('<a href="index.html">🏠 홈</a>'), 'Reading top navigation must include a home link');
+assert(readingPage.includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
+assert(!readingPage.includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');
+assert(readingPage.includes('<a href="index.html">🏠 홈</a>'), 'Reading top navigation must include a home link');
+assert(readingPage.includes('.study-example-text{white-space:pre-line;line-height:2'), 'Reading example line spacing must remain readable');
+assert(readingPage.includes('.card h3{margin:28px 0 14px'), 'Reading section headings need vertical spacing');
+assert(grammarPage.includes('.principle-detail{font-size:1rem;line-height:1.95'), 'Grammar detail line spacing must remain readable');
+assert(grammarPage.includes('.card h3{margin:28px 0 14px'), 'Grammar section headings need vertical spacing');
 
 console.log('Subject integration verified:', subjects.join(', '));
