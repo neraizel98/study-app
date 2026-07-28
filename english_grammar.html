@@ -45,7 +45,16 @@
 
         <section id="quizPanel" class="card" hidden>
             <div class="quiz-head"><span id="quizProgress"></span><strong id="quizScore">0점</strong></div>
-            <h2 id="quizQuestion" class="quiz-question"></h2><div id="quizChoices" class="choices"></div>
+            <h2 id="quizQuestion" class="quiz-question"></h2>
+            <div id="quizChoices" class="choices"></div>
+            <div id="quizTypedArea" hidden style="max-width:720px;margin:0 auto 18px;">
+                <div id="quizWordBank" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:12px;"></div>
+                <div style="display:flex;gap:10px;">
+                    <input id="quizTypedInput" type="text" autocomplete="off" placeholder="정답을 영어로 입력하세요"
+                           style="flex:1;padding:14px;border-radius:12px;border:1px solid var(--card-border);background:rgba(255,255,255,.06);color:var(--text);font:inherit;">
+                    <button id="quizTypedSubmit" class="primary">정답 확인</button>
+                </div>
+            </div>
             <div id="quizFeedback" class="feedback" hidden></div>
             <div class="actions"><button id="backToStudy">학습으로 돌아가기</button><button id="nextQuestion" class="primary" hidden>다음 문제</button></div>
         </section>
@@ -67,9 +76,9 @@
     <script src="utils.js"></script>
     <script src="report.js"></script>
     <script src="study-timer.js?v=20260728-three-scores"></script>
-    <script src="EnglishGrammarData.js?v=20260727-grammar1"></script>
-    <script src="EnglishGrammarQuiz.js?v=20260728-variety"></script>
-    <script src="EnglishGrammarApp.js?v=20260728-three-scores"></script>
+    <script src="EnglishGrammarData.js?v=20260728-middle23"></script>
+    <script src="EnglishGrammarQuiz.js?v=20260728-quiz-types"></script>
+    <script src="EnglishGrammarApp.js?v=20260728-middle23"></script>
     <script src="version-check.js"></script>
 </body>
 </html>

@@ -1,7 +1,8 @@
 (function () {
     const $ = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
-    const allowedStages = ['elementary', 'middle'];
+    const allowedStages = ['elementary', 'middle', 'middle2', 'middle3'];
+    const levelLabels = { elementary: 'Lv. 1', middle: 'Lv. 2', middle2: 'Lv. 3', middle3: 'Lv. 4' };
     let stageId = allowedStages.includes(params.get('stage')) ? params.get('stage') : 'elementary';
     let unitId = params.get('unit') || EnglishGrammarData[stageId].units[0].id;
     let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
@@ -29,7 +30,7 @@
 
     const stage = () => EnglishGrammarData[stageId];
     const unit = () => stage().units.find(item => item.id === unitId) || stage().units[0];
-    const levelLabel = () => stageId === 'elementary' ? 'Lv. 1' : 'Lv. 2';
+    const levelLabel = () => levelLabels[stageId];
     const context = () => `grammar:${stageId}`;
     const aliases = () => [`영문법 ${levelLabel()}`, `영어 문법 ${levelLabel()}`, stage().title];
 
@@ -41,7 +42,7 @@
 
     function renderSelectors() {
         $('stageTabs').innerHTML = allowedStages.map(id =>
-            `<button class="level-btn ${id === stageId ? 'active' : ''}" data-stage="${id}">${id === 'elementary' ? 'Lv. 1' : 'Lv. 2'}</button>`
+            `<button class="level-btn ${id === stageId ? 'active' : ''}" data-stage="${id}">${levelLabels[id]}</button>`
         ).join('');
         $('unitTabs').innerHTML = stage().units.map(item =>
             `<button class="unit-chip ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`
@@ -49,14 +50,15 @@
         $('lessonTabs').innerHTML = unit().lessons.map((item, index) =>
             `<button class="lesson-chip ${index === lessonIndex ? 'active' : ''}" data-lesson="${index}">${index + 1}. ${item.title}</button>`
         ).join('');
-        $('courseSubtitle').textContent = `${stageId === 'elementary' ? 'Lv. 1 · 초등 문법' : 'Lv. 2 · 중1 문법'} · ${unit().goal}`;
+        $('courseSubtitle').textContent = `${levelLabel()} · ${stage().title} · ${unit().goal}`;
     }
 
     function renderStudy() {
         const item = unit().lessons[lessonIndex] || unit().lessons[0];
         $('lessonTitle').textContent = item.title;
         $('principle').textContent = item.principle;
-        $('principleDetail').textContent = principleDetails[unit().id] || '';
+        $('principleDetail').textContent = principleDetails[unit().id]
+            || `${item.principle} 먼저 문장의 주어와 동사를 찾고, 핵심 형태가 어떤 의미와 역할을 만드는지 확인하세요. 규칙을 외우는 데서 끝내지 말고 예문을 긍정문·부정문·의문문으로 바꾸어 보면 원리를 더 정확히 이해할 수 있습니다.`;
         $('rules').innerHTML = item.rules.map((rule, i) => `<li><span>${i + 1}</span>${rule}</li>`).join('');
         $('examples').innerHTML = item.examples.map(([en, ko]) =>
             `<article><strong>${en}</strong><p>${ko}</p><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}">🔊 듣기</button></article>`
@@ -90,12 +92,15 @@
                 .filter(value => value && !seen.has(value.toLocaleLowerCase()) && seen.add(value.toLocaleLowerCase()));
             const shuffled = typeof Utils !== 'undefined' ? Utils.shuffle(choices) : choices.sort(() => Math.random() - 0.5);
             return {
+                type: item.quizType || 'choice',
                 question: item.question,
                 choices: shuffled,
+                answer: correctAnswer,
+                tokens: item.tokens || [],
                 answerIndex: shuffled.findIndex(value => value.toLocaleLowerCase() === correctAnswer.toLocaleLowerCase()),
                 explanation: item.explanation || `정답은 ${correctAnswer}입니다.`
             };
-        }).filter(item => item.answerIndex >= 0 && item.choices.length >= 2);
+        }).filter(item => item.answer && (item.type !== 'choice' || (item.answerIndex >= 0 && item.choices.length >= 2)));
     }
 
     function startQuiz() {
@@ -162,29 +167,67 @@
         $('quizQuestion').textContent = q.question;
         $('quizFeedback').hidden = true;
         $('nextQuestion').hidden = true;
-        $('quizChoices').innerHTML = q.choices.map((choice, index) =>
-            `<button class="answer" data-answer="${index}"><span>${index + 1}</span>${choice}</button>`
-        ).join('');
+        const typed = q.type && q.type !== 'choice';
+        $('quizChoices').hidden = typed;
+        $('quizTypedArea').hidden = !typed;
+        if (!typed) {
+            $('quizChoices').innerHTML = q.choices.map((choice, index) =>
+                `<button class="answer" data-answer="${index}"><span>${index + 1}</span>${choice}</button>`
+            ).join('');
+            return;
+        }
+        $('quizWordBank').innerHTML = q.type === 'arrange'
+            ? (q.tokens || []).map(token => `<button type="button" class="unit-chip typed-token">${token}</button>`).join('')
+            : '';
+        $('quizTypedInput').value = '';
+        $('quizTypedInput').disabled = false;
+        $('quizTypedSubmit').disabled = false;
+        $('quizTypedInput').placeholder = q.type === 'correction' ? '올바른 문장이나 표현을 입력하세요' : '정답을 입력하세요';
+        $('quizTypedInput').focus();
     }
 
     function chooseAnswer(index) {
         if (answered) return;
+        const q = questions[questionIndex];
+        completeAnswer(q.choices[index], index === q.answerIndex, index);
+    }
+
+    function normalizeTyped(value) {
+        return String(value ?? '')
+            .normalize('NFC')
+            .trim()
+            .toLocaleLowerCase()
+            .replace(/[.?!]+$/g, '')
+            .replace(/\s+/g, ' ');
+    }
+
+    function submitTypedAnswer() {
+        if (answered) return;
+        const selected = $('quizTypedInput').value.trim();
+        if (!selected) return;
+        const q = questions[questionIndex];
+        completeAnswer(selected, normalizeTyped(selected) === normalizeTyped(q.answer), null);
+    }
+
+    function completeAnswer(selectedAnswer, correct, selectedIndex) {
+        if (answered) return;
         answered = true;
         const q = questions[questionIndex];
-        const correct = index === q.answerIndex;
         if (correct) score += 10;
         const detail = {
             type: `${unit().id}:${q.question}`,
+            quizType: q.type || 'choice',
             category: 'grammar',
             stageId,
             stageTitle: stage().title,
             unitId: unit().id,
             unitTitle: unit().title,
             question: q.question,
-            selectedAnswer: q.choices[index],
-            correctAnswer: q.choices[q.answerIndex],
-            answer: q.choices[q.answerIndex],
-            choices: q.choices,
+            selectedAnswer,
+            correctAnswer: q.answer || q.choices[q.answerIndex],
+            answer: q.answer || q.choices[q.answerIndex],
+            choices: q.choices || [],
+            tokens: q.tokens || [],
             explanation: q.explanation,
             correct
         };
@@ -192,11 +235,16 @@
         if (typeof WrongNote !== 'undefined') {
             WrongNote.save('grammar', detail, correct ? 'correct' : 'wrong', sessionId, 1);
         }
-        [...$('quizChoices').children].forEach((button, i) => {
-            button.disabled = true;
-            if (i === q.answerIndex) button.classList.add('correct');
-            else if (i === index) button.classList.add('wrong');
-        });
+        if ((q.type || 'choice') === 'choice') {
+            [...$('quizChoices').children].forEach((button, i) => {
+                button.disabled = true;
+                if (i === q.answerIndex) button.classList.add('correct');
+                else if (i === selectedIndex) button.classList.add('wrong');
+            });
+        } else {
+            $('quizTypedInput').disabled = true;
+            $('quizTypedSubmit').disabled = true;
+        }
         $('quizScore').textContent = `${score}점`;
         $('quizFeedback').hidden = false;
         $('quizFeedback').className = `feedback ${correct ? 'good' : 'bad'}`;
@@ -251,6 +299,13 @@
         $('quizChoices').addEventListener('click', e => {
             const button = e.target.closest('[data-answer]'); if (button) chooseAnswer(Number(button.dataset.answer));
         });
+        $('quizWordBank').addEventListener('click', e => {
+            const button = e.target.closest('.typed-token'); if (!button || button.disabled) return;
+            $('quizTypedInput').value = `${$('quizTypedInput').value} ${button.textContent}`.trim();
+            button.disabled = true;
+        });
+        $('quizTypedSubmit').addEventListener('click', submitTypedAnswer);
+        $('quizTypedInput').addEventListener('keydown', e => { if (e.key === 'Enter') submitTypedAnswer(); });
         $('nextQuestion').addEventListener('click', () => {
             if (questionIndex < questions.length - 1) { questionIndex++; renderQuestion(); } else finishQuiz();
         });

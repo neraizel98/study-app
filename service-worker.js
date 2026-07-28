@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v23-adaptive-quiz';
+const CACHE_NAME = 'smart-study-v24-grammar-middle23';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

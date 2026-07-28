@@ -36,7 +36,27 @@
         const name = names[Math.floor(Math.random() * names.length)];
         const question = item.question.replace(/Mina|Tom/g, name);
         const choices = shuffle([item.answer, ...item.choices]);
-        return { question, choices, answerIndex: choices.indexOf(item.answer), explanation: item.explanation };
+        const words = String(item.answer).trim().split(/\s+/);
+        const roll = Math.random();
+        const supportsTyped = /^[A-Za-z0-9 ,.?!'’+\-()/]+$/.test(String(item.answer));
+        let type = 'choice';
+        if (supportsTyped && words.length >= 3 && words.length <= 10 && roll < 0.25) type = 'arrange';
+        else if (supportsTyped && roll < 0.45) type = 'short';
+        else if (supportsTyped && item.choices.length && roll < 0.58) type = 'correction';
+        const prompt = type === 'correction'
+            ? `${question}\n다음 잘못된 표현을 바르게 고치세요: ${item.choices[0]}`
+            : type === 'arrange'
+                ? `${question}\n주어진 단어를 올바른 문장으로 배열하세요.`
+                : question;
+        return {
+            type,
+            question: prompt,
+            choices,
+            answer: item.answer,
+            tokens: type === 'arrange' ? shuffle(words) : [],
+            answerIndex: choices.indexOf(item.answer),
+            explanation: item.explanation
+        };
     }
 
     function findUnit(unitId) {
@@ -63,6 +83,7 @@
         const stageLessons = (found.stage.units || []).flatMap(stageUnit => stageUnit.lessons || []);
         const allRules = unique(stageLessons.flatMap(item => item.rules || []));
         const allMeanings = unique(stageLessons.flatMap(item => (item.examples || []).map(example => example[1])));
+        const allSentences = unique(stageLessons.flatMap(item => (item.examples || []).map(example => example[0])));
         const generated = [];
 
         (found.unit.lessons || []).forEach((currentLesson, lessonIndex) => {
@@ -87,6 +108,15 @@
                         meaning,
                         choices,
                         `${currentLesson.title} 예문 ${exampleIndex + 1}: ${sentence} — ${meaning}`
+                    ));
+                }
+                const sentenceChoices = pickDistractors(allSentences, sentence);
+                if (sentence && meaning && sentenceChoices.length === 3) {
+                    generated.push(Q(
+                        `다음 뜻에 알맞은 영어 문장을 완성하세요: ${meaning}`,
+                        sentence,
+                        sentenceChoices,
+                        `${currentLesson.title}의 알맞은 문장은 “${sentence}”입니다.`
                     ));
                 }
             });
