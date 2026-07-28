@@ -305,11 +305,7 @@
 
         <!-- 일반 성적표 뷰 -->
         <div id="normalView">
-        <div class="subject-tabs">
-            <div class="subject-tab active" data-subject="english">🇬🇧 영어</div>
-            <div class="subject-tab" data-subject="grammar">📘 영문법</div>
-            <div class="subject-tab" data-subject="math">📐 수학</div>
-            <div class="subject-tab" data-subject="hanja">🏮 한자</div>
+        <div class="subject-tabs" id="reportSubjectTabs">
             <button id="shareHistoryBtn" style="margin-left: auto; background: #FEE500; color: #3A1D1D; border: none; padding: 8px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                 <span>💬</span> 전체 공유
             </button>
@@ -349,10 +345,10 @@
     </div>
 
     <script src="utils.js"></script>
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-subject-registry"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
-    <script src="kakao-share.js"></script>
+    <script src="kakao-share.js?v=20260728-subject-registry"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // URL 파라미터 처리 (데이터 가져오기)
@@ -399,10 +395,9 @@
                 // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
                     const r = JSON.parse(decodeURIComponent(escape(atob(importData))));
-                    const subjectNames = { english: '영어 단어', grammar: '영어 문법', math: '수학', hanja: '한자' };
-                    const subjectEmoji = { english: '🇬🇧', grammar: '📘', math: '📐', hanja: '🏮' };
-                    const subjectName = subjectNames[r.subject] || r.subject;
-                    const emoji = subjectEmoji[r.subject] || '📚';
+                    const subjectInfo = SubjectRegistry.get(r.subject);
+                    const subjectName = subjectInfo.name;
+                    const emoji = subjectInfo.icon;
                     const vFinal = Math.round((r.finalScore / r.totalQuestions) * 100);
                     const vInit  = Math.round((r.initialScore / r.totalQuestions) * 100);
                     const isPerfect = r.isCompleted || vFinal === 100;
@@ -505,8 +500,17 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
 
-            const tabs = document.querySelectorAll('.subject-tab');
             let allReports = getQuizReports(); // from report.js
+            const subjects = SubjectRegistry.list({ reports: allReports, wrongAnswers: WrongNote.getAll() });
+            const tabsContainer = document.getElementById('reportSubjectTabs');
+            const shareButton = document.getElementById('shareHistoryBtn');
+            tabsContainer.insertAdjacentHTML('afterbegin', subjects.map((subject, index) => `
+                <div class="subject-tab ${index === 0 ? 'active' : ''}" data-subject="${subject.id}">
+                    ${subject.icon} ${subject.name}
+                </div>
+            `).join(''));
+            tabsContainer.appendChild(shareButton);
+            const tabs = document.querySelectorAll('.subject-tab');
 
             // 동기화 완료 시 데이터 갱신 후 현재 탭 재렌더링
             window.addEventListener('firesynced', () => {
@@ -581,7 +585,7 @@
                 // 상세 패널 HTML 생성
                 function buildDetailHTML(log, subject) {
                     const details = getSessionDetails(subject, log.sessionId);
-                    const subjectName = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학' }[subject] || subject;
+                    const subjectName = SubjectRegistry.get(subject).name;
 
                     // 분류: 재도전 정답 / 미해결
                     const retryOk   = details.filter(d => d.hist[d.hist.length - 1].status === 'correct');
@@ -715,7 +719,7 @@
             });
 
             // 초기 렌더링
-            renderReports('english');
+            renderReports(subjects[0]?.id || 'english');
         });
     </script>
 

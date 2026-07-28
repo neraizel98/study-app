@@ -50,9 +50,11 @@ window.KakaoShare = {
             return;
         }
 
-        const subjectNames = { 'english': '영어', 'hanja': '한자', 'math': '수학' };
-        const name = subjectNames[subject] || subject;
-        const url = window.location.origin + window.location.pathname.replace('index.html', subject + '.html');
+        const info = typeof SubjectRegistry !== 'undefined'
+            ? SubjectRegistry.get(subject)
+            : { name: subject, path: `${subject}.html` };
+        const name = info.name;
+        const url = window.location.origin + window.location.pathname.replace('index.html', info.path);
         
         Kakao.Share.sendDefault({
             objectType: 'feed',
@@ -96,8 +98,9 @@ window.KakaoShare = {
         const activeUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : '우준';
         const isPerfect = pct === 100;
         const emoji = isPerfect ? '🏆' : '👍';
-        const subjectNames = { 'math': '수학', 'english': '영어', 'hanja': '한자' };
-        const subjectName = subjectNames[subject] || subject;
+        const subjectName = typeof SubjectRegistry !== 'undefined'
+            ? SubjectRegistry.get(subject).name
+            : subject;
         
         // 1. 과목 및 난이도 정보
         const levelInfo = extra.levelInfo || '기본';
@@ -208,12 +211,13 @@ window.KakaoShare = {
             return;
         }
 
-        const subjectNames = { english: '영어', hanja: '한자', math: '수학' };
-        const subjectEmoji = { english: '🇬🇧', hanja: '🏮', math: '📐' };
+        const subjectInfo = subject => typeof SubjectRegistry !== 'undefined'
+            ? SubjectRegistry.get(subject)
+            : { name: subject, icon: '📚' };
 
         const toMin = (sec) => Math.round((sec || 0) / 60);
         const studiedLines = subjects
-            .map(s => `${subjectEmoji[s] || '📚'} ${subjectNames[s] || s} ${toMin(times[s])}분`)
+            .map(s => `${subjectInfo(s).icon} ${subjectInfo(s).name} ${toMin(times[s])}분`)
             .join('  ·  ');
 
         const totalMin = toMin(Object.values(times).reduce((a, b) => a + b, 0));
@@ -225,7 +229,7 @@ window.KakaoShare = {
             return max > (best.score || 0) ? { subj, score: max } : best;
         }, {});
         const scoreMsg = bestScore.score
-            ? `\n🏅 최고 점수: ${subjectNames[bestScore.subj]} ${bestScore.score}점`
+            ? `\n🏅 최고 점수: ${subjectInfo(bestScore.subj).name} ${bestScore.score}점`
             : '';
 
         const title = `📊 ${activeUser}의 오늘 학습 리포트`;

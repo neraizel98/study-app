@@ -188,12 +188,7 @@
     <div class="wrong-container">
         <div id="app-header"></div>
 
-        <div class="subject-tabs">
-            <button class="tab-btn active" data-subject="english">🇬🇧 영어</button>
-            <button class="tab-btn" data-subject="grammar">📘 영문법</button>
-            <button class="tab-btn" data-subject="hanja">🏮 한자</button>
-            <button class="tab-btn" data-subject="math">📐 수학</button>
-        </div>
+        <div class="subject-tabs" id="subjectTabs"></div>
 
         <div class="filter-bar">
             <span>필터:</span>
@@ -209,7 +204,7 @@
         </div>
     </div>
 
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-subject-registry"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
     <script>
@@ -218,10 +213,17 @@
 
             const container = document.getElementById('wrongListContainer');
             const retryAllBtn = document.getElementById('retryAllBtn');
+            const allWrongAnswers = WrongNote.getAll();
+            const subjects = SubjectRegistry.list({ wrongAnswers: allWrongAnswers });
+            document.getElementById('subjectTabs').innerHTML = subjects.map((subject, index) => `
+                <button class="tab-btn ${index === 0 ? 'active' : ''}" data-subject="${subject.id}">
+                    ${subject.icon} ${subject.name}
+                </button>
+            `).join('');
             const tabs = document.querySelectorAll('.tab-btn');
             const masteredFilter = document.getElementById('filterMastered');
             
-            let currentSubject = 'english';
+            let currentSubject = subjects[0]?.id || 'english';
 
             masteredFilter.addEventListener('change', renderWrongNote);
 
@@ -280,6 +282,11 @@
                         subText = Utils.renderMath(qStr.substring(0, 80)) + (qStr.length > 80 ? '...' : '');
                         metaText = `${item.levelId || '?'} ${item.semesterId || '?'}학기`;
                         explanation = Utils.renderMath(item.explanation || '풀이 과정이 없습니다.');
+                    } else {
+                        mainText = item.question || item.title || item.type || '학습 문제';
+                        subText = item.meaning || item.selectedAnswer || item.answer || '';
+                        metaText = item.level || item.unitTitle || SubjectRegistry.get(currentSubject).name;
+                        explanation = item.explanation || '등록된 해설이 없습니다.';
                     }
 
                     // 히스토리 배지 생성

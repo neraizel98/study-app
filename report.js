@@ -3,6 +3,31 @@ const ACTIVE_USER_KEY = 'SmartStudy_ActiveUser';
 const USER_DATA_PREFIX = 'SmartStudy_UserData_';
 const WRONG_NOTE_PREFIX = 'SmartStudy_WrongAnswers_';
 
+const SubjectRegistry = {
+    definitions: {
+        english: { name: '영어 단어', icon: '🇬🇧', path: 'english.html' },
+        grammar: { name: '영어 문법', icon: '📘', path: 'english_grammar.html' },
+        hanja: { name: '한자', icon: '🏮', path: 'hanja.html' },
+        math: { name: '수학', icon: '📐', path: 'math.html' }
+    },
+    get(subject) {
+        return this.definitions[subject] || {
+            name: subject || '새 과목',
+            icon: '📚',
+            path: `${subject}.html`
+        };
+    },
+    list({ reports = [], wrongAnswers = {} } = {}) {
+        const ids = new Set(Object.keys(this.definitions));
+        reports.forEach(report => report?.subject && ids.add(report.subject));
+        Object.entries(wrongAnswers || {}).forEach(([subject, items]) => {
+            if (Array.isArray(items) && items.length) ids.add(subject);
+        });
+        return [...ids].map(id => ({ id, ...this.get(id) }));
+    }
+};
+window.SubjectRegistry = SubjectRegistry;
+
 /**
  * 전역 사용자 세션 관리
  */
