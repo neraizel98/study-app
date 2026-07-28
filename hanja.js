@@ -55,6 +55,7 @@ let quizScore = 0;
 let quizHistory = [];
 let retryWrongList = [];
 let quizSessionData = { id: '', startTime: 0, total: 0, currentScore: 0, initialScore: null, roundCount: 1 };
+let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 
 let isIdiomEumVisible = false;
 let isIdiomMeanVisible = false;
@@ -143,7 +144,18 @@ function startQuiz(customList) {
             return;
         }
     }
-    quizWords = customList || (reviewWords ? Utils.shuffle(reviewWords) : Utils.shuffle([...vocabHanja[currentLevel]]).slice(0, 10));
+    if (!customList && !reviewWords) {
+        currentQuizBand = typeof AdaptiveQuiz !== 'undefined'
+            ? AdaptiveQuiz.getBand('hanja', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
+            : { name: 'standard', score: null, wrongRatio: 0.45 };
+        const pool = vocabHanja[currentLevel] || [];
+        const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().hanja || []) : [];
+        quizWords = typeof AdaptiveQuiz !== 'undefined'
+            ? AdaptiveQuiz.mix(pool, wrongItems, item => item.hanja, item => item.hanja, 10, currentQuizBand.wrongRatio)
+            : Utils.shuffle([...pool]).slice(0, 10);
+    } else {
+        quizWords = customList || Utils.shuffle(reviewWords);
+    }
     quizIndex = 0;
     quizScore = 0;
     quizHistory = [];
@@ -193,10 +205,12 @@ function showQuestion() {
 }
 
 function pickQuizType(q) {
-    if (Math.random() < 0.18) return 'writing';
+    const writingChance = currentQuizBand.name === 'challenge' ? 0.3
+        : currentQuizBand.name === 'foundation' ? 0.1 : 0.18;
+    if (Math.random() < writingChance) return 'writing';
     const pool = ['meaning', 'meaning', 'reverse', 'radical'];
-    if (q.idiom) pool.push('idiom');
-    if (q.antonym || q.synonym) pool.push('relation');
+    if (q.idiom) pool.push('idiom', ...(currentQuizBand.name === 'challenge' ? ['idiom'] : []));
+    if (q.antonym || q.synonym) pool.push('relation', ...(currentQuizBand.name === 'challenge' ? ['relation'] : []));
     return pool[Math.floor(Math.random() * pool.length)];
 }
 

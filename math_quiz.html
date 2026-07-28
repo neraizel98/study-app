@@ -322,6 +322,32 @@
                 quizzes = reviewTemplates;
             } else if (typeof window.MathQuizData !== 'undefined' && window.MathQuizData[unitId] && window.MathQuizData[unitId][typeId]) {
                 quizzes = window.MathQuizData[unitId][typeId];
+                const band = typeof AdaptiveQuiz !== 'undefined'
+                    ? AdaptiveQuiz.getBand('math', mathContext, [unit.title])
+                    : { name: 'standard', score: null, wrongRatio: 0.45 };
+                const unitWrong = typeof WrongNote !== 'undefined'
+                    ? (WrongNote.getAll().math || []).filter(item =>
+                        !item.isMastered && item.levelId === levelId
+                        && item.semesterId === semesterId && item.unitId === unitId
+                    )
+                    : [];
+                let adaptivePool = [...quizzes];
+                if (band.name === 'challenge' && typeId === 'basic') {
+                    adaptivePool = [
+                        ...adaptivePool,
+                        ...((window.MathQuizData[unitId].advanced || []).slice(0, Math.max(2, Math.round(quizzes.length * 0.3))))
+                    ];
+                }
+                quizzes = typeof AdaptiveQuiz !== 'undefined'
+                    ? AdaptiveQuiz.mix(
+                        adaptivePool,
+                        unitWrong,
+                        item => item.generator,
+                        item => item.type,
+                        Math.min(adaptivePool.length, Math.max(10, quizzes.length)),
+                        band.wrongRatio
+                    )
+                    : quizzes;
             }
 
             if (!quizzes || quizzes.length === 0) {

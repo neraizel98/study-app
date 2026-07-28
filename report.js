@@ -313,6 +313,59 @@ const WrongNote = {
 };
 
 /**
+ * 적응형 퀴즈 선택기
+ * - 해결되지 않은 최근/반복 오답을 일반 문제보다 높은 확률로 포함
+ * - 최근 성적에 따라 foundation → standard → challenge 단계로 상승
+ */
+const AdaptiveQuiz = {
+    getBand(subject, context = 'default', aliases = []) {
+        if (typeof StudyTimer === 'undefined') return { name: 'standard', score: null, wrongRatio: 0.4 };
+        const result = StudyTimer.getLatestScore(subject, context, aliases);
+        const score = result ? result.pct : null;
+        if (score === null || score < 70) return { name: 'foundation', score, wrongRatio: 0.55 };
+        if (score < 85) return { name: 'standard', score, wrongRatio: 0.45 };
+        return { name: 'challenge', score, wrongRatio: 0.35 };
+    },
+
+    weightedWrongItems(items, count) {
+        const candidates = (items || []).filter(item => !item.isMastered).map(item => ({ item, weight:
+            2
+            + Math.min(6, Number(item.count || 1)) * 1.5
+            + (Number(item.masteryScore || 0) === 0 ? 2 : 0)
+            + (Date.now() - Number(item.date || 0) < 7 * 86400000 ? 2 : 0)
+        }));
+        const selected = [];
+        while (candidates.length && selected.length < count) {
+            const total = candidates.reduce((sum, entry) => sum + entry.weight, 0);
+            let pick = Math.random() * total;
+            let index = 0;
+            for (; index < candidates.length - 1; index++) {
+                pick -= candidates[index].weight;
+                if (pick <= 0) break;
+            }
+            selected.push(candidates.splice(index, 1)[0].item);
+        }
+        return selected;
+    },
+
+    mix(pool, wrongItems, idOfPool, idOfWrong, count, wrongRatio = 0.45) {
+        const source = [...(pool || [])];
+        const byId = new Map(source.map(item => [idOfPool(item), item]));
+        const eligibleWrong = (wrongItems || []).filter(item => byId.has(idOfWrong(item)) && !item.isMastered);
+        const targetWrong = Math.min(eligibleWrong.length, Math.max(1, Math.round(count * wrongRatio)));
+        const priority = this.weightedWrongItems(eligibleWrong, targetWrong)
+            .map(item => byId.get(idOfWrong(item)))
+            .filter(Boolean);
+        const used = new Set(priority.map(idOfPool));
+        const fresh = typeof Utils !== 'undefined'
+            ? Utils.shuffle(source.filter(item => !used.has(idOfPool(item))))
+            : source.filter(item => !used.has(idOfPool(item))).sort(() => Math.random() - 0.5);
+        return [...priority, ...fresh.slice(0, Math.max(0, count - priority.length))]
+            .sort(() => Math.random() - 0.5);
+    }
+};
+
+/**
  * 퀴즈 성적 저장 (기존 함수 유지하되 ID 연동)
  */
 function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore, initialScore, timeSpentSeconds, isCompleted, metadata = null) {
@@ -424,6 +477,7 @@ function importUserData(file) {
 // 전역 객체 노출
 window.UserSession = UserSession;
 window.WrongNote = WrongNote;
+window.AdaptiveQuiz = AdaptiveQuiz;
 window.saveQuizResult = saveQuizResult;
 window.getQuizReports = getQuizReports;
 window.exportUserData = exportUserData;
