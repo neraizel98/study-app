@@ -826,7 +826,7 @@ function showResult() {
             }))
         });
         if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
-            StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total);
+            StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_studyTimerCtrl) _studyTimerCtrl.refresh();
         }
 

@@ -148,7 +148,7 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
-        if (typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length);
+        if (typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, 0, true, {
                 category: 'grammar',

@@ -1,7 +1,7 @@
 /**
  * 과목/단원별 적응형 학습 잠금
  *
- * - 관리자 기본시간과 최근 최초 점수를 함께 사용
+ * - 관리자 기본시간과 최근 3회 최초 점수 평균을 함께 사용
  * - 90점 이상: 면제 / 80점 이상: 5분 / 70점 이상: 10분 / 70점 미만: 15분
  * - 90점 미만은 관리자 기본시간과 점수별 시간 중 더 긴 시간을 적용
  * - 화면이 보이고 실제 학습 모드이며 최근 학습 행동이 있을 때만 시간 누적
@@ -68,11 +68,11 @@ const StudyTimer = (() => {
         catch { return {}; }
     }
 
-    function getReportScore(subject, aliases) {
-        if (!aliases || aliases.length === 0) return null;
+    function getReportScores(subject, aliases) {
+        if (!aliases || aliases.length === 0) return [];
         let reports = [];
         try { reports = JSON.parse(localStorage.getItem(REPORT_PREFIX + getUserId()) || '[]'); }
-        catch { return null; }
+        catch { return []; }
 
         const targets = aliases.map(normalize).filter(Boolean);
         const matches = reports
@@ -83,20 +83,45 @@ const StudyTimer = (() => {
             })
             .sort((a, b) => (b.date || 0) - (a.date || 0));
 
-        if (!matches.length) return null;
-        const latest = matches[0];
-        return {
-            pct: Math.round((latest.initialScore / latest.totalQuestions) * 100),
-            date: latest.date || 0
-        };
+        return matches.slice(0, 3).map(report => ({
+            pct: Math.round((report.initialScore / report.totalQuestions) * 100),
+            date: report.date || 0,
+            sessionId: report.sessionId || ''
+        }));
+    }
+
+    function savedScoreHistory(subject, context) {
+        const saved = getScoreStore()[contextKey(subject, context)];
+        if (!saved) return [];
+        if (Array.isArray(saved.history)) return saved.history;
+        return Number.isFinite(saved.pct) ? [saved] : [];
+    }
+
+    function getRecentScores(subject, context = 'default', aliases = []) {
+        const combined = [
+            ...getReportScores(subject, aliases),
+            ...savedScoreHistory(subject, context)
+        ].sort((a, b) => (b.date || 0) - (a.date || 0));
+        const unique = [];
+        combined.forEach(score => {
+            const sameSession = score.sessionId && unique.some(item => item.sessionId === score.sessionId);
+            const nearDuplicate = !score.sessionId && unique.some(item =>
+                item.pct === score.pct && Math.abs((item.date || 0) - (score.date || 0)) < 5000
+            );
+            if (!sameSession && !nearDuplicate) unique.push(score);
+        });
+        return unique.slice(0, 3);
     }
 
     function getLatestScore(subject, context = 'default', aliases = []) {
-        const saved = getScoreStore()[contextKey(subject, context)] || null;
-        const report = getReportScore(subject, aliases);
-        if (!saved) return report;
-        if (!report) return saved;
-        return (saved.date || 0) >= (report.date || 0) ? saved : report;
+        const scores = getRecentScores(subject, context, aliases);
+        if (!scores.length) return null;
+        return {
+            pct: Math.round(scores.reduce((sum, score) => sum + score.pct, 0) / scores.length),
+            date: Math.max(...scores.map(score => score.date || 0)),
+            count: scores.length,
+            scores: scores.map(score => score.pct)
+        };
     }
 
     function getRequiredSeconds(subject, context = 'default', aliases = []) {
@@ -118,12 +143,23 @@ const StudyTimer = (() => {
         return required <= 0 || getAccumulated(subject, context) >= required;
     }
 
-    function recordResult(subject, context, initialScore, totalQuestions) {
+    function recordResult(subject, context, initialScore, totalQuestions, sessionId = '') {
         if (!context || !totalQuestions) return;
         const store = getScoreStore();
-        store[contextKey(subject, context)] = {
+        const key = contextKey(subject, context);
+        const history = savedScoreHistory(subject, context);
+        const entry = {
             pct: Math.round((initialScore / totalQuestions) * 100),
-            date: Date.now()
+            date: Date.now(),
+            sessionId: sessionId || ''
+        };
+        const existingIndex = sessionId
+            ? history.findIndex(item => item.sessionId === sessionId)
+            : -1;
+        if (existingIndex >= 0) history[existingIndex] = entry;
+        else history.push(entry);
+        store[key] = {
+            history: history.sort((a, b) => (b.date || 0) - (a.date || 0)).slice(0, 3)
         };
         localStorage.setItem(SCORE_PREFIX + getUserId(), JSON.stringify(store));
         resetAccumulated(subject, context);
@@ -135,6 +171,8 @@ const StudyTimer = (() => {
         const accumulatedSeconds = getAccumulated(subject, context);
         return {
             score: score ? score.pct : null,
+            scoreCount: score ? score.count : 0,
+            recentScores: score ? score.scores : [],
             requiredSeconds,
             accumulatedSeconds,
             unlocked: requiredSeconds <= 0 || accumulatedSeconds >= requiredSeconds
@@ -191,7 +229,9 @@ const StudyTimer = (() => {
             const pct = status.requiredSeconds > 0
                 ? Math.min(100, Math.round(status.accumulatedSeconds / status.requiredSeconds * 100))
                 : 100;
-            const scoreText = status.score === null ? '첫 퀴즈 전' : `최근 최초 점수 ${status.score}점`;
+            const scoreText = status.score === null
+                ? '첫 퀴즈 전'
+                : `최근 ${status.scoreCount}회 평균 ${status.score}점`;
 
             if (status.unlocked) {
                 bar.innerHTML = `<div class="stb-unlocked">✅ ${getLabel()} 학습 완료 · ${scoreText} · 퀴즈 가능</div>`;
@@ -269,6 +309,7 @@ const StudyTimer = (() => {
         getConfig,
         setConfig,
         getAccumulated,
+        getRecentScores,
         getLatestScore,
         getRequiredSeconds,
         getStatus,

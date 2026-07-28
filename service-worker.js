@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v20-quiz-details-tab';
+const CACHE_NAME = 'smart-study-v21-three-score-average';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

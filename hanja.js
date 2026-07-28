@@ -410,7 +410,7 @@ function showResult() {
             }))
         });
         if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
-            StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total);
+            StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();
         }
         
