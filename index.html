@@ -213,6 +213,7 @@
         .mission-item.completed .mission-progress-fill { background:linear-gradient(90deg,#56d364,#00f2c0); }
         .mission-progress-text { font-size:0.75rem; color:var(--text-sub); white-space:nowrap; }
         .mission-item.completed .mission-progress-text { color:#56d364; font-weight:600; }
+        .mission-reward-banner { margin:0 0 12px; padding:12px 16px; border:1px solid rgba(255,193,7,0.4); border-radius:14px; background:linear-gradient(135deg,rgba(255,193,7,0.13),rgba(255,152,0,0.07)); color:#ffd166; font-size:0.9rem; }
     </style>
 </head>
 <body>
@@ -345,10 +346,10 @@
     </div>
 
     <script src="kakao-share.js"></script>
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-goals"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
-    <script src="missions.js"></script>
+    <script src="missions.js?v=20260728-goals"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const loginSection = document.getElementById('login-section');
@@ -389,7 +390,7 @@
 
                         // 오답 요약
                         const wrong = WrongNote.getAll();
-                        const totalWrong = (wrong.english?.length || 0) + (wrong.hanja?.length || 0) + (wrong.math?.length || 0);
+                        const totalWrong = Object.values(wrong).reduce((sum, items) => sum + (Array.isArray(items) ? items.length : 0), 0);
                         const wrongSummary = document.getElementById('wrongSummary');
                         if (wrongSummary) {
                             if (totalWrong > 0) {
@@ -406,12 +407,13 @@
                         const studied = user.dailyStats?.subjectsStudied || [];
                         if (dailyCard && studied.length > 0) {
                             dailyCard.style.display = 'block';
-                            const subjectEmoji = { english: '🇬🇧', hanja: '🏮', math: '📐' };
-                            const subjectNames = { english: '영어', hanja: '한자', math: '수학' };
                             const times = user.dailyStats?.studyTime || {};
                             const toMin = s => Math.round((times[s] || 0) / 60);
                             subjectSummary.innerHTML = studied
-                                .map(s => `<span>${subjectEmoji[s]} ${subjectNames[s]} <strong>${toMin(s)}분</strong></span>`)
+                                .map(s => {
+                                    const info = SubjectRegistry.get(s);
+                                    return `<span>${info.icon} ${info.name} <strong>${toMin(s)}분</strong></span>`;
+                                })
                                 .join('&nbsp;&nbsp;·&nbsp;&nbsp;');
                             const streak = user.attendance?.currentStreak || 0;
                             if (streakBadge) streakBadge.textContent = streak >= 2 ? `🔥 ${streak}일 연속` : '';

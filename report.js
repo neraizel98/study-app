@@ -54,8 +54,9 @@ const UserSession = {
                 badges: [],
                 attendance: { totalDays: 0, currentStreak: 0, lastCheckIn: null },
                 dailyStats: { date: new Date().toISOString().split('T')[0], studyTime: { math: 0, english: 0, hanja: 0 }, quizScores: { math: [], english: [], hanja: [] }, subjectsStudied: [] },
-                weeklyStats: { weekStart: '', studyTime: 0, attendanceDays: 0 },
-                missionProgress: { daily: {}, weekly: {}, achievements: {} }
+                weeklyStats: { weekStart: '', studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
+                subjectStats: {},
+                missionProgress: { daily: {}, weekly: {}, achievements: {}, rewards: { daily: null, weekly: null, achievements: [] } }
             };
             
             if (!raw) return defaultData;
@@ -77,7 +78,13 @@ const UserSession = {
                 data.missionProgress.daily = data.missionProgress.daily || {};
                 data.missionProgress.weekly = data.missionProgress.weekly || {};
                 data.missionProgress.achievements = data.missionProgress.achievements || {};
+                data.missionProgress.rewards = data.missionProgress.rewards || { daily: null, weekly: null, achievements: [] };
+                data.missionProgress.rewards.achievements = data.missionProgress.rewards.achievements || [];
             }
+            data.subjectStats = data.subjectStats || {};
+            data.weeklyStats = data.weeklyStats || defaultData.weeklyStats;
+            data.weeklyStats.subjectsStudied = data.weeklyStats.subjectsStudied || [];
+            data.weeklyStats.quizCount = data.weeklyStats.quizCount || 0;
 
             // 날짜가 바뀌었으면 dailyStats 초기화
             const today = new Date().toISOString().split('T')[0];
@@ -93,7 +100,7 @@ const UserSession = {
                 return d.toISOString().split('T')[0];
             })();
             if (!data.weeklyStats || data.weeklyStats.weekStart !== weekStart) {
-                data.weeklyStats = { weekStart, studyTime: 0, attendanceDays: 0 };
+                data.weeklyStats = { weekStart, studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 };
                 data.missionProgress.weekly = {};
             }
             
@@ -149,11 +156,28 @@ const UserSession = {
             if (value > 0 && !user.dailyStats.subjectsStudied.includes(subject)) {
                 user.dailyStats.subjectsStudied.push(subject);
             }
-            if (user.weeklyStats && value > 0) user.weeklyStats.studyTime += value;
+            if (user.weeklyStats && value > 0) {
+                user.weeklyStats.studyTime += value;
+                user.weeklyStats.subjectsStudied = user.weeklyStats.subjectsStudied || [];
+                if (!user.weeklyStats.subjectsStudied.includes(subject)) user.weeklyStats.subjectsStudied.push(subject);
+            }
         } else if (type === 'score') {
             if (!user.dailyStats.quizScores[subject]) user.dailyStats.quizScores[subject] = [];
             user.dailyStats.quizScores[subject].push(value);
+        } else if (type === 'quiz') {
+            if (user.weeklyStats) user.weeklyStats.quizCount = (user.weeklyStats.quizCount || 0) + 1;
         }
+
+        user.subjectStats = user.subjectStats || {};
+        const subjectStat = user.subjectStats[subject] || { studyTime: 0, quizCount: 0, bestScore: 0 };
+        if (type === 'time') subjectStat.studyTime += value;
+        if (type === 'score') {
+            subjectStat.bestScore = Math.max(subjectStat.bestScore || 0, value || 0);
+        }
+        if (type === 'quiz') {
+            subjectStat.quizCount += 1;
+        }
+        user.subjectStats[subject] = subjectStat;
 
         this.saveUserData(user);
     },
@@ -304,6 +328,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     let timeDelta = timeSpentSeconds; // 신규 세션이면 전체 시간
     let correctDelta = currentScore;  // 이번에 새로 맞힌 정답 수
     const existingIdx = data.findIndex(r => r.sessionId === sessionId);
+    const isNewSession = existingIdx < 0;
     if (existingIdx >= 0) {
         // 기존 세션 업데이트 시, 이전 기록과의 차이만 계산
         const prevTime = data[existingIdx].timeSpentSeconds || 0;
@@ -341,6 +366,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         // 일일 통계 업데이트 (미션용)
         UserSession.updateDailyStat('time', subject, safeDelta);
         UserSession.updateDailyStat('score', subject, currentScore);
+        if (isNewSession) UserSession.updateDailyStat('quiz', subject, currentScore);
     }
 }
 

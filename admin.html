@@ -184,7 +184,7 @@
         </div>
     </div>
 
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-goals"></script>
     <script src="study-timer.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -361,6 +361,7 @@
             </div>
 
             ${buildDailyStatsBar(ud)}
+            ${buildRewardPanel(ud)}
 
             <div class="detail-tabs">
                 <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
@@ -410,17 +411,17 @@
         const isToday = ds.date === today || ds.date === new Date().toISOString().slice(0,10);
         const label = isToday ? '오늘의 학습' : `${ds.date} 학습`;
 
-        const SUBJ_ORDER = ['english','grammar','hanja','math'];
-        const subjects = (ds.subjectsStudied || []).filter(s => SUBJ_ORDER.includes(s));
+        const subjects = [...new Set(ds.subjectsStudied || [])];
         if (!subjects.length) return '';
 
         const items = subjects.map(s => {
+            const info = typeof SubjectRegistry !== 'undefined' ? SubjectRegistry.get(s) : { icon:'📚', name:s };
             const sec = ds.studyTime?.[s] || 0;
             const min = Math.floor(sec / 60);
             const rem = sec % 60;
             const timeStr = min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
             return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
-                ${SUBJ_ICONS[s]} ${SUBJ_NAMES[s]} <strong style="color:${SUBJ_COLORS[s]}">${timeStr}</strong>
+                ${info.icon} ${info.name} <strong style="color:${SUBJ_COLORS[s] || '#a78bfa'}">${timeStr}</strong>
             </span>`;
         }).join('');
 
@@ -429,6 +430,52 @@
             <div style="display:flex;gap:8px;flex-wrap:wrap;">${items}</div>
         </div>`;
     }
+
+    function buildRewardPanel(ud) {
+        const rewards = ud.missionProgress?.rewards;
+        if (!rewards) return '';
+        const entries = [];
+        if (rewards.daily) entries.push({ category:'daily', index:-1, label:'오늘 목표', reward:rewards.daily });
+        if (rewards.weekly) entries.push({ category:'weekly', index:-1, label:'주간 목표', reward:rewards.weekly });
+        (rewards.achievements || []).forEach((reward, index) => entries.push({
+            category:'achievements', index, label:'장기 목표', reward
+        }));
+        if (!entries.length) return '';
+        return `<div style="background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+            <div style="font-weight:800;margin-bottom:10px;">🎁 획득 보상 관리</div>
+            <div style="display:grid;gap:8px;">${entries.map(entry => `
+                <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:9px 12px;">
+                    <span style="font-size:0.78rem;color:var(--text-sub);min-width:62px;">${entry.label}</span>
+                    <strong style="flex:1;">${entry.reward.icon || '🎁'} ${entry.reward.title}${entry.reward.note ? ` · ${entry.reward.note}` : ''}</strong>
+                    <button onclick="markRewardUsed('${entry.category}',${entry.index},this)" ${entry.reward.used ? 'disabled' : ''}
+                        style="border:0;border-radius:8px;padding:6px 10px;cursor:pointer;font-weight:700;">
+                        ${entry.reward.used ? '사용 완료' : '사용 처리'}
+                    </button>
+                </div>`).join('')}</div>
+        </div>`;
+    }
+
+    async function markRewardUsed(category, index, button) {
+        const data = window._adminData;
+        if (!data?.ud?.missionProgress?.rewards) return;
+        const rewards = data.ud.missionProgress.rewards;
+        if (category === 'achievements') rewards.achievements[index].used = true;
+        else rewards[category].used = true;
+        button.disabled = true;
+        button.textContent = '저장 중...';
+        try {
+            await db.collection('users').doc(data.userId).update({
+                'missionProgress.rewards': rewards,
+                _updatedAt: Date.now()
+            });
+            button.textContent = '사용 완료';
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = '사용 처리';
+            alert('보상 상태 저장에 실패했습니다: ' + error.message);
+        }
+    }
+    window.markRewardUsed = markRewardUsed;
 
     // ── 퀴즈 기록 탭 ──
     function buildQuizTab(reports, wrongAnswers) {
