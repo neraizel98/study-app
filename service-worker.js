@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v22-wrong-answer-review';
+const CACHE_NAME = 'smart-study-v23-adaptive-quiz';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

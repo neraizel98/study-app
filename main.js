@@ -26,6 +26,7 @@ let questionResults = [];
 let retryWrongList = [];
 let quizWrongWordCounts = {}; // 오답 유지
 let quizSessionData = { id: null, total: 0, initialScore: null, currentScore: 0, startTime: 0 }; // 세션 관리
+let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 let showKoEx = false;
 let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
 
@@ -272,15 +273,23 @@ function startQuiz(wordList) {
             } else {
                 const dataList = (window.vocabData || {})[currentLevel] || [];
                 let challengeWords = [];
+                currentQuizBand = typeof AdaptiveQuiz !== 'undefined'
+                    ? AdaptiveQuiz.getBand('english', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
+                    : { name: 'standard', score: null, wrongRatio: 0.45 };
                 const curIdx = LEVEL_ORDER.indexOf(currentLevel);
-                if (curIdx < LEVEL_ORDER.length - 1) {
+                if (curIdx < LEVEL_ORDER.length - 1 && currentQuizBand.name !== 'foundation') {
                     const nextLevel = LEVEL_ORDER[curIdx + 1];
-                    const challengeCount = Math.floor(Math.random() * 5) + 1;
+                    const challengeCount = currentQuizBand.name === 'challenge'
+                        ? Math.floor(Math.random() * 3) + 3
+                        : Math.floor(Math.random() * 2) + 1;
                     challengeWords = Utils.shuffle((window.vocabData || {})[nextLevel] || []).slice(0, challengeCount);
                     challengeWords.forEach(w => w.isChallenge = true);
                 }
                 const baseCount = QUIZ_COUNT - challengeWords.length;
-                const baseWords = Utils.shuffle([...dataList]).slice(0, baseCount);
+                const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
+                const baseWords = typeof AdaptiveQuiz !== 'undefined'
+                    ? AdaptiveQuiz.mix(dataList, wrongItems, item => item.word, item => item.word, baseCount, currentQuizBand.wrongRatio)
+                    : Utils.shuffle([...dataList]).slice(0, baseCount);
                 quizWords = Utils.shuffle([...baseWords, ...challengeWords]);
             }
             quizSessionData.total = quizWords.length;
@@ -298,7 +307,12 @@ function startQuiz(wordList) {
                     } else if (w.comp && w.sup && rand < 0.65) {
                         w.qType = 11; // 비교급/최상급
                     } else if (w.ex && rand < 0.85) {
-                        const subjectiveProb = currentLevel === 'level1' ? 0.45 : 0.65;
+                        const baseSubjective = currentLevel === 'level1' ? 0.45 : 0.65;
+                        const subjectiveProb = currentQuizBand.name === 'challenge'
+                            ? Math.min(0.85, baseSubjective + 0.2)
+                            : currentQuizBand.name === 'foundation'
+                                ? Math.max(0.25, baseSubjective - 0.2)
+                                : baseSubjective;
                         if (Math.random() < subjectiveProb) {
                             w.qType = 8; // 주관식 빈칸
                         } else {

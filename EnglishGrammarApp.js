@@ -77,9 +77,9 @@
         return requestedReview || typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked('grammar', context(), aliases());
     }
 
-    function getReviewQuestions() {
+    function getReviewQuestions(sourceItems = null) {
         if (typeof WrongNote === 'undefined') return [];
-        const wrongItems = (WrongNote.getAll().grammar || []).filter(item =>
+        const wrongItems = (sourceItems || WrongNote.getAll().grammar || []).filter(item =>
             !item.isMastered && item.stageId === stageId && item.unitId === unit().id
         );
         return wrongItems.map(item => {
@@ -106,7 +106,38 @@
             renderStudy();
             return;
         }
-        questions = requestedReview ? getReviewQuestions() : EnglishGrammarQuiz.generate(unit().id, 10);
+        if (requestedReview) {
+            questions = getReviewQuestions();
+        } else {
+            const band = typeof AdaptiveQuiz !== 'undefined'
+                ? AdaptiveQuiz.getBand('grammar', context(), aliases())
+                : { name: 'standard', score: null, wrongRatio: 0.45 };
+            const activeWrong = typeof WrongNote !== 'undefined'
+                ? (WrongNote.getAll().grammar || []).filter(item =>
+                    !item.isMastered && item.stageId === stageId && item.unitId === unit().id
+                )
+                : [];
+            const wrongTarget = Math.min(activeWrong.length, Math.max(1, Math.round(10 * band.wrongRatio)));
+            const selectedWrong = typeof AdaptiveQuiz !== 'undefined'
+                ? AdaptiveQuiz.weightedWrongItems(activeWrong, wrongTarget)
+                : activeWrong.slice(0, wrongTarget);
+            const priorityQuestions = getReviewQuestions(selectedWrong);
+            const currentQuestions = EnglishGrammarQuiz.generate(unit().id, 10);
+            let challengeQuestions = [];
+            if (band.name === 'challenge') {
+                const unitIndex = stage().units.findIndex(item => item.id === unit().id);
+                const nextUnit = stage().units[unitIndex + 1];
+                if (nextUnit) challengeQuestions = EnglishGrammarQuiz.generate(nextUnit.id, 2);
+            }
+            const seen = new Set(priorityQuestions.map(item => item.question));
+            const fresh = [...challengeQuestions, ...currentQuestions].filter(item => {
+                if (seen.has(item.question)) return false;
+                seen.add(item.question);
+                return true;
+            });
+            questions = [...priorityQuestions, ...fresh].slice(0, 10);
+            if (typeof Utils !== 'undefined') questions = Utils.shuffle(questions);
+        }
         if (!questions.length) {
             alert('이 단원에서 다시 풀 오답이 없습니다.');
             location.href = 'wrong_note.html';
