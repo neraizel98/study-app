@@ -297,7 +297,9 @@
             let quizzes = [];
             if (isReviewMode) {
                 // [New] 오답 노트에서 유형 가져와서 생성
-                const wrongMath = WrongNote.getAll().math || [];
+                const wrongMath = (WrongNote.getAll().math || []).filter(w =>
+                    !w.isMastered && w.levelId === levelId && w.semesterId === semesterId && w.unitId === unitId
+                );
                 // [Stabilized] window 전역 객체 참조
                 const poolData = window.MathQuizData || {};
                 const unitPool = poolData[unitId] || {};
@@ -384,7 +386,8 @@
                 // 선택된 버튼만 표시 (정답/오답 색 없이)
                 clickedBtn.classList.add('selected-ans');
 
-                const isOk = selected === correct;
+                const correctIndex = Number(correct);
+                const isOk = Number(selected) === correctIndex;
                 results[currentIdx] = { selected, correct, isOk };
                 
                 const quiz = quizzes[currentIdx];
@@ -400,7 +403,10 @@
                     question: quiz.question, 
                     explanation: quiz.explanation,
                     choices: quiz.choices,
-                    answer: quiz.answer,
+                    selectedAnswer: quiz.choices[Number(selected)],
+                    correctAnswer: quiz.choices[correctIndex],
+                    answer: quiz.choices[correctIndex],
+                    answerIndex: correctIndex,
                     levelId, semesterId, unitId 
                 }, status, quizSessionData.id, quizSessionData.roundCount);
 
@@ -521,19 +527,20 @@
                     if (typeof saveQuizResult === 'function') {
                         saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
                             category: 'math',
+                            review: isReviewMode,
                             levelId,
                             semesterId,
                             unitId,
                             unitTitle: unit.title,
                             attempts: results.map((r, i) => ({
                                 question: quizzes[i]?.question || `문제 ${i + 1}`,
-                                selectedAnswer: r.selected,
-                                correctAnswer: r.correct,
+                                selectedAnswer: quizzes[i]?.choices?.[Number(r.selected)] ?? r.selected,
+                                correctAnswer: quizzes[i]?.choices?.[Number(r.correct)] ?? r.correct,
                                 correct: !!r.isOk,
                                 explanation: quizzes[i]?.explanation || ''
                             }))
                         });
-                        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+                        if (!isReviewMode && typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
                             StudyTimer.recordResult('math', mathContext, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
                         }
                         

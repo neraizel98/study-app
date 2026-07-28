@@ -45,6 +45,7 @@ const studyStrokeContainer = $('studyStrokeContainer');
 
 // 상태 변수
 let currentLevel = 'level8';
+const isReviewMode = new URLSearchParams(window.location.search).get('mode') === 'review';
 let currentMode = 'study';
 let currentIndex = 0;
 let studyWords = [];
@@ -64,6 +65,11 @@ let currentQuizType = 'meaning'; // 'meaning' | 'reverse' | 'radical' | 'idiom' 
 let currentCorrectAnswer = '';
 
 function $(id) { return document.getElementById(id); }
+function getQuizPool(q) {
+    return Object.values(vocabHanja || {}).find(list => list.some(item => item.hanja === q.hanja))
+        || vocabHanja[currentLevel]
+        || [];
+}
 
 // ============================================================
 // STUDY MODE
@@ -125,7 +131,19 @@ function handlePrev() {
 // QUIZ MODE
 // ============================================================
 function startQuiz(customList) {
-    quizWords = customList || Utils.shuffle([...vocabHanja[currentLevel]]).slice(0, 10);
+    let reviewWords = null;
+    if (!customList && isReviewMode && typeof WrongNote !== 'undefined') {
+        const active = (WrongNote.getAll().hanja || []).filter(item => !item.isMastered);
+        const allWords = Object.values(vocabHanja || {}).flat();
+        reviewWords = active.map(item => allWords.find(word => word.hanja === item.hanja)).filter(Boolean);
+        reviewWords = [...new Map(reviewWords.map(word => [word.hanja, word])).values()];
+        if (!reviewWords.length) {
+            alert('복습할 한자 오답이 없습니다!');
+            window.location.href = 'wrong_note.html';
+            return;
+        }
+    }
+    quizWords = customList || (reviewWords ? Utils.shuffle(reviewWords) : Utils.shuffle([...vocabHanja[currentLevel]]).slice(0, 10));
     quizIndex = 0;
     quizScore = 0;
     quizHistory = [];
@@ -199,7 +217,7 @@ function setupMeaningQuiz(q) {
     $('quizQuestionLabel').textContent = '이 한자의 뜻과 음은?';
     quizHanja.textContent = q.hanja;
     const correct = `${q.eum} [${q.meaning}]`;
-    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    const others = Utils.shuffle(getQuizPool(q).filter(v => v.hanja !== q.hanja)).slice(0, 3);
     showChoices([correct, ...others.map(o => `${o.eum} [${o.meaning}]`)], correct);
 }
 
@@ -210,7 +228,7 @@ function setupReverseQuiz(q) {
     quizHanja.textContent = `${q.eum} [${q.meaning}]`;
     quizHanja.style.fontSize = '1.6rem';
     const correct = q.hanja;
-    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    const others = Utils.shuffle(getQuizPool(q).filter(v => v.hanja !== q.hanja)).slice(0, 3);
     showChoices([correct, ...others.map(o => o.hanja)], correct);
 }
 
@@ -221,7 +239,7 @@ function setupRadicalQuiz(q) {
     quizHanja.textContent = q.hanja;
     const correct = q.radical;
     const others = Utils.shuffle(
-        vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja && v.radical !== q.radical)
+        getQuizPool(q).filter(v => v.hanja !== q.hanja && v.radical !== q.radical)
     ).slice(0, 3);
     showChoices([correct, ...others.map(o => o.radical)], correct);
 }
@@ -244,7 +262,7 @@ function setupIdiomQuiz(q) {
     `;
 
     const correct = q.hanja;
-    const others = Utils.shuffle(vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja)).slice(0, 3);
+    const others = Utils.shuffle(getQuizPool(q).filter(v => v.hanja !== q.hanja)).slice(0, 3);
     showChoices([correct, ...others.map(o => o.hanja)], correct);
 }
 
@@ -262,7 +280,7 @@ function setupRelationQuiz(q) {
 
     // 오답: 같은 포맷으로 vocab에서 랜덤 3개
     const others = Utils.shuffle(
-        vocabHanja[currentLevel].filter(v => v.hanja !== q.hanja && `${v.hanja}(${v.eum})` !== correct)
+        getQuizPool(q).filter(v => v.hanja !== q.hanja && `${v.hanja}(${v.eum})` !== correct)
     ).slice(0, 3).map(v => `${v.hanja}(${v.eum})`);
     showChoices([correct, ...others], correct);
 }
@@ -297,7 +315,8 @@ function checkAnswer(selected, correct) {
     if (isPhaseTransition) return;
     isPhaseTransition = true;
 
-    const isOk = selected === correct;
+    const normalizeAnswer = value => String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
+    const isOk = normalizeAnswer(selected) === normalizeAnswer(correct);
     if (isOk) {
         quizScore += 10;
         quizSessionData.currentScore++;
@@ -363,7 +382,7 @@ function showResult() {
         row.className = 'score-row';
         const badge = r.isOk ? '<span class="sc-badge pass">PASS</span>' : '<span class="sc-badge fail">FAIL</span>';
         
-        const wData = vocabHanja[currentLevel].find(v => v.hanja === r.word);
+        const wData = Object.values(vocabHanja || {}).flat().find(v => v.hanja === r.word);
         let expBoxHtml = '';
         let expHtml = '';
         
@@ -399,6 +418,7 @@ function showResult() {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'hanja', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
             category: 'hanja',
+            review: isReviewMode,
             unitId: currentLevel,
             unitTitle: lvName,
             attempts: quizHistory.map(r => ({
@@ -409,7 +429,7 @@ function showResult() {
                 explanation: r.explanation || ''
             }))
         });
-        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+        if (!isReviewMode && typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
             StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();
         }
@@ -450,7 +470,7 @@ function setMode(mode) {
         updateCard();
         if (_hanjaTimerCtrl) _hanjaTimerCtrl.startTimer();
     } else {
-        if (quizModeBtn.classList.contains('stb-locked')) return;
+        if (!isReviewMode && quizModeBtn.classList.contains('stb-locked')) return;
         quizModeBtn.classList.add('active'); studyModeBtn.classList.remove('active');
         quizView.classList.add('view-active');
         studyView.classList.remove('view-active'); studyControls.classList.remove('view-active');
@@ -467,7 +487,7 @@ quizModeBtn.addEventListener('click', () => setMode('quiz'));
 retryBtn.addEventListener('click', () => { resultModal.classList.add('hidden'); startQuiz(); });
 retryWrongBtn.addEventListener('click', () => {
     resultModal.classList.add('hidden');
-    const wrongWords = vocabHanja[currentLevel].filter(w => retryWrongList.includes(w.hanja));
+    const wrongWords = quizWords.filter(w => retryWrongList.includes(w.hanja));
     startQuiz(wrongWords);
 });
 studyAgainBtn.addEventListener('click', () => { resultModal.classList.add('hidden'); setMode('study'); });
@@ -554,12 +574,12 @@ window.HanjaEngine = {
                 getContext: () => currentLevel,
                 getAliases: () => [document.querySelector('.level-btn.active')?.textContent],
                 getLabel: () => document.querySelector('.level-btn.active')?.textContent || currentLevel,
-                isLearningActive: () => currentMode === 'study'
+                isLearningActive: () => currentMode === 'study',
+                isLockBypassed: () => isReviewMode
             });
         }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode') === 'review' ? 'quiz' : 'study';
+        const mode = isReviewMode ? 'quiz' : 'study';
         setMode(mode);
         return true;
     }

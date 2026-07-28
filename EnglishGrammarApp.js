@@ -5,7 +5,8 @@
     let stageId = allowedStages.includes(params.get('stage')) ? params.get('stage') : 'elementary';
     let unitId = params.get('unit') || EnglishGrammarData[stageId].units[0].id;
     let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
-    const requestedQuiz = params.get('mode') === 'quiz';
+    const requestedReview = params.get('mode') === 'review';
+    const requestedQuiz = params.get('mode') === 'quiz' || requestedReview;
     let mode = requestedQuiz ? 'quiz' : 'study';
     let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null;
     let sessionId = '', attempts = [];
@@ -33,7 +34,8 @@
     const aliases = () => [`영문법 ${levelLabel()}`, `영어 문법 ${levelLabel()}`, stage().title];
 
     function setUrl() {
-        const q = new URLSearchParams({ stage: stageId, unit: unit().id, lesson: String(lessonIndex), mode });
+        const urlMode = requestedReview && mode === 'quiz' ? 'review' : mode;
+        const q = new URLSearchParams({ stage: stageId, unit: unit().id, lesson: String(lessonIndex), mode: urlMode });
         history.replaceState(null, '', `?${q}`);
     }
 
@@ -72,7 +74,28 @@
     }
 
     function quizUnlocked() {
-        return typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked('grammar', context(), aliases());
+        return requestedReview || typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked('grammar', context(), aliases());
+    }
+
+    function getReviewQuestions() {
+        if (typeof WrongNote === 'undefined') return [];
+        const wrongItems = (WrongNote.getAll().grammar || []).filter(item =>
+            !item.isMastered && item.stageId === stageId && item.unitId === unit().id
+        );
+        return wrongItems.map(item => {
+            const correctAnswer = String(item.correctAnswer || item.answer || '').normalize('NFC').trim();
+            const seen = new Set();
+            const choices = [correctAnswer, ...(item.choices || [])]
+                .map(value => String(value ?? '').normalize('NFC').trim())
+                .filter(value => value && !seen.has(value.toLocaleLowerCase()) && seen.add(value.toLocaleLowerCase()));
+            const shuffled = typeof Utils !== 'undefined' ? Utils.shuffle(choices) : choices.sort(() => Math.random() - 0.5);
+            return {
+                question: item.question,
+                choices: shuffled,
+                answerIndex: shuffled.findIndex(value => value.toLocaleLowerCase() === correctAnswer.toLocaleLowerCase()),
+                explanation: item.explanation || `정답은 ${correctAnswer}입니다.`
+            };
+        }).filter(item => item.answerIndex >= 0 && item.choices.length >= 2);
     }
 
     function startQuiz() {
@@ -83,7 +106,12 @@
             renderStudy();
             return;
         }
-        questions = EnglishGrammarQuiz.generate(unit().id, 10);
+        questions = requestedReview ? getReviewQuestions() : EnglishGrammarQuiz.generate(unit().id, 10);
+        if (!questions.length) {
+            alert('이 단원에서 다시 풀 오답이 없습니다.');
+            location.href = 'wrong_note.html';
+            return;
+        }
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
         sessionId = `grammar-${Date.now()}`; attempts = [];
         $('studyPanel').hidden = true;
@@ -148,10 +176,11 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
-        if (typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
+        if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, 0, true, {
                 category: 'grammar',
+                review: requestedReview,
                 stageId,
                 stageTitle: stage().title,
                 unitId: unit().id,
@@ -210,7 +239,8 @@
                 getContext: context,
                 getAliases: aliases,
                 getLabel: () => `영문법 · ${levelLabel()} (${stage().title})`,
-                isLearningActive: () => mode === 'study' && !$('studyPanel').hidden
+                isLearningActive: () => mode === 'study' && !$('studyPanel').hidden,
+                isLockBypassed: () => requestedReview
             });
             timerController.startTimer();
             window.addEventListener('beforeunload', () => timerController?.stopTimer());

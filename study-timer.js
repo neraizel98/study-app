@@ -76,7 +76,7 @@ const StudyTimer = (() => {
 
         const targets = aliases.map(normalize).filter(Boolean);
         const matches = reports
-            .filter(r => r.subject === subject && r.totalQuestions > 0)
+            .filter(r => r.subject === subject && r.totalQuestions > 0 && !(r.metadata && r.metadata.review))
             .filter(r => {
                 const level = normalize(r.level);
                 return targets.some(target => matchesAlias(level, target));
@@ -198,6 +198,7 @@ const StudyTimer = (() => {
         const getAliases = options.getAliases || (() => []);
         const getLabel = options.getLabel || (() => '현재 단원');
         const isLearningActive = options.isLearningActive || (() => true);
+        const isLockBypassed = options.isLockBypassed || (() => false);
 
         let bar = document.getElementById('studyTimerBar');
         if (!bar) {
@@ -216,10 +217,12 @@ const StudyTimer = (() => {
 
         function current() {
             const context = getContext() || 'default';
+            const status = getStatus(subject, context, getAliases(context) || []);
+            if (isLockBypassed()) status.unlocked = true;
             return {
                 context,
                 aliases: getAliases(context) || [],
-                status: getStatus(subject, context, getAliases(context) || [])
+                status
             };
         }
 
@@ -233,7 +236,10 @@ const StudyTimer = (() => {
                 ? '첫 퀴즈 전'
                 : `최근 ${status.scoreCount}회 평균 ${status.score}점`;
 
-            if (status.unlocked) {
+            if (isLockBypassed()) {
+                bar.innerHTML = `<div class="stb-unlocked">♻️ 오답 복습 · 학습 시간 없이 바로 퀴즈 가능</div>`;
+                if (quizBtn) quizBtn.classList.remove('stb-locked');
+            } else if (status.unlocked) {
                 bar.innerHTML = `<div class="stb-unlocked">✅ ${getLabel()} 학습 완료 · ${scoreText} · 퀴즈 가능</div>`;
                 if (quizBtn) quizBtn.classList.remove('stb-locked');
             } else {

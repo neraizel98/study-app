@@ -18,6 +18,7 @@ function isVerb(d) {
 // APP STATE
 // ============================================================
 let currentLevel = 'level1', currentIndex = 0, currentMode = 'study';
+const isReviewMode = new URLSearchParams(window.location.search).get('mode') === 'review';
 const QUIZ_COUNT = 20;
 let quizWords = [], quizIndex = 0, quizScore = 0, quizPhase = 1;
 let currentTenseIdx = 0;
@@ -237,9 +238,6 @@ function startQuiz(wordList) {
     try {
         const LEVEL_ORDER = ['level1', 'level2', 'level3', 'level4'];
         
-        const params = new URLSearchParams(window.location.search);
-        const isReviewMode = params.get('mode') === 'review';
-
         // 퀴즈 상태 초기화
         quizIndex = 0;
         quizScore = 0;
@@ -260,7 +258,9 @@ function startQuiz(wordList) {
             quizSessionData.roundCount = 1;
 
             if (isReviewMode) {
-                const wrongAnswers = (typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : []).map(w => w.word);
+                const wrongAnswers = (typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [])
+                    .filter(w => !w.isMastered)
+                    .map(w => w.word);
                 if (wrongAnswers.length === 0) {
                     alert('오답 노트가 비어 있습니다!');
                     window.location.href = 'index.html';
@@ -613,7 +613,8 @@ function showQuestion() {
 
 function handleAnswer(btn) {
     const res = questionResults[quizIndex];
-    const ok = btn.dataset.answer === res.correctValue;
+    const normalizeAnswer = value => String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
+    const ok = normalizeAnswer(btn.dataset.answer) === normalizeAnswer(res.correctValue);
     
     // 비주얼 피드백 (선택한 버튼 표시)
     quizChoices.forEach(b => { b.disabled = true; });
@@ -814,6 +815,7 @@ function showResult() {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'english', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
             category: 'english',
+            review: isReviewMode,
             unitId: currentLevel,
             unitTitle: lvName,
             attempts: questionResults.map(r => ({
@@ -825,7 +827,7 @@ function showResult() {
                 explanation: r.meaning || ''
             }))
         });
-        if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+        if (!isReviewMode && typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
             StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_studyTimerCtrl) _studyTimerCtrl.refresh();
         }
@@ -870,7 +872,7 @@ function setMode(mode) {
             updateCard();
             if (_studyTimerCtrl) _studyTimerCtrl.startTimer();
         } else {
-            if (quizModeBtn.classList.contains('stb-locked')) return;
+            if (!isReviewMode && quizModeBtn.classList.contains('stb-locked')) return;
             quizModeBtn.classList.add('active');
             studyModeBtn.classList.remove('active');
             studyView.classList.remove('view-active');
@@ -978,12 +980,12 @@ window.AppEngine = {
                 getContext: () => currentLevel,
                 getAliases: () => [currentLevel.replace('level', '레벨 '), document.querySelector('.level-btn.active')?.textContent],
                 getLabel: () => document.querySelector('.level-btn.active')?.textContent || currentLevel,
-                isLearningActive: () => currentMode === 'study'
+                isLearningActive: () => currentMode === 'study',
+                isLockBypassed: () => isReviewMode
             });
         }
 
-        const urlParams = new URLSearchParams(window.location.search);
-        const mode = urlParams.get('mode') === 'review' ? 'quiz' : 'study';
+        const mode = isReviewMode ? 'quiz' : 'study';
 
         console.log(`[AppEngine] Starting in ${mode} mode`);
         setMode(mode);
