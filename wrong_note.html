@@ -337,7 +337,7 @@
                 else if (subject === 'grammar') {
                     const all = WrongNote.getAll();
                     const target = all.grammar.find(g => g.type === identifier);
-                    if (target) targetUrl = `english_grammar.html?stage=${target.stageId}&unit=${target.unitId}&mode=quiz`;
+                    if (target) targetUrl = `english_grammar.html?stage=${target.stageId}&unit=${target.unitId}&mode=review`;
                 }
                 else if (subject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (subject === 'math') {
@@ -365,7 +365,7 @@
                 else if (currentSubject === 'grammar') {
                     const all = WrongNote.getAll();
                     const first = (all.grammar || []).find(g => !g.isMastered) || (all.grammar || [])[0];
-                    if (first) targetUrl = `english_grammar.html?stage=${first.stageId}&unit=${first.unitId}&mode=quiz`;
+                    if (first) targetUrl = `english_grammar.html?stage=${first.stageId}&unit=${first.unitId}&mode=review`;
                 }
                 else if (currentSubject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (currentSubject === 'math') {
