@@ -8,7 +8,8 @@ const SubjectRegistry = {
         english: { name: '영어 단어', icon: '🇬🇧', path: 'english.html' },
         grammar: { name: '영어 문법', icon: '📘', path: 'english_grammar.html' },
         hanja: { name: '한자', icon: '🏮', path: 'hanja.html' },
-        math: { name: '수학', icon: '📐', path: 'math.html' }
+        math: { name: '수학', icon: '📐', path: 'math.html' },
+        reading: { name: '국어 독해력', icon: '📖', path: 'reading.html' }
     },
     get(subject) {
         return this.definitions[subject] || {
@@ -213,12 +214,12 @@ const WrongNote = {
     getAll: function() {
         try {
             const key = this.getStorageKey();
-            if (!key) return { english: [], grammar: [], hanja: [], math: [] };
+            if (!key) return { english: [], grammar: [], hanja: [], math: [], reading: [] };
             const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : { english: [], grammar: [], hanja: [], math: [] };
+            return raw ? JSON.parse(raw) : { english: [], grammar: [], hanja: [], math: [], reading: [] };
         } catch (e) {
             console.error('[WrongNote Error]', e);
-            return { english: [], grammar: [], hanja: [], math: [] };
+            return { english: [], grammar: [], hanja: [], math: [], reading: [] };
         }
     },
 
@@ -238,7 +239,7 @@ const WrongNote = {
         if (!all[subject]) all[subject] = [];
         
         // 중복 방지 (English/Hanja는 word/hanja 기준, Math는 type 기준)
-        const identifier = (subject === 'math' || subject === 'grammar') ? data.type : (data.word || data.hanja);
+        const identifier = (subject === 'math' || subject === 'grammar' || subject === 'reading') ? data.type : (data.word || data.hanja);
         const exists = all[subject].find(item => (item.word || item.hanja || item.type) === identifier);
         
         const historyEntry = {

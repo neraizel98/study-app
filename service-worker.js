@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v25-grammar-next-unit';
+const CACHE_NAME = 'smart-study-v26-korean-reading';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -54,6 +54,10 @@ const STATIC_ASSETS = [
     './EnglishGrammarData.js',
     './EnglishGrammarQuiz.js',
     './EnglishGrammarApp.js',
+    './reading.html',
+    './ReadingData.js',
+    './ReadingPassages.js',
+    './ReadingApp.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',

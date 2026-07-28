@@ -282,6 +282,11 @@
                         subText = Utils.renderMath(qStr.substring(0, 80)) + (qStr.length > 80 ? '...' : '');
                         metaText = `${item.levelId || '?'} ${item.semesterId || '?'}학기`;
                         explanation = Utils.renderMath(item.explanation || '풀이 과정이 없습니다.');
+                    } else if (currentSubject === 'reading') {
+                        mainText = item.question || '독해 문제';
+                        subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
+                        metaText = `${item.passageTitle || ''} · ${item.skill || '독해'}`;
+                        explanation = item.explanation || '지문 근거 해설이 없습니다.';
                     } else {
                         mainText = item.question || item.title || item.type || '학습 문제';
                         subText = item.meaning || item.selectedAnswer || item.answer || '';
@@ -347,6 +352,7 @@
                         targetUrl = `math_quiz.html?level=${target.levelId}&semester=${target.semesterId}&unit=${target.unitId}&mode=review`;
                     }
                 }
+                else if (subject === 'reading') targetUrl = 'reading.html?mode=review';
                 if (targetUrl) window.location.href = targetUrl;
             };
 
@@ -376,6 +382,7 @@
                         targetUrl = `math_quiz.html?level=${first.levelId}&semester=${first.semesterId}&unit=${first.unitId}&mode=review`;
                     }
                 }
+                else if (currentSubject === 'reading') targetUrl = 'reading.html?mode=review';
                 
                 if (targetUrl) window.location.href = targetUrl;
             });

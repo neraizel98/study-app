@@ -302,13 +302,14 @@
     // ─────────────────────────────────────────────
     //  Constants
     // ─────────────────────────────────────────────
-    const SUBJ_NAMES  = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학' };
-    const SUBJ_ICONS  = { english: '🇬🇧', grammar: '📘', hanja: '🏮', math: '📐' };
+    const SUBJ_NAMES  = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학', reading: '국어 독해력' };
+    const SUBJ_ICONS  = { english: '🇬🇧', grammar: '📘', hanja: '🏮', math: '📐', reading: '📖' };
     const SUBJ_COLOR  = {
         english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
         grammar: { bg: 'rgba(167,139,250,0.6)', bd: '#a78bfa' },
         hanja:   { bg: 'rgba(249,130,108,0.6)', bd: '#f9826c' },
-        math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' }
+        math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' },
+        reading: { bg: 'rgba(251,113,133,0.6)', bd: '#fb7185' }
     };
     const DAYS = ['월','화','수','목','금','토','일'];
 
@@ -414,7 +415,7 @@
             type: 'bar',
             data: {
                 labels: DAYS,
-                datasets: ['english','grammar','hanja','math'].map(s => ({
+                datasets: ['english','grammar','hanja','math','reading'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  d[s].map(v => +v.toFixed(1)),
                     backgroundColor: SUBJ_COLOR[s].bg,
@@ -448,7 +449,7 @@
             const mn = ws.getMonth() + 1, dn = ws.getDate();
             labels.push(`${mn}/${dn}`);
             const wr = filterWeek(allReports, ws);
-            ['english','grammar','hanja','math'].forEach(s => {
+            ['english','grammar','hanja','math','reading'].forEach(s => {
                 const sub = wr.filter(r => r.subject === s);
                 if (sub.length > 0) {
                     series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
@@ -467,7 +468,7 @@
             type: 'line',
             data: {
                 labels,
-                datasets: ['english','grammar','hanja','math'].map(s => ({
+                datasets: ['english','grammar','hanja','math','reading'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  series[s],
                     borderColor:     SUBJ_COLOR[s].bd,

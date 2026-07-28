@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국어 독해력</title>
+    <link rel="stylesheet" href="styles.css">
+    <style>
+        :root{--reading:#fb7185;--reading2:#f59e0b}
+        body{min-height:100vh;background:radial-gradient(circle at top,#342038 0,#111827 48%,#070b14 100%);color:var(--text)}
+        .reading-shell{width:min(1060px,94%);margin:auto;padding:28px 0 70px}.top-nav{display:flex;justify-content:space-between;margin-bottom:20px}.top-nav a{color:#e5e7eb;text-decoration:none}
+        .hero{padding:28px;border-radius:24px;background:linear-gradient(135deg,rgba(251,113,133,.18),rgba(245,158,11,.12));border:1px solid rgba(251,113,133,.28)}.hero h1{margin:3px 0;font-size:clamp(30px,5vw,48px)}.hero p{color:#cbd5e1}
+        .mode-row,.unit-tabs,.lesson-tabs{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:18px 0}.mode-btn,.unit-btn,.lesson-btn{border:1px solid #3b4659;background:#111827;color:#d1d5db;padding:11px 16px;border-radius:999px;cursor:pointer}.active{background:linear-gradient(135deg,var(--reading),var(--reading2))!important;color:#1f1304!important;border-color:transparent!important;font-weight:800}
+        .card{background:rgba(15,23,42,.9);border:1px solid #334155;border-radius:22px;padding:clamp(20px,4vw,38px)}.label{color:#fda4af;font-weight:900}.principle{font-size:1.18rem;line-height:1.75;padding:17px;border-left:4px solid var(--reading);background:rgba(251,113,133,.08);border-radius:12px}.rules{display:grid;gap:10px;list-style:none;padding:0}.rules li{padding:13px 15px;border-radius:12px;background:#111b2c}.study-example,.tip{padding:15px;border-radius:12px;background:rgba(245,158,11,.09);line-height:1.7}.tip{color:#fde68a}
+        .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.actions button,.primary{border:0;border-radius:12px;padding:13px 18px;background:#263449;color:#fff;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,var(--reading),var(--reading2));color:#271506}
+        .passage-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.passage-meta{color:#fda4af;font-size:.85rem;font-weight:700}.passage{margin:20px 0;padding:22px;background:#fffaf2;color:#24201d;border-radius:16px;line-height:1.9;font-family:Georgia,'Noto Serif KR',serif}.passage p{margin:0 0 9px}.line-no{display:inline-block;width:25px;color:#9a7561;font-size:.78rem}.source-note{font-size:.75rem;color:#64748b;text-align:right}
+        .quiz-question{font-size:1.25rem;line-height:1.55;margin:25px 0 16px}.choices{display:grid;gap:10px}.answer{display:flex;gap:12px;text-align:left;padding:14px;border:1px solid #3b4659;background:#111b2c;color:#fff;border-radius:13px;cursor:pointer}.answer span{display:grid;place-items:center;min-width:29px;height:29px;border-radius:50%;background:#334155}.answer.correct{border-color:#34d399;background:rgba(16,185,129,.16)}.answer.wrong{border-color:#fb7185;background:rgba(244,63,94,.15)}.feedback{margin-top:18px;padding:16px;border-radius:12px}.feedback.good{background:rgba(16,185,129,.14)}.feedback.bad{background:rgba(244,63,94,.14)}
+        .result{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,6,23,.84);z-index:50}.result[hidden]{display:none}.result-box{width:min(430px,90vw);padding:30px;border-radius:22px;background:#111827;border:1px solid #475569;text-align:center}.result-score{font-size:2.3rem;color:#fda4af;font-weight:900}
+        [hidden]{display:none!important}@media(max-width:620px){.passage-head{display:block}.actions button{flex:1}.passage{padding:16px}.unit-tabs{display:grid;grid-template-columns:1fr 1fr}.unit-btn{padding:10px 7px}}
+    </style>
+</head>
+<body>
+<main class="reading-shell">
+    <nav class="top-nav"><a href="index.html">← 과목 목록</a><a href="stats.html">📊 학습 통계</a></nav>
+    <header class="hero"><div class="label">KOREAN READING LAB</div><h1>📖 국어 독해력</h1><p>Lv. 1 · 중1 수준 · 근거를 찾으며 정확하게 읽기</p></header>
+    <div class="mode-row"><button id="studyModeBtn" class="mode-btn active">📚 학습 모드</button><button id="quizModeBtn" class="mode-btn">📝 랜덤 지문 퀴즈</button></div>
+    <div class="level-selector"><button class="level-btn active">Lv. 1</button></div>
+    <section id="unitTabs" class="unit-tabs"></section>
+    <section id="lessonTabs" class="lesson-tabs"></section>
+    <section id="studyPanel" class="card">
+        <div class="label">핵심 독해 원리</div><h2 id="lessonTitle"></h2><p id="principle" class="principle"></p>
+        <h3>읽는 순서</h3><ul id="rules" class="rules"></ul>
+        <h3>간단한 예</h3><p id="studyExample" class="study-example"></p><p class="tip">💡 <span id="tip"></span></p>
+        <div class="actions"><button id="prevLesson">← 이전</button><button id="nextLesson">다음 →</button><button id="startQuiz" class="primary">랜덤 지문 풀기</button></div>
+    </section>
+    <section id="quizPanel" class="card" hidden>
+        <div class="passage-head"><div><div id="passageMeta" class="passage-meta"></div><h2 id="passageTitle"></h2></div><strong id="quizProgress"></strong></div>
+        <article id="passage" class="passage"></article><div id="sourceNote" class="source-note"></div>
+        <h3 id="quizQuestion" class="quiz-question"></h3><div id="quizChoices" class="choices"></div>
+        <div id="quizFeedback" class="feedback" hidden></div>
+        <div class="actions"><button id="backToStudy">학습으로 돌아가기</button><button id="nextQuestion" class="primary" hidden>다음 문제</button></div>
+    </section>
+</main>
+<section id="resultModal" class="result" hidden><div class="result-box"><div style="font-size:55px">🏆</div><h2>독해 퀴즈 결과</h2><div id="resultScore" class="result-score"></div><p id="resultMessage"></p><div class="actions"><button id="retryQuiz" class="primary">새 지문 풀기</button><button id="resultStudy">학습으로</button><button id="shareResult">아빠에게 공유</button></div></div></section>
+<script src="utils.js"></script>
+<script src="report.js?v=20260728-reading"></script>
+<script src="study-timer.js?v=20260728-reading"></script>
+<script src="kakao-share.js"></script>
+<script src="ReadingData.js?v=20260728-lv1"></script>
+<script src="ReadingPassages.js?v=20260728-lv1"></script>
+<script src="ReadingApp.js?v=20260728-lv1"></script>
+<script src="firebase-sync.js"></script>
+<script src="version-check.js"></script>
+</body>
+</html>
