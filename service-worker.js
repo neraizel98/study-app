@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v18-reward-center';
+const CACHE_NAME = 'smart-study-v19-quiz-details';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

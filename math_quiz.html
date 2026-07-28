@@ -222,7 +222,7 @@
 
     <script src="kakao-share.js"></script>
     <script src="utils.js?v=20260727-m1quiz"></script>
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-quiz-details"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
     <script src="study-timer.js"></script>
@@ -519,7 +519,20 @@
                     const isCompleted = (wrongIdxs.length === 0);
                     const timeSpent = Math.floor((Date.now() - quizSessionData.startTime) / 1000);
                     if (typeof saveQuizResult === 'function') {
-                        saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+                        saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
+                            category: 'math',
+                            levelId,
+                            semesterId,
+                            unitId,
+                            unitTitle: unit.title,
+                            attempts: results.map((r, i) => ({
+                                question: quizzes[i]?.question || `문제 ${i + 1}`,
+                                selectedAnswer: r.selected,
+                                correctAnswer: r.correct,
+                                correct: !!r.isOk,
+                                explanation: quizzes[i]?.explanation || ''
+                            }))
+                        });
                         if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
                             StudyTimer.recordResult('math', mathContext, quizSessionData.initialScore, quizSessionData.total);
                         }

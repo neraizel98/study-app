@@ -303,7 +303,15 @@ function checkAnswer(selected, correct) {
         quizSessionData.currentScore++;
     }
     
-    quizHistory.push({ word: quizWords[quizIndex].hanja, isOk });
+    const currentWord = quizWords[quizIndex];
+    quizHistory.push({
+        word: currentWord.hanja,
+        question: `${currentWord.hanja} (${currentWord.eum})`,
+        selectedAnswer: selected,
+        correctAnswer: correct,
+        explanation: `${currentWord.meaning} · 음: ${currentWord.eum}`,
+        isOk
+    });
 
     // 오답 노트 저장
     if (typeof WrongNote !== 'undefined') {
@@ -389,7 +397,18 @@ function showResult() {
 
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
-        saveQuizResult(quizSessionData.id, 'hanja', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+        saveQuizResult(quizSessionData.id, 'hanja', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
+            category: 'hanja',
+            unitId: currentLevel,
+            unitTitle: lvName,
+            attempts: quizHistory.map(r => ({
+                question: r.question || r.word,
+                selectedAnswer: r.selectedAnswer,
+                correctAnswer: r.correctAnswer,
+                correct: !!r.isOk,
+                explanation: r.explanation || ''
+            }))
+        });
         if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
             StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total);
             if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();

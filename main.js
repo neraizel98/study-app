@@ -688,6 +688,8 @@ function handleQuizSubmit() {
 function finishQuestion(ok, userVal) {
     const res = questionResults[quizIndex];
     res.isOk = ok;
+    res.selectedAnswer = userVal;
+    res.correctAnswer = res.displayCorrect || res.correctValue || '';
     
     const status = ok ? 'correct' : 'wrong';
     const wData = vocabData[currentLevel].find(w => w.word === res.word);
@@ -810,7 +812,19 @@ function showResult() {
     
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
-        saveQuizResult(quizSessionData.id, 'english', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted);
+        saveQuizResult(quizSessionData.id, 'english', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
+            category: 'english',
+            unitId: currentLevel,
+            unitTitle: lvName,
+            attempts: questionResults.map(r => ({
+                question: r.word,
+                questionType: r.qType,
+                selectedAnswer: r.selectedAnswer,
+                correctAnswer: r.correctAnswer,
+                correct: !!r.isOk,
+                explanation: r.meaning || ''
+            }))
+        });
         if (typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
             StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total);
             if (_studyTimerCtrl) _studyTimerCtrl.refresh();

@@ -176,6 +176,24 @@
         .session-level { font-size: 0.76rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .session-score { font-size: 1rem; font-weight: 700; flex-shrink: 0; }
         .session-date  { font-size: 0.72rem; color: var(--text-sub); flex-shrink: 0; }
+        .quiz-unit-tabs { display:flex; gap:7px; flex-wrap:wrap; margin:0 0 14px; }
+        .quiz-unit-btn { border:1px solid var(--card-border); border-radius:16px; background:rgba(255,255,255,0.03); color:var(--text-sub); padding:5px 11px; cursor:pointer; font-size:0.76rem; }
+        .quiz-unit-btn.active { color:#c4b5fd; border-color:#a78bfa; background:rgba(167,139,250,0.13); }
+        .quiz-session-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
+        .quiz-session-head { width:100%; display:flex; align-items:center; gap:12px; padding:13px 15px; border:0; background:transparent; color:var(--text); text-align:left; cursor:pointer; font-family:var(--font); }
+        .quiz-session-head:hover { background:rgba(255,255,255,0.03); }
+        .quiz-session-toggle { color:var(--text-sub); transition:transform .2s; }
+        .quiz-session-card.open .quiz-session-toggle { transform:rotate(90deg); }
+        .quiz-session-detail { display:none; padding:0 15px 15px; }
+        .quiz-session-card.open .quiz-session-detail { display:block; }
+        .quiz-score-summary { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
+        .quiz-summary-chip { padding:5px 9px; border-radius:12px; background:rgba(255,255,255,0.06); font-size:0.75rem; }
+        .answer-row { border:1px solid rgba(255,255,255,0.08); border-left:3px solid #56d364; border-radius:12px; padding:11px 12px; margin-top:8px; }
+        .answer-row.wrong { border-left-color:#ff5f6d; background:rgba(255,95,109,0.04); }
+        .answer-question { font-size:0.86rem; font-weight:700; margin-bottom:7px; line-height:1.45; }
+        .answer-values { font-size:0.76rem; color:var(--text-sub); line-height:1.55; }
+        .answer-explanation { margin-top:6px; font-size:0.76rem; color:#c4b5fd; line-height:1.5; }
+        .detail-unavailable { color:var(--text-sub); font-size:0.8rem; padding:12px; text-align:center; background:rgba(255,255,255,0.03); border-radius:12px; }
 
         .empty-msg {
             text-align: center;
@@ -269,19 +287,14 @@
 
         <!-- ── Quiz records view ── -->
         <div id="quizView" style="display:none">
-            <div class="subj-tabs" id="quizSubjTabs">
-                <button class="subj-tab active" data-subj="all">전체</button>
-                <button class="subj-tab" data-subj="english">📚 영어</button>
-                <button class="subj-tab" data-subj="grammar">📘 영문법</button>
-                <button class="subj-tab" data-subj="hanja">✍️ 한자</button>
-                <button class="subj-tab" data-subj="math">🧮 수학</button>
-            </div>
+            <div class="subj-tabs" id="quizSubjTabs"></div>
+            <div class="quiz-unit-tabs" id="quizUnitTabs"></div>
             <div id="quizList"></div>
         </div>
 
     </div><!-- .stats-wrap -->
 
-    <script src="report.js"></script>
+    <script src="report.js?v=20260728-quiz-details"></script>
     <script src="firebase-sync.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
@@ -609,21 +622,74 @@
     //  퀴즈 기록 탭 렌더링
     // ─────────────────────────────────────────────
     let _quizSubj = 'all';
+    let _quizUnit = 'all';
+
+    function escapeHTML(value) {
+        return String(value ?? '').replace(/[&<>"']/g, ch => ({
+            '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;'
+        })[ch]);
+    }
+
+    function unitName(report) {
+        return report.metadata?.unitTitle
+            || (report.subject === 'math' ? (report.level || '').split(' - ')[0].trim() : report.level)
+            || '기본';
+    }
+
+    function sessionAttempts(report) {
+        if (Array.isArray(report.metadata?.attempts) && report.metadata.attempts.length) {
+            return report.metadata.attempts;
+        }
+        const result = [];
+        const items = WrongNote.getAll()[report.subject] || [];
+        items.forEach(item => {
+            const history = (item.history || []).filter(entry => entry.sessionId === report.sessionId);
+            history.forEach(entry => result.push({
+                question: entry.question || item.question || item.word || item.hanja || item.type || '문제',
+                selectedAnswer: item.selectedAnswer ?? '-',
+                correctAnswer: item.correctAnswer ?? entry.answer ?? item.answer ?? '-',
+                correct: entry.status === 'correct',
+                explanation: entry.explanation || item.explanation || item.meaning || ''
+            }));
+        });
+        return result;
+    }
+
+    function renderQuizSubjectTabs(reports) {
+        const subjects = SubjectRegistry.list({ reports, wrongAnswers: WrongNote.getAll() });
+        document.getElementById('quizSubjTabs').innerHTML = [
+            `<button class="subj-tab ${_quizSubj === 'all' ? 'active' : ''}" data-subj="all">전체</button>`,
+            ...subjects.map(subject => `<button class="subj-tab ${_quizSubj === subject.id ? 'active' : ''}" data-subj="${escapeHTML(subject.id)}">${subject.icon} ${escapeHTML(subject.name)}</button>`)
+        ].join('');
+    }
+
+    function renderUnitTabs(reports) {
+        const scoped = _quizSubj === 'all' ? reports : reports.filter(report => report.subject === _quizSubj);
+        const units = [...new Set(scoped.map(unitName).filter(Boolean))];
+        if (_quizUnit !== 'all' && !units.includes(_quizUnit)) _quizUnit = 'all';
+        document.getElementById('quizUnitTabs').innerHTML = [
+            `<button class="quiz-unit-btn ${_quizUnit === 'all' ? 'active' : ''}" data-unit="all">전체 단원</button>`,
+            ...units.map(unit => `<button class="quiz-unit-btn ${_quizUnit === unit ? 'active' : ''}" data-unit="${escapeHTML(unit)}">${escapeHTML(unit)}</button>`)
+        ].join('');
+    }
 
     function renderQuizList(allReports, subjFilter) {
         const el = document.getElementById('quizList');
         let rows = [...allReports].sort((a, b) => b.date - a.date);
         if (subjFilter !== 'all') rows = rows.filter(r => r.subject === subjFilter);
+        if (_quizUnit !== 'all') rows = rows.filter(report => unitName(report) === _quizUnit);
+        renderUnitTabs(allReports);
 
         if (!rows.length) {
             el.innerHTML = '<div class="empty-msg">퀴즈 기록이 없습니다.<br>퀴즈를 풀면 여기에 기록이 쌓여요! 📝</div>';
             return;
         }
 
-        const html = rows.map(r => {
+        const html = rows.map((r, rowIndex) => {
             const p = pct(r);
             const scoreColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
             const c = SUBJ_COLOR[r.subject] || { bg:'rgba(255,255,255,0.1)', bd:'#888' };
+            const subjectInfo = SubjectRegistry.get(r.subject);
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const sec = r.timeSpentSeconds || 0;
@@ -631,23 +697,49 @@
             const roundBadge = r.round > 1
                 ? `<span style="font-size:0.68rem;color:${c.bd};background:${c.bd}22;padding:2px 7px;border-radius:10px;margin-left:6px;">${r.round}회차</span>`
                 : '';
-            const levelShort = (r.level || '-').length > 22 ? (r.level||'').slice(0,22)+'…' : (r.level||'-');
+            const level = unitName(r);
+            const attempts = sessionAttempts(r);
+            const correctCount = attempts.filter(attempt => attempt.correct).length;
+            const wrongCount = attempts.filter(attempt => !attempt.correct).length;
+            const attemptHTML = attempts.length ? attempts.map((attempt, index) => `
+                <div class="answer-row ${attempt.correct ? '' : 'wrong'}">
+                    <div class="answer-question">${attempt.correct ? '✅' : '❌'} Q${index + 1}. ${escapeHTML(attempt.question || '문제')}</div>
+                    <div class="answer-values">
+                        선택한 답: <strong>${escapeHTML(attempt.selectedAnswer ?? '-')}</strong><br>
+                        정답: <strong>${escapeHTML(attempt.correctAnswer ?? '-')}</strong>
+                    </div>
+                    ${attempt.explanation ? `<div class="answer-explanation">💡 ${escapeHTML(attempt.explanation)}</div>` : ''}
+                </div>`).join('') : `
+                <div class="detail-unavailable">
+                    이 기록은 상세 문항 저장 기능 적용 전에 생성되어 점수만 확인할 수 있습니다.
+                </div>`;
             return `
-                <div class="session-row">
-                    <div class="session-badge" style="background:${c.bd}22;color:${c.bd}">${SUBJ_ICONS[r.subject]||'📚'}</div>
-                    <div class="session-info">
-                        <div class="session-name">${SUBJ_NAMES[r.subject]||r.subject}${roundBadge}</div>
-                        <div class="session-level">${levelShort}</div>
+                <div class="quiz-session-card" data-row="${rowIndex}">
+                    <button class="quiz-session-head" type="button">
+                        <span class="quiz-session-toggle">▶</span>
+                        <span class="session-badge" style="background:${c.bd}22;color:${c.bd}">${subjectInfo.icon}</span>
+                        <span class="session-info">
+                            <span class="session-name">${escapeHTML(subjectInfo.name)}${roundBadge}</span>
+                            <span class="session-level">${escapeHTML(level)}</span>
+                        </span>
+                        <span style="text-align:right;flex-shrink:0;">
+                            <span class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions} <small>${p}%</small></span>
+                            ${timeStr ? `<span class="session-date" style="display:block">${timeStr}</span>` : ''}
+                        </span>
+                        <span class="session-date">${ds}</span>
+                    </button>
+                    <div class="quiz-session-detail">
+                        <div class="quiz-score-summary">
+                            <span class="quiz-summary-chip">첫 점수 ${r.initialScore}/${r.totalQuestions}</span>
+                            <span class="quiz-summary-chip">최종 ${r.finalScore}/${r.totalQuestions}</span>
+                            ${attempts.length ? `<span class="quiz-summary-chip">✅ ${correctCount} · ❌ ${wrongCount}</span>` : ''}
+                        </div>
+                        ${attemptHTML}
                     </div>
-                    <div style="text-align:right;flex-shrink:0;">
-                        <div class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions} <span style="font-size:0.78em;opacity:0.65">${p}%</span></div>
-                        ${timeStr ? `<div class="session-date">${timeStr}</div>` : ''}
-                    </div>
-                    <div class="session-date" style="min-width:48px;text-align:right">${ds}</div>
                 </div>`;
         }).join('');
 
-        el.innerHTML = `<div class="chart-card" style="padding:16px 20px;">${html}</div>`;
+        el.innerHTML = html;
     }
 
     // ─────────────────────────────────────────────
@@ -675,6 +767,7 @@
         document.getElementById('quizView').style.display  = tab === 'quiz'  ? '' : 'none';
         if (tab === 'quiz') {
             const week = filterWeek(loadReports(), weekStart(weekOffset));
+            renderQuizSubjectTabs(week);
             renderQuizList(week, _quizSubj);
         }
     });
@@ -685,8 +778,23 @@
         document.querySelectorAll('#quizSubjTabs .subj-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         _quizSubj = btn.dataset.subj;
+        _quizUnit = 'all';
         const week = filterWeek(loadReports(), weekStart(weekOffset));
         renderQuizList(week, _quizSubj);
+    });
+
+    document.getElementById('quizUnitTabs').addEventListener('click', e => {
+        const btn = e.target.closest('.quiz-unit-btn');
+        if (!btn) return;
+        _quizUnit = btn.dataset.unit;
+        const week = filterWeek(loadReports(), weekStart(weekOffset));
+        renderQuizList(week, _quizSubj);
+    });
+
+    document.getElementById('quizList').addEventListener('click', e => {
+        const head = e.target.closest('.quiz-session-head');
+        if (!head) return;
+        head.closest('.quiz-session-card').classList.toggle('open');
     });
 
     // ─────────────────────────────────────────────
@@ -697,6 +805,7 @@
             window.location.href = 'index.html';
             return;
         }
+        renderQuizSubjectTabs(filterWeek(loadReports(), weekStart(weekOffset)));
         render();
 
         // 동기화 완료 시 차트/카드 재렌더링 (퀴즈 탭 활성 시 함께 갱신됨)
