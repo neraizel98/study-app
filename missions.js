@@ -168,12 +168,19 @@ const MissionManager = {
             const progressMap = user.missionProgress[category];
             const done = definitions.filter(mission => progressMap[mission.id]?.completed).length;
             const reward = this.rewardFor(user, category);
+            const rewardCandidates = (this.REWARDS[category] || []).map(item =>
+                `<span class="mission-reward-chip">${item.icon} ${item.title}${item.note ? ` <small>(${item.note})</small>` : ''}</span>`
+            ).join('');
             let html = `
                 <div class="mission-section-header">
                     <span>${emoji} <span class="mission-section-label">${label}</span></span>
                     <span class="mission-section-count">${done}/${definitions.length} 완료</span>
                 </div>
                 ${reward ? `<div class="mission-reward-banner">🎁 획득 보상: <strong>${reward.icon} ${reward.title}</strong>${reward.note ? ` · ${reward.note}` : ''}</div>` : ''}
+                <div class="mission-reward-preview">
+                    <div class="mission-reward-preview-title">🎲 모두 완료하면 아래 보상 중 1개를 무작위로 받아요!</div>
+                    <div class="mission-reward-chip-list">${rewardCandidates}</div>
+                </div>
                 <div class="mission-grid${isTwoCol ? '' : ' single-col'}">`;
             definitions.forEach(mission => {
                 const progress = progressMap[mission.id] || { progress: 0, completed: false };
