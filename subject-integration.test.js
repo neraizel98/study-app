@@ -35,5 +35,6 @@ assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note h
 assert(timer.includes("UserSession.updateDailyStat('time', subject, safeSeconds)"), 'Active study time must update user/admin statistics');
 assert(read('reading.html').includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
 assert(!read('reading.html').includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');
+assert(read('reading.html').includes('<a href="index.html">🏠 홈</a>'), 'Reading top navigation must include a home link');
 
 console.log('Subject integration verified:', subjects.join(', '));

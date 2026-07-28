@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v29-reading-ui';
+const CACHE_NAME = 'smart-study-v30-reading-home-link';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
