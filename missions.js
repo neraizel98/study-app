@@ -48,7 +48,7 @@ const MissionManager = {
     registeredSubjects(user = null) {
         const ids = new Set(typeof SubjectRegistry !== 'undefined'
             ? SubjectRegistry.list().map(subject => subject.id)
-            : ['english', 'grammar', 'hanja', 'math']);
+            : ['english', 'grammar', 'hanja', 'math', 'reading']);
         Object.keys(user?.subjectStats || {}).forEach(subject => ids.add(subject));
         Object.keys(user?.dailyStats?.studyTime || {}).forEach(subject => ids.add(subject));
         return [...ids];
