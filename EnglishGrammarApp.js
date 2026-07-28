@@ -28,8 +28,9 @@
 
     const stage = () => EnglishGrammarData[stageId];
     const unit = () => stage().units.find(item => item.id === unitId) || stage().units[0];
-    const context = () => `grammar:${stageId}:${unit().id}`;
-    const aliases = () => [`영문법 ${stage().title} ${unit().title}`, unit().title];
+    const levelLabel = () => stageId === 'elementary' ? 'Lv. 1' : 'Lv. 2';
+    const context = () => `grammar:${stageId}`;
+    const aliases = () => [`영문법 ${levelLabel()}`, `영어 문법 ${levelLabel()}`, stage().title];
 
     function setUrl() {
         const q = new URLSearchParams({ stage: stageId, unit: unit().id, lesson: String(lessonIndex), mode });
@@ -208,7 +209,7 @@
             timerController = StudyTimer.initBar('grammar', $('startQuiz'), {
                 getContext: context,
                 getAliases: aliases,
-                getLabel: () => `영문법 · ${unit().title}`,
+                getLabel: () => `영문법 · ${levelLabel()} (${stage().title})`,
                 isLearningActive: () => mode === 'study' && !$('studyPanel').hidden
             });
             timerController.startTimer();

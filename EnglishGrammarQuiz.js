@@ -38,12 +38,74 @@
         const choices = shuffle([item.answer, ...item.choices]);
         return { question, choices, answerIndex: choices.indexOf(item.answer), explanation: item.explanation };
     }
+
+    function findUnit(unitId) {
+        const data = window.EnglishGrammarData || {};
+        for (const [stageId, stage] of Object.entries(data)) {
+            const found = (stage.units || []).find(candidate => candidate.id === unitId);
+            if (found) return { stageId, stage, unit: found };
+        }
+        return null;
+    }
+
+    function unique(items) {
+        return [...new Set(items.filter(Boolean))];
+    }
+
+    function pickDistractors(items, answer, count = 3) {
+        return shuffle(unique(items).filter(item => item !== answer)).slice(0, count);
+    }
+
+    function buildLearningQuestions(unitId) {
+        const found = findUnit(unitId);
+        if (!found) return [];
+
+        const stageLessons = (found.stage.units || []).flatMap(stageUnit => stageUnit.lessons || []);
+        const allRules = unique(stageLessons.flatMap(item => item.rules || []));
+        const allMeanings = unique(stageLessons.flatMap(item => (item.examples || []).map(example => example[1])));
+        const generated = [];
+
+        (found.unit.lessons || []).forEach((currentLesson, lessonIndex) => {
+            (currentLesson.rules || []).forEach((rule, ruleIndex) => {
+                const choices = pickDistractors(allRules, rule);
+                if (choices.length === 3) {
+                    generated.push(Q(
+                        `${currentLesson.title}의 핵심 규칙 ${ruleIndex + 1}로 알맞은 것은?`,
+                        rule,
+                        choices,
+                        `${currentLesson.title}에서 기억할 규칙은 “${rule}”입니다.`
+                    ));
+                }
+            });
+
+            (currentLesson.examples || []).forEach((example, exampleIndex) => {
+                const [sentence, meaning] = example;
+                const choices = pickDistractors(allMeanings, meaning);
+                if (sentence && meaning && choices.length === 3) {
+                    generated.push(Q(
+                        `다음 예문의 뜻으로 알맞은 것은? ${sentence}`,
+                        meaning,
+                        choices,
+                        `${currentLesson.title} 예문 ${exampleIndex + 1}: ${sentence} — ${meaning}`
+                    ));
+                }
+            });
+        });
+
+        return generated;
+    }
+
     window.EnglishGrammarQuiz = {
         generate(unitId, count = 10) {
-            const bank = banks[unitId] || [];
-            const result = [];
-            while (result.length < count && bank.length) result.push(vary(bank[result.length % bank.length]));
-            return shuffle(result);
+            const pool = [...(banks[unitId] || []), ...buildLearningQuestions(unitId)];
+            const seen = new Set();
+            const distinct = shuffle(pool).filter(item => {
+                const key = `${item.question}\u0000${item.answer}`;
+                if (seen.has(key)) return false;
+                seen.add(key);
+                return true;
+            });
+            return distinct.slice(0, count).map(vary);
         }
     };
 })();
