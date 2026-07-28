@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v28-subject-integration';
+const CACHE_NAME = 'smart-study-v29-reading-ui';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

@@ -33,5 +33,7 @@ assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their 
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');
 assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note handling is missing');
 assert(timer.includes("UserSession.updateDailyStat('time', subject, safeSeconds)"), 'Active study time must update user/admin statistics');
+assert(read('reading.html').includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
+assert(!read('reading.html').includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');
 
 console.log('Subject integration verified:', subjects.join(', '));
