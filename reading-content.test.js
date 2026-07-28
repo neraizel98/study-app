@@ -11,6 +11,14 @@ for (const file of ['ReadingData.js', 'ReadingPassages.js']) {
 const level = sandbox.window.ReadingData.levels.level1;
 const passages = sandbox.window.ReadingPassages;
 assert.equal(level.units.length, 8);
+for (const unit of level.units) {
+    for (const lesson of unit.lessons) {
+        assert.ok(lesson.examples.length >= 2, `${unit.id}/${lesson.title}: detailed examples`);
+        lesson.examples.forEach(example => {
+            assert.ok(example.label && example.text && example.analysis, `${lesson.title}: incomplete example`);
+        });
+    }
+}
 assert.ok(passages.length >= 10);
 assert.ok(passages.some(item => item.title.includes('홍길동')));
 assert.ok(passages.some(item => item.title.includes('심청')));

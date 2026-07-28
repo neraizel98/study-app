@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v26-korean-reading';
+const CACHE_NAME = 'smart-study-v27-reading-examples';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
