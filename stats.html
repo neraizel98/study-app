@@ -20,6 +20,7 @@
             min-height: 100vh;
             padding-bottom: 60px;
         }
+        .blob { pointer-events: none; }
         .stats-wrap {
             width: 100%;
             max-width: 900px;
@@ -232,8 +233,8 @@
 
         <!-- Page tabs -->
         <div class="page-tabs" id="pageTabs">
-            <button class="page-tab active" data-tab="stats">📈 학습 통계</button>
-            <button class="page-tab"        data-tab="quiz" >📋 퀴즈 기록</button>
+            <button class="page-tab active" data-tab="stats" onclick="switchStatsView('stats', this)">📈 학습 통계</button>
+            <button class="page-tab" data-tab="quiz" onclick="switchStatsView('quiz', this)">📋 퀴즈 기록</button>
         </div>
 
         <!-- ── Stats view ── -->
@@ -742,6 +743,19 @@
         el.innerHTML = html;
     }
 
+    function switchStatsView(tab, button) {
+        document.querySelectorAll('.page-tab').forEach(item => item.classList.remove('active'));
+        if (button) button.classList.add('active');
+        document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
+        document.getElementById('quizView').style.display = tab === 'quiz' ? '' : 'none';
+        if (tab === 'quiz') {
+            const week = filterWeek(loadReports(), weekStart(weekOffset));
+            renderQuizSubjectTabs(week);
+            renderQuizList(week, _quizSubj);
+        }
+    }
+    window.switchStatsView = switchStatsView;
+
     // ─────────────────────────────────────────────
     //  Event listeners
     // ─────────────────────────────────────────────
@@ -760,16 +774,7 @@
     document.getElementById('pageTabs').addEventListener('click', e => {
         const btn = e.target.closest('.page-tab');
         if (!btn) return;
-        document.querySelectorAll('.page-tab').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        const tab = btn.dataset.tab;
-        document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
-        document.getElementById('quizView').style.display  = tab === 'quiz'  ? '' : 'none';
-        if (tab === 'quiz') {
-            const week = filterWeek(loadReports(), weekStart(weekOffset));
-            renderQuizSubjectTabs(week);
-            renderQuizList(week, _quizSubj);
-        }
+        switchStatsView(btn.dataset.tab, btn);
     });
 
     document.getElementById('quizSubjTabs').addEventListener('click', e => {
