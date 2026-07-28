@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v31-learning-readability';
+const CACHE_NAME = 'smart-study-v32-reading-vocabulary';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -57,6 +57,7 @@ const STATIC_ASSETS = [
     './reading.html',
     './ReadingData.js',
     './ReadingPassages.js',
+    './ReadingVocabulary.js',
     './ReadingApp.js',
     './MathDataExtra.js',
     './manifest.json',

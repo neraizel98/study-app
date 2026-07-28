@@ -82,9 +82,9 @@
         return Utils.shuffle(pool)[0];
     }
 
-    function validatePassage(item) {
+    function validatePassage(item, questionPool = item?.questions || []) {
         if (!item || !Array.isArray(item.lines) || item.lines.length < 5) return false;
-        return item.questions.every(question => {
+        return questionPool.every(question => {
             const normalized = question.choices.map(value => String(value).normalize('NFC').trim().toLocaleLowerCase());
             return question.id && question.evidence && question.choices.length === 4
                 && new Set(normalized).size === 4 && normalized.includes(String(question.answer).normalize('NFC').trim().toLocaleLowerCase());
@@ -100,19 +100,34 @@
         }
         const band = typeof AdaptiveQuiz !== 'undefined' ? AdaptiveQuiz.getBand('reading', context(), aliases()) : { name: 'standard', wrongRatio: .45 };
         passage = selectPassage(band);
-        if (!validatePassage(passage)) {
+        const vocabularyQuestions = typeof ReadingVocabulary !== 'undefined'
+            ? ReadingVocabulary.getQuestions(passage)
+            : [];
+        const questionPool = [...passage.questions, ...vocabularyQuestions];
+        if (!validatePassage(passage, questionPool)) {
             alert('검증된 지문을 불러오지 못했습니다.');
             return;
         }
         const wrongIds = new Set(activeWrongItems().filter(item => item.passageId === passage.id).map(item => item.questionId));
-        const base = passage.questions.filter(item => {
+        const base = questionPool.filter(item => {
             if (reviewMode) return wrongIds.has(item.id);
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
             return true;
         });
-        const priority = base.filter(item => wrongIds.has(item.id));
-        const fresh = Utils.shuffle(base.filter(item => !wrongIds.has(item.id)));
-        questions = [...Utils.shuffle(priority), ...fresh].slice(0, Math.min(5, base.length));
+        const priority = Utils.shuffle(base.filter(item => wrongIds.has(item.id)));
+        const selected = [];
+        const addUnique = item => {
+            if (item && !selected.some(existing => existing.id === item.id)) selected.push(item);
+        };
+        priority.slice(0, 3).forEach(addUnique);
+        if (!reviewMode) {
+            const vocabulary = Utils.shuffle(base.filter(item => item.vocabularyType));
+            vocabulary.slice(0, 2).forEach(addUnique);
+        }
+        Utils.shuffle(base).forEach(item => {
+            if (selected.length < Math.min(5, base.length)) addUnique(item);
+        });
+        questions = selected.slice(0, Math.min(5, base.length));
         if (!questions.length) { alert('다시 풀 오답이 없습니다.'); location.href = 'wrong_note.html'; return; }
         rememberPassage(passage.id);
         questionIndex = 0; score = 0; answered = false; attempts = [];

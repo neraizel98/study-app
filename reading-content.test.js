@@ -4,12 +4,13 @@ const vm = require('node:vm');
 
 const sandbox = { window: {} };
 vm.createContext(sandbox);
-for (const file of ['ReadingData.js', 'ReadingPassages.js']) {
+for (const file of ['ReadingData.js', 'ReadingPassages.js', 'ReadingVocabulary.js']) {
     vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file });
 }
 
 const level = sandbox.window.ReadingData.levels.level1;
 const passages = sandbox.window.ReadingPassages;
+const vocabulary = sandbox.window.ReadingVocabulary;
 assert.equal(level.units.length, 8);
 for (const unit of level.units) {
     for (const lesson of unit.lessons) {
@@ -38,7 +39,10 @@ for (const passage of passages) {
     assert.ok(level.units.some(unit => unit.id === passage.unitId), `${passage.id}: unknown unit`);
     assert.ok(passage.lines.length >= 5 && passage.lines.length <= 30, `${passage.id}: passage length`);
     assert.ok(passage.questions.length >= 3 && passage.questions.length <= 5, `${passage.id}: question count`);
-    for (const question of passage.questions) {
+    const vocabularyQuestions = vocabulary.getQuestions(passage);
+    assert.ok(vocabularyQuestions.some(question => question.vocabularyType === 'context'), `${passage.id}: context vocabulary`);
+    assert.ok(vocabularyQuestions.filter(question => question.vocabularyType === 'idiom').length >= 8, `${passage.id}: idiom pool`);
+    for (const question of [...passage.questions, ...vocabularyQuestions]) {
         assert.ok(!questionIds.has(question.id), `duplicate question id: ${question.id}`);
         questionIds.add(question.id);
         assert.ok(question.evidence, `${question.id}: missing evidence`);
@@ -48,6 +52,7 @@ for (const passage of passages) {
         assert.equal(normalized.filter(value => value === question.answer.normalize('NFC').trim().toLocaleLowerCase()).length, 1, `${question.id}: answer uniqueness`);
     }
 }
+assert.ok(vocabulary.idioms.length >= 8, 'idiom variety');
 assert.deepEqual([...difficulties].sort(), ['challenge', 'foundation', 'standard']);
 assert.ok(categories.size >= 7);
 console.log(`Reading content verified: ${passages.length} passages, ${questionIds.size} questions.`);
