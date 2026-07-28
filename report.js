@@ -5,11 +5,11 @@ const WRONG_NOTE_PREFIX = 'SmartStudy_WrongAnswers_';
 
 const SubjectRegistry = {
     definitions: {
+        reading: { name: '국어 독해력', icon: '📖', path: 'reading.html' },
         english: { name: '영어 단어', icon: '🇬🇧', path: 'english.html' },
         grammar: { name: '영어 문법', icon: '📘', path: 'english_grammar.html' },
         hanja: { name: '한자', icon: '🏮', path: 'hanja.html' },
-        math: { name: '수학', icon: '📐', path: 'math.html' },
-        reading: { name: '국어 독해력', icon: '📖', path: 'reading.html' }
+        math: { name: '수학', icon: '📐', path: 'math.html' }
     },
     get(subject) {
         return this.definitions[subject] || {
@@ -54,7 +54,12 @@ const UserSession = {
                 totalCorrect: 0,
                 badges: [],
                 attendance: { totalDays: 0, currentStreak: 0, lastCheckIn: null },
-                dailyStats: { date: new Date().toISOString().split('T')[0], studyTime: { math: 0, english: 0, hanja: 0 }, quizScores: { math: [], english: [], hanja: [] }, subjectsStudied: [] },
+                dailyStats: {
+                    date: new Date().toISOString().split('T')[0],
+                    studyTime: { reading: 0, english: 0, grammar: 0, hanja: 0, math: 0 },
+                    quizScores: { reading: [], english: [], grammar: [], hanja: [], math: [] },
+                    subjectsStudied: []
+                },
                 weeklyStats: { weekStart: '', studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
                 subjectStats: {},
                 missionProgress: { daily: {}, weekly: {}, achievements: {}, rewards: { daily: null, weekly: null, achievements: [] } }

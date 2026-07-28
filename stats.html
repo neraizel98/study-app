@@ -267,7 +267,8 @@
         <div class="chart-card">
             <div class="chart-title">🎯 레벨·단원별 달성률</div>
             <div class="subj-tabs" id="subjTabs">
-                <button class="subj-tab active" data-subj="english">🇬🇧 영어</button>
+                <button class="subj-tab active" data-subj="reading">📖 국어 독해력</button>
+                <button class="subj-tab"        data-subj="english">🇬🇧 영어</button>
                 <button class="subj-tab"        data-subj="grammar">📘 영문법</button>
                 <button class="subj-tab"        data-subj="hanja">🏮 한자</button>
                 <button class="subj-tab"        data-subj="math">📐 수학</button>
@@ -295,7 +296,7 @@
 
     </div><!-- .stats-wrap -->
 
-    <script src="report.js?v=20260728-quiz-details"></script>
+    <script src="report.js?v=20260728-subject-integration"></script>
     <script src="firebase-sync.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
@@ -332,7 +333,7 @@
     //  State
     // ─────────────────────────────────────────────
     let weekOffset    = 0;   // 0 = current week
-    let levelSubject  = 'english';
+    let levelSubject  = 'reading';
     const charts      = {};
 
     // ─────────────────────────────────────────────
@@ -400,7 +401,7 @@
     //  Chart 1 — daily study time (stacked bar)
     // ─────────────────────────────────────────────
     function buildStudyTimeChart(weekReports) {
-        const d = { english: Array(7).fill(0), grammar: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
+        const d = { reading: Array(7).fill(0), english: Array(7).fill(0), grammar: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
         weekReports.forEach(r => {
             const dow = (new Date(r.date).getDay() + 6) % 7;
             if (d[r.subject] !== undefined) d[r.subject][dow] += (r.timeSpentSeconds || 0) / 60;
@@ -415,7 +416,7 @@
             type: 'bar',
             data: {
                 labels: DAYS,
-                datasets: ['english','grammar','hanja','math','reading'].map(s => ({
+                datasets: ['reading','english','grammar','hanja','math'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  d[s].map(v => +v.toFixed(1)),
                     backgroundColor: SUBJ_COLOR[s].bg,
@@ -441,7 +442,7 @@
     function buildScoreTrendChart(allReports) {
         const N = 8;
         const labels = [];
-        const series = { english: [], grammar: [], hanja: [], math: [] };
+        const series = { reading: [], english: [], grammar: [], hanja: [], math: [] };
         let anyData = false;
 
         for (let i = N - 1; i >= 0; i--) {
@@ -449,7 +450,7 @@
             const mn = ws.getMonth() + 1, dn = ws.getDate();
             labels.push(`${mn}/${dn}`);
             const wr = filterWeek(allReports, ws);
-            ['english','grammar','hanja','math','reading'].forEach(s => {
+            ['reading','english','grammar','hanja','math'].forEach(s => {
                 const sub = wr.filter(r => r.subject === s);
                 if (sub.length > 0) {
                     series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
@@ -468,7 +469,7 @@
             type: 'line',
             data: {
                 labels,
-                datasets: ['english','grammar','hanja','math','reading'].map(s => ({
+                datasets: ['reading','english','grammar','hanja','math'].map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  series[s],
                     borderColor:     SUBJ_COLOR[s].bd,
