@@ -1,5 +1,8 @@
 (function () {
     const $ = id => document.getElementById(id);
+    const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({
+        '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+    })[character]);
     const params = new URLSearchParams(location.search);
     const levelId = 'level1';
     const level = () => ReadingData.levels[levelId];
@@ -30,7 +33,14 @@
         $('lessonTitle').textContent = item.title;
         $('principle').textContent = item.principle;
         $('rules').innerHTML = item.rules.map((rule, index) => `<li><strong>${index + 1}.</strong> ${rule}</li>`).join('');
-        $('studyExample').textContent = item.example;
+        const examples = item.examples || [{ label: '적용 예문', text: item.example, analysis: item.tip }];
+        $('studyExamples').innerHTML = examples.map(example => `
+            <article class="study-example">
+                <strong>${escapeHTML(example.label)}</strong>
+                <div class="study-example-text">${escapeHTML(example.text)}</div>
+                <p class="study-example-analysis">🔎 ${escapeHTML(example.analysis)}</p>
+            </article>
+        `).join('');
         $('tip').textContent = item.tip;
         $('prevLesson').disabled = lessonIndex === 0;
         $('nextLesson').disabled = !hasNextLesson();

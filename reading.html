@@ -11,7 +11,7 @@
         .reading-shell{width:min(1060px,94%);margin:auto;padding:28px 0 70px}.top-nav{display:flex;justify-content:space-between;margin-bottom:20px}.top-nav a{color:#e5e7eb;text-decoration:none}
         .hero{padding:28px;border-radius:24px;background:linear-gradient(135deg,rgba(251,113,133,.18),rgba(245,158,11,.12));border:1px solid rgba(251,113,133,.28)}.hero h1{margin:3px 0;font-size:clamp(30px,5vw,48px)}.hero p{color:#cbd5e1}
         .mode-row,.unit-tabs,.lesson-tabs{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin:18px 0}.mode-btn,.unit-btn,.lesson-btn{border:1px solid #3b4659;background:#111827;color:#d1d5db;padding:11px 16px;border-radius:999px;cursor:pointer}.active{background:linear-gradient(135deg,var(--reading),var(--reading2))!important;color:#1f1304!important;border-color:transparent!important;font-weight:800}
-        .card{background:rgba(15,23,42,.9);border:1px solid #334155;border-radius:22px;padding:clamp(20px,4vw,38px)}.label{color:#fda4af;font-weight:900}.principle{font-size:1.18rem;line-height:1.75;padding:17px;border-left:4px solid var(--reading);background:rgba(251,113,133,.08);border-radius:12px}.rules{display:grid;gap:10px;list-style:none;padding:0}.rules li{padding:13px 15px;border-radius:12px;background:#111b2c}.study-example,.tip{padding:15px;border-radius:12px;background:rgba(245,158,11,.09);line-height:1.7}.tip{color:#fde68a}
+        .card{background:rgba(15,23,42,.9);border:1px solid #334155;border-radius:22px;padding:clamp(20px,4vw,38px)}.label{color:#fda4af;font-weight:900}.principle{font-size:1.18rem;line-height:1.75;padding:17px;border-left:4px solid var(--reading);background:rgba(251,113,133,.08);border-radius:12px}.rules{display:grid;gap:10px;list-style:none;padding:0}.rules li{padding:13px 15px;border-radius:12px;background:#111b2c}.study-examples{display:grid;gap:14px}.study-example{padding:18px;border-radius:15px;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2)}.study-example strong{display:block;color:#fbbf24;margin-bottom:10px}.study-example-text{white-space:pre-line;line-height:1.85;color:#f8fafc}.study-example-analysis{margin:12px 0 0;padding:11px 13px;border-radius:10px;background:rgba(59,130,246,.09);color:#bfdbfe;line-height:1.7}.tip{padding:15px;border-radius:12px;background:rgba(245,158,11,.09);line-height:1.7;color:#fde68a}
         .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.actions button,.primary{border:0;border-radius:12px;padding:13px 18px;background:#263449;color:#fff;font-weight:800;cursor:pointer}.primary{background:linear-gradient(135deg,var(--reading),var(--reading2));color:#271506}
         .passage-head{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.passage-meta{color:#fda4af;font-size:.85rem;font-weight:700}.passage{margin:20px 0;padding:22px;background:#fffaf2;color:#24201d;border-radius:16px;line-height:1.9;font-family:Georgia,'Noto Serif KR',serif}.passage p{margin:0 0 9px}.line-no{display:inline-block;width:25px;color:#9a7561;font-size:.78rem}.source-note{font-size:.75rem;color:#64748b;text-align:right}
         .quiz-question{font-size:1.25rem;line-height:1.55;margin:25px 0 16px}.choices{display:grid;gap:10px}.answer{display:flex;gap:12px;text-align:left;padding:14px;border:1px solid #3b4659;background:#111b2c;color:#fff;border-radius:13px;cursor:pointer}.answer span{display:grid;place-items:center;min-width:29px;height:29px;border-radius:50%;background:#334155}.answer.correct{border-color:#34d399;background:rgba(16,185,129,.16)}.answer.wrong{border-color:#fb7185;background:rgba(244,63,94,.15)}.feedback{margin-top:18px;padding:16px;border-radius:12px}.feedback.good{background:rgba(16,185,129,.14)}.feedback.bad{background:rgba(244,63,94,.14)}
@@ -30,7 +30,7 @@
     <section id="studyPanel" class="card">
         <div class="label">핵심 독해 원리</div><h2 id="lessonTitle"></h2><p id="principle" class="principle"></p>
         <h3>읽는 순서</h3><ul id="rules" class="rules"></ul>
-        <h3>간단한 예</h3><p id="studyExample" class="study-example"></p><p class="tip">💡 <span id="tip"></span></p>
+        <h3>예문으로 구조 확인하기</h3><div id="studyExamples" class="study-examples"></div><p class="tip">💡 <span id="tip"></span></p>
         <div class="actions"><button id="prevLesson">← 이전</button><button id="nextLesson">다음 →</button><button id="startQuiz" class="primary">랜덤 지문 풀기</button></div>
     </section>
     <section id="quizPanel" class="card" hidden>
@@ -46,9 +46,9 @@
 <script src="report.js?v=20260728-reading"></script>
 <script src="study-timer.js?v=20260728-reading"></script>
 <script src="kakao-share.js"></script>
-<script src="ReadingData.js?v=20260728-lv1"></script>
+<script src="ReadingData.js?v=20260728-examples"></script>
 <script src="ReadingPassages.js?v=20260728-lv1"></script>
-<script src="ReadingApp.js?v=20260728-lv1"></script>
+<script src="ReadingApp.js?v=20260728-examples"></script>
 <script src="firebase-sync.js"></script>
 <script src="version-check.js"></script>
 </body>
