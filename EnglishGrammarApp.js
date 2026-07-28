@@ -33,6 +33,8 @@
     const levelLabel = () => levelLabels[stageId];
     const context = () => `grammar:${stageId}`;
     const aliases = () => [`영문법 ${levelLabel()}`, `영어 문법 ${levelLabel()}`, stage().title];
+    const hasNextLesson = () => lessonIndex < unit().lessons.length - 1
+        || stage().units.findIndex(item => item.id === unit().id) < stage().units.length - 1;
 
     function setUrl() {
         const urlMode = requestedReview && mode === 'quiz' ? 'review' : mode;
@@ -65,7 +67,7 @@
         ).join('');
         $('tip').textContent = item.tip;
         $('prevLesson').disabled = lessonIndex === 0;
-        $('nextLesson').disabled = lessonIndex === unit().lessons.length - 1;
+        $('nextLesson').disabled = !hasNextLesson();
         $('studyPanel').hidden = false;
         $('quizPanel').hidden = true;
         mode = 'study';
@@ -294,7 +296,18 @@
             speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(button.dataset.speak));
         });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
-        $('nextLesson').addEventListener('click', () => { if (lessonIndex < unit().lessons.length - 1) { lessonIndex++; renderSelectors(); renderStudy(); } });
+        $('nextLesson').addEventListener('click', () => {
+            if (lessonIndex < unit().lessons.length - 1) {
+                lessonIndex++;
+            } else {
+                const nextUnit = stage().units[stage().units.findIndex(item => item.id === unit().id) + 1];
+                if (!nextUnit) return;
+                unitId = nextUnit.id;
+                lessonIndex = 0;
+            }
+            renderSelectors();
+            renderStudy();
+        });
         $('startQuiz').addEventListener('click', startQuiz);
         $('quizChoices').addEventListener('click', e => {
             const button = e.target.closest('[data-answer]'); if (button) chooseAnswer(Number(button.dataset.answer));
