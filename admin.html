@@ -135,6 +135,13 @@
             <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
             <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:14px;" id="studyTimeInputs">
                 <div style="text-align:center;">
+                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📖 국어 독해력</div>
+                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
+                        <input type="number" id="stcReading" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
+                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
+                    </div>
+                </div>
+                <div style="text-align:center;">
                     <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🇬🇧 영어</div>
                     <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
                         <input type="number" id="stcEnglish" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
@@ -162,13 +169,6 @@
                         <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
                     </div>
                 </div>
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📖 국어 독해력</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcReading" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
             </div>
             <div style="display:flex;align-items:center;gap:10px;">
                 <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d1117;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
@@ -191,8 +191,8 @@
         </div>
     </div>
 
-    <script src="report.js?v=20260728-goals"></script>
-    <script src="study-timer.js"></script>
+    <script src="report.js?v=20260728-subject-integration"></script>
+    <script src="study-timer.js?v=20260728-subject-integration"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Admin 설정
@@ -207,7 +207,7 @@
         appId:             "1:994757323327:web:c0f68e95bbeea72a12e68a"
     };
 
-    const SUBJ_NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
+    const SUBJ_NAMES  = { reading:'국어 독해력', english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학' };
     const SUBJ_ICONS  = { english:'🇬🇧', grammar:'📘', hanja:'🏮', math:'📐', reading:'📖' };
     const SUBJ_COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
 
@@ -551,7 +551,7 @@
 
     // ── 과목별 통계 탭 ──
     function buildSubjectTab(reports) {
-        const subjects = ['english', 'grammar', 'hanja', 'math', 'reading'];
+        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
         const pctOf = (r, field) => r.totalQuestions > 0 ? (r[field] ?? r.initialScore) / r.totalQuestions * 100 : 0;
         const avg = (arr, field = 'initialScore') => arr.length ? Math.round(arr.reduce((a, r) => a + pctOf(r, field), 0) / arr.length) : null;
 
@@ -693,7 +693,7 @@
     function buildStudyDetailTab(reports) {
         if (!reports.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
 
-        const subjects = ['english', 'grammar', 'hanja', 'math', 'reading'];
+        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
         let html = '<div class="chart-title">레벨별 학습 현황</div>';
         let anyData = false;
 
@@ -766,7 +766,7 @@
 
     // ── 오답 현황 탭 ──
     function buildWrongTab(wrongAnswers) {
-        const subjects = ['english', 'grammar', 'hanja', 'math', 'reading'];
+        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
         let html = '<div class="chart-title">오답 현황</div>';
         let anyData = false;
 
@@ -882,7 +882,7 @@
         }
         window._adminWeekCharts = {};
 
-        const SUBJ   = ['english','grammar','hanja','math','reading'];
+        const SUBJ   = ['reading','english','grammar','hanja','math'];
         const NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
         const COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
         const FILL   = { english:'rgba(79,172,254,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)', reading:'rgba(251,113,133,0.75)' };

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v27-reading-examples';
+const CACHE_NAME = 'smart-study-v28-subject-integration';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

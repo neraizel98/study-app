@@ -288,6 +288,15 @@
             </div>
             
             <div class="menu-grid" style="margin-top: 40px;">
+                <!-- Korean Reading -->
+                <a href="reading.html" class="lang-card">
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('reading')" title="아들에게 국어 독해 학습 요청 보내기">💬</button>
+                    <span class="badge active">중1 독해</span>
+                    <div class="lang-icon">📖</div>
+                    <div class="lang-name">국어 독해력</div>
+                    <div class="lang-desc">문학·과학·고전을 근거로 정확하게 읽기!</div>
+                </a>
+
                 <!-- English Vocabulary -->
                 <a href="english.html" class="lang-card">
                     <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('english')" title="아들에게 학습 요청 보내기">💬</button>
@@ -299,7 +308,7 @@
 
                 <!-- English Grammar -->
                 <a href="english_grammar.html" class="lang-card">
-                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('english')" title="아들에게 문법 학습 요청 보내기">💬</button>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('grammar')" title="아들에게 문법 학습 요청 보내기">💬</button>
                     <span class="badge active">교과 문법</span>
                     <div class="lang-icon">📘</div>
                     <div class="lang-name">영어 문법</div>
@@ -324,14 +333,6 @@
                     <div class="lang-desc">핵심 원리를 꿰뚫는 수학 학습!</div>
                 </a>
 
-                <!-- Korean Reading -->
-                <a href="reading.html" class="lang-card">
-                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('reading')" title="아들에게 국어 독해 학습 요청 보내기">💬</button>
-                    <span class="badge active">중1 독해</span>
-                    <div class="lang-icon">📖</div>
-                    <div class="lang-name">국어 독해력</div>
-                    <div class="lang-desc">문학·과학·고전을 근거로 정확하게 읽기!</div>
-                </a>
             </div>
             
             <!-- 미션 및 업적 섹션 -->
@@ -360,10 +361,10 @@
     </div>
 
     <script src="kakao-share.js"></script>
-    <script src="report.js?v=20260728-goals"></script>
+    <script src="report.js?v=20260728-subject-integration"></script>
     <script src="firebase-sync.js"></script>
     <script src="ui-core.js"></script>
-    <script src="missions.js?v=20260728-reward-preview"></script>
+    <script src="missions.js?v=20260728-subject-integration"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             const loginSection = document.getElementById('login-section');

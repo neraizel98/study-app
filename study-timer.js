@@ -56,7 +56,19 @@ const StudyTimer = (() => {
     }
 
     function addSeconds(subject, context, seconds) {
-        localStorage.setItem(timeKey(subject, context), String(getAccumulated(subject, context) + seconds));
+        const safeSeconds = Math.max(0, Math.min(2, Number(seconds) || 0));
+        if (!safeSeconds) return;
+        localStorage.setItem(timeKey(subject, context), String(getAccumulated(subject, context) + safeSeconds));
+
+        // 학습 잠금에 사용한 실제 학습 시간도 홈·미션·관리자 통계에 함께 기록한다.
+        if (typeof UserSession !== 'undefined') {
+            const user = UserSession.getUserData();
+            if (user) {
+                user.totalStudyTime = (user.totalStudyTime || 0) + safeSeconds;
+                UserSession.saveUserData(user);
+                UserSession.updateDailyStat('time', subject, safeSeconds);
+            }
+        }
     }
 
     function resetAccumulated(subject, context = 'default') {
