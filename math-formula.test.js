@@ -70,6 +70,24 @@ assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry
 assert(app.includes('const oppositeMidpoint'), 'Pentagon height must end at the exact opposite-side midpoint');
 assert(app.includes('vertices.slice(2, -1)'), 'Polygon diagonals must use actual polygon vertices');
 assert(app.includes('cx="260" cy="162.7"'), 'Centroid must be placed at the exact median intersection');
+assert(app.includes('M132 220 A42 42 0 0 0 116 187'), 'Angle arc must be centered on vertex A');
+assert(app.includes('circle cx="260" cy="151.3" r="78.7"'), 'Incircle must be tangent to all three triangle sides');
+assert(app.includes('M260 30 L450 140 L260 250 L70 140 Z'), 'Rhombus must use perpendicular diagonals');
+
+context.window.addEventListener = () => {};
+vm.runInContext(app, context);
+const appApi = vm.runInContext('MathFormulaApp', context);
+formulas.forEach(item => {
+    const calculationQuestions = Array.from(appApi.createCalculationQuestions(item.number));
+    assert.strictEqual(calculationQuestions.length, 3, `Formula ${item.number} must show exactly three calculation questions`);
+    calculationQuestions.forEach(question => {
+        assert.strictEqual(question.kind, 'choice', `Formula ${item.number} must not show written questions`);
+        assert.strictEqual(question.level, '계산 연습', `Formula ${item.number} must not expose difficulty categories`);
+        assert.strictEqual(new Set(Array.from(question.choices)).size, question.choices.length,
+            `Formula ${item.number} calculation quiz has duplicate choices`);
+    });
+});
+assert(!app.includes('${qi + 1}. ${q.level}'), 'Quiz difficulty category must not be rendered');
 
 const randomizedPrompts = new Set(Array.from({ length: 12 }, () => quiz.create(4)[0].prompt));
 assert(randomizedPrompts.size > 1, 'Quiz values must vary between attempts');

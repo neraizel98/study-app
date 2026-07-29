@@ -46,11 +46,11 @@ const MathFormulaApp = (() => {
                 ${label(270,242,'a²')}${label(360,149,'b²')}${label(215,78,'c²','#f9a8d4')}</svg>`;
         }
         if (type === 'incircle') {
-            return `<svg ${common}><path d="M75 225 L445 225 L285 42 Z" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
-                <circle cx="276" cy="161" r="64" fill="#f472b618" stroke="#f9a8d4" stroke-width="3"/>
-                <circle cx="276" cy="161" r="5" fill="#ffd166"/><line x1="276" y1="161" x2="276" y2="225" stroke="#ffd166" stroke-width="3"/>
-                <path d="M270 219h12v-12" fill="none" stroke="#ffd166" stroke-width="2"/>
-                ${label(300,197,'r','#ffd166')}${label(260,252,'a')}${label(160,125,'c')}${label(385,126,'b')}</svg>`;
+            return `<svg ${common}><path d="M70 230 L450 230 L260 40 Z" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
+                <circle cx="260" cy="151.3" r="78.7" fill="#f472b618" stroke="#f9a8d4" stroke-width="3"/>
+                <circle cx="260" cy="151.3" r="5" fill="#ffd166"/><line x1="260" y1="151.3" x2="260" y2="230" stroke="#ffd166" stroke-width="3"/>
+                <path d="M260 218h-12v12" fill="none" stroke="#ffd166" stroke-width="2.5"/>
+                ${label(279,193,'r','#ffd166')}${label(260,256,'a')}${label(150,126,'c')}${label(370,126,'b')}</svg>`;
         }
         if (type === 'circumcircle') {
             return `<svg ${common}><circle cx="260" cy="140" r="110" fill="#4facfe0d" stroke="#60a5fa" stroke-width="3"/>
@@ -61,8 +61,8 @@ const MathFormulaApp = (() => {
         if (type === 'angle-area') {
             return `<svg ${common}><path d="M90 220 L438 220 L220 52 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
                 <line x1="220" y1="52" x2="220" y2="220" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                <path d="M120 220 A38 38 0 0 1 139 188" fill="none" stroke="#f9a8d4" stroke-width="4"/>
-                ${label(264,249,'c')}${label(140,123,'b')}${label(123,205,'A','#f9a8d4')}${label(239,140,'h = b sin A','#ffd166')}</svg>`;
+                <path d="M132 220 A42 42 0 0 0 116 187" fill="none" stroke="#f9a8d4" stroke-width="4"/>
+                ${label(264,249,'c')}${label(140,123,'b')}${label(118,210,'A','#f9a8d4')}${label(239,140,'h = b sin A','#ffd166')}</svg>`;
         }
         if (type === 'square' || type === 'rectangle' || type === 'rectangle-diagonal') {
             const x = type === 'square' ? 145 : 105;
@@ -72,10 +72,16 @@ const MathFormulaApp = (() => {
                 ${label(260,252,'a')}${label(x + width + 28,140,type === 'square' ? 'a' : 'b')}</svg>`;
         }
         if (type === 'rhombus' || type === 'quadrilateral') {
-            return `<svg ${common}><path d="M70 150 L270 35 L455 135 L245 238 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="70" y1="150" x2="455" y2="135" stroke="#f9a8d4" stroke-width="3"/>
-                <line x1="270" y1="35" x2="245" y2="238" stroke="#34d399" stroke-width="3"/>
-                ${label(365,120,'d₁','#f9a8d4')}${label(285,78,'d₂','#34d399')}${type === 'quadrilateral' ? label(280,145,'θ','#ffd166') : ''}</svg>`;
+            const shape = type === 'rhombus' ? 'M260 30 L450 140 L260 250 L70 140 Z' : 'M70 150 L270 35 L455 135 L245 238 Z';
+            const diagonal1 = type === 'rhombus'
+                ? '<line x1="70" y1="140" x2="450" y2="140" stroke="#f9a8d4" stroke-width="3"/>'
+                : '<line x1="70" y1="150" x2="455" y2="135" stroke="#f9a8d4" stroke-width="3"/>';
+            const diagonal2 = type === 'rhombus'
+                ? '<line x1="260" y1="30" x2="260" y2="250" stroke="#34d399" stroke-width="3"/><path d="M260 140h13v13" fill="none" stroke="#ffd166" stroke-width="2.5"/>'
+                : '<line x1="270" y1="35" x2="245" y2="238" stroke="#34d399" stroke-width="3"/>';
+            return `<svg ${common}><path d="${shape}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ${diagonal1}${diagonal2}
+                ${label(365,125,'d₁','#f9a8d4')}${label(282,75,'d₂','#34d399')}${type === 'quadrilateral' ? label(280,145,'θ','#ffd166') : ''}</svg>`;
         }
         if (type === 'parallelogram' || type === 'trapezoid') {
             const path = type === 'trapezoid' ? 'M90 225 L430 225 L350 65 L165 65 Z' : 'M80 225 L395 225 L455 65 L140 65 Z';
@@ -279,7 +285,7 @@ const MathFormulaApp = (() => {
 
     function renderQuiz() {
         if (!questions.length || questions[0].formulaNumber !== formulaNumber) {
-            questions = window.MathFormulaQuiz.create(formulaNumber).map(q => ({ ...q, formulaNumber }));
+            questions = createCalculationQuestions(formulaNumber).map(q => ({ ...q, formulaNumber }));
             answers = {};
             submitted = false;
         }
@@ -288,11 +294,11 @@ const MathFormulaApp = (() => {
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')} · RANDOM QUIZ</div>
                 <h2>${item.title} 퀴즈</h2>
-                <p class="lesson-summary">기본 연산, 심화 연산, 서술형 문제가 매번 새로운 수치로 출제됩니다.</p>
+                <p class="lesson-summary">공식을 직접 대입하고 계산하는 객관식 문제 3개가 매번 새로운 수치로 출제됩니다.</p>
                 <div class="quiz-list">${questions.map((q, qi) => {
                     const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
-                        <div class="quiz-label">${qi + 1}. ${q.level}</div>
+                        <div class="quiz-label">계산 문제 ${qi + 1}</div>
                         <h3>${q.prompt}</h3>
                         ${q.kind === 'choice'
                             ? `<div class="choice-grid">${q.choices.map(choice => `<button class="choice-btn ${String(answers[qi]) === choice ? 'selected' : ''}" data-question="${qi}" data-answer="${choice}" ${submitted ? 'disabled' : ''}>${choice}${q.unit ? ` ${q.unit}` : ''}</button>`).join('')}</div>`
@@ -310,6 +316,29 @@ const MathFormulaApp = (() => {
                 ${submitted ? `<div class="score-box">${questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length} / ${questions.length} 정답</div>` : ''}
             </article>`;
         bindQuiz();
+    }
+
+    function createCalculationQuestions(number) {
+        const result = [];
+        const seen = new Set();
+        for (let attempt = 0; attempt < 40 && result.length < 3; attempt += 1) {
+            window.MathFormulaQuiz.create(number)
+                .filter(question => question.kind === 'choice')
+                .forEach(question => {
+                    const key = `${question.prompt}|${question.answer}`;
+                    if (result.length < 3 && !seen.has(key)) {
+                        seen.add(key);
+                        result.push({ ...question, level: '계산 연습' });
+                    }
+                });
+        }
+        if (result.length < 3 && result.length) {
+            while (result.length < 3) {
+                const source = result[result.length % result.length];
+                result.push({ ...source, prompt: `한 번 더 정확히 계산해 보세요. ${source.prompt}` });
+            }
+        }
+        return result;
     }
 
     function bindQuiz() {
@@ -370,7 +399,7 @@ const MathFormulaApp = (() => {
         render();
     }
 
-    return { init };
+    return { init, createCalculationQuestions };
 })();
 
 window.addEventListener('DOMContentLoaded', MathFormulaApp.init);
