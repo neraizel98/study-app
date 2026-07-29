@@ -11,9 +11,10 @@ const MathFormulaTime = (() => {
     const currentMode = () =>
         document.getElementById('quizModeBtn')?.classList.contains('active') ? 'quiz' : 'study';
 
+    // 모바일 브라우저/WebView에서는 화면을 보고 있어도 hasFocus()가 false를
+    // 반환하는 경우가 있다. 실제 학습 여부는 화면 표시 상태와 최근 입력으로 판정한다.
     const isActive = () =>
         document.visibilityState === 'visible'
-        && document.hasFocus()
         && Date.now() - lastActivityAt <= IDLE_LIMIT_MS;
 
     function record(mode, seconds) {
@@ -26,11 +27,10 @@ const MathFormulaTime = (() => {
         const studySeconds = Math.floor(pendingStudy);
         const quizSeconds = Math.floor(pendingQuiz);
         if (studySeconds <= 0 && quizSeconds <= 0) return;
-        pendingStudy -= studySeconds;
-        pendingQuiz -= quizSeconds;
-
         const user = typeof UserSession !== 'undefined' ? UserSession.getUserData() : null;
         if (!user) return;
+        pendingStudy -= studySeconds;
+        pendingQuiz -= quizSeconds;
         const today = StudyPeriods.daily();
         const previous = user.formulaStudyTime || {};
         const sameDay = previous.date === today;
@@ -42,6 +42,9 @@ const MathFormulaTime = (() => {
             totalQuizSeconds: (previous.totalQuizSeconds || 0) + quizSeconds
         };
         UserSession.saveUserData(user);
+        window.dispatchEvent(new CustomEvent('formula-time-saved', {
+            detail: { userId: user.id, formulaStudyTime: user.formulaStudyTime }
+        }));
     }
 
     function tick() {

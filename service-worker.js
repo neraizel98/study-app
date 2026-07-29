@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v41-formula-mobile-menu';
+const CACHE_NAME = 'smart-study-v42-formula-time-dashboard';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
