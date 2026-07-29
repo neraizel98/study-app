@@ -27,9 +27,10 @@ assert(stats.includes("const d = { reading: Array(7).fill(0)"), 'Reading study-t
 assert(stats.includes("const series = { reading: []"), 'Reading score series is missing');
 assert(stats.includes('data-subj="reading"'), 'Reading level/unit statistics tab is missing');
 
-assert(admin.includes('id="stcGrammar"'), 'Grammar study-time setting is missing');
-assert(admin.includes('id="stcReading"'), 'Reading study-time setting is missing');
-assert((admin.match(/id="stcReading"/g) || []).length === 1, 'Reading study-time setting must have one input');
+assert(admin.includes('StudyTimer.LEVELS[subject]'), 'Admin study-time settings must be generated from the shared level registry');
+assert(admin.includes('data-study-subject="${subject}"'), 'Admin level setting is missing the subject key');
+assert(admin.includes('data-study-level="${level.key}"'), 'Admin level setting is missing the level key');
+assert(admin.includes('cfg.levels[subject][level]'), 'Admin must save level-specific study times');
 
 assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their subjects from the registry');
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');

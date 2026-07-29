@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v32-reading-vocabulary';
+const CACHE_NAME = 'smart-study-v33-level-study-times';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

@@ -133,48 +133,12 @@
         <div id="userListView">
         <div class="chart-card" id="studyTimeConfig" style="margin-bottom:20px;">
             <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
-            <div style="display:grid; grid-template-columns:repeat(auto-fit,minmax(120px,1fr)); gap:12px; margin-bottom:14px;" id="studyTimeInputs">
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📖 국어 독해력</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcReading" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🇬🇧 영어</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcEnglish" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📘 영문법</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcGrammar" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">🏮 한자</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcHanja" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
-                <div style="text-align:center;">
-                    <div style="font-size:0.8rem;color:var(--text-sub);margin-bottom:6px;">📐 수학</div>
-                    <div style="display:flex;align-items:center;justify-content:center;gap:6px;">
-                        <input type="number" id="stcMath" min="0" max="60" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,0.06);color:var(--text);text-align:center;font-family:var(--font);font-size:0.95rem;">
-                        <span style="font-size:0.8rem;color:var(--text-sub);">분</span>
-                    </div>
-                </div>
-            </div>
+            <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px;" id="studyTimeInputs"></div>
             <div style="display:flex;align-items:center;gap:10px;">
                 <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d1117;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
                 <span id="stcSavedMsg" style="font-size:0.8rem;color:#56d364;display:none;">✅ 저장됨</span>
             </div>
-            <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">0분으로 설정하면 해당 과목은 시간 제한 없이 바로 퀴즈 가능</div>
+            <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">레벨별 기준시간과 최근 퀴즈 3회 평균에 따른 시간 중 더 긴 시간을 적용합니다. 평균 90점 이상은 면제되며, 0분은 점수 기록이 없을 때 바로 퀴즈가 가능합니다.</div>
         </div>
 
         <!-- ── 유저 목록 ── -->
@@ -192,7 +156,7 @@
     </div>
 
     <script src="report.js?v=20260728-subject-integration"></script>
-    <script src="study-timer.js?v=20260728-subject-integration"></script>
+    <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Admin 설정
@@ -1014,21 +978,36 @@
     // ─────────────────────────────────────────────
     function loadStudyTimeConfig() {
         const cfg = StudyTimer.getConfig();
-        document.getElementById('stcEnglish').value = cfg.english ?? 5;
-        document.getElementById('stcGrammar').value = cfg.grammar ?? 5;
-        document.getElementById('stcHanja').value   = cfg.hanja   ?? 5;
-        document.getElementById('stcMath').value    = cfg.math    ?? 5;
-        document.getElementById('stcReading').value = cfg.reading ?? 5;
+        const subjectOrder = ['reading', 'english', 'grammar', 'hanja', 'math'];
+        const inputs = document.getElementById('studyTimeInputs');
+        inputs.innerHTML = subjectOrder.map(subject => {
+            const info = SubjectRegistry.get(subject);
+            const levels = StudyTimer.LEVELS[subject] || [];
+            return `<section style="padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);">
+                <div style="font-size:.88rem;font-weight:800;margin-bottom:10px;">${info.icon} ${info.name}</div>
+                <div style="display:grid;gap:8px;">${levels.map(level => {
+                    const value = cfg.levels?.[subject]?.[level.key] ?? cfg[subject] ?? StudyTimer.DEFAULTS[subject];
+                    return `<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--text-sub);">
+                        <span>${level.label}</span>
+                        <span style="display:flex;align-items:center;gap:5px;">
+                            <input type="number" min="0" max="60" value="${value}" data-study-subject="${subject}" data-study-level="${level.key}" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,.06);color:var(--text);text-align:center;font-family:var(--font);font-size:.9rem;">
+                            <span>분</span>
+                        </span>
+                    </label>`;
+                }).join('')}</div>
+            </section>`;
+        }).join('');
     }
 
     function saveStudyTimeConfig() {
-        const cfg = {
-            english: parseInt(document.getElementById('stcEnglish').value, 10) || 0,
-            grammar: parseInt(document.getElementById('stcGrammar').value, 10) || 0,
-            hanja:   parseInt(document.getElementById('stcHanja').value,   10) || 0,
-            math:    parseInt(document.getElementById('stcMath').value,    10) || 0,
-            reading: parseInt(document.getElementById('stcReading').value, 10) || 0,
-        };
+        const cfg = StudyTimer.getConfig();
+        cfg.levels = {};
+        document.querySelectorAll('[data-study-subject][data-study-level]').forEach(input => {
+            const subject = input.dataset.studySubject;
+            const level = input.dataset.studyLevel;
+            cfg.levels[subject] = cfg.levels[subject] || {};
+            cfg.levels[subject][level] = Math.max(0, parseInt(input.value, 10) || 0);
+        });
         StudyTimer.setConfig(cfg);
         // 전체 유저 공유: admin.html 자체 db로 Firestore에 직접 업로드
         if (db) {
