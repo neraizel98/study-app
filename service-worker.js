@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v37-formula-admin-time';
+const CACHE_NAME = 'smart-study-v38-formula-30';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -61,7 +61,9 @@ const STATIC_ASSETS = [
     './ReadingApp.js',
     './math_formula.html',
     './MathFormulaData.js',
+    './MathFormulaDataExtra.js',
     './MathFormulaQuiz.js',
+    './MathFormulaQuizExtra.js',
     './MathFormulaApp.js',
     './MathFormulaTime.js',
     './MathDataExtra.js',

@@ -4,6 +4,8 @@ const MathFormulaApp = (() => {
     let questions = [];
     let answers = {};
     let submitted = false;
+    const allLevels = ['초6', '중1', '중2', '중3', '고1', '고2', '고3'];
+    let selectedLevels = new Set(allLevels);
 
     const $ = id => document.getElementById(id);
     const formula = () => MATH_FORMULAS.find(item => item.number === formulaNumber);
@@ -22,6 +24,9 @@ const MathFormulaApp = (() => {
         }
     };
     const setUrl = () => history.replaceState(null, '', `?formula=${formulaNumber}&mode=${mode}`);
+    const visibleFormulaNumbers = () => MATH_FORMULAS
+        .filter(item => selectedLevels.has(item.level))
+        .map(item => item.number);
 
     function diagramSvg(type) {
         const common = 'viewBox="0 0 520 270" role="img" aria-label="공식 원리 도형"';
@@ -59,6 +64,43 @@ const MathFormulaApp = (() => {
                 <path d="M120 220 A38 38 0 0 1 139 188" fill="none" stroke="#f9a8d4" stroke-width="4"/>
                 ${label(264,249,'c')}${label(140,123,'b')}${label(123,205,'A','#f9a8d4')}${label(239,140,'h = b sin A','#ffd166')}</svg>`;
         }
+        if (type === 'square' || type === 'rectangle' || type === 'rectangle-diagonal') {
+            const x = type === 'square' ? 145 : 105;
+            const width = type === 'square' ? 230 : 310;
+            return `<svg ${common}><rect x="${x}" y="42" width="${width}" height="185" rx="3" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ${type === 'rectangle-diagonal' ? `<line x1="${x}" y1="227" x2="${x + width}" y2="42" stroke="#f9a8d4" stroke-width="4"/>${label(270,120,'d','#f9a8d4')}` : ''}
+                ${label(260,252,'a')}${label(x + width + 28,140,type === 'square' ? 'a' : 'b')}</svg>`;
+        }
+        if (type === 'rhombus' || type === 'quadrilateral') {
+            return `<svg ${common}><path d="M70 150 L270 35 L455 135 L245 238 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="70" y1="150" x2="455" y2="135" stroke="#f9a8d4" stroke-width="3"/>
+                <line x1="270" y1="35" x2="245" y2="238" stroke="#34d399" stroke-width="3"/>
+                ${label(365,120,'d₁','#f9a8d4')}${label(285,78,'d₂','#34d399')}${type === 'quadrilateral' ? label(280,145,'θ','#ffd166') : ''}</svg>`;
+        }
+        if (type === 'parallelogram' || type === 'trapezoid') {
+            const path = type === 'trapezoid' ? 'M90 225 L430 225 L350 65 L165 65 Z' : 'M80 225 L395 225 L455 65 L140 65 Z';
+            return `<svg ${common}><path d="${path}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="${type === 'trapezoid' ? 165 : 140}" y1="65" x2="${type === 'trapezoid' ? 165 : 140}" y2="225" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+                ${label(260,252,type === 'trapezoid' ? 'b' : 'a')}${label(177,150,'h','#ffd166')}${type === 'trapezoid' ? label(258,52,'a') : ''}</svg>`;
+        }
+        if (['pentagon','pentagon-height','pentagon-diagonal','hexagon','regular-polygon','polygon-diagonals','polygon-angles'].includes(type)) {
+            const sides = type === 'hexagon' ? 6 : type.startsWith('pentagon') ? 5 : 8;
+            const points = Array.from({length:sides}, (_, i) => {
+                const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
+                return `${260 + 170 * Math.cos(angle)},${140 + 105 * Math.sin(angle)}`;
+            }).join(' ');
+            const extras = type === 'pentagon-height' ? '<line x1="260" y1="35" x2="260" y2="225" stroke="#ffd166" stroke-width="3"/>' :
+                type === 'pentagon-diagonal' || type === 'polygon-diagonals' ? '<path d="M260 35 L422 108 L360 225 L160 225 L98 108 L360 225 L260 35" fill="none" stroke="#f9a8d4" stroke-width="3"/>' :
+                type === 'polygon-angles' ? '<line x1="260" y1="35" x2="422" y2="108" stroke="#ffd166" stroke-width="2"/><line x1="260" y1="35" x2="380" y2="214" stroke="#ffd166" stroke-width="2"/>' : '';
+            return `<svg ${common}><polygon points="${points}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>${extras}${label(260,260,'정다각형')}</svg>`;
+        }
+        if (type === 'vector' || type === 'coordinates' || type === 'centroid' || type === 'median') {
+            return `<svg ${common}><path d="M95 225 L430 225 L275 42 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ${type === 'centroid' || type === 'median' ? '<line x1="275" y1="42" x2="262" y2="225" stroke="#ffd166" stroke-width="3"/><circle cx="267" cy="164" r="6" fill="#f9a8d4"/>' : ''}
+                ${type === 'vector' ? '<path d="M95 225 L430 225 M95 225 L275 42" stroke="#34d399" stroke-width="6"/>' : ''}
+                ${type === 'coordinates' ? '<path d="M60 235 H465 M75 255 V25" stroke="#70839f" stroke-width="2"/>' : ''}
+                ${label(275,252,'B-C')}${label(292,150,type === 'centroid' ? 'G' : type === 'median' ? 'M' : '')}</svg>`;
+        }
         if (type === 'isosceles' || type === 'heron') {
             return `<svg ${common}><path d="M80 225 L440 225 L260 48 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
                 <line x1="260" y1="48" x2="260" y2="225" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
@@ -75,16 +117,51 @@ const MathFormulaApp = (() => {
     }
 
     function renderNavigation() {
-        $('formulaGroups').innerHTML = MATH_FORMULA_GROUPS.map(group => `
+        $('formulaGroups').innerHTML = `
+            <section class="level-filter" aria-label="교과 수준 필터">
+                <div class="filter-heading"><strong>교과 수준 필터</strong><button type="button" id="toggleAllLevels">전체 ${selectedLevels.size === allLevels.length ? '해제' : '선택'}</button></div>
+                <div class="level-filter-options">${allLevels.map(level => `
+                    <label><input type="checkbox" value="${level}" ${selectedLevels.has(level) ? 'checked' : ''}><span>${level}</span></label>
+                `).join('')}</div>
+                <p>${selectedLevels.size ? `선택한 ${selectedLevels.size}개 수준의 공식만 표시합니다.` : '한 개 이상의 수준을 선택해 주세요.'}</p>
+            </section>
+        ` + MATH_FORMULA_GROUPS.map(group => {
+            const visibleItems = group.items.filter(number => selectedLevels.has(MATH_FORMULAS.find(item => item.number === number)?.level));
+            if (!visibleItems.length) return '';
+            return `
             <section class="formula-group">
                 <div class="group-heading"><strong>${group.title}</strong><span>${group.range}</span></div>
-                <div class="formula-menu">${group.items.map(number => {
-                    const item = MATH_FORMULAS[number - 1];
+                <div class="formula-menu">${visibleItems.map(number => {
+                    const item = MATH_FORMULAS.find(entry => entry.number === number);
                     return `<button class="formula-menu-btn ${number === formulaNumber ? 'active' : ''}" data-formula="${number}">
-                        <span>${String(number).padStart(3, '0')}</span>${item.title}
+                        <span class="formula-number">${String(number).padStart(3, '0')}</span>
+                        <span class="formula-title">${item.title}</span>
+                        <span class="level-badge level-${item.level}">${item.level}</span>
                     </button>`;
                 }).join('')}</div>
-            </section>`).join('');
+            </section>`;
+        }).join('');
+        document.querySelectorAll('.level-filter input').forEach(input => input.addEventListener('change', () => {
+            if (input.checked) selectedLevels.add(input.value);
+            else selectedLevels.delete(input.value);
+            if (!selectedLevels.size) {
+                selectedLevels.add(input.value);
+                input.checked = true;
+                return;
+            }
+            const visible = visibleFormulaNumbers();
+            if (!visible.includes(formulaNumber)) {
+                formulaNumber = visible[0];
+                questions = [];
+                submitted = false;
+                setUrl();
+            }
+            render();
+        }));
+        $('toggleAllLevels').addEventListener('click', () => {
+            selectedLevels = selectedLevels.size === allLevels.length ? new Set([formula().level]) : new Set(allLevels);
+            render();
+        });
         document.querySelectorAll('[data-formula]').forEach(button => {
             button.addEventListener('click', () => {
                 formulaNumber = Number(button.dataset.formula);
@@ -170,7 +247,7 @@ const MathFormulaApp = (() => {
 
     function renderQuiz() {
         if (!questions.length || questions[0].formulaNumber !== formulaNumber) {
-            questions = MathFormulaQuiz.create(formulaNumber).map(q => ({ ...q, formulaNumber }));
+            questions = window.MathFormulaQuiz.create(formulaNumber).map(q => ({ ...q, formulaNumber }));
             answers = {};
             submitted = false;
         }
@@ -181,7 +258,7 @@ const MathFormulaApp = (() => {
                 <h2>${item.title} 퀴즈</h2>
                 <p class="lesson-summary">기본 연산, 심화 연산, 서술형 문제가 매번 새로운 수치로 출제됩니다.</p>
                 <div class="quiz-list">${questions.map((q, qi) => {
-                    const result = submitted ? MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
+                    const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
                         <div class="quiz-label">${qi + 1}. ${q.level}</div>
                         <h3>${q.prompt}</h3>
@@ -198,7 +275,7 @@ const MathFormulaApp = (() => {
                     <button id="newQuizBtn" class="secondary-btn">🔄 다른 문제</button>
                     <button id="submitQuizBtn" class="primary-btn">${submitted ? '다시 채점하기' : '채점하기'}</button>
                 </div>
-                ${submitted ? `<div class="score-box">${questions.filter((q, i) => MathFormulaQuiz.isCorrect(q, answers[i])).length} / ${questions.length} 정답</div>` : ''}
+                ${submitted ? `<div class="score-box">${questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length} / ${questions.length} 정답</div>` : ''}
             </article>`;
         bindQuiz();
     }
@@ -236,19 +313,27 @@ const MathFormulaApp = (() => {
         else renderStudy();
         $('prevBtn').disabled = formulaNumber === 1;
         $('nextBtn').disabled = formulaNumber === 10;
+        const visible = visibleFormulaNumbers();
+        const visibleIndex = visible.indexOf(formulaNumber);
+        $('prevBtn').disabled = visibleIndex <= 0;
+        $('nextBtn').disabled = visibleIndex < 0 || visibleIndex === visible.length - 1;
     }
 
     function init() {
         const params = new URLSearchParams(location.search);
-        formulaNumber = Math.min(10, Math.max(1, Number(params.get('formula')) || 1));
+        formulaNumber = Math.min(MATH_FORMULAS.length, Math.max(1, Number(params.get('formula')) || 1));
         mode = params.get('mode') === 'quiz' ? 'quiz' : 'study';
         $('studyModeBtn').addEventListener('click', () => { mode = 'study'; setUrl(); render(); });
         $('quizModeBtn').addEventListener('click', () => { mode = 'quiz'; questions = []; setUrl(); render(); });
         $('prevBtn').addEventListener('click', () => {
-            if (formulaNumber > 1) { formulaNumber -= 1; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
+            const visible = visibleFormulaNumbers();
+            const index = visible.indexOf(formulaNumber);
+            if (index > 0) { formulaNumber = visible[index - 1]; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
         });
         $('nextBtn').addEventListener('click', () => {
-            if (formulaNumber < 10) { formulaNumber += 1; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
+            const visible = visibleFormulaNumbers();
+            const index = visible.indexOf(formulaNumber);
+            if (index >= 0 && index < visible.length - 1) { formulaNumber = visible[index + 1]; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
         });
         render();
     }
