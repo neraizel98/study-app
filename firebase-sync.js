@@ -238,6 +238,8 @@ function _mergeUserData(local, cloud, userId) {
         badges:          _unionArr(l.badges || [], c.badges || []),
         attendance:      finalAttendance,
         dailyStats:      _mergeDailyStats(l.dailyStats, c.dailyStats),
+        weeklyStats:     _mergePeriodStats(l.weeklyStats, c.weeklyStats, 'weekStart'),
+        monthlyStats:    _mergePeriodStats(l.monthlyStats, c.monthlyStats, 'monthStart'),
         missionProgress: _mergeMissionProgress(l.missionProgress, c.missionProgress),
     };
 }
@@ -256,9 +258,19 @@ function _mergeDailyStats(local, cloud) {
         subjects.forEach(s => {
             studyTime[s] = Math.max(l.studyTime?.[s] || 0, c.studyTime?.[s] || 0);
         });
+        const quizScores = {};
+        new Set([
+            ...Object.keys(l.quizScores || {}),
+            ...Object.keys(c.quizScores || {})
+        ]).forEach(s => {
+            const localScores = l.quizScores?.[s] || [];
+            const cloudScores = c.quizScores?.[s] || [];
+            quizScores[s] = localScores.length >= cloudScores.length ? localScores : cloudScores;
+        });
         return {
             date: l.date,
             studyTime,
+            quizScores,
             subjectsStudied: [...new Set([
                 ...(l.subjectsStudied || []),
                 ...(c.subjectsStudied || [])
@@ -271,27 +283,58 @@ function _mergeDailyStats(local, cloud) {
     return c;
 }
 
+function _mergePeriodStats(local, cloud, periodField) {
+    const l = local || {};
+    const c = cloud || {};
+    if ((l[periodField] || '') !== (c[periodField] || '')) {
+        return (l[periodField] || '') >= (c[periodField] || '') ? l : c;
+    }
+    return {
+        ...c,
+        ...l,
+        [periodField]: l[periodField] || c[periodField] || '',
+        studyTime: Math.max(l.studyTime || 0, c.studyTime || 0),
+        attendanceDays: Math.max(l.attendanceDays || 0, c.attendanceDays || 0),
+        quizCount: Math.max(l.quizCount || 0, c.quizCount || 0),
+        subjectsStudied: [...new Set([...(l.subjectsStudied || []), ...(c.subjectsStudied || [])])]
+    };
+}
+
 function _mergeMissionProgress(local, cloud) {
     const l = local || {};
     const c = cloud || {};
-    const result = {};
-    const keys = new Set([...Object.keys(l), ...Object.keys(c)]);
-    keys.forEach(k => {
-        const lv = l[k];
-        const cv = c[k];
-        if (lv === undefined) { result[k] = cv; return; }
-        if (cv === undefined) { result[k] = lv; return; }
-        if (typeof lv === 'object' && lv !== null) {
-            result[k] = {
-                ...cv, ...lv,
-                count:     Math.max(lv.count || 0, cv.count || 0),
-                completed: lv.completed || cv.completed || false
-            };
-        } else if (typeof lv === 'number') {
-            result[k] = Math.max(lv, typeof cv === 'number' ? cv : 0);
-        } else {
-            result[k] = lv;
+    const result = { ...c, ...l, periods: { ...(c.periods || {}), ...(l.periods || {}) } };
+    ['daily', 'weekly', 'monthly'].forEach(category => {
+        const lp = l.periods?.[category] || '';
+        const cp = c.periods?.[category] || '';
+        if (lp !== cp) {
+            const useLocal = lp >= cp;
+            result.periods[category] = useLocal ? lp : cp;
+            result[category] = useLocal ? (l[category] || {}) : (c[category] || {});
+            return;
         }
+        const merged = {};
+        const localMissions = l[category] || {};
+        const cloudMissions = c[category] || {};
+        new Set([...Object.keys(localMissions), ...Object.keys(cloudMissions)]).forEach(id => {
+            const lm = localMissions[id] || {};
+            const cm = cloudMissions[id] || {};
+            merged[id] = {
+                ...cm,
+                ...lm,
+                progress: Math.max(lm.progress || 0, cm.progress || 0),
+                completed: Boolean(lm.completed || cm.completed)
+            };
+        });
+        result[category] = merged;
+    });
+    result.rewards = {};
+    ['daily', 'weekly', 'monthly'].forEach(category => {
+        const lr = l.rewards?.[category];
+        const cr = c.rewards?.[category];
+        if (!lr) result.rewards[category] = cr || null;
+        else if (!cr) result.rewards[category] = lr;
+        else result.rewards[category] = (lr.period || '') >= (cr.period || '') ? lr : cr;
     });
     return result;
 }

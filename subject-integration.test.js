@@ -33,6 +33,11 @@ assert(admin.includes('data-study-level="${level.key}"'), 'Admin level setting i
 assert(admin.includes('cfg.levels[subject][level]'), 'Admin must save level-specific study times');
 
 assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their subjects from the registry');
+assert(missions.includes("['daily', 'weekly', 'monthly']"), 'Mission completion and rewards must cover all three periods');
+assert(missions.includes("makeSection('🏆', '이번 달 장기 목표', 'monthly'"), 'Monthly mission section is missing');
+assert(report.includes('monthlyStats:'), 'Monthly mission statistics are missing');
+assert(report.includes('StudyPeriods.weekly()'), 'Monday-based weekly period is missing');
+assert(admin.includes("label:'월간 목표'"), 'Admin monthly reward management is missing');
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');
 assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note handling is missing');
 assert(timer.includes("UserSession.updateDailyStat('time', subject, safeSeconds)"), 'Active study time must update user/admin statistics');
