@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v34-mission-periods';
+const CACHE_NAME = 'smart-study-v35-math-formulas';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -59,6 +59,10 @@ const STATIC_ASSETS = [
     './ReadingPassages.js',
     './ReadingVocabulary.js',
     './ReadingApp.js',
+    './math_formula.html',
+    './MathFormulaData.js',
+    './MathFormulaQuiz.js',
+    './MathFormulaApp.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
