@@ -11,9 +11,9 @@
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="MathFormulaData.js?v=20260729-formula-1-10"></script>
-    <script defer src="MathFormulaQuiz.js?v=20260729-formula-1-10"></script>
-    <script defer src="MathFormulaApp.js?v=20260729-formula-1-10"></script>
+    <script defer src="MathFormulaData.js?v=20260729-foundations"></script>
+    <script defer src="MathFormulaQuiz.js?v=20260729-foundations"></script>
+    <script defer src="MathFormulaApp.js?v=20260729-foundations"></script>
     <style>
         :root{--formula:#a78bfa;--formula2:#38bdf8;--panel:#111c31;--panel2:#16243b}
         *{box-sizing:border-box}
@@ -60,7 +60,25 @@
         .symbol{display:grid;place-items:center;min-height:46px;border-radius:10px;background:#0c1627;color:#7dd3fc;font-weight:800;overflow:auto}
         .symbol-item p{margin:0;color:#c2cee0;font-size:.9rem;line-height:1.85}
         .knowledge-list{display:grid;gap:9px;margin:0;padding:0;list-style:none}
-        .knowledge-list li{padding:12px 15px;border-left:4px solid #38bdf8;border-radius:8px;background:#132037;color:#d5dfed}
+        .knowledge-list li{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 15px;border-left:4px solid #38bdf8;border-radius:8px;background:#132037;color:#d5dfed}
+        .knowledge-link{flex-shrink:0;padding:5px 9px;border:1px solid rgba(125,211,252,.3);border-radius:9px;background:rgba(56,189,248,.08);color:#bae6fd;text-decoration:none;font-size:.72rem;font-weight:800}
+        .knowledge-link:hover{background:rgba(56,189,248,.16)}
+        .guide-link{border-color:rgba(167,139,250,.35);background:rgba(139,92,246,.1);color:#ddd6fe}
+        .foundation-section{scroll-margin-top:20px}
+        .foundation-intro{margin:-5px 0 15px;color:#9fb0c7;font-size:.88rem;line-height:1.8}
+        .foundation-list{display:grid;gap:12px}
+        .foundation-card{scroll-margin-top:20px;border:1px solid rgba(167,139,250,.32);border-radius:16px;background:linear-gradient(135deg,rgba(139,92,246,.08),rgba(56,189,248,.045));overflow:hidden}
+        .foundation-card summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 17px;cursor:pointer;font-weight:900;color:#e8e3ff}
+        .foundation-card summary small{padding:3px 8px;border-radius:999px;background:rgba(255,255,255,.06);color:#aebdd2;font-size:.67rem;font-weight:700}
+        .foundation-body{padding:0 17px 17px}
+        .foundation-lead{margin:0 0 12px;padding:12px 14px;border-radius:11px;background:rgba(255,255,255,.045);color:#d8e1ee;line-height:1.95}
+        .foundation-body ol{display:grid;gap:9px;margin:0;padding-left:25px}
+        .foundation-body ol li{padding-left:5px;color:#c7d3e3;line-height:1.95}
+        .foundation-body ol li::marker{color:#a78bfa;font-weight:900}
+        .foundation-example,.foundation-caution{margin-top:13px;padding:12px 14px;border-radius:11px}
+        .foundation-example{background:rgba(52,211,153,.075);border-left:3px solid #34d399}
+        .foundation-caution{background:rgba(251,191,36,.07);border-left:3px solid #fbbf24}
+        .foundation-example p,.foundation-caution p{margin:4px 0 0;color:#ced9e7;line-height:1.9}
         .principle-steps{list-style:none;margin:0;padding:0;display:grid;gap:12px}
         .principle-steps li{display:grid;grid-template-columns:42px 1fr;gap:14px;align-items:start;padding:16px;border-radius:15px;background:#142138}
         .step-number{display:grid;place-items:center;width:38px;height:38px;border-radius:50%;background:linear-gradient(135deg,#8b5cf6,#38bdf8);color:#07101e;font-weight:900}
@@ -93,7 +111,7 @@
         .page-controls button{padding:10px 17px;border:1px solid #30445f;border-radius:11px;background:#142138;color:#dbe7f6;font-weight:800;cursor:pointer}
         .page-controls button:disabled{opacity:.35;cursor:not-allowed}
         @media(max-width:850px){.page{padding:16px 14px 70px}.layout{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.formula-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.symbol-grid{grid-template-columns:1fr}}
-        @media(max-width:520px){.hero{padding:25px 15px}.choice-grid,.formula-menu{grid-template-columns:1fr}.lesson-card{padding:20px 15px}.symbol-item{grid-template-columns:58px 1fr}.top-nav{align-items:flex-start}}
+        @media(max-width:520px){.hero{padding:25px 15px}.choice-grid,.formula-menu{grid-template-columns:1fr}.lesson-card{padding:20px 15px}.symbol-item{grid-template-columns:58px 1fr}.top-nav{align-items:flex-start}.knowledge-list li{align-items:flex-start;flex-direction:column}.foundation-card summary{align-items:flex-start;flex-direction:column}}
     </style>
 </head>
 <body>

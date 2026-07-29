@@ -33,11 +33,12 @@ const MathFormulaApp = (() => {
                 ${label(250,248,'b')}${label(434,145,'a')}${label(245,125,'c')}${label(112,210,'A','#ffd166')}</svg>`;
         }
         if (type === 'pythagorean') {
-            return `<svg ${common}><path d="M175 205 L335 205 L335 70 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <rect x="185" y="205" width="140" height="52" fill="#4facfe28" stroke="#4facfe"/>
-                <rect x="335" y="85" width="52" height="110" fill="#34d39928" stroke="#34d399"/>
-                <path d="M156 181 L307 2 L347 36 L196 216 Z" fill="#f472b628" stroke="#f472b6"/>
-                ${label(255,245,'a²')}${label(363,148,'b²')}${label(235,70,'c²','#f9a8d4')}</svg>`;
+            return `<svg ${common}><path d="M220 180 L320 180 L320 105 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <path d="M220 180 L320 180 L320 280 L220 280 Z" fill="#4facfe28" stroke="#4facfe" stroke-width="2"/>
+                <path d="M320 180 L395 180 L395 105 L320 105 Z" fill="#34d39928" stroke="#34d399" stroke-width="2"/>
+                <path d="M220 180 L320 105 L245 5 L145 80 Z" fill="#f472b628" stroke="#f472b6" stroke-width="2"/>
+                <path d="M302 180v-18h18" fill="none" stroke="#ffd166" stroke-width="3"/>
+                ${label(270,242,'a²')}${label(360,149,'b²')}${label(215,78,'c²','#f9a8d4')}</svg>`;
         }
         if (type === 'incircle') {
             return `<svg ${common}><path d="M75 225 L445 225 L285 42 Z" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
@@ -47,10 +48,10 @@ const MathFormulaApp = (() => {
                 ${label(300,197,'r','#ffd166')}${label(260,252,'a')}${label(160,125,'c')}${label(385,126,'b')}</svg>`;
         }
         if (type === 'circumcircle') {
-            return `<svg ${common}><circle cx="260" cy="138" r="112" fill="#4facfe0d" stroke="#60a5fa" stroke-width="3"/>
-                <path d="M156 96 L354 66 L317 225 Z" fill="#f472b618" stroke="#f9a8d4" stroke-width="4"/>
-                <circle cx="260" cy="138" r="5" fill="#ffd166"/><line x1="260" y1="138" x2="354" y2="66" stroke="#ffd166" stroke-width="3"/>
-                ${label(314,95,'R','#ffd166')}${label(254,69,'c')}${label(352,157,'a')}${label(226,178,'b')}</svg>`;
+            return `<svg ${common}><circle cx="260" cy="140" r="110" fill="#4facfe0d" stroke="#60a5fa" stroke-width="3"/>
+                <path d="M165 85 L355 85 L260 250 Z" fill="#f472b618" stroke="#f9a8d4" stroke-width="4"/>
+                <circle cx="260" cy="140" r="5" fill="#ffd166"/><line x1="260" y1="140" x2="355" y2="85" stroke="#ffd166" stroke-width="3"/>
+                ${label(315,105,'R','#ffd166')}${label(260,75,'c')}${label(327,178,'a')}${label(194,178,'b')}</svg>`;
         }
         if (type === 'angle-area') {
             return `<svg ${common}><path d="M90 220 L438 220 L220 52 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
@@ -66,11 +67,11 @@ const MathFormulaApp = (() => {
         }
         const isHeight = type === 'equilateral-height';
         const isGeneral = type === 'triangle-area';
-        return `<svg ${common}><path d="M85 225 L435 225 L260 48 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-            <line x1="260" y1="48" x2="260" y2="225" stroke="#ffd166" stroke-width="3" ${isGeneral ? 'stroke-dasharray="7 6"' : ''}/>
-            <path d="M260 209h16v16" fill="none" stroke="#ffd166" stroke-width="2"/>
-            ${label(260,252,isGeneral?'b':'a')}${label(156,130,isGeneral?'':'a')}${label(365,130,isGeneral?'':'a')}${label(280,143,'h','#ffd166')}
-            ${isHeight ? label(345,85,'h = (√3/2)a','#34d399') : ''}</svg>`;
+        return `<svg ${common}><path d="M140 235 L380 235 L260 27 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+            <line x1="260" y1="27" x2="260" y2="235" stroke="#ffd166" stroke-width="3" ${isGeneral ? 'stroke-dasharray="7 6"' : ''}/>
+            <path d="M260 219h16v16" fill="none" stroke="#ffd166" stroke-width="2"/>
+            ${label(260,260,isGeneral?'b':'a')}${label(184,130,isGeneral?'':'a')}${label(337,130,isGeneral?'':'a')}${label(280,143,'h','#ffd166')}
+            ${isHeight ? label(363,72,'h = (√3/2)a','#34d399') : ''}</svg>`;
     }
 
     function renderNavigation() {
@@ -98,6 +99,8 @@ const MathFormulaApp = (() => {
 
     function renderStudy() {
         const item = formula();
+        const refs = MATH_PREREQUISITE_REFS[item.number] || [];
+        const guideIds = [...new Set(refs.filter(ref => ref?.guide).map(ref => ref.guide))];
         $('content').innerHTML = `
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')}</div>
@@ -115,8 +118,35 @@ const MathFormulaApp = (() => {
 
                 <section class="content-section">
                     <h3>🧱 먼저 알고 있으면 좋은 내용</h3>
-                    <ul class="knowledge-list">${item.prerequisites.map(text => `<li>${text}</li>`).join('')}</ul>
+                    <ul class="knowledge-list">${item.prerequisites.map((text, index) => {
+                        const ref = refs[index];
+                        let action = '';
+                        if (ref?.formula && ref.formula !== item.number) {
+                            const linked = MATH_FORMULAS.find(entry => entry.number === ref.formula);
+                            action = `<a class="knowledge-link" href="?formula=${ref.formula}&mode=study">공식 ${String(ref.formula).padStart(3, '0')} · ${linked.title} →</a>`;
+                        } else if (ref?.guide) {
+                            action = `<a class="knowledge-link guide-link" href="#guide-${ref.guide}">쉬운 개념 설명 ↓</a>`;
+                        }
+                        return `<li><span>${text}</span>${action}</li>`;
+                    }).join('')}</ul>
                 </section>
+
+                ${guideIds.length ? `<section class="content-section foundation-section">
+                    <h3>🌱 초6을 위한 기초 개념 교실</h3>
+                    <p class="foundation-intro">낯선 기호가 나와도 괜찮습니다. 아래 설명을 먼저 읽고 공식으로 돌아오세요.</p>
+                    <div class="foundation-list">${guideIds.map(id => {
+                        const guide = MATH_FOUNDATION_GUIDES[id];
+                        return `<details class="foundation-card" id="guide-${id}" open>
+                            <summary><span>${guide.title}</span><small>${guide.curriculum}</small></summary>
+                            <div class="foundation-body">
+                                <p class="foundation-lead">${guide.intro}</p>
+                                <ol>${guide.points.map(point => `<li>${point}</li>`).join('')}</ol>
+                                <div class="foundation-example"><strong>예시</strong><p>${guide.example}</p></div>
+                                <div class="foundation-caution"><strong>주의</strong><p>${guide.caution}</p></div>
+                            </div>
+                        </details>`;
+                    }).join('')}</div>
+                </section>` : ''}
 
                 <section class="content-section">
                     <h3>💡 공식이 만들어지는 원리</h3>
