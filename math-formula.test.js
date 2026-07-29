@@ -39,10 +39,12 @@ formulas.forEach(item => {
     assert(item.symbols.length >= 3, `Formula ${item.number} needs symbol explanations`);
     assert(item.steps.length >= 4, `Formula ${item.number} needs principle steps`);
     assert(item.example.work.length >= 2, `Formula ${item.number} needs a worked example`);
-    if (item.number <= 10) {
-        assert.strictEqual(Array.from(prerequisiteRefs[item.number]).length, item.prerequisites.length,
-            `Formula ${item.number} prerequisite links must match its knowledge list`);
-    }
+    assert.strictEqual(Array.from(prerequisiteRefs[item.number]).length, item.prerequisites.length,
+        `Formula ${item.number} prerequisite links must match its knowledge list`);
+    Array.from(prerequisiteRefs[item.number]).filter(Boolean).forEach(ref => {
+        if (ref.guide) assert(foundationGuides[ref.guide], `Formula ${item.number} references missing guide ${ref.guide}`);
+        if (ref.formula) assert(formulas.some(entry => entry.number === ref.formula), `Formula ${item.number} references missing formula ${ref.formula}`);
+    });
 
     const generated = Array.from(quiz.create(item.number));
     assert.deepStrictEqual(generated.map(q => q.level), ['기본 연산', '심화 연산', '서술형']);
@@ -65,6 +67,9 @@ assert(app.includes("const allLevels = ['초6', '중1', '중2', '중3', '고1', 
 assert(app.includes('M220 180 L320 180 L320 105'), 'Pythagorean triangle alignment is missing');
 assert(app.includes('M220 180 L320 105 L245 5 L145 80'), 'Hypotenuse square must share the exact hypotenuse');
 assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry must use a shared radius');
+assert(app.includes('const oppositeMidpoint'), 'Pentagon height must end at the exact opposite-side midpoint');
+assert(app.includes('vertices.slice(2, -1)'), 'Polygon diagonals must use actual polygon vertices');
+assert(app.includes('cx="260" cy="162.7"'), 'Centroid must be placed at the exact median intersection');
 
 const randomizedPrompts = new Set(Array.from({ length: 12 }, () => quiz.create(4)[0].prompt));
 assert(randomizedPrompts.size > 1, 'Quiz values must vary between attempts');
