@@ -89,6 +89,8 @@ assert(app.includes('const oppositeMidpoint'), 'Pentagon height must end at the 
 assert(app.includes('vertices.slice(2, -1)'), 'Polygon diagonals must use actual polygon vertices');
 assert(app.includes('cx="260" cy="162.7"'), 'Centroid must be placed at the exact median intersection');
 assert(app.includes('M132 220 A42 42 0 0 0 116 187'), 'Angle arc must be centered on vertex A');
+assert(app.includes('M170 220 L170 55 A165 165 0 0 1 335 220 Z'), 'Sector radii must have exactly equal SVG lengths');
+assert(app.includes('M170 180 A40 40 0 0 1 210 220'), 'Sector angle arc must be centered on the sector vertex');
 assert(app.includes('circle cx="260" cy="151.3" r="78.7"'), 'Incircle must be tangent to all three triangle sides');
 assert(app.includes('M260 30 L450 140 L260 250 L70 140 Z'), 'Rhombus must use perpendicular diagonals');
 
