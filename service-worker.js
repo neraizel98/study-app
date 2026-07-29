@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v33-level-study-times';
+const CACHE_NAME = 'smart-study-v34-mission-periods';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

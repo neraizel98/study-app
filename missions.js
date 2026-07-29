@@ -1,5 +1,5 @@
 /**
- * missions.js - 단기·주간·장기 목표 및 보상 시스템
+ * missions.js - 일간·주간·월간 목표 및 보상 시스템
  */
 const MissionManager = {
     DEFINITIONS: {
@@ -15,14 +15,11 @@ const MissionManager = {
             { id: 'w_all_subjects', icon: '🧭', title: '전 과목 탐험', desc: '등록된 모든 과목을 한 번 이상 학습하기', target: 'subjects', exp: 250, type: 'subjects_week' },
             { id: 'w_quiz_5', icon: '📝', title: '꾸준한 실전', desc: '이번 주 퀴즈 5회 완료하기', target: 5, exp: 200, type: 'quiz_count_week' }
         ],
-        achievements: [
-            { id: 'a_streak_7', icon: '🔥', title: '7일 연속 출석', desc: '일주일 동안 매일 학습하기', target: 7, exp: 500, type: 'streak' },
-            { id: 'a_streak_30', icon: '🌋', title: '30일 습관 완성', desc: '30일 연속 학습 습관 만들기', target: 30, exp: 1500, type: 'streak' },
-            { id: 'a_time_10h', icon: '⏳', title: '누적 학습 10시간', desc: '차곡차곡 10시간 학습하기', target: 36000, exp: 800, type: 'lifetime_time' },
-            { id: 'a_time_50h', icon: '🚀', title: '누적 학습 50시간', desc: '장기 목표 50시간 달성하기', target: 180000, exp: 2500, type: 'lifetime_time' },
-            { id: 'a_correct_500', icon: '🧠', title: '정답 500개', desc: '누적 정답 수 500개 돌파', target: 500, exp: 700, type: 'total_correct' },
-            { id: 'a_correct_1000', icon: '👑', title: '정답 1,000개', desc: '누적 정답 수 1,000개 돌파', target: 1000, exp: 1200, type: 'total_correct' },
-            { id: 'a_subject_mastery', icon: '🏆', title: '전 과목 꾸준왕', desc: '등록된 모든 과목에서 퀴즈 5회 이상 도전', target: 'subjects', exp: 1500, type: 'subject_mastery' }
+        monthly: [
+            { id: 'm_attendance_20', icon: '🗓️', title: '월간 출석왕', desc: '이번 달 20일 이상 출석하기', target: 20, exp: 700, type: 'attendance_count_month' },
+            { id: 'm_total_time_12h', icon: '⏳', title: '월간 집중 12시간', desc: '이번 달 총 학습 시간 12시간 달성', target: 43200, exp: 900, type: 'total_time_month' },
+            { id: 'm_all_subjects', icon: '🏆', title: '전 과목 완주', desc: '이번 달 등록된 모든 과목을 한 번 이상 학습하기', target: 'subjects', exp: 800, type: 'subjects_month' },
+            { id: 'm_quiz_20', icon: '🧠', title: '월간 실전왕', desc: '이번 달 퀴즈 20회 완료하기', target: 20, exp: 700, type: 'quiz_count_month' }
         ]
     },
 
@@ -38,7 +35,7 @@ const MissionManager = {
             { icon: '🍴', title: '주말 외식 메뉴 선택' },
             { icon: '🗺️', title: '주말 활동 장소 선택' }
         ],
-        achievements: [
+        monthly: [
             { icon: '🕹️', title: '원하는 게임 1개 설치권', note: '부모 승인 필요' },
             { icon: '🎮', title: '자유시간 2시간' },
             { icon: '🎡', title: '원하는 체험·나들이 선택권' }
@@ -46,12 +43,10 @@ const MissionManager = {
     },
 
     registeredSubjects(user = null) {
-        const ids = new Set(typeof SubjectRegistry !== 'undefined'
-            ? SubjectRegistry.list().map(subject => subject.id)
-            : ['english', 'grammar', 'hanja', 'math', 'reading']);
-        Object.keys(user?.subjectStats || {}).forEach(subject => ids.add(subject));
-        Object.keys(user?.dailyStats?.studyTime || {}).forEach(subject => ids.add(subject));
-        return [...ids];
+        if (typeof SubjectRegistry !== 'undefined') {
+            return SubjectRegistry.list().map(subject => subject.id);
+        }
+        return ['reading', 'english', 'grammar', 'hanja', 'math'];
     },
 
     targetOf(mission, user = null) {
@@ -61,6 +56,7 @@ const MissionManager = {
     progressOf(user, mission) {
         const daily = user.dailyStats || {};
         const weekly = user.weeklyStats || {};
+        const monthly = user.monthlyStats || {};
         switch (mission.type || mission.id) {
             case 'd_checkin': return 1;
             case 'time_any': return Math.max(0, ...Object.values(daily.studyTime || {}));
@@ -74,20 +70,33 @@ const MissionManager = {
                 return this.registeredSubjects(user).filter(subject => studied.has(subject)).length;
             }
             case 'quiz_count_week': return weekly.quizCount || 0;
-            case 'streak': return user.attendance?.currentStreak || 0;
-            case 'lifetime_time': return user.totalStudyTime || 0;
-            case 'total_correct': return user.totalCorrect || 0;
-            case 'subject_mastery':
-                return this.registeredSubjects(user).filter(subject => (user.subjectStats?.[subject]?.quizCount || 0) >= 5).length;
+            case 'attendance_count_month': return monthly.attendanceDays || 0;
+            case 'total_time_month': return monthly.studyTime || 0;
+            case 'subjects_month': {
+                const studied = new Set(monthly.subjectsStudied || []);
+                return this.registeredSubjects(user).filter(subject => studied.has(subject)).length;
+            }
+            case 'quiz_count_month': return monthly.quizCount || 0;
             default: return 0;
         }
     },
 
     periodKey(category) {
-        if (category === 'daily') return new Date().toISOString().split('T')[0];
-        const date = new Date();
-        date.setDate(date.getDate() - date.getDay());
-        return date.toISOString().split('T')[0];
+        if (typeof StudyPeriods !== 'undefined' && StudyPeriods[category]) {
+            return StudyPeriods[category]();
+        }
+        const now = new Date();
+        const key = date => {
+            const y = date.getFullYear();
+            const m = String(date.getMonth() + 1).padStart(2, '0');
+            const d = String(date.getDate()).padStart(2, '0');
+            return `${y}-${m}-${d}`;
+        };
+        if (category === 'daily') return key(now);
+        if (category === 'monthly') return key(new Date(now.getFullYear(), now.getMonth(), 1));
+        const monday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        return key(monday);
     },
 
     randomReward(category) {
@@ -104,29 +113,31 @@ const MissionManager = {
         }
     },
 
-    awardReward(user, category, mission = null) {
+    awardReward(user, category) {
         const rewards = user.missionProgress.rewards;
         const reward = this.randomReward(category);
         if (!reward) return;
         const entry = { ...reward, awardedAt: Date.now(), used: false };
-        if (category === 'achievements') {
-            if (rewards.achievements.some(item => item.missionId === mission.id)) return;
-            rewards.achievements.push({ ...entry, missionId: mission.id });
-        } else {
-            const period = this.periodKey(category);
-            if (rewards[category]?.period === period) return;
-            rewards[category] = { ...entry, period };
-        }
+        const period = this.periodKey(category);
+        if (rewards[category]?.period === period) return;
+        rewards[category] = { ...entry, period };
     },
 
     checkMissions() {
         const user = UserSession.getUserData();
         if (!user) return [];
-        user.missionProgress.rewards = user.missionProgress.rewards || { daily: null, weekly: null, achievements: [] };
-        user.missionProgress.rewards.achievements = user.missionProgress.rewards.achievements || [];
+        user.missionProgress = user.missionProgress || {};
+        user.missionProgress.rewards = user.missionProgress.rewards || { daily: null, weekly: null, monthly: null };
+        user.missionProgress.periods = user.missionProgress.periods || {};
         const completedNow = [];
 
-        ['daily', 'weekly', 'achievements'].forEach(category => {
+        ['daily', 'weekly', 'monthly'].forEach(category => {
+            const period = this.periodKey(category);
+            if (user.missionProgress.periods[category] !== period) {
+                user.missionProgress[category] = {};
+                user.missionProgress.periods[category] = period;
+            }
+            user.missionProgress[category] = user.missionProgress[category] || {};
             this.DEFINITIONS[category].forEach(mission => {
                 const target = this.targetOf(mission, user);
                 const previous = user.missionProgress[category][mission.id];
@@ -136,14 +147,13 @@ const MissionManager = {
                     user.missionProgress[category][mission.id] = { progress: target, completed: true, date: Date.now() };
                     this.grantExp(user, mission.exp);
                     completedNow.push(mission);
-                    if (category === 'achievements') this.awardReward(user, category, mission);
                 } else {
                     user.missionProgress[category][mission.id] = { progress, completed: false };
                 }
             });
         });
 
-        ['daily', 'weekly'].forEach(category => {
+        ['daily', 'weekly', 'monthly'].forEach(category => {
             const allDone = this.DEFINITIONS[category].every(mission => user.missionProgress[category][mission.id]?.completed);
             if (allDone) this.awardReward(user, category);
         });
@@ -153,7 +163,6 @@ const MissionManager = {
 
     rewardFor(user, category) {
         const rewards = user.missionProgress.rewards || {};
-        if (category === 'achievements') return (rewards.achievements || []).slice(-1)[0];
         const reward = rewards[category];
         return reward?.period === this.periodKey(category) ? reward : null;
     },
@@ -194,7 +203,7 @@ const MissionManager = {
         container.innerHTML = '<div class="mission-list">'
             + makeSection('📅', '오늘의 단기 목표', 'daily', true)
             + makeSection('📆', '이번 주 목표', 'weekly', false)
-            + makeSection('🏆', '장기 목표 · 명예의 전당', 'achievements', false)
+            + makeSection('🏆', '이번 달 장기 목표', 'monthly', false)
             + '</div>';
     },
 
@@ -220,15 +229,14 @@ const MissionManager = {
     formatProgress(mission, value) {
         const current = value || 0;
         const target = this.targetOf(mission, UserSession.getUserData());
-        if (['time_any', 'total_time', 'lifetime_time'].includes(mission.type)) {
+        if (['time_any', 'total_time', 'total_time_month'].includes(mission.type)) {
             const currentMinutes = Math.floor(current / 60);
             const targetMinutes = Math.floor(target / 60);
             return `${currentMinutes}분 / ${targetMinutes}분`;
         }
-        if (['subjects_today', 'subjects_week', 'subject_mastery'].includes(mission.type)) return `${current} / ${target}과목`;
-        if (['attendance_count', 'streak'].includes(mission.type)) return `${current} / ${target}일`;
-        if (mission.type === 'quiz_count_week') return `${current} / ${target}회`;
-        if (mission.type === 'total_correct') return `${current} / ${target}개`;
+        if (['subjects_today', 'subjects_week', 'subjects_month'].includes(mission.type)) return `${current} / ${target}과목`;
+        if (['attendance_count', 'attendance_count_month'].includes(mission.type)) return `${current} / ${target}일`;
+        if (['quiz_count_week', 'quiz_count_month'].includes(mission.type)) return `${current} / ${target}회`;
         if (mission.type === 'best_score_today') return `${current}점 / ${target}점`;
         return `${current} / ${target}`;
     }

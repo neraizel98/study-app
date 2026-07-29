@@ -29,6 +29,27 @@ const SubjectRegistry = {
 };
 window.SubjectRegistry = SubjectRegistry;
 
+const StudyPeriods = {
+    dateKey(date = new Date()) {
+        const y = date.getFullYear();
+        const m = String(date.getMonth() + 1).padStart(2, '0');
+        const d = String(date.getDate()).padStart(2, '0');
+        return `${y}-${m}-${d}`;
+    },
+    daily(date = new Date()) {
+        return this.dateKey(date);
+    },
+    weekly(date = new Date()) {
+        const monday = new Date(date.getFullYear(), date.getMonth(), date.getDate());
+        monday.setDate(monday.getDate() - ((monday.getDay() + 6) % 7));
+        return this.dateKey(monday);
+    },
+    monthly(date = new Date()) {
+        return this.dateKey(new Date(date.getFullYear(), date.getMonth(), 1));
+    }
+};
+window.StudyPeriods = StudyPeriods;
+
 /**
  * 전역 사용자 세션 관리
  */
@@ -55,14 +76,23 @@ const UserSession = {
                 badges: [],
                 attendance: { totalDays: 0, currentStreak: 0, lastCheckIn: null },
                 dailyStats: {
-                    date: new Date().toISOString().split('T')[0],
+                    date: StudyPeriods.daily(),
                     studyTime: { reading: 0, english: 0, grammar: 0, hanja: 0, math: 0 },
                     quizScores: { reading: [], english: [], grammar: [], hanja: [], math: [] },
                     subjectsStudied: []
                 },
-                weeklyStats: { weekStart: '', studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
+                weeklyStats: { weekStart: StudyPeriods.weekly(), studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
+                monthlyStats: { monthStart: StudyPeriods.monthly(), studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
                 subjectStats: {},
-                missionProgress: { daily: {}, weekly: {}, achievements: {}, rewards: { daily: null, weekly: null, achievements: [] } }
+                missionProgress: {
+                    daily: {}, weekly: {}, monthly: {},
+                    periods: {
+                        daily: StudyPeriods.daily(),
+                        weekly: StudyPeriods.weekly(),
+                        monthly: StudyPeriods.monthly()
+                    },
+                    rewards: { daily: null, weekly: null, monthly: null }
+                }
             };
             
             if (!raw) return defaultData;
@@ -83,31 +113,47 @@ const UserSession = {
             } else {
                 data.missionProgress.daily = data.missionProgress.daily || {};
                 data.missionProgress.weekly = data.missionProgress.weekly || {};
-                data.missionProgress.achievements = data.missionProgress.achievements || {};
-                data.missionProgress.rewards = data.missionProgress.rewards || { daily: null, weekly: null, achievements: [] };
-                data.missionProgress.rewards.achievements = data.missionProgress.rewards.achievements || [];
+                data.missionProgress.monthly = data.missionProgress.monthly || {};
+                data.missionProgress.periods = data.missionProgress.periods || { daily: '', weekly: '', monthly: '' };
+                data.missionProgress.rewards = data.missionProgress.rewards || { daily: null, weekly: null, monthly: null };
             }
             data.subjectStats = data.subjectStats || {};
             data.weeklyStats = data.weeklyStats || defaultData.weeklyStats;
             data.weeklyStats.subjectsStudied = data.weeklyStats.subjectsStudied || [];
             data.weeklyStats.quizCount = data.weeklyStats.quizCount || 0;
+            data.monthlyStats = data.monthlyStats || defaultData.monthlyStats;
+            data.monthlyStats.subjectsStudied = data.monthlyStats.subjectsStudied || [];
+            data.monthlyStats.quizCount = data.monthlyStats.quizCount || 0;
 
-            // 날짜가 바뀌었으면 dailyStats 초기화
-            const today = new Date().toISOString().split('T')[0];
+            // 한국 로컬 시간 기준: 매일 0시, 월요일 0시, 매월 1일 0시에 초기화
+            const today = StudyPeriods.daily();
+            const weekStart = StudyPeriods.weekly();
+            const monthStart = StudyPeriods.monthly();
             if (data.dailyStats.date !== today) {
-                data.dailyStats = { ...defaultData.dailyStats, date: today };
-                data.missionProgress.daily = {};
+                data.dailyStats = {
+                    date: today,
+                    studyTime: { ...defaultData.dailyStats.studyTime },
+                    quizScores: { ...defaultData.dailyStats.quizScores },
+                    subjectsStudied: []
+                };
             }
-
-            // 주차가 바뀌었으면 weeklyStats 초기화
-            const weekStart = (() => {
-                const d = new Date();
-                d.setDate(d.getDate() - d.getDay());
-                return d.toISOString().split('T')[0];
-            })();
-            if (!data.weeklyStats || data.weeklyStats.weekStart !== weekStart) {
+            if (data.missionProgress.periods.daily !== today) {
+                data.missionProgress.daily = {};
+                data.missionProgress.periods.daily = today;
+            }
+            if (data.weeklyStats.weekStart !== weekStart) {
                 data.weeklyStats = { weekStart, studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 };
+            }
+            if (data.missionProgress.periods.weekly !== weekStart) {
                 data.missionProgress.weekly = {};
+                data.missionProgress.periods.weekly = weekStart;
+            }
+            if (data.monthlyStats.monthStart !== monthStart) {
+                data.monthlyStats = { monthStart, studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 };
+            }
+            if (data.missionProgress.periods.monthly !== monthStart) {
+                data.missionProgress.monthly = {};
+                data.missionProgress.periods.monthly = monthStart;
             }
             
             return data;
@@ -127,7 +173,7 @@ const UserSession = {
         const user = this.getUserData();
         if (!user) return;
 
-        const today = new Date().toISOString().split('T')[0];
+        const today = StudyPeriods.daily();
         if (user.attendance.lastCheckIn === today) return; // 이미 오늘 출석함
 
         const last = user.attendance.lastCheckIn;
@@ -148,6 +194,7 @@ const UserSession = {
         user.attendance.totalDays++;
         user.attendance.lastCheckIn = today;
         if (user.weeklyStats) user.weeklyStats.attendanceDays++;
+        if (user.monthlyStats) user.monthlyStats.attendanceDays++;
         this.saveUserData(user);
         console.log(`[UserSession] Checked in! Total: ${user.attendance.totalDays}, Streak: ${user.attendance.currentStreak}`);
     },
@@ -167,11 +214,17 @@ const UserSession = {
                 user.weeklyStats.subjectsStudied = user.weeklyStats.subjectsStudied || [];
                 if (!user.weeklyStats.subjectsStudied.includes(subject)) user.weeklyStats.subjectsStudied.push(subject);
             }
+            if (user.monthlyStats && value > 0) {
+                user.monthlyStats.studyTime += value;
+                user.monthlyStats.subjectsStudied = user.monthlyStats.subjectsStudied || [];
+                if (!user.monthlyStats.subjectsStudied.includes(subject)) user.monthlyStats.subjectsStudied.push(subject);
+            }
         } else if (type === 'score') {
             if (!user.dailyStats.quizScores[subject]) user.dailyStats.quizScores[subject] = [];
             user.dailyStats.quizScores[subject].push(value);
         } else if (type === 'quiz') {
             if (user.weeklyStats) user.weeklyStats.quizCount = (user.weeklyStats.quizCount || 0) + 1;
+            if (user.monthlyStats) user.monthlyStats.quizCount = (user.monthlyStats.quizCount || 0) + 1;
         }
 
         user.subjectStats = user.subjectStats || {};

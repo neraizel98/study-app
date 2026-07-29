@@ -155,7 +155,7 @@
         </div>
     </div>
 
-    <script src="report.js?v=20260728-subject-integration"></script>
+    <script src="report.js?v=20260729-mission-periods"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -379,7 +379,7 @@
         if (!ds || !ds.date) return '';
 
         const today = new Date().toLocaleDateString('ko-KR', { year:'numeric', month:'2-digit', day:'2-digit' }).replace(/\. /g,'-').replace('.','');
-        const isToday = ds.date === today || ds.date === new Date().toISOString().slice(0,10);
+        const isToday = ds.date === today || ds.date === StudyPeriods.daily();
         const label = isToday ? '오늘의 학습' : `${ds.date} 학습`;
 
         const subjects = [...new Set(ds.subjectsStudied || [])];
@@ -408,9 +408,7 @@
         const entries = [];
         if (rewards.daily) entries.push({ category:'daily', index:-1, label:'오늘 목표', reward:rewards.daily });
         if (rewards.weekly) entries.push({ category:'weekly', index:-1, label:'주간 목표', reward:rewards.weekly });
-        (rewards.achievements || []).forEach((reward, index) => entries.push({
-            category:'achievements', index, label:'장기 목표', reward
-        }));
+        if (rewards.monthly) entries.push({ category:'monthly', index:-1, label:'월간 목표', reward:rewards.monthly });
         if (!entries.length) return '';
         return `<div style="background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <div style="font-weight:800;margin-bottom:10px;">🎁 획득 보상 관리</div>
@@ -430,8 +428,7 @@
         const data = window._adminData;
         if (!data?.ud?.missionProgress?.rewards) return;
         const rewards = data.ud.missionProgress.rewards;
-        if (category === 'achievements') rewards.achievements[index].used = true;
-        else rewards[category].used = true;
+        rewards[category].used = true;
         button.disabled = true;
         button.textContent = '저장 중...';
         try {
