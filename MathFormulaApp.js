@@ -156,9 +156,9 @@ const MathFormulaApp = (() => {
                 ${label(260,252,type==='heron'?'c':'a')}${label(154,128,type==='heron'?'b':'b')}${label(367,128,type==='heron'?'a':'b')}${label(279,143,'h','#ffd166')}</svg>`;
         }
         if (['circle','circle-coordinate','circle-angle','secant','tangent-chord','pi-series','sector'].includes(type)) {
-            if (type === 'sector') return `<svg ${common}><path d="M170 220 L170 55 A165 165 0 0 1 425 220 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <path d="M170 185 A35 35 0 0 1 204 211" fill="none" stroke="#f9a8d4" stroke-width="4"/>
-                ${label(240,214,'θ','#f9a8d4')}${label(153,139,'r')}${label(340,104,'ℓ','#34d399')}</svg>`;
+            if (type === 'sector') return `<svg ${common}><path d="M170 220 L170 55 A165 165 0 0 1 335 220 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <path d="M170 180 A40 40 0 0 1 210 220" fill="none" stroke="#f9a8d4" stroke-width="4"/>
+                ${label(218,205,'θ','#f9a8d4')}${label(151,139,'r')}${label(253,246,'r')}${label(285,94,'ℓ','#34d399')}</svg>`;
             if (type === 'pi-series') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>
                 <line x1="155" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>
                 ${label(260,126,'d','#ffd166')}${label(260,258,'π = 둘레 ÷ 지름','#34d399')}</svg>`;

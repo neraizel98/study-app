@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v44-formula-example-fix';
+const CACHE_NAME = 'smart-study-v45-sector-radius-fix';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
