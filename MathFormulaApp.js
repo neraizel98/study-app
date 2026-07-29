@@ -6,6 +6,9 @@ const MathFormulaApp = (() => {
     let submitted = false;
     const allLevels = ['초6', '중1', '중2', '중3', '고1', '고2', '고3'];
     let selectedLevels = new Set(allLevels);
+    let mobileMenuOpen = true;
+    let mobileFilterOpen = false;
+    const openGroups = new Set();
 
     const $ = id => document.getElementById(id);
     const formula = () => MATH_FORMULAS.find(item => item.number === formulaNumber);
@@ -27,6 +30,13 @@ const MathFormulaApp = (() => {
     const visibleFormulaNumbers = () => MATH_FORMULAS
         .filter(item => selectedLevels.has(item.level))
         .map(item => item.number);
+    const isMobile = () => Boolean(window.matchMedia?.('(max-width: 850px)').matches);
+    const activeGroup = () => MATH_FORMULA_GROUPS.find(group => group.items.includes(formulaNumber));
+    const saveFilterPreference = () => {
+        try { localStorage.setItem('MathFormula_SelectedLevels', JSON.stringify([...selectedLevels])); } catch {}
+    };
+    const scrollToContent = () => requestAnimationFrame(() =>
+        $('content').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
     function diagramSvg(type) {
         const common = 'viewBox="0 0 520 270" role="img" aria-label="공식 원리 도형"';
@@ -154,32 +164,28 @@ const MathFormulaApp = (() => {
             ${isHeight ? label(363,72,'h = (√3/2)a','#34d399') : ''}</svg>`;
     }
 
-    function renderNavigation() {
-        $('formulaGroups').innerHTML = `
+    function renderFilter() {
+        $('formulaFilter').classList.toggle('open', !isMobile() || mobileFilterOpen);
+        $('formulaFilter').innerHTML = `
             <section class="level-filter" aria-label="교과 수준 필터">
-                <div class="filter-heading"><strong>교과 수준 필터</strong><button type="button" id="toggleAllLevels">전체 ${selectedLevels.size === allLevels.length ? '해제' : '선택'}</button></div>
+                <div class="filter-heading">
+                    <div class="filter-heading-main">
+                        <strong>교과 수준 필터</strong>
+                        <button class="mobile-filter-toggle" type="button" id="mobileFilterToggle">${[...selectedLevels].join(' · ')} ${mobileFilterOpen ? '▲' : '▼'}</button>
+                    </div>
+                    <button type="button" id="toggleAllLevels">전체 ${selectedLevels.size === allLevels.length ? '해제' : '선택'}</button>
+                </div>
                 <div class="level-filter-options">${allLevels.map(level => `
                     <label><input type="checkbox" value="${level}" ${selectedLevels.has(level) ? 'checked' : ''}><span>${level}</span></label>
                 `).join('')}</div>
                 <p>${selectedLevels.size ? `선택한 ${selectedLevels.size}개 수준의 공식만 표시합니다.` : '한 개 이상의 수준을 선택해 주세요.'}</p>
             </section>
-        ` + MATH_FORMULA_GROUPS.map(group => {
-            const visibleItems = group.items.filter(number => selectedLevels.has(MATH_FORMULAS.find(item => item.number === number)?.level));
-            if (!visibleItems.length) return '';
-            return `
-            <section class="formula-group">
-                <div class="group-heading"><strong>${group.title}</strong><span>${group.range}</span></div>
-                <div class="formula-menu">${visibleItems.map(number => {
-                    const item = MATH_FORMULAS.find(entry => entry.number === number);
-                    return `<button class="formula-menu-btn ${number === formulaNumber ? 'active' : ''}" data-formula="${number}">
-                        <span class="formula-number">${String(number).padStart(3, '0')}</span>
-                        <span class="formula-title">${item.title}</span>
-                        <span class="level-badge level-${item.level}">${item.level}</span>
-                    </button>`;
-                }).join('')}</div>
-            </section>`;
-        }).join('');
-        document.querySelectorAll('.level-filter input').forEach(input => input.addEventListener('change', () => {
+        `;
+        $('mobileFilterToggle').addEventListener('click', () => {
+            mobileFilterOpen = !mobileFilterOpen;
+            renderFilter();
+        });
+        document.querySelectorAll('#formulaFilter .level-filter input').forEach(input => input.addEventListener('change', () => {
             if (input.checked) selectedLevels.add(input.value);
             else selectedLevels.delete(input.value);
             if (!selectedLevels.size) {
@@ -194,20 +200,57 @@ const MathFormulaApp = (() => {
                 submitted = false;
                 setUrl();
             }
+            saveFilterPreference();
+            openGroups.add(activeGroup()?.id);
             render();
         }));
         $('toggleAllLevels').addEventListener('click', () => {
             selectedLevels = selectedLevels.size === allLevels.length ? new Set([formula().level]) : new Set(allLevels);
+            saveFilterPreference();
             render();
         });
+    }
+
+    function renderNavigation() {
+        $('formulaGroups').innerHTML = MATH_FORMULA_GROUPS.map(group => {
+            const visibleItems = group.items.filter(number => selectedLevels.has(MATH_FORMULAS.find(item => item.number === number)?.level));
+            if (!visibleItems.length) return '';
+            const collapsed = isMobile() && !openGroups.has(group.id);
+            return `
+            <section class="formula-group ${collapsed ? 'mobile-collapsed' : ''}">
+                <div class="group-heading">
+                    <button class="group-toggle" type="button" data-group-toggle="${group.id}" aria-expanded="${!collapsed}">
+                        <strong>${group.title}</strong>
+                        <span>${group.range} <b class="group-toggle-icon">${collapsed ? '▼' : '▲'}</b></span>
+                    </button>
+                </div>
+                <div class="formula-menu group-items">${visibleItems.map(number => {
+                    const item = MATH_FORMULAS.find(entry => entry.number === number);
+                    return `<button class="formula-menu-btn ${number === formulaNumber ? 'active' : ''}" data-formula="${number}">
+                        <span class="formula-number">${String(number).padStart(3, '0')}</span>
+                        <span class="formula-title">${item.title}</span>
+                        <span class="level-badge level-${item.level}">${item.level}</span>
+                    </button>`;
+                }).join('')}</div>
+            </section>`;
+        }).join('');
+        document.querySelectorAll('[data-group-toggle]').forEach(button => button.addEventListener('click', () => {
+            const groupId = button.dataset.groupToggle;
+            if (openGroups.has(groupId)) openGroups.delete(groupId);
+            else openGroups.add(groupId);
+            renderNavigation();
+        }));
         document.querySelectorAll('[data-formula]').forEach(button => {
             button.addEventListener('click', () => {
                 formulaNumber = Number(button.dataset.formula);
                 submitted = false;
                 answers = {};
                 setUrl();
+                openGroups.add(activeGroup()?.id);
+                if (isMobile()) mobileMenuOpen = false;
                 render();
-                window.scrollTo({ top: 0, behavior: 'smooth' });
+                if (isMobile()) scrollToContent();
+                else window.scrollTo({ top: 0, behavior: 'smooth' });
             });
         });
     }
@@ -369,6 +412,11 @@ const MathFormulaApp = (() => {
         $('heroSubtitle').textContent = `공식 ${String(item.number).padStart(3, '0')} · ${item.title}`;
         $('studyModeBtn').classList.toggle('active', mode === 'study');
         $('quizModeBtn').classList.toggle('active', mode === 'quiz');
+        $('mobileFormulaTitle').textContent = `${String(item.number).padStart(3, '0')} · ${item.title}`;
+        $('mobileFormulaMeta').textContent = `${item.level} · ${mode === 'quiz' ? '랜덤 퀴즈' : '원리 학습'}`;
+        $('mobileListToggle').textContent = mobileMenuOpen ? '목록 닫기 ✕' : '📚 다른 공식 선택';
+        $('formulaGroups').classList.toggle('mobile-collapsed', isMobile() && !mobileMenuOpen);
+        renderFilter();
         renderNavigation();
         if (mode === 'quiz') renderQuiz();
         else renderStudy();
@@ -384,17 +432,41 @@ const MathFormulaApp = (() => {
         const params = new URLSearchParams(location.search);
         formulaNumber = Math.min(MATH_FORMULAS.length, Math.max(1, Number(params.get('formula')) || 1));
         mode = params.get('mode') === 'quiz' ? 'quiz' : 'study';
-        $('studyModeBtn').addEventListener('click', () => { mode = 'study'; setUrl(); render(); });
-        $('quizModeBtn').addEventListener('click', () => { mode = 'quiz'; questions = []; setUrl(); render(); });
+        try {
+            const savedLevels = JSON.parse(localStorage.getItem('MathFormula_SelectedLevels') || '[]');
+            const validLevels = savedLevels.filter(level => allLevels.includes(level));
+            if (validLevels.length) selectedLevels = new Set(validLevels);
+        } catch {}
+        if (!selectedLevels.has(formula().level)) selectedLevels.add(formula().level);
+        openGroups.add(activeGroup()?.id);
+        $('mobileListToggle').addEventListener('click', () => {
+            mobileMenuOpen = !mobileMenuOpen;
+            render();
+            if (!mobileMenuOpen) scrollToContent();
+        });
+        $('studyModeBtn').addEventListener('click', () => {
+            mode = 'study'; setUrl(); render();
+            if (isMobile()) scrollToContent();
+        });
+        $('quizModeBtn').addEventListener('click', () => {
+            mode = 'quiz'; questions = []; setUrl(); render();
+            if (isMobile()) scrollToContent();
+        });
         $('prevBtn').addEventListener('click', () => {
             const visible = visibleFormulaNumbers();
             const index = visible.indexOf(formulaNumber);
-            if (index > 0) { formulaNumber = visible[index - 1]; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
+            if (index > 0) {
+                formulaNumber = visible[index - 1]; questions = []; setUrl(); openGroups.add(activeGroup()?.id); render();
+                if (isMobile()) scrollToContent(); else window.scrollTo(0, 0);
+            }
         });
         $('nextBtn').addEventListener('click', () => {
             const visible = visibleFormulaNumbers();
             const index = visible.indexOf(formulaNumber);
-            if (index >= 0 && index < visible.length - 1) { formulaNumber = visible[index + 1]; questions = []; setUrl(); render(); window.scrollTo(0, 0); }
+            if (index >= 0 && index < visible.length - 1) {
+                formulaNumber = visible[index + 1]; questions = []; setUrl(); openGroups.add(activeGroup()?.id); render();
+                if (isMobile()) scrollToContent(); else window.scrollTo(0, 0);
+            }
         });
         render();
     }

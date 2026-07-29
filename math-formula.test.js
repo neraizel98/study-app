@@ -64,6 +64,12 @@ assert(app.includes('class="foundation-card"'), 'Embedded foundation explanation
 assert(app.includes('교과 수준 필터'), 'School-level filter is missing');
 assert(app.includes('level-badge'), 'Formula menu school-level badge is missing');
 assert(app.includes("const allLevels = ['초6', '중1', '중2', '중3', '고1', '고2', '고3']"), 'All requested school levels must be selectable');
+assert(page.indexOf('id="formulaFilter"') < page.indexOf('id="formulaGroups"'), 'Level filter must be separate from the formula list');
+assert(page.includes('id="mobileListToggle"'), 'Mobile formula list reopen control is missing');
+assert(page.includes('mobile-formula-toolbar'), 'Mobile selected-formula summary is missing');
+assert(app.includes("if (isMobile()) mobileMenuOpen = false"), 'Mobile formula selection must collapse the list');
+assert(app.includes("scrollIntoView({ behavior: 'smooth', block: 'start' })"), 'Mobile selection must scroll to learning content');
+assert(app.includes("localStorage.setItem('MathFormula_SelectedLevels'"), 'Level filter selection must persist');
 assert(app.includes('M220 180 L320 180 L320 105'), 'Pythagorean triangle alignment is missing');
 assert(app.includes('M220 180 L320 105 L245 5 L145 80'), 'Hypotenuse square must share the exact hypotenuse');
 assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry must use a shared radius');
