@@ -333,6 +333,7 @@
             </div>
 
             ${buildDailyStatsBar(ud)}
+            ${buildFormulaTimePanel(ud)}
             ${buildRewardPanel(ud)}
 
             <div class="detail-tabs">
@@ -418,6 +419,31 @@
         return `<div style="background:rgba(79,172,254,0.06);border:1px solid rgba(79,172,254,0.2);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span style="font-size:0.78rem;font-weight:700;color:var(--text-sub);white-space:nowrap;">📅 ${label}</span>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">${items.join('')}</div>
+        </div>`;
+    }
+
+    function buildFormulaTimePanel(ud) {
+        const time = ud.formulaStudyTime || {};
+        const totalStudy = time.totalStudySeconds || 0;
+        const totalQuiz = time.totalQuizSeconds || 0;
+        if (totalStudy + totalQuiz <= 0) return '';
+        const isToday = time.date === StudyPeriods.daily();
+        const todayStudy = isToday ? time.studySeconds || 0 : 0;
+        const todayQuiz = isToday ? time.quizSeconds || 0 : 0;
+        const formatTime = sec => {
+            const hour = Math.floor(sec / 3600);
+            const min = Math.floor((sec % 3600) / 60);
+            const rem = sec % 60;
+            if (hour) return `${hour}시간 ${min}분`;
+            if (min) return `${min}분${rem ? ` ${rem}초` : ''}`;
+            return `${rem}초`;
+        };
+        return `<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);border-radius:14px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+            <div><strong>📐 수학 공식 사전 학습 시간</strong><div style="margin-top:5px;color:var(--text-sub);font-size:.78rem;">학습과 퀴즈 시간만 집계하며 미션에는 포함하지 않습니다.</div></div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;">
+                <span>오늘 <strong style="color:#c4b5fd">${formatTime(todayStudy + todayQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(todayStudy)} · 퀴즈 ${formatTime(todayQuiz)}</small></span>
+                <span>누적 <strong style="color:#c4b5fd">${formatTime(totalStudy + totalQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(totalStudy)} · 퀴즈 ${formatTime(totalQuiz)}</small></span>
+            </div>
         </div>`;
     }
 
