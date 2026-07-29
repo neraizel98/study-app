@@ -50,6 +50,7 @@ formulas.forEach(item => {
     assert(item.symbols.length >= 3, `Formula ${item.number} needs symbol explanations`);
     assert(item.steps.length >= 4, `Formula ${item.number} needs principle steps`);
     assert(item.example.work.length >= 2, `Formula ${item.number} needs a worked example`);
+    assert(item.example.question && item.example.question !== 'undefined', `Formula ${item.number} needs an example heading`);
     assert.strictEqual(Array.from(prerequisiteRefs[item.number]).length, item.prerequisites.length,
         `Formula ${item.number} prerequisite links must match its knowledge list`);
     Array.from(prerequisiteRefs[item.number]).filter(Boolean).forEach(ref => {

@@ -43,7 +43,7 @@
         number, level, title, formula, summary, diagram, prerequisites, steps, tip,
         curriculum: [level, number < 45 ? '원과 도형' : '입체도형'],
         symbols: Array.from({length: symbolFlat.length / 2}, (_, i) => [symbolFlat[i * 2], symbolFlat[i * 2 + 1]]),
-        example: { givens: example[0], work: example.slice(1) },
+        example: { question: example[0], work: example.slice(1) },
         videoQuery: `깨봉수학 ${title} 원리`
     }));
 

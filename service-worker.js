@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v43-formula-60';
+const CACHE_NAME = 'smart-study-v44-formula-example-fix';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
