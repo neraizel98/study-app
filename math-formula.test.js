@@ -15,6 +15,7 @@ const foundationGuides = context.MATH_FOUNDATION_GUIDES;
 const quiz = context.MathFormulaQuiz;
 const page = fs.readFileSync('math_formula.html', 'utf8');
 const app = fs.readFileSync('MathFormulaApp.js', 'utf8');
+const sync = fs.readFileSync('firebase-sync.js', 'utf8');
 const home = fs.readFileSync('index.html', 'utf8');
 const worker = fs.readFileSync('service-worker.js', 'utf8');
 
@@ -60,13 +61,18 @@ assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry
 const randomizedPrompts = new Set(Array.from({ length: 12 }, () => quiz.create(4)[0].prompt));
 assert(randomizedPrompts.size > 1, 'Quiz values must vary between attempts');
 
-assert(!page.includes('report.js'), 'Formula encyclopedia must not load statistics');
 assert(!page.includes('study-timer.js'), 'Formula encyclopedia must not load the study timer');
 assert(!page.includes('missions.js'), 'Formula encyclopedia must not load missions');
-assert(!page.includes('firebase-sync.js'), 'Formula encyclopedia must not sync subject statistics');
+assert(page.includes('report.js?v=20260729-formula-time'), 'Formula encyclopedia needs the active user for admin-only time');
+assert(page.includes('firebase-sync.js?v=20260729-formula-time'), 'Formula encyclopedia time must sync for the admin');
+assert(page.includes('MathFormulaTime.js?v=20260729-formula-time'), 'Formula time tracker is missing');
+const timeTracker = fs.readFileSync('MathFormulaTime.js', 'utf8');
+assert(!timeTracker.includes('updateDailyStat'), 'Formula time must not enter normal subject or mission statistics');
+assert(!timeTracker.includes('totalStudyTime'), 'Formula time must remain separately identifiable in the admin');
+assert(sync.includes('formulaStudyTime: _mergeFormulaStudyTime'), 'Formula time needs cross-device merge support');
 assert(home.indexOf('math_formula.html') > home.indexOf('href="math.html"'), 'Formula encyclopedia must appear after the five subjects');
 assert(home.indexOf('math_formula.html') < home.indexOf('id="missionContainer"'), 'Formula encyclopedia must appear before missions');
-for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaQuiz.js', 'MathFormulaApp.js']) {
+for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaQuiz.js', 'MathFormulaApp.js', 'MathFormulaTime.js']) {
     assert(worker.includes(`'./${asset}'`), `Service worker missing ${asset}`);
 }
 

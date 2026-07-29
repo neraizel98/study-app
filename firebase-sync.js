@@ -240,7 +240,22 @@ function _mergeUserData(local, cloud, userId) {
         dailyStats:      _mergeDailyStats(l.dailyStats, c.dailyStats),
         weeklyStats:     _mergePeriodStats(l.weeklyStats, c.weeklyStats, 'weekStart'),
         monthlyStats:    _mergePeriodStats(l.monthlyStats, c.monthlyStats, 'monthStart'),
+        formulaStudyTime: _mergeFormulaStudyTime(l.formulaStudyTime, c.formulaStudyTime),
         missionProgress: _mergeMissionProgress(l.missionProgress, c.missionProgress),
+    };
+}
+
+function _mergeFormulaStudyTime(local, cloud) {
+    const l = local || {};
+    const c = cloud || {};
+    const newer = (l.date || '') >= (c.date || '') ? l : c;
+    const sameDay = l.date && l.date === c.date;
+    return {
+        date: newer.date || '',
+        studySeconds: sameDay ? Math.max(l.studySeconds || 0, c.studySeconds || 0) : (newer.studySeconds || 0),
+        quizSeconds: sameDay ? Math.max(l.quizSeconds || 0, c.quizSeconds || 0) : (newer.quizSeconds || 0),
+        totalStudySeconds: Math.max(l.totalStudySeconds || 0, c.totalStudySeconds || 0),
+        totalQuizSeconds: Math.max(l.totalQuizSeconds || 0, c.totalQuizSeconds || 0)
     };
 }
 

@@ -31,6 +31,9 @@ assert(admin.includes('StudyTimer.LEVELS[subject]'), 'Admin study-time settings 
 assert(admin.includes('data-study-subject="${subject}"'), 'Admin level setting is missing the subject key');
 assert(admin.includes('data-study-level="${level.key}"'), 'Admin level setting is missing the level key');
 assert(admin.includes('cfg.levels[subject][level]'), 'Admin must save level-specific study times');
+assert(admin.includes('ud.formulaStudyTime?.totalStudySeconds'), 'Admin total time must include the formula encyclopedia');
+assert(admin.includes('📐 수학 공식 사전'), 'Admin daily time must label formula encyclopedia study');
+assert(admin.includes('학습 ${formatTime(studySec)} · 퀴즈 ${formatTime(quizSec)}'), 'Admin must split formula study and quiz time');
 
 assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their subjects from the registry');
 assert(missions.includes("['daily', 'weekly', 'monthly']"), 'Mission completion and rewards must cover all three periods');

@@ -10,10 +10,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <script src="report.js?v=20260729-formula-time"></script>
+    <script src="firebase-sync.js?v=20260729-formula-time"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script defer src="MathFormulaData.js?v=20260729-foundations"></script>
     <script defer src="MathFormulaQuiz.js?v=20260729-foundations"></script>
     <script defer src="MathFormulaApp.js?v=20260729-foundations"></script>
+    <script defer src="MathFormulaTime.js?v=20260729-formula-time"></script>
     <style>
         :root{--formula:#a78bfa;--formula2:#38bdf8;--panel:#111c31;--panel2:#16243b}
         *{box-sizing:border-box}
@@ -25,7 +28,7 @@
         .page{max-width:1380px;margin:0 auto;padding:24px 30px 90px}
         .top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:22px}
         .top-nav a{color:#dbeafe;text-decoration:none;font-weight:700}
-        .no-limit{padding:7px 13px;border:1px solid rgba(52,211,153,.35);border-radius:999px;background:rgba(52,211,153,.09);color:#86efac;font-size:.78rem;font-weight:800}
+        .home-link{padding:7px 13px;border:1px solid rgba(56,189,248,.35);border-radius:999px;background:rgba(56,189,248,.09);color:#bae6fd;font-size:.78rem;font-weight:800}
         .hero{padding:34px;border:1px solid rgba(167,139,250,.38);border-radius:26px;background:linear-gradient(135deg,rgba(30,41,68,.96),rgba(17,28,49,.96));text-align:center}
         .hero-kicker{font:800 .8rem Outfit,sans-serif;letter-spacing:.18em;color:#c4b5fd}
         .hero h1{font-size:clamp(2rem,5vw,3.5rem);line-height:1.2;margin:8px 0;background:linear-gradient(90deg,#a78bfa,#38bdf8);-webkit-background-clip:text;color:transparent}
@@ -118,7 +121,7 @@
     <main class="page">
         <nav class="top-nav">
             <a href="index.html">← 과목 목록</a>
-            <span class="no-limit">⏱️ 시간 제한 없음 · 통계/미션 제외</span>
+            <a class="home-link" href="index.html">🏠 홈</a>
         </nav>
         <header class="hero">
             <div class="hero-kicker">MATHEMATICS FORMULA ENCYCLOPEDIA</div>
