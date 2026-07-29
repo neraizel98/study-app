@@ -276,5 +276,123 @@ const MATH_FORMULAS = [
     }
 ];
 
+const MATH_PREREQUISITE_REFS = {
+    1: [{ formula: 6 }, null, { formula: 4 }, { guide: 'square-roots' }],
+    2: [{ guide: 'perpendicular-height' }, null, { formula: 4 }, { guide: 'square-roots' }],
+    3: [{ formula: 6 }, { guide: 'right-triangle' }, { guide: 'trigonometry' }],
+    4: [{ guide: 'right-triangle' }, { guide: 'square-roots' }, { guide: 'square-roots' }],
+    5: [null, { formula: 6 }, { formula: 4 }, { guide: 'square-roots' }],
+    6: [{ guide: 'parallelogram-area' }, { guide: 'perpendicular-height' }, null],
+    7: [null, { guide: 'triangle-condition' }, { guide: 'square-roots' }, null],
+    8: [{ formula: 6 }, { guide: 'perpendicular-height' }, { guide: 'trigonometry' }],
+    9: [{ guide: 'circle-basics' }, { guide: 'circle-basics' }, { formula: 6 }, null],
+    10: [{ formula: 8 }, { guide: 'circle-basics' }, { guide: 'sine-law' }]
+};
+
+const MATH_FOUNDATION_GUIDES = {
+    'square-roots': {
+        title: '제곱·제곱근·루트(√) 이해하기',
+        curriculum: '초6 준비 → 중1·중2',
+        intro: '제곱은 같은 수를 두 번 곱하는 계산이고, 제곱근은 그 계산을 거꾸로 되돌리는 생각입니다.',
+        points: [
+            '3²은 3×3이므로 9입니다. 작은 2는 “3을 두 번 곱한다”는 뜻입니다.',
+            '√9는 “어떤 양수를 제곱하면 9가 될까?”라는 질문입니다. 3×3=9이므로 √9=3입니다.',
+            '√2처럼 딱 떨어지지 않는 수도 있습니다. √2≈1.414이며, 기호 그대로 두면 더 정확합니다.',
+            '√(a²)=a는 길이 a가 0보다 클 때 성립합니다. 도형의 길이는 음수가 아니므로 양수만 사용합니다.'
+        ],
+        example: '√25=5, √36=6, √50=√(25×2)=5√2입니다.',
+        caution: '√3을 3÷2라고 읽지 않습니다. “루트 3” 또는 “3의 양의 제곱근”이라고 읽습니다.'
+    },
+    'trigonometry': {
+        title: '삼각비: 사인·코사인·탄젠트',
+        curriculum: '중3 기초 → 고등 삼각함수',
+        intro: '직각삼각형의 모양을 각 하나로 표현하는 세 가지 비율입니다. 같은 각을 가진 직각삼각형은 크기가 달라도 세 비율이 같습니다.',
+        points: [
+            'sin A(사인 A) = 각 A의 맞은편 변 ÷ 빗변',
+            'cos A(코사인 A) = 각 A에 붙어 있는 직각변 ÷ 빗변',
+            'tan A(탄젠트 A) = 각 A의 맞은편 변 ÷ 각 A에 붙어 있는 직각변',
+            '예를 들어 3-4-5 직각삼각형에서 A의 맞은편이 3, 붙은 변이 4라면 sin A=3/5, cos A=4/5, tan A=3/4입니다.'
+        ],
+        example: 'sin 30°=1/2, sin 45°=√2/2, sin 60°=√3/2입니다. 공식 8에서는 사인을 이용해 기울어진 변에서 높이만 꺼냅니다.',
+        caution: '“맞은편”과 “붙은 변”은 어느 각을 기준으로 보는지에 따라 달라집니다. 빗변은 항상 직각의 맞은편입니다.'
+    },
+    'perpendicular-height': {
+        title: '수직과 높이',
+        curriculum: '초4·초5',
+        intro: '두 선이 만나 네 각이 모두 90°가 되면 수직입니다. 도형의 높이는 선택한 밑변과 수직인 가장 짧은 거리입니다.',
+        points: [
+            '높이는 기울어진 옆변의 길이가 아닙니다.',
+            '삼각형의 꼭짓점에서 밑변 또는 밑변을 늘인 선에 수직으로 내립니다.',
+            '밑변을 바꾸면 높이도 바뀌지만, 밑변×높이÷2로 구한 넓이는 같습니다.'
+        ],
+        example: '밑변 8 cm, 수직 높이 5 cm라면 삼각형 넓이는 8×5÷2=20 cm²입니다.',
+        caution: '직각 표시인 작은 네모가 있으면 두 선이 수직이라는 뜻입니다.'
+    },
+    'right-triangle': {
+        title: '직각삼각형과 빗변',
+        curriculum: '초4 → 중2',
+        intro: '한 각이 90°인 삼각형을 직각삼각형이라고 합니다.',
+        points: [
+            '90° 각을 끼고 있는 두 변을 직각변이라고 합니다.',
+            '90°의 맞은편 변을 빗변이라고 하며 세 변 중 가장 깁니다.',
+            '피타고라스 정리에서는 빗변을 보통 c로 두어 c²=a²+b²라고 씁니다.'
+        ],
+        example: '3 cm, 4 cm, 5 cm인 삼각형은 3²+4²=5²이므로 직각삼각형입니다.',
+        caution: '그림이 돌아가 있어도 직각 표시를 먼저 찾으면 빗변을 정확히 찾을 수 있습니다.'
+    },
+    'parallelogram-area': {
+        title: '평행사변형의 넓이',
+        curriculum: '초5',
+        intro: '평행사변형의 한쪽 끝 삼각형을 잘라 반대쪽으로 옮기면 같은 밑변과 높이의 직사각형이 됩니다.',
+        points: [
+            '평행사변형 넓이 = 밑변×높이입니다.',
+            '기울어진 옆변이 아니라 밑변에 수직인 높이를 사용합니다.',
+            '똑같은 삼각형 두 개를 붙이면 평행사변형이 되므로 삼각형은 그 절반입니다.'
+        ],
+        example: '밑변 9 cm, 높이 4 cm인 평행사변형의 넓이는 36 cm²입니다.',
+        caution: '옆으로 기울어진 정도가 달라도 밑변과 높이가 같으면 넓이는 같습니다.'
+    },
+    'triangle-condition': {
+        title: '세 변으로 삼각형을 만들 수 있는 조건',
+        curriculum: '중1',
+        intro: '가장 긴 변 하나가 나머지 두 변의 합보다 짧아야 삼각형이 닫힙니다.',
+        points: [
+            '세 변이 a, b, c라면 a+b>c, b+c>a, c+a>b가 모두 성립해야 합니다.',
+            '가장 긴 변만 찾았다면 “짧은 두 변의 합 > 가장 긴 변” 하나를 확인해도 됩니다.',
+            '3, 4, 5는 3+4>5이므로 가능하지만 2, 3, 5는 2+3=5라서 삼각형이 되지 않습니다.'
+        ],
+        example: '5, 5, 8은 5+5>8이므로 삼각형을 만들 수 있습니다.',
+        caution: '헤론의 공식은 실제로 만들 수 있는 삼각형에만 사용합니다.'
+    },
+    'circle-basics': {
+        title: '원의 중심·반지름·접선',
+        curriculum: '초6 원 → 중3 원의 성질',
+        intro: '원의 중심에서 원 위의 점까지 거리는 모두 같고, 이 거리를 반지름이라고 합니다.',
+        points: [
+            '접선은 원과 한 점에서만 만나는 직선입니다.',
+            '접점으로 그은 반지름은 접선과 반드시 수직입니다.',
+            '내접원은 삼각형의 세 변에 닿고, 외접원은 삼각형의 세 꼭짓점을 지납니다.',
+            '내접원 반지름은 소문자 r, 외접원 반지름은 대문자 R로 구별합니다.'
+        ],
+        example: '내접원의 중심에서 세 변까지의 수직 거리는 모두 r로 같습니다.',
+        caution: '내접원과 외접원은 위치와 반지름의 의미가 다릅니다.'
+    },
+    'sine-law': {
+        title: '확장된 사인법칙',
+        curriculum: '고등 수학',
+        intro: '삼각형의 한 변과 그 맞은편 각의 사인 사이에는 일정한 비가 있습니다.',
+        points: [
+            'a/sin A = b/sin B = c/sin C = 2R입니다.',
+            '따라서 a=2R sin A이고 sin A=a/(2R)입니다.',
+            '여기서 a는 반드시 각 A의 맞은편 변이어야 합니다.',
+            '공식 10은 이 관계를 공식 8의 S=½bc sin A에 넣어 얻습니다.'
+        ],
+        example: 'R=5 cm이고 A=30°라면 a=2×5×sin30°=5 cm입니다.',
+        caution: '변과 맞은편 각의 짝을 바꾸지 않도록 대문자 각 A와 소문자 변 a를 한 쌍으로 기억하세요.'
+    }
+};
+
 window.MATH_FORMULA_GROUPS = MATH_FORMULA_GROUPS;
 window.MATH_FORMULAS = MATH_FORMULAS;
+window.MATH_PREREQUISITE_REFS = MATH_PREREQUISITE_REFS;
+window.MATH_FOUNDATION_GUIDES = MATH_FOUNDATION_GUIDES;

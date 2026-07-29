@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v35-math-formulas';
+const CACHE_NAME = 'smart-study-v36-formula-foundations';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
