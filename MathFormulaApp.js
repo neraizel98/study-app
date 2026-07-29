@@ -155,6 +155,58 @@ const MathFormulaApp = (() => {
                 <path d="M260 209h16v16" fill="none" stroke="#ffd166" stroke-width="2"/>
                 ${label(260,252,type==='heron'?'c':'a')}${label(154,128,type==='heron'?'b':'b')}${label(367,128,type==='heron'?'a':'b')}${label(279,143,'h','#ffd166')}</svg>`;
         }
+        if (['circle','circle-coordinate','circle-angle','secant','tangent-chord','pi-series','sector'].includes(type)) {
+            if (type === 'sector') return `<svg ${common}><path d="M170 220 L170 55 A165 165 0 0 1 425 220 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <path d="M170 185 A35 35 0 0 1 204 211" fill="none" stroke="#f9a8d4" stroke-width="4"/>
+                ${label(240,214,'θ','#f9a8d4')}${label(153,139,'r')}${label(340,104,'ℓ','#34d399')}</svg>`;
+            if (type === 'pi-series') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="155" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>
+                ${label(260,126,'d','#ffd166')}${label(260,258,'π = 둘레 ÷ 지름','#34d399')}</svg>`;
+            const extras = type === 'circle-coordinate'
+                ? `<path d="M35 220 H480 M90 260 V20" stroke="#718096" stroke-width="2"/><circle cx="280" cy="120" r="6" fill="#ffd166"/>${label(306,110,'P(x,y)')}${label(245,166,'C(a,b)')}`
+                : type === 'circle-angle'
+                    ? `<path d="M260 137 L355 80 M170 198 L355 80 L208 46" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(295,112,'α','#ffd166')}${label(185,72,'β','#f9a8d4')}`
+                    : type === 'secant'
+                        ? `<path d="M60 225 L445 70 M60 225 L435 200" stroke="#f9a8d4" stroke-width="3"/>${label(58,248,'P','#ffd166')}`
+                        : type === 'tangent-chord'
+                            ? `<line x1="55" y1="235" x2="465" y2="235" stroke="#34d399" stroke-width="4"/><path d="M260 235 L390 105 L175 100" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(292,218,'α','#ffd166')}`
+                            : `<line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(313,125,'r','#ffd166')}`;
+            return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>${extras}</svg>`;
+        }
+        if (type === 'ellipse' || type === 'ellipse-coordinate') {
+            return `<svg ${common}><path d="M45 137 H475 M260 255 V18" stroke="#718096" stroke-width="2"/>
+                <ellipse cx="260" cy="137" rx="175" ry="88" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="260" y1="137" x2="435" y2="137" stroke="#ffd166" stroke-width="3"/>
+                <line x1="260" y1="137" x2="260" y2="49" stroke="#34d399" stroke-width="3"/>
+                ${label(350,126,'a','#ffd166')}${label(278,90,'b','#34d399')}</svg>`;
+        }
+        if (['sphere','cylinder','cylinder-net','cone','cone-net'].includes(type)) {
+            if (type === 'sphere') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
+                <ellipse cx="260" cy="137" rx="105" ry="30" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="7 6"/>
+                <line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(316,126,'r','#ffd166')}</svg>`;
+            if (type.startsWith('cylinder')) return `<svg ${common}><ellipse cx="260" cy="55" rx="115" ry="32" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <path d="M145 55 V215 M375 55 V215" stroke="#77d9ff" stroke-width="4"/>
+                <ellipse cx="260" cy="215" rx="115" ry="32" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="260" y1="55" x2="260" y2="215" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+                <line x1="260" y1="215" x2="375" y2="215" stroke="#34d399" stroke-width="3"/>${label(278,140,'h','#ffd166')}${label(320,204,'r','#34d399')}</svg>`;
+            return `<svg ${common}><path d="M260 30 L110 220 M260 30 L410 220" stroke="#77d9ff" stroke-width="4"/>
+                <ellipse cx="260" cy="220" rx="150" ry="38" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="260" y1="30" x2="260" y2="220" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+                <line x1="260" y1="220" x2="410" y2="220" stroke="#34d399" stroke-width="3"/>
+                ${label(278,130,'h','#ffd166')}${label(337,210,'r','#34d399')}${type==='cone-net'?label(350,112,'ℓ','#f9a8d4'):''}</svg>`;
+        }
+        if (['pyramid','square-pyramid','square-pyramid-height','tetrahedron','tetrahedron-height','cube','cube-net','cuboid'].includes(type)) {
+            if (type === 'cube' || type === 'cube-net' || type === 'cuboid') {
+                const w=type==='cuboid'?250:180,h=145,x=135,y=85,dx=65,dy=-45;
+                return `<svg ${common}><path d="M${x} ${y} h${w} v${h} h-${w} Z M${x} ${y} l${dx} ${dy} h${w} l-${dx} ${-dy} M${x+w} ${y} l${dx} ${dy} v${h} l-${dx} ${-dy}" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
+                    ${label(x+w/2,y+h+26,'a')}${label(x+w+dx+18,y+h/2,'c')}${type==='cuboid'?label(x+w+30,y-10,'b'):''}</svg>`;
+            }
+            const tetra=type.startsWith('tetrahedron');
+            const base=tetra?'M115 220 L405 220 L330 120 Z':'M115 220 L405 220 L350 145 L170 145 Z';
+            return `<svg ${common}><path d="${base} M260 30 L115 220 M260 30 L405 220 M260 30 L${tetra?'330 120':'350 145'} M260 30 L${tetra?'':'170 145'}" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="260" y1="30" x2="260" y2="180" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+                ${label(278,112,'h','#ffd166')}${label(260,250,'a')}</svg>`;
+        }
         const isHeight = type === 'equilateral-height';
         const isGeneral = type === 'triangle-area';
         return `<svg ${common}><path d="M140 235 L380 235 L260 27 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
