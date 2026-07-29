@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v36-formula-foundations';
+const CACHE_NAME = 'smart-study-v37-formula-admin-time';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
@@ -63,6 +63,7 @@ const STATIC_ASSETS = [
     './MathFormulaData.js',
     './MathFormulaQuiz.js',
     './MathFormulaApp.js',
+    './MathFormulaTime.js',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',
