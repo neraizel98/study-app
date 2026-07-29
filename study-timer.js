@@ -12,6 +12,33 @@ const StudyTimer = (() => {
     const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
     const REPORT_PREFIX = 'SmartVocab_Reports_';
     const DEFAULTS = { english: 5, grammar: 5, hanja: 5, math: 5, reading: 5 };
+    const LEVELS = {
+        reading: [
+            { key: 'level1', label: 'Lv. 1 · 중1 독해' }
+        ],
+        english: [
+            { key: 'level1', label: 'Lv. 1' },
+            { key: 'level2', label: 'Lv. 2' },
+            { key: 'level3', label: 'Lv. 3' },
+            { key: 'level4', label: 'Lv. 4' }
+        ],
+        grammar: [
+            { key: 'elementary', label: 'Lv. 1 · 초등 문법' },
+            { key: 'middle', label: 'Lv. 2 · 중1 문법' },
+            { key: 'middle2', label: 'Lv. 3 · 중2 문법' },
+            { key: 'middle3', label: 'Lv. 4 · 중3 문법' }
+        ],
+        hanja: [
+            { key: 'level8', label: '8급' },
+            { key: 'level7', label: '7급' },
+            { key: 'level6', label: '6급' },
+            { key: 'level5', label: '5급' }
+        ],
+        math: [
+            { key: 'elementary-6', label: 'Lv. 1 · 초6' },
+            { key: 'middle-1', label: 'Lv. 2 · 중1' }
+        ]
+    };
     const ACTIVITY_LIMIT_MS = 45 * 1000;
     const ACTIVITY_EVENTS = ['click', 'keydown', 'touchstart', 'scroll'];
 
@@ -26,6 +53,24 @@ const StudyTimer = (() => {
 
     function setConfig(cfg) {
         localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+    }
+
+    function getLevelKey(subject, context = 'default') {
+        const value = String(context || 'default');
+        if (subject === 'grammar') return value.replace(/^grammar:/, '');
+        if (subject === 'reading') return value.replace(/^reading:/, '');
+        if (subject === 'math') return value.split(':')[0];
+        return value;
+    }
+
+    function getBaseMinutes(subject, context = 'default') {
+        const config = getConfig();
+        const levelKey = getLevelKey(subject, context);
+        const configured = config.levels?.[subject]?.[levelKey];
+        if (configured !== undefined && configured !== null && configured !== '') {
+            return Math.max(0, Number(configured) || 0);
+        }
+        return Math.max(0, Number(config[subject] ?? DEFAULTS[subject]) || 0);
     }
 
     function normalize(value) {
@@ -137,7 +182,7 @@ const StudyTimer = (() => {
     }
 
     function getRequiredSeconds(subject, context = 'default', aliases = []) {
-        const baseMinutes = Math.max(0, Number(getConfig()[subject] ?? DEFAULTS[subject]));
+        const baseMinutes = getBaseMinutes(subject, context);
         const score = getLatestScore(subject, context, aliases);
         if (score && score.pct >= 90) return 0;
 
@@ -324,8 +369,11 @@ const StudyTimer = (() => {
 
     return {
         DEFAULTS,
+        LEVELS,
         getConfig,
         setConfig,
+        getLevelKey,
+        getBaseMinutes,
         getAccumulated,
         getRecentScores,
         getLatestScore,
