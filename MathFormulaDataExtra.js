@@ -197,4 +197,126 @@
 
     MATH_FORMULA_GROUPS.push(...groups);
     MATH_FORMULAS.push(...formulas);
+
+    Object.assign(MATH_FOUNDATION_GUIDES, {
+        'vectors': {
+            title: '벡터: 길이와 방향을 함께 나타내는 화살표',
+            curriculum: '고2 기하 · 벡터',
+            intro: '보통 수는 크기만 있지만 벡터는 “얼마나 멀리, 어느 방향으로” 움직이는지를 화살표 하나로 나타냅니다.',
+            points: ['화살표의 길이가 벡터의 크기이고 화살촉이 방향입니다.', '같은 길이와 같은 방향이면 출발점이 달라도 같은 벡터입니다.', '|a|는 벡터 a의 길이만 꺼내어 보는 기호입니다.', '두 벡터를 같은 점에서 시작하면 두 화살표 사이에 삼각형을 만들 수 있습니다.'],
+            example: '오른쪽으로 3칸 이동은 (3,0), 위로 4칸 이동은 (0,4)인 벡터로 나타낼 수 있습니다.',
+            caution: '벡터 a와 길이 |a|는 서로 다릅니다. 하나는 방향이 있고 다른 하나는 0 이상의 수입니다.'
+        },
+        'inner-product': {
+            title: '벡터의 내적과 끼인각',
+            curriculum: '고2 기하 · 벡터',
+            intro: '내적은 두 벡터가 얼마나 같은 방향을 향하는지 하나의 수로 나타냅니다.',
+            points: ['a·b=|a||b|cosθ이며 θ는 두 벡터 사이의 작은 각입니다.', '두 벡터가 같은 방향이면 cos0°=1이라 내적이 가장 큽니다.', '두 벡터가 수직이면 cos90°=0이므로 내적도 0입니다.', '반대 방향이면 cos180°=-1이므로 내적은 음수가 됩니다.'],
+            example: '길이가 3, 4인 두 벡터가 수직이면 a·b=3×4×0=0입니다.',
+            caution: 'a·b는 벡터가 아니라 계산 결과가 하나의 수입니다.'
+        },
+        'coordinates': {
+            title: '좌표평면과 점의 위치',
+            curriculum: '중1 좌표평면',
+            intro: '좌표 (x,y)는 원점에서 가로로 x만큼, 세로로 y만큼 움직인 점을 뜻합니다.',
+            points: ['x좌표는 오른쪽이 양수, 왼쪽이 음수입니다.', 'y좌표는 위쪽이 양수, 아래쪽이 음수입니다.', '(3,2)와 (2,3)은 서로 다른 점입니다.', '도형의 꼭짓점을 한 방향으로 차례대로 읽으면 좌표 공식에서 실수를 줄일 수 있습니다.'],
+            example: '점 (4,-2)는 원점에서 오른쪽 4칸, 아래쪽 2칸에 있습니다.',
+            caution: '항상 x를 먼저, y를 나중에 씁니다.'
+        },
+        'absolute-value': {
+            title: '절댓값: 0에서 떨어진 거리',
+            curriculum: '중1 정수와 유리수',
+            intro: '절댓값은 수직선에서 0까지의 거리이므로 언제나 0 이상입니다.',
+            points: ['|5|=5이고 |-5|도 5입니다.', '넓이는 방향에 따라 음수가 될 수 없으므로 사선 공식의 마지막에 절댓값을 씁니다.', '|0|=0입니다.', '절댓값 기호 안을 먼저 계산한 뒤 음수라면 부호를 바꿉니다.'],
+            example: '|3-8|=|-5|=5입니다.',
+            caution: '-|5|=-5이지만 |-5|=5입니다. 기호의 위치를 확인하세요.'
+        },
+        'averages-midpoints': {
+            title: '평균·중점·중선',
+            curriculum: '초6 평균 → 중2 삼각형',
+            intro: '평균은 여러 값을 공평하게 나눈 값이고, 중점은 선분을 똑같은 두 길이로 나누는 점입니다.',
+            points: ['세 수의 평균은 세 수를 모두 더한 뒤 3으로 나눕니다.', '두 점의 중점 좌표는 x끼리 평균, y끼리 평균을 냅니다.', '삼각형의 중선은 꼭짓점과 맞은편 변의 중점을 잇는 선입니다.', '세 중선은 무게중심에서 만나고 꼭짓점 쪽과 변 쪽을 2:1로 나눕니다.'],
+            example: '(0,0)과 (6,4)의 중점은 ((0+6)/2,(0+4)/2)=(3,2)입니다.',
+            caution: '중선은 각을 반으로 나누는 각의 이등분선과 다릅니다.'
+        },
+        'area-units': {
+            title: '넓이와 제곱 단위',
+            curriculum: '초5~초6 평면도형',
+            intro: '넓이는 1 cm×1 cm인 정사각형이 몇 개 들어가는지를 세는 양입니다.',
+            points: ['가로 1 cm, 세로 1 cm인 칸의 넓이는 1 cm²입니다.', '길이를 두 번 곱하므로 넓이 단위에는 작은 2가 붙습니다.', '100 cm=1 m이지만 10,000 cm²=1 m²입니다.', '둘레는 길이이므로 cm, 넓이는 cm²로 구별합니다.'],
+            example: '가로 4 cm, 세로 3 cm에는 1 cm² 칸이 12개 들어가므로 넓이는 12 cm²입니다.',
+            caution: 'cm와 cm²는 서로 다른 종류의 단위라 그대로 더할 수 없습니다.'
+        },
+        'quadrilateral-basics': {
+            title: '사각형의 변·대각선·높이',
+            curriculum: '초4~초6 도형',
+            intro: '사각형은 변이 네 개인 도형이며 종류에 따라 같은 변, 평행선, 직각의 성질이 달라집니다.',
+            points: ['직사각형은 네 각이 모두 직각이고 마주 보는 변의 길이가 같습니다.', '정사각형은 네 각이 직각이고 네 변의 길이도 모두 같습니다.', '대각선은 이웃하지 않은 두 꼭짓점을 잇는 선분입니다.', '높이는 선택한 밑변과 반드시 수직인 거리입니다.'],
+            example: '기울어진 평행사변형에서도 높이는 기울어진 옆변이 아니라 두 평행선 사이의 수직 거리입니다.',
+            caution: '도형이 기울어져 보여도 수직과 평행의 성질은 바뀌지 않습니다.'
+        },
+        'parallel-lines': {
+            title: '평행선과 수직 높이',
+            curriculum: '초4 수직과 평행 → 초6 넓이',
+            intro: '아무리 길게 늘여도 만나지 않는 두 직선이 평행선이며, 두 평행선 사이의 가장 짧은 거리가 높이입니다.',
+            points: ['평행선 사이의 수직 거리는 어느 위치에서 재도 같습니다.', '평행사변형은 마주 보는 두 쌍의 변이 각각 평행입니다.', '사다리꼴은 적어도 한 쌍의 변이 평행합니다.', '넓이 공식에서 h는 평행한 두 변 사이의 수직 거리입니다.'],
+            example: '사다리꼴의 옆변이 7 cm여도 수직 높이가 5 cm라면 공식에는 5를 넣습니다.',
+            caution: '기울어진 옆변을 높이로 사용하지 마세요.'
+        },
+        'regular-polygons': {
+            title: '정다각형·중심각·중심',
+            curriculum: '초6 원과 도형 → 중1 기본도형',
+            intro: '모든 변의 길이와 모든 내각의 크기가 같은 다각형을 정다각형이라고 합니다.',
+            points: ['정다각형은 중심에서 모든 꼭짓점까지의 거리가 같습니다.', '중심과 이웃한 두 꼭짓점을 이으면 같은 이등변삼각형들이 생깁니다.', '중심각의 합은 한 바퀴 360°이므로 정n각형의 중심각은 360°/n입니다.', '정육각형의 중심각은 60°라서 정삼각형 6개로 나뉩니다.'],
+            example: '정오각형의 중심각은 360°÷5=72°입니다.',
+            caution: '변의 길이만 같고 각이 다르면 정다각형이 아닙니다.'
+        },
+        'golden-ratio': {
+            title: '정오각형과 황금비',
+            curriculum: '중3 닮음 → 고1 방정식',
+            intro: '정오각형에 대각선을 그으면 서로 닮은 삼각형이 반복되고, 대각선과 변의 비가 황금비가 됩니다.',
+            points: ['황금비 φ는 (1+√5)/2이며 약 1.618입니다.', '정오각형에서는 대각선 길이=φ×한 변입니다.', 'φ²=φ+1이라는 관계를 만족합니다.', '이 비는 닮은 삼각형의 대응변 비를 세우면 얻을 수 있습니다.'],
+            example: '한 변이 10 cm라면 대각선은 약 10×1.618=16.18 cm입니다.',
+            caution: '황금비는 정오각형의 대각선과 변 사이에서 사용하며 모든 오각형에 적용되지 않습니다.'
+        },
+        'counting-polygons': {
+            title: '다각형의 꼭짓점과 중복 세기',
+            curriculum: '중1 기본도형',
+            intro: '대각선 수 공식에서는 각 꼭짓점에서 가능한 선을 센 뒤 같은 대각선을 두 번 센 중복을 없앱니다.',
+            points: ['n각형에는 꼭짓점과 변이 각각 n개 있습니다.', '한 꼭짓점에서는 자기 자신과 양옆 두 점을 제외하므로 n-3개의 대각선을 긋습니다.', '모든 꼭짓점에서 세면 한 대각선을 양 끝에서 한 번씩, 총 두 번 셉니다.', '따라서 n(n-3)을 2로 나눕니다.'],
+            example: '오각형에서는 한 점당 2개, 다섯 점에서 10번 세지만 실제 대각선은 5개입니다.',
+            caution: '다각형의 변은 대각선에 포함하지 않습니다.'
+        },
+        'radians-tangent': {
+            title: '탄젠트와 라디안 π',
+            curriculum: '중3 삼각비 → 고1 삼각함수',
+            intro: '탄젠트는 직각삼각형에서 각을 기준으로 높이와 밑변의 비를 알려 주며, 라디안은 각을 나타내는 또 다른 단위입니다.',
+            points: ['tanθ=맞은편 변/이웃한 변입니다.', 'tan45°=1이므로 두 직각변의 길이가 같습니다.', '180°=π 라디안이고 360°=2π 라디안입니다.', 'π/n 라디안은 180°/n과 같은 각입니다.'],
+            example: '정육각형에서 π/6 라디안은 30°이고 tan30°=1/√3입니다.',
+            caution: '계산기의 각도 모드가 도(degree)인지 라디안(radian)인지 확인하세요.'
+        }
+    });
+
+    Object.assign(MATH_PREREQUISITE_REFS, {
+        11: [{ formula: 6 }, { guide: 'vectors' }, { guide: 'inner-product' }, { guide: 'square-roots' }],
+        12: [{ guide: 'coordinates' }, { guide: 'absolute-value' }, { guide: 'absolute-value' }, { formula: 6 }],
+        13: [{ guide: 'coordinates' }, { guide: 'averages-midpoints' }, { guide: 'averages-midpoints' }, { guide: 'averages-midpoints' }],
+        14: [{ guide: 'averages-midpoints' }, { guide: 'averages-midpoints' }, { guide: 'square-roots' }, { formula: 4 }],
+        15: [{ guide: 'area-units' }, { guide: 'area-units' }, { guide: 'quadrilateral-basics' }],
+        16: [{ guide: 'area-units' }, { guide: 'area-units' }, { guide: 'quadrilateral-basics' }],
+        17: [{ guide: 'area-units' }, { guide: 'area-units' }, { guide: 'quadrilateral-basics' }],
+        18: [{ guide: 'quadrilateral-basics' }, { formula: 4 }, { guide: 'square-roots' }],
+        19: [{ guide: 'quadrilateral-basics' }, { guide: 'quadrilateral-basics' }, { formula: 6 }],
+        20: [{ guide: 'perpendicular-height' }, { formula: 16 }, { guide: 'parallel-lines' }],
+        21: [{ guide: 'parallel-lines' }, { formula: 20 }, { guide: 'perpendicular-height' }],
+        22: [{ guide: 'trigonometry' }, { formula: 8 }, { guide: 'quadrilateral-basics' }],
+        23: [{ guide: 'regular-polygons' }, { formula: 5 }, { formula: 4 }, { guide: 'square-roots' }],
+        24: [{ guide: 'regular-polygons' }, { guide: 'right-triangle' }, { formula: 4 }, { guide: 'square-roots' }],
+        25: [{ guide: 'golden-ratio' }, { guide: 'golden-ratio' }, { guide: 'golden-ratio' }, { guide: 'square-roots' }],
+        26: [{ formula: 1 }, { formula: 1 }, { guide: 'regular-polygons' }],
+        27: [{ guide: 'counting-polygons' }, { guide: 'counting-polygons' }, { guide: 'area-units' }],
+        28: [{ guide: 'regular-polygons' }, { guide: 'regular-polygons' }, { guide: 'counting-polygons' }],
+        29: [{ guide: 'regular-polygons' }, { formula: 6 }, { guide: 'radians-tangent' }, { guide: 'radians-tangent' }],
+        30: [{ formula: 28 }, { guide: 'regular-polygons' }, { guide: 'area-units' }]
+    });
 })();

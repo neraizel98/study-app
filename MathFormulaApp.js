@@ -85,21 +85,53 @@ const MathFormulaApp = (() => {
         }
         if (['pentagon','pentagon-height','pentagon-diagonal','hexagon','regular-polygon','polygon-diagonals','polygon-angles'].includes(type)) {
             const sides = type === 'hexagon' ? 6 : type.startsWith('pentagon') ? 5 : 8;
-            const points = Array.from({length:sides}, (_, i) => {
+            const vertices = Array.from({length:sides}, (_, i) => {
                 const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
-                return `${260 + 170 * Math.cos(angle)},${140 + 105 * Math.sin(angle)}`;
-            }).join(' ');
-            const extras = type === 'pentagon-height' ? '<line x1="260" y1="35" x2="260" y2="225" stroke="#ffd166" stroke-width="3"/>' :
-                type === 'pentagon-diagonal' || type === 'polygon-diagonals' ? '<path d="M260 35 L422 108 L360 225 L160 225 L98 108 L360 225 L260 35" fill="none" stroke="#f9a8d4" stroke-width="3"/>' :
-                type === 'polygon-angles' ? '<line x1="260" y1="35" x2="422" y2="108" stroke="#ffd166" stroke-width="2"/><line x1="260" y1="35" x2="380" y2="214" stroke="#ffd166" stroke-width="2"/>' : '';
+                return { x: 260 + 170 * Math.cos(angle), y: 137 + 100 * Math.sin(angle) };
+            });
+            const points = vertices.map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
+            const line = (from, to, color = '#f9a8d4', width = 3) =>
+                `<line x1="${from.x.toFixed(1)}" y1="${from.y.toFixed(1)}" x2="${to.x.toFixed(1)}" y2="${to.y.toFixed(1)}" stroke="${color}" stroke-width="${width}"/>`;
+            let extras = '';
+            if (type === 'pentagon-height') {
+                const oppositeMidpoint = { x: (vertices[2].x + vertices[3].x) / 2, y: (vertices[2].y + vertices[3].y) / 2 };
+                extras = `${line(vertices[0], oppositeMidpoint, '#ffd166')}<path d="M252 ${oppositeMidpoint.y.toFixed(1)}v-8h8" fill="none" stroke="#ffd166" stroke-width="2"/>${label(278,145,'h','#ffd166')}`;
+            } else if (type === 'pentagon-diagonal') {
+                extras = vertices.map((point, index) => line(point, vertices[(index + 2) % sides])).join('');
+            } else if (type === 'polygon-diagonals' || type === 'polygon-angles') {
+                extras = vertices.slice(2, -1).map(point => line(vertices[0], point, type === 'polygon-angles' ? '#ffd166' : '#f9a8d4', 2)).join('');
+            } else if (type === 'regular-polygon') {
+                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.6)).join('');
+            } else if (type === 'hexagon') {
+                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.8)).join('');
+            }
             return `<svg ${common}><polygon points="${points}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>${extras}${label(260,260,'정다각형')}</svg>`;
         }
         if (type === 'vector' || type === 'coordinates' || type === 'centroid' || type === 'median') {
-            return `<svg ${common}><path d="M95 225 L430 225 L275 42 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                ${type === 'centroid' || type === 'median' ? '<line x1="275" y1="42" x2="262" y2="225" stroke="#ffd166" stroke-width="3"/><circle cx="267" cy="164" r="6" fill="#f9a8d4"/>' : ''}
-                ${type === 'vector' ? '<path d="M95 225 L430 225 M95 225 L275 42" stroke="#34d399" stroke-width="6"/>' : ''}
-                ${type === 'coordinates' ? '<path d="M60 235 H465 M75 255 V25" stroke="#70839f" stroke-width="2"/>' : ''}
-                ${label(275,252,'B-C')}${label(292,150,type === 'centroid' ? 'G' : type === 'median' ? 'M' : '')}</svg>`;
+            if (type === 'vector') {
+                return `<svg ${common}><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#34d399"/></marker></defs>
+                    <path d="M95 225 L430 225 L275 45 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="3"/>
+                    <line x1="95" y1="225" x2="430" y2="225" stroke="#34d399" stroke-width="5" marker-end="url(#arrow)"/>
+                    <line x1="95" y1="225" x2="275" y2="45" stroke="#34d399" stroke-width="5" marker-end="url(#arrow)"/>
+                    ${label(260,250,'벡터 a','#34d399')}${label(155,120,'벡터 b','#34d399')}</svg>`;
+            }
+            if (type === 'coordinates') {
+                return `<svg ${common}><path d="M60 225 H470 M90 255 V25" stroke="#70839f" stroke-width="2"/>
+                    <path d="M90 225 L430 225 L220 55 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                    <circle cx="90" cy="225" r="5" fill="#ffd166"/><circle cx="430" cy="225" r="5" fill="#ffd166"/><circle cx="220" cy="55" r="5" fill="#ffd166"/>
+                    ${label(75,245,'A')}${label(445,245,'B')}${label(220,42,'C')}</svg>`;
+            }
+            const A = { x: 260, y: 38 }, B = { x: 75, y: 225 }, C = { x: 445, y: 225 };
+            const Mbc = { x: 260, y: 225 }, Mac = { x: 352.5, y: 131.5 }, Mab = { x: 167.5, y: 131.5 };
+            const medianLines = type === 'centroid'
+                ? `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#ffd166" stroke-width="2.5"/>
+                   <line x1="${B.x}" y1="${B.y}" x2="${Mac.x}" y2="${Mac.y}" stroke="#ffd166" stroke-width="2.5"/>
+                   <line x1="${C.x}" y1="${C.y}" x2="${Mab.x}" y2="${Mab.y}" stroke="#ffd166" stroke-width="2.5"/>
+                   <circle cx="260" cy="162.7" r="6" fill="#f9a8d4"/>${label(282,160,'G','#f9a8d4')}`
+                : `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#ffd166" stroke-width="3"/>
+                   <circle cx="${Mbc.x}" cy="${Mbc.y}" r="5" fill="#f9a8d4"/>${label(280,215,'M','#f9a8d4')}`;
+            return `<svg ${common}><path d="M${A.x} ${A.y} L${B.x} ${B.y} L${C.x} ${C.y} Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ${medianLines}${label(A.x,A.y-10,'A')}${label(B.x-12,B.y+20,'B')}${label(C.x+12,C.y+20,'C')}</svg>`;
         }
         if (type === 'isosceles' || type === 'heron') {
             return `<svg ${common}><path d="M80 225 L440 225 L260 48 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
