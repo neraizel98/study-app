@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v45-sector-radius-fix';
+const CACHE_NAME = 'smart-study-v46-principle-quiz';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

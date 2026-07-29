@@ -385,6 +385,7 @@ const MathFormulaApp = (() => {
             submitted = false;
         }
         const item = formula();
+        const quizLabels = ['원리 이해', '기호·조건', '계산 적용'];
         $('content').innerHTML = `
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')} · RANDOM QUIZ</div>
@@ -393,7 +394,7 @@ const MathFormulaApp = (() => {
                 <div class="quiz-list">${questions.map((q, qi) => {
                     const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
-                        <div class="quiz-label">계산 문제 ${qi + 1}</div>
+                        <div class="quiz-label">${quizLabels[qi]} ${qi + 1}</div>
                         <h3>${q.prompt}</h3>
                         ${q.kind === 'choice'
                             ? `<div class="choice-grid">${q.choices.map(choice => `<button class="choice-btn ${String(answers[qi]) === choice ? 'selected' : ''}" data-question="${qi}" data-answer="${choice}" ${submitted ? 'disabled' : ''}>${choice}${q.unit ? ` ${q.unit}` : ''}</button>`).join('')}</div>`
@@ -413,7 +414,7 @@ const MathFormulaApp = (() => {
         bindQuiz();
     }
 
-    function createCalculationQuestions(number) {
+    function createLegacyCalculationQuestions(number) {
         const result = [];
         const seen = new Set();
         for (let attempt = 0; attempt < 40 && result.length < 3; attempt += 1) {
@@ -434,6 +435,68 @@ const MathFormulaApp = (() => {
             }
         }
         return result;
+    }
+
+    function createCalculationQuestions(number) {
+        const item = MATH_FORMULAS.find(entry => entry.number === number);
+        const legacyLevel = createLegacyCalculationQuestions(number)[0]?.level || '';
+        const group = MATH_FORMULA_GROUPS.find(entry => entry.items.includes(number));
+        const related = (group?.items || [])
+            .map(value => MATH_FORMULAS.find(entry => entry.number === value))
+            .filter(entry => entry && entry.number !== number);
+        const shuffle = values => [...values].sort(() => Math.random() - .5);
+        const uniqueChoices = (answer, distractors) => {
+            const values = [answer, ...shuffle(distractors)].filter(value => value && value !== answer);
+            const unique = [...new Set(values)];
+            [
+                '공식에 나오는 모든 수를 조건과 관계없이 더합니다.',
+                '도형의 크기와 상관없이 언제나 같은 값이 나옵니다.',
+                '길이와 넓이의 단위를 구분하지 않고 계산합니다.'
+            ].forEach(value => { if (unique.length < 4 && !unique.includes(value)) unique.push(value); });
+            return shuffle(unique.slice(0, 4));
+        };
+
+        const principleIndex = Math.floor(Math.random() * item.steps.length);
+        const principleAnswer = item.steps[principleIndex];
+        const principleQuestion = {
+            level: legacyLevel,
+            kind: 'choice',
+            prompt: `${item.title}이 만들어지는 과정과 직접 연결되는 설명은?`,
+            answer: principleAnswer,
+            choices: uniqueChoices(principleAnswer, related.map(entry =>
+                entry.steps[principleIndex % entry.steps.length])),
+            solution: item.steps.map((step, index) => `${index + 1}. ${step}`).join(' ')
+        };
+
+        const symbolIndex = Math.floor(Math.random() * item.symbols.length);
+        const [symbol, symbolAnswer] = item.symbols[symbolIndex];
+        const symbolQuestion = {
+            level: legacyLevel,
+            kind: 'choice',
+            prompt: `${item.title}의 ${symbol} 기호가 나타내는 뜻은?`,
+            answer: symbolAnswer,
+            choices: uniqueChoices(symbolAnswer, [
+                ...item.symbols.filter((_, index) => index !== symbolIndex).map(([, description]) => description),
+                ...related.flatMap(entry => entry.symbols.map(([, description]) => description))
+            ]),
+            solution: `${symbol}는 ${symbolAnswer} 계산 전에 기호가 어떤 길이·각·넓이를 뜻하는지 먼저 확인합니다.`
+        };
+
+        const calculationPool = [];
+        const seen = new Set();
+        for (let attempt = 0; attempt < 12 && calculationPool.length < 6; attempt += 1) {
+            window.MathFormulaQuiz.create(number)
+                .filter(question => question.kind === 'choice')
+                .forEach(question => {
+                    const key = `${question.prompt}|${question.answer}`;
+                    if (!seen.has(key)) {
+                        seen.add(key);
+                        calculationPool.push({ ...question, level: legacyLevel });
+                    }
+                });
+        }
+        const calculationQuestion = calculationPool[Math.floor(Math.random() * calculationPool.length)];
+        return [principleQuestion, symbolQuestion, calculationQuestion].filter(Boolean);
     }
 
     function bindQuiz() {
