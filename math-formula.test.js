@@ -100,6 +100,9 @@ const appApi = vm.runInContext('MathFormulaApp', context);
 formulas.forEach(item => {
     const calculationQuestions = Array.from(appApi.createCalculationQuestions(item.number));
     assert.strictEqual(calculationQuestions.length, 3, `Formula ${item.number} must show exactly three calculation questions`);
+    assert(calculationQuestions[0].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a principle question`);
+    assert(calculationQuestions[1].prompt.includes('기호가 나타내는 뜻'), `Formula ${item.number} needs a symbol question`);
+    assert(!calculationQuestions[2].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a calculation application`);
     calculationQuestions.forEach(question => {
         assert.strictEqual(question.kind, 'choice', `Formula ${item.number} must not show written questions`);
         assert.strictEqual(question.level, '계산 연습', `Formula ${item.number} must not expose difficulty categories`);
