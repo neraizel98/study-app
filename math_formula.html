@@ -13,9 +13,11 @@
     <script src="report.js?v=20260729-formula-time"></script>
     <script src="firebase-sync.js?v=20260729-formula-time"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="MathFormulaData.js?v=20260729-foundations"></script>
-    <script defer src="MathFormulaQuiz.js?v=20260729-foundations"></script>
-    <script defer src="MathFormulaApp.js?v=20260729-foundations"></script>
+    <script defer src="MathFormulaData.js?v=20260729-formula30"></script>
+    <script defer src="MathFormulaDataExtra.js?v=20260729-formula30"></script>
+    <script defer src="MathFormulaQuiz.js?v=20260729-formula30"></script>
+    <script defer src="MathFormulaQuizExtra.js?v=20260729-formula30"></script>
+    <script defer src="MathFormulaApp.js?v=20260729-formula30"></script>
     <script defer src="MathFormulaTime.js?v=20260729-formula-time"></script>
     <style>
         :root{--formula:#a78bfa;--formula2:#38bdf8;--panel:#111c31;--panel2:#16243b}
@@ -38,12 +40,23 @@
         .mode-row button.active{background:linear-gradient(135deg,#8b5cf6,#38bdf8);color:#07101e;border-color:transparent}
         .layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
         .sidebar{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto;padding:16px;border:1px solid #273a56;border-radius:20px;background:rgba(13,23,41,.94)}
+        .level-filter{margin-bottom:18px;padding-bottom:17px;border-bottom:1px solid #263852}
+        .filter-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#fff;font-size:.84rem}
+        .filter-heading button{padding:4px 8px;border:1px solid #3b4f6d;border-radius:8px;background:#142138;color:#bcd0e8;font-size:.66rem;font-weight:800;cursor:pointer}
+        .level-filter-options{display:flex;flex-wrap:wrap;gap:6px}
+        .level-filter-options label{cursor:pointer}
+        .level-filter-options input{position:absolute;opacity:0;pointer-events:none}
+        .level-filter-options span{display:block;padding:5px 9px;border:1px solid #344863;border-radius:999px;background:#101a2d;color:#9fb0c7;font-size:.67rem;font-weight:800}
+        .level-filter-options input:checked+span{border-color:#8b5cf6;background:rgba(139,92,246,.22);color:#fff}
+        .level-filter p{margin:8px 0 0;color:#71859f;font-size:.64rem;line-height:1.55}
         .formula-group+.formula-group{margin-top:18px;padding-top:18px;border-top:1px solid #263852}
         .group-heading{display:flex;justify-content:space-between;gap:8px;margin:0 4px 8px;color:#e9e5ff;font-size:.83rem}
         .group-heading span{color:#7890ae;font-size:.7rem}
         .formula-menu{display:grid;gap:6px}
-        .formula-menu-btn{display:flex;align-items:center;gap:9px;width:100%;padding:9px 10px;border:1px solid transparent;border-radius:10px;background:transparent;color:#afbdd1;text-align:left;font-size:.78rem;line-height:1.45;cursor:pointer}
-        .formula-menu-btn span{color:#7dd3fc;font:800 .7rem Outfit,sans-serif}
+        .formula-menu-btn{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;padding:9px 9px;border:1px solid transparent;border-radius:10px;background:transparent;color:#afbdd1;text-align:left;font-size:.76rem;line-height:1.45;cursor:pointer}
+        .formula-menu-btn .formula-number{color:#7dd3fc;font:800 .68rem Outfit,sans-serif}
+        .formula-menu-btn .formula-title{min-width:0;color:inherit}
+        .level-badge{padding:2px 6px;border:1px solid rgba(167,139,250,.35);border-radius:999px;background:rgba(139,92,246,.12);color:#ddd6fe;font-size:.6rem;font-weight:900;white-space:nowrap}
         .formula-menu-btn:hover{background:#17253c}
         .formula-menu-btn.active{border-color:#8b5cf6;background:rgba(139,92,246,.15);color:#fff}
         .lesson-card{padding:clamp(20px,4vw,44px);border:1px solid #293c58;border-radius:24px;background:rgba(14,24,43,.96)}

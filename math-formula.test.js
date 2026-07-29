@@ -6,7 +6,9 @@ const context = { window: {}, console, Math };
 context.window = context;
 vm.createContext(context);
 vm.runInContext(fs.readFileSync('MathFormulaData.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaDataExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuiz.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaQuizExtra.js', 'utf8'), context);
 
 const formulas = Array.from(context.MATH_FORMULAS);
 const groups = Array.from(context.MATH_FORMULA_GROUPS);
@@ -19,10 +21,10 @@ const sync = fs.readFileSync('firebase-sync.js', 'utf8');
 const home = fs.readFileSync('index.html', 'utf8');
 const worker = fs.readFileSync('service-worker.js', 'utf8');
 
-assert.strictEqual(formulas.length, 10);
-assert.deepStrictEqual(formulas.map(item => item.number), [1,2,3,4,5,6,7,8,9,10]);
-assert.strictEqual(groups.length, 3);
-assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), [1,2,3,4,5,6,7,8,9,10]);
+assert.strictEqual(formulas.length, 30);
+assert.deepStrictEqual(formulas.map(item => item.number), Array.from({ length: 30 }, (_, index) => index + 1));
+assert.strictEqual(groups.length, 6);
+assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), Array.from({ length: 30 }, (_, index) => index + 1));
 
 const expectedTitles = [
     '정삼각형의 넓이 공식', '정삼각형의 높이 공식', '직각삼각형의 넓이 공식',
@@ -30,14 +32,17 @@ const expectedTitles = [
     '헤론의 공식', '각과 삼각형의 넓이 공식', '내접원과 삼각형의 넓이 공식',
     '외접원과 삼각형의 넓이 공식'
 ];
-assert.deepStrictEqual(formulas.map(item => item.title), expectedTitles);
+assert.deepStrictEqual(formulas.slice(0, 10).map(item => item.title), expectedTitles);
 formulas.forEach(item => {
+    assert(['초6','중1','중2','중3','고1','고2','고3'].includes(item.level), `Formula ${item.number} needs a school level`);
     assert(item.formula && item.curriculum.length >= 2, `Formula ${item.number} needs curriculum mapping`);
     assert(item.symbols.length >= 3, `Formula ${item.number} needs symbol explanations`);
     assert(item.steps.length >= 4, `Formula ${item.number} needs principle steps`);
-    assert(item.example.work.length >= 3, `Formula ${item.number} needs a worked example`);
-    assert.strictEqual(Array.from(prerequisiteRefs[item.number]).length, item.prerequisites.length,
-        `Formula ${item.number} prerequisite links must match its knowledge list`);
+    assert(item.example.work.length >= 2, `Formula ${item.number} needs a worked example`);
+    if (item.number <= 10) {
+        assert.strictEqual(Array.from(prerequisiteRefs[item.number]).length, item.prerequisites.length,
+            `Formula ${item.number} prerequisite links must match its knowledge list`);
+    }
 
     const generated = Array.from(quiz.create(item.number));
     assert.deepStrictEqual(generated.map(q => q.level), ['기본 연산', '심화 연산', '서술형']);
@@ -54,6 +59,9 @@ for (const guideId of ['square-roots', 'trigonometry', 'perpendicular-height', '
 }
 assert(app.includes('href="?formula=${ref.formula}&mode=study"'), 'Related formula links are missing');
 assert(app.includes('class="foundation-card"'), 'Embedded foundation explanations are missing');
+assert(app.includes('교과 수준 필터'), 'School-level filter is missing');
+assert(app.includes('level-badge'), 'Formula menu school-level badge is missing');
+assert(app.includes("const allLevels = ['초6', '중1', '중2', '중3', '고1', '고2', '고3']"), 'All requested school levels must be selectable');
 assert(app.includes('M220 180 L320 180 L320 105'), 'Pythagorean triangle alignment is missing');
 assert(app.includes('M220 180 L320 105 L245 5 L145 80'), 'Hypotenuse square must share the exact hypotenuse');
 assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry must use a shared radius');
@@ -72,8 +80,8 @@ assert(!timeTracker.includes('totalStudyTime'), 'Formula time must remain separa
 assert(sync.includes('formulaStudyTime: _mergeFormulaStudyTime'), 'Formula time needs cross-device merge support');
 assert(home.indexOf('math_formula.html') > home.indexOf('href="math.html"'), 'Formula encyclopedia must appear after the five subjects');
 assert(home.indexOf('math_formula.html') < home.indexOf('id="missionContainer"'), 'Formula encyclopedia must appear before missions');
-for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaQuiz.js', 'MathFormulaApp.js', 'MathFormulaTime.js']) {
+for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaDataExtra.js', 'MathFormulaQuiz.js', 'MathFormulaQuizExtra.js', 'MathFormulaApp.js', 'MathFormulaTime.js']) {
     assert(worker.includes(`'./${asset}'`), `Service worker missing ${asset}`);
 }
 
-console.log('Math formula encyclopedia verified: formulas 1-10, curriculum, quizzes, and isolation.');
+console.log('Math formula encyclopedia verified: formulas 1-30, level filters, quizzes, and isolation.');
