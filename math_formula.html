@@ -13,11 +13,11 @@
     <script src="report.js?v=20260729-formula-time"></script>
     <script src="firebase-sync.js?v=20260729-formula-time"></script>
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
-    <script defer src="MathFormulaData.js?v=20260729-quiz3-diagrams"></script>
-    <script defer src="MathFormulaDataExtra.js?v=20260729-quiz3-diagrams"></script>
-    <script defer src="MathFormulaQuiz.js?v=20260729-quiz3-diagrams"></script>
-    <script defer src="MathFormulaQuizExtra.js?v=20260729-quiz3-diagrams"></script>
-    <script defer src="MathFormulaApp.js?v=20260729-quiz3-diagrams"></script>
+    <script defer src="MathFormulaData.js?v=20260729-mobile-menu"></script>
+    <script defer src="MathFormulaDataExtra.js?v=20260729-mobile-menu"></script>
+    <script defer src="MathFormulaQuiz.js?v=20260729-mobile-menu"></script>
+    <script defer src="MathFormulaQuizExtra.js?v=20260729-mobile-menu"></script>
+    <script defer src="MathFormulaApp.js?v=20260729-mobile-menu"></script>
     <script defer src="MathFormulaTime.js?v=20260729-formula-time"></script>
     <style>
         :root{--formula:#a78bfa;--formula2:#38bdf8;--panel:#111c31;--panel2:#16243b}
@@ -38,10 +38,14 @@
         .mode-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:18px 0}
         .mode-row button{border:1px solid #30425e;border-radius:14px;padding:13px;background:#101a2d;color:#d8e3f4;font-weight:800;cursor:pointer}
         .mode-row button.active{background:linear-gradient(135deg,#8b5cf6,#38bdf8);color:#07101e;border-color:transparent}
+        .filter-panel{margin:0 0 18px;padding:14px 16px;border:1px solid #273a56;border-radius:16px;background:rgba(13,23,41,.94)}
+        .filter-panel .level-filter{margin:0;padding:0;border:0}
         .layout{display:grid;grid-template-columns:300px minmax(0,1fr);gap:22px;align-items:start}
         .sidebar{position:sticky;top:18px;max-height:calc(100vh - 36px);overflow:auto;padding:16px;border:1px solid #273a56;border-radius:20px;background:rgba(13,23,41,.94)}
-        .level-filter{margin-bottom:18px;padding-bottom:17px;border-bottom:1px solid #263852}
+        .level-filter{margin:0}
         .filter-heading{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;color:#fff;font-size:.84rem}
+        .filter-heading-main{display:flex;align-items:center;gap:8px}
+        .mobile-filter-toggle{display:none;border:0;background:transparent;color:#bae6fd;font-weight:900;cursor:pointer}
         .filter-heading button{padding:4px 8px;border:1px solid #3b4f6d;border-radius:8px;background:#142138;color:#bcd0e8;font-size:.66rem;font-weight:800;cursor:pointer}
         .level-filter-options{display:flex;flex-wrap:wrap;gap:6px}
         .level-filter-options label{cursor:pointer}
@@ -51,6 +55,8 @@
         .level-filter p{margin:8px 0 0;color:#71859f;font-size:.64rem;line-height:1.55}
         .formula-group+.formula-group{margin-top:18px;padding-top:18px;border-top:1px solid #263852}
         .group-heading{display:flex;justify-content:space-between;gap:8px;margin:0 4px 8px;color:#e9e5ff;font-size:.83rem}
+        .group-toggle{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;padding:0;border:0;background:transparent;color:inherit;text-align:left;cursor:default}
+        .group-toggle-icon{display:none;color:#7dd3fc}
         .group-heading span{color:#7890ae;font-size:.7rem}
         .formula-menu{display:grid;gap:6px}
         .formula-menu-btn{display:grid;grid-template-columns:28px minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;padding:9px 9px;border:1px solid transparent;border-radius:10px;background:transparent;color:#afbdd1;text-align:left;font-size:.76rem;line-height:1.45;cursor:pointer}
@@ -126,7 +132,28 @@
         .page-controls{display:flex;justify-content:center;gap:10px;margin-top:20px}
         .page-controls button{padding:10px 17px;border:1px solid #30445f;border-radius:11px;background:#142138;color:#dbe7f6;font-weight:800;cursor:pointer}
         .page-controls button:disabled{opacity:.35;cursor:not-allowed}
-        @media(max-width:850px){.page{padding:16px 14px 70px}.layout{grid-template-columns:1fr}.sidebar{position:static;max-height:none}.formula-menu{grid-template-columns:repeat(2,minmax(0,1fr))}.symbol-grid{grid-template-columns:1fr}}
+        .mobile-formula-toolbar{display:none}
+        @media(max-width:850px){
+            .page{padding:16px 14px 70px}
+            .filter-panel{padding:12px 14px}
+            .mobile-filter-toggle{display:inline-flex}
+            .filter-panel:not(.open) .level-filter-options,.filter-panel:not(.open) .level-filter p{display:none}
+            .filter-panel:not(.open) .filter-heading{margin-bottom:0}
+            .layout{grid-template-columns:1fr;gap:12px}
+            .mobile-formula-toolbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px;border:1px solid #38506f;border-radius:14px;background:rgba(13,23,41,.97);box-shadow:0 8px 24px rgba(0,0,0,.28)}
+            .mobile-current-formula{min-width:0}
+            .mobile-current-formula strong,.mobile-current-formula span{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+            .mobile-current-formula strong{font-size:.8rem;color:#fff}.mobile-current-formula span{font-size:.66rem;color:#8fa4bd}
+            .mobile-list-toggle{flex-shrink:0;padding:7px 10px;border:1px solid rgba(56,189,248,.38);border-radius:10px;background:rgba(56,189,248,.1);color:#bae6fd;font-size:.7rem;font-weight:900;cursor:pointer}
+            .sidebar{position:static;max-height:none}
+            .sidebar.mobile-collapsed{display:none}
+            .group-toggle{cursor:pointer}
+            .group-toggle-icon{display:inline}
+            .formula-group.mobile-collapsed .group-items{display:none}
+            .formula-menu{grid-template-columns:repeat(2,minmax(0,1fr))}
+            .symbol-grid{grid-template-columns:1fr}
+            #content{scroll-margin-top:78px}
+        }
         @media(max-width:520px){.hero{padding:25px 15px}.choice-grid,.formula-menu{grid-template-columns:1fr}.lesson-card{padding:20px 15px}.symbol-item{grid-template-columns:58px 1fr}.top-nav{align-items:flex-start}.knowledge-list li{align-items:flex-start;flex-direction:column}.foundation-card summary{align-items:flex-start;flex-direction:column}}
     </style>
 </head>
@@ -145,7 +172,15 @@
             <button id="studyModeBtn">📖 원리 학습</button>
             <button id="quizModeBtn">🧩 랜덤 퀴즈</button>
         </div>
+        <section class="filter-panel" id="formulaFilter" aria-label="교과 수준 필터"></section>
         <div class="layout">
+            <div class="mobile-formula-toolbar">
+                <div class="mobile-current-formula">
+                    <strong id="mobileFormulaTitle">001 · 정삼각형의 넓이 공식</strong>
+                    <span id="mobileFormulaMeta">초6 · 원리 학습</span>
+                </div>
+                <button class="mobile-list-toggle" id="mobileListToggle" type="button">📚 다른 공식 선택</button>
+            </div>
             <aside class="sidebar" id="formulaGroups" aria-label="공식 목록"></aside>
             <div>
                 <section id="content"></section>

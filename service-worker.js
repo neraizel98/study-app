@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v40-formula-quiz3-diagrams';
+const CACHE_NAME = 'smart-study-v41-formula-mobile-menu';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
