@@ -649,7 +649,7 @@
         renderRecent(week);
 
         // 퀴즈 기록 탭이 활성화 상태면 해당 주 데이터로 함께 갱신
-        if (document.getElementById('quizView').style.display !== 'none') {
+        if (document.getElementById('quizView').classList.contains('view-active')) {
             renderQuizList(week, _quizSubj);
         }
     }
@@ -782,7 +782,8 @@
         document.querySelectorAll('.page-tab').forEach(item => item.classList.remove('active'));
         if (button) button.classList.add('active');
         document.getElementById('statsView').style.display = tab === 'stats' ? '' : 'none';
-        document.getElementById('quizView').style.display = tab === 'quiz' ? '' : 'none';
+        const quizView = document.getElementById('quizView');
+        quizView.classList.toggle('view-active', tab === 'quiz');
         if (tab === 'quiz') {
             const week = filterWeek(loadReports(), weekStart(weekOffset));
             renderQuizSubjectTabs(week);

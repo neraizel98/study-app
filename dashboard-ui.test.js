@@ -23,6 +23,10 @@ assert(stats.includes('⏱ ${timeStr} · 📝 퀴즈 ${quizStatus}'), 'Study tim
 assert(stats.includes('min: SCORE_FLOOR, max: 100'), 'Score chart must use a 50–100 range');
 assert(stats.includes('Math.max(SCORE_FLOOR, v)'), 'Scores below 50 must be plotted at 50');
 assert(stats.includes('actual < SCORE_FLOOR'), 'Actual scores below 50 must be labeled');
+assert(stats.includes("quizView.classList.toggle('view-active', tab === 'quiz')"),
+    'Quiz records view must override the shared hidden quiz-view style when active');
+assert(stats.includes("classList.contains('view-active')"),
+    'Quiz records refresh must follow the visible view state');
 
 const admin = read('admin.html');
 assert(admin.includes('min: SCORE_FLOOR, max: 100'), 'Admin score chart must use a 50–100 range');
