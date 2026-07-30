@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v47-learning-status-charts';
+const CACHE_NAME = 'smart-study-v48-grammar-active-time';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

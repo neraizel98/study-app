@@ -268,6 +268,7 @@ const StudyTimer = (() => {
         let timerId = null;
         let lastTs = Date.now();
         let lastActivityAt = Date.now();
+        let activeSeconds = 0;
 
         const onActivity = () => { lastActivityAt = Date.now(); };
         ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }));
@@ -326,6 +327,7 @@ const StudyTimer = (() => {
             lastTs = now;
             if (elapsed > 0 && canCount()) {
                 const { context, status } = current();
+                activeSeconds += Math.min(elapsed, 2);
                 if (!status.unlocked) addSeconds(subject, context, Math.min(elapsed, 2));
             }
             updateUI(!canCount());
@@ -351,6 +353,16 @@ const StudyTimer = (() => {
             updateUI(false);
         }
 
+        function getActiveSeconds() {
+            return activeSeconds;
+        }
+
+        function resetActiveSeconds() {
+            activeSeconds = 0;
+            lastTs = Date.now();
+            lastActivityAt = Date.now();
+        }
+
         if (quizBtn) {
             quizBtn.addEventListener('click', e => {
                 const { status } = current();
@@ -364,7 +376,14 @@ const StudyTimer = (() => {
         }
 
         updateUI(false);
-        return { startTimer, stopTimer, refresh, getStatus: () => current().status };
+        return {
+            startTimer,
+            stopTimer,
+            refresh,
+            getActiveSeconds,
+            resetActiveSeconds,
+            getStatus: () => current().status
+        };
     }
 
     return {
