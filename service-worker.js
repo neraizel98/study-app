@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v48-grammar-active-time';
+const CACHE_NAME = 'smart-study-v49-stats-quiz-view';
 
 self.addEventListener('install', event => {
     self.skipWaiting();
