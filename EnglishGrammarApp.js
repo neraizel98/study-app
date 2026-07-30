@@ -257,9 +257,10 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
+        const activeStudySeconds = timerController?.getActiveSeconds?.() || 0;
         if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
-            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, 0, true, {
+            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, activeStudySeconds, true, {
                 category: 'grammar',
                 review: requestedReview,
                 stageId,
@@ -269,6 +270,7 @@
                 attempts
             });
         }
+        timerController?.resetActiveSeconds?.();
         $('resultEmoji').textContent = score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚';
         $('resultTitle').textContent = score >= 90 ? '문법 마스터!' : score >= 70 ? '잘했어요!' : '조금 더 연습해요!';
         $('resultScore').textContent = `${initialScore} / ${questions.length}점`;
