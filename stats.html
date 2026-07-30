@@ -175,6 +175,7 @@
         .session-info  { flex: 1; min-width: 0; }
         .session-name  { font-size: 0.88rem; font-weight: 600; }
         .session-level { font-size: 0.76rem; color: var(--text-sub); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .session-meta  { margin-top:3px; font-size:0.72rem; color:var(--text-sub); }
         .session-score { font-size: 1rem; font-weight: 700; flex-shrink: 0; }
         .session-date  { font-size: 0.72rem; color: var(--text-sub); flex-shrink: 0; }
         .quiz-unit-tabs { display:flex; gap:7px; flex-wrap:wrap; margin:0 0 14px; }
@@ -279,9 +280,10 @@
             </div>
         </div>
 
-        <!-- Recent sessions -->
+        <!-- Learning status -->
         <div class="chart-card">
-            <div class="chart-title">📋 최근 퀴즈 기록</div>
+            <div class="chart-title">📚 나의 학습 현황</div>
+            <div class="chart-sub">학습한 과목·단원, 소요 시간과 퀴즈 결과를 함께 확인합니다.</div>
             <div id="recentList"></div>
         </div>
 
@@ -327,6 +329,29 @@
         ticks:  { color: '#8b949e', font: { family: 'Outfit', size: 11 } },
         grid:   { color: 'rgba(255,255,255,0.06)' },
         border: { color: 'rgba(255,255,255,0.1)' }
+    };
+    const SCORE_FLOOR = 50;
+    const scoreFloorLabelPlugin = {
+        id: 'scoreFloorLabel',
+        afterDatasetsDraw(chart) {
+            const { ctx } = chart;
+            ctx.save();
+            ctx.fillStyle = '#fca5a5';
+            ctx.font = '700 11px Outfit, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'bottom';
+            chart.data.datasets.forEach((dataset, datasetIndex) => {
+                const actualScores = dataset.actualScores || [];
+                const meta = chart.getDatasetMeta(datasetIndex);
+                meta.data.forEach((point, index) => {
+                    const actual = actualScores[index];
+                    if (actual !== null && actual !== undefined && actual < SCORE_FLOOR) {
+                        ctx.fillText(`${actual}`, point.x, point.y - 7);
+                    }
+                });
+            });
+            ctx.restore();
+        }
     };
 
     // ─────────────────────────────────────────────
@@ -471,7 +496,8 @@
                 labels,
                 datasets: ['reading','english','grammar','hanja','math'].map(s => ({
                     label: SUBJ_NAMES[s],
-                    data:  series[s],
+                    data:  series[s].map(v => v === null ? null : Math.max(SCORE_FLOOR, v)),
+                    actualScores: series[s],
                     borderColor:     SUBJ_COLOR[s].bd,
                     backgroundColor: SUBJ_COLOR[s].bd + '18',
                     borderWidth: 2,
@@ -485,10 +511,11 @@
                 ...CHART_DEFAULTS,
                 scales: {
                     x: { ...AXIS_BASE },
-                    y: { ...AXIS_BASE, beginAtZero: true, max: 100,
+                    y: { ...AXIS_BASE, min: SCORE_FLOOR, max: 100,
                          title: { display: true, text: '%', color: '#8b949e', font: { size: 11 } } }
                 }
-            }
+            },
+            plugins: [scoreFloorLabelPlugin]
         });
     }
 
@@ -549,7 +576,8 @@
                 labels: entries.map(e => e.key),
                 datasets: [{
                     label: SUBJ_NAMES[subject] + ' 평균 정답률',
-                    data:  entries.map(e => e.avg),
+                    data:  entries.map(e => Math.max(SCORE_FLOOR, e.avg)),
+                    actualScores: entries.map(e => e.avg),
                     backgroundColor: c.bg,
                     borderColor:     c.bd,
                     borderWidth: 1,
@@ -560,11 +588,12 @@
                 ...CHART_DEFAULTS,
                 indexAxis: isHorizontal ? 'y' : 'x',
                 scales: {
-                    x: { ...AXIS_BASE, beginAtZero: true, ...(isHorizontal ? { max: 100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) },
-                    y: { ...AXIS_BASE, beginAtZero: true, ...(!isHorizontal ? { max: 100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) }
+                    x: { ...AXIS_BASE, ...(isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) },
+                    y: { ...AXIS_BASE, ...(!isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) }
                 },
                 plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } }
-            }
+            },
+            plugins: [scoreFloorLabelPlugin]
         });
     }
 
@@ -585,14 +614,18 @@
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const levelShort = r.level ? (r.level.length > 18 ? r.level.slice(0,18) + '…' : r.level) : '-';
+            const sec = r.timeSpentSeconds || 0;
+            const timeStr = sec > 0 ? `${Math.floor(sec / 60)}분 ${sec % 60 ? `${sec % 60}초` : ''}`.trim() : '시간 기록 없음';
+            const quizStatus = r.isCompleted ? '완료' : '진행 중';
             return `
                 <div class="session-row">
                     <div class="session-badge" style="background:${c.bd}22; color:${c.bd}">${SUBJ_ICONS[r.subject] || '📚'}</div>
                     <div class="session-info">
                         <div class="session-name">${SUBJ_NAMES[r.subject] || r.subject}</div>
-                        <div class="session-level">${levelShort}</div>
+                        <div class="session-level">학습 내용 · ${levelShort}</div>
+                        <div class="session-meta">⏱ ${timeStr} · 📝 퀴즈 ${quizStatus}</div>
                     </div>
-                    <div class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions}</div>
+                    <div class="session-score" style="color:${scoreColor}" title="퀴즈 점수">${p}%</div>
                     <div class="session-date">${ds}</div>
                 </div>`;
         }).join('');
