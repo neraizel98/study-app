@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v46-principle-quiz';
+const CACHE_NAME = 'smart-study-v47-learning-status-charts';
 
 self.addEventListener('install', event => {
     self.skipWaiting();

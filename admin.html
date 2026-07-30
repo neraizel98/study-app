@@ -934,6 +934,28 @@
         // ── Chart 2: 8주 정답률 추이 — 최초 시도(initialScore) vs 오답 재시도(finalScore) ──
         const weekLabels = [];
         const trendData = {};
+        const SCORE_FLOOR = 50;
+        const scoreFloorLabelPlugin = {
+            id: 'adminScoreFloorLabel',
+            afterDatasetsDraw(chart) {
+                const { ctx } = chart;
+                ctx.save();
+                ctx.fillStyle = '#fca5a5';
+                ctx.font = '700 11px Outfit, sans-serif';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+                chart.data.datasets.forEach((dataset, datasetIndex) => {
+                    const meta = chart.getDatasetMeta(datasetIndex);
+                    meta.data.forEach((point, index) => {
+                        const actual = dataset.actualScores?.[index];
+                        if (actual !== null && actual !== undefined && actual < SCORE_FLOOR) {
+                            ctx.fillText(`${actual}`, point.x, point.y - 7);
+                        }
+                    });
+                });
+                ctx.restore();
+            }
+        };
         SUBJ.forEach(s => { trendData[s] = { init: [], final: [] }; });
 
         for (let i = -7; i <= 0; i++) {
@@ -959,7 +981,8 @@
                 const hasFinal = trendData[s].final.some(v => v !== null);
                 if (hasInit) datasets.push({
                     label: `${NAMES[s]} 최초`,
-                    data: trendData[s].init,
+                    data: trendData[s].init.map(v => v === null ? null : Math.max(SCORE_FLOOR, v)),
+                    actualScores: trendData[s].init,
                     borderColor: COLORS[s], backgroundColor: COLORS[s] + '22',
                     fill: false, tension: 0.35, spanGaps: true,
                     pointRadius: 4, pointBackgroundColor: COLORS[s],
@@ -967,7 +990,8 @@
                 });
                 if (hasFinal) datasets.push({
                     label: `${NAMES[s]} 재시도`,
-                    data: trendData[s].final,
+                    data: trendData[s].final.map(v => v === null ? null : Math.max(SCORE_FLOOR, v)),
+                    actualScores: trendData[s].final,
                     borderColor: COLORS[s], backgroundColor: COLORS[s] + '11',
                     fill: false, tension: 0.35, spanGaps: true,
                     pointRadius: 3, pointBackgroundColor: COLORS[s],
@@ -982,11 +1006,12 @@
                     plugins: { legend: { labels: { color: tickColor, font: fontCfg, boxWidth: 12 } } },
                     scales: {
                         x: { ticks: { color: tickColor, font: fontCfg }, grid: { color: gridColor } },
-                        y: { min: 0, max: 100,
+                        y: { min: SCORE_FLOOR, max: 100,
                              ticks: { color: tickColor, font: fontCfg, callback: v => v + '%' },
                              grid: { color: gridColor } }
                     }
-                }
+                },
+                plugins: [scoreFloorLabelPlugin]
             });
         }
     }
