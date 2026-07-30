@@ -10,7 +10,7 @@ window.onerror = function (msg, url, line, col, error) {
         File: ${url.split('/').pop()}<br>
         Line: ${line}, Column: ${col}<br>
         <button onclick="this.parentElement.remove()" style="margin-top:10px; padding:4px 8px; cursor:pointer; background:white; border:none; border-radius:4px; font-weight:bold;">닫기 (X)</button>
-        <button onclick="localStorage.clear(); location.reload();" style="margin-top:10px; margin-left:10px; padding:4px 8px; cursor:pointer; background:black; color:white; border:none; border-radius:4px; font-weight:bold;">데이터 초기화 후 새로고침</button>
+        <button onclick="SmartStudy.LocalRepository.clearAppData(); location.reload();" style="margin-top:10px; margin-left:10px; padding:4px 8px; cursor:pointer; background:black; color:white; border:none; border-radius:4px; font-weight:bold;">앱 데이터 초기화 후 새로고침</button>
     `;
     document.body.prepend(errorDiv);
     return false;

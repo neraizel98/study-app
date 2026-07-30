@@ -50,13 +50,12 @@
     }
 
     function recentPassageIds() {
-        try { return JSON.parse(localStorage.getItem(`SmartStudy_RecentPassages_${levelId}`) || '[]'); }
-        catch { return []; }
+        return SmartStudy.LocalRepository.getPreference(SmartStudy.StorageKeys.recentPassages(levelId), []);
     }
 
     function rememberPassage(id) {
         const recent = [id, ...recentPassageIds().filter(item => item !== id)].slice(0, 4);
-        localStorage.setItem(`SmartStudy_RecentPassages_${levelId}`, JSON.stringify(recent));
+        SmartStudy.LocalRepository.setPreference(SmartStudy.StorageKeys.recentPassages(levelId), recent);
     }
 
     function activeWrongItems() {

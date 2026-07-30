@@ -298,8 +298,9 @@
 
     </div><!-- .stats-wrap -->
 
-    <script src="report.js?v=20260729-mission-periods"></script>
-    <script src="firebase-sync.js?v=20260729-mission-periods"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260730-architecture"></script>
+    <script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -366,9 +367,7 @@
     // ─────────────────────────────────────────────
     function loadReports() {
         const uid = UserSession.getActiveUser();
-        if (!uid) return [];
-        try { return JSON.parse(localStorage.getItem('SmartVocab_Reports_' + uid) || '[]'); }
-        catch(e) { return []; }
+        return uid ? SmartStudy.LocalRepository.listReports(uid) : [];
     }
 
     function weekStart(offset) {

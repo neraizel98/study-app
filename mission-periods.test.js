@@ -20,6 +20,9 @@ const context = {
 };
 context.window = context;
 vm.createContext(context);
+for (const file of ['storage-keys.js', 'storage-events.js', 'schema-migrations.js', 'local-repository.js']) {
+    vm.runInContext(fs.readFileSync(file, 'utf8'), context, { filename: file });
+}
 vm.runInContext(
     fs.readFileSync('report.js', 'utf8')
         + '\nglobalThis.__UserSession = UserSession; globalThis.__StudyPeriods = StudyPeriods;',

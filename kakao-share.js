@@ -8,6 +8,35 @@
 window.KakaoShare = {
     isInitialized: false,
 
+    _sendFeed: function({ title, description, imageUrl, url, buttonTitle }) {
+        if (!this.isInitialized) {
+            alert('카카오톡 초기화 중입니다. 잠시 후 다시 시도해주세요.');
+            return false;
+        }
+        if (url.length > 7500) {
+            alert('공유할 기록이 너무 깁니다. 기록 수를 줄인 뒤 다시 시도해주세요.');
+            return false;
+        }
+        try {
+            Kakao.Share.sendDefault({
+                objectType: 'feed',
+                content: {
+                    title, description, imageUrl,
+                    link: { mobileWebUrl: url, webUrl: url }
+                },
+                buttons: [{
+                    title: buttonTitle,
+                    link: { mobileWebUrl: url, webUrl: url }
+                }]
+            });
+            return true;
+        } catch (error) {
+            console.error('[KakaoShare]', error);
+            alert('카카오톡 전송 중 오류가 발생했습니다.\n오류: ' + error.message);
+            return false;
+        }
+    },
+
     init: function() {
         if (this.isInitialized) return;
         
@@ -56,26 +85,12 @@ window.KakaoShare = {
         const name = info.name;
         const url = window.location.origin + window.location.pathname.replace('index.html', info.path);
         
-        Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-                title: `📚 ${name} 학습 요청!`,
-                description: `우준아, 오늘 ${name} 퀴즈 한 번 풀어볼까? 도전해보자!`,
-                imageUrl: 'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?q=80&w=400&auto=format&fit=crop', // 공부 이미지
-                link: {
-                    mobileWebUrl: url,
-                    webUrl: url,
-                },
-            },
-            buttons: [
-                {
-                    title: '퀴즈 풀러 가기 🚀',
-                    link: {
-                        mobileWebUrl: url,
-                        webUrl: url,
-                    },
-                },
-            ],
+        this._sendFeed({
+            title: `📚 ${name} 학습 요청!`,
+            description: `우준아, 오늘 ${name} 퀴즈 한 번 풀어볼까? 도전해보자!`,
+            imageUrl: 'https://images.unsplash.com/photo-1454165833767-027ffea9e77b?q=80&w=400&auto=format&fit=crop',
+            url,
+            buttonTitle: '퀴즈 풀러 가기 🚀'
         });
     },
 
@@ -165,26 +180,13 @@ window.KakaoShare = {
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodeURIComponent(encodedData);
 
-        try { Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-                title: title,
-                description: desc,
-                imageUrl: isPerfect
-                    ? 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&auto=format&fit=crop'
-                    : 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=400&auto=format&fit=crop',
-                link: { mobileWebUrl: url, webUrl: url },
-            },
-            buttons: [
-                {
-                    title: '성적표 자세히 보기 📊',
-                    link: { mobileWebUrl: url, webUrl: url },
-                },
-            ],
-        }); } catch (e) {
-            console.error('[KakaoShare sendReport Error]', e);
-            alert('카카오톡 전송 중 오류가 발생했습니다.\n브라우저 콘솔(F12)에서 상세 오류를 확인하세요.\n오류: ' + e.message);
-        }
+        this._sendFeed({
+            title, description: desc,
+            imageUrl: isPerfect
+                ? 'https://images.unsplash.com/photo-1523240795612-9a054b0db644?q=80&w=400&auto=format&fit=crop'
+                : 'https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?q=80&w=400&auto=format&fit=crop',
+            url, buttonTitle: '성적표 자세히 보기 📊'
+        });
     },
 
     /**
@@ -237,19 +239,11 @@ window.KakaoShare = {
 
         const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
 
-        try { Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-                title,
-                description: desc,
-                imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
-                link: { mobileWebUrl: url, webUrl: url },
-            },
-            buttons: [{ title: '성적표 보기 📈', link: { mobileWebUrl: url, webUrl: url } }],
-        }); } catch (e) {
-            console.error('[KakaoShare sendDailySummary Error]', e);
-            alert('카카오톡 전송 중 오류가 발생했습니다.\n오류: ' + e.message);
-        }
+        this._sendFeed({
+            title, description: desc,
+            imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
+            url, buttonTitle: '성적표 보기 📈'
+        });
     },
 
     /**
@@ -269,24 +263,12 @@ window.KakaoShare = {
         const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodeURIComponent(encodedData);
 
-        try { Kakao.Share.sendDefault({
-            objectType: 'feed',
-            content: {
-                title: '📊 우준이의 전체 학습 기록부',
-                description: `지금까지 총 ${reports.length}번의 퀴즈에 도전했습니다. 전체 기록을 확인해보세요!`,
-                imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
-                link: { mobileWebUrl: url, webUrl: url },
-            },
-            buttons: [
-                {
-                    title: '종합 성적표 보기 📈',
-                    link: { mobileWebUrl: url, webUrl: url },
-                },
-            ],
-        }); } catch (e) {
-            console.error('[KakaoShare sendFullHistory Error]', e);
-            alert('카카오톡 전송 중 오류가 발생했습니다.\n오류: ' + e.message);
-        }
+        this._sendFeed({
+            title: '📊 우준이의 전체 학습 기록부',
+            description: `지금까지 총 ${reports.length}번의 퀴즈에 도전했습니다. 전체 기록을 확인해보세요!`,
+            imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
+            url, buttonTitle: '종합 성적표 보기 📈'
+        });
     }
 };
 

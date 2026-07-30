@@ -33,7 +33,7 @@ const MathFormulaApp = (() => {
     const isMobile = () => Boolean(window.matchMedia?.('(max-width: 850px)').matches);
     const activeGroup = () => MATH_FORMULA_GROUPS.find(group => group.items.includes(formulaNumber));
     const saveFilterPreference = () => {
-        try { localStorage.setItem('MathFormula_SelectedLevels', JSON.stringify([...selectedLevels])); } catch {}
+        SmartStudy.LocalRepository.setPreference(SmartStudy.StorageKeys.formulaLevels, [...selectedLevels]);
     };
     const scrollToContent = () => requestAnimationFrame(() =>
         $('content').scrollIntoView({ behavior: 'smooth', block: 'start' }));
@@ -547,11 +547,9 @@ const MathFormulaApp = (() => {
         const params = new URLSearchParams(location.search);
         formulaNumber = Math.min(MATH_FORMULAS.length, Math.max(1, Number(params.get('formula')) || 1));
         mode = params.get('mode') === 'quiz' ? 'quiz' : 'study';
-        try {
-            const savedLevels = JSON.parse(localStorage.getItem('MathFormula_SelectedLevels') || '[]');
-            const validLevels = savedLevels.filter(level => allLevels.includes(level));
-            if (validLevels.length) selectedLevels = new Set(validLevels);
-        } catch {}
+        const savedLevels = SmartStudy.LocalRepository.getPreference(SmartStudy.StorageKeys.formulaLevels, []);
+        const validLevels = savedLevels.filter(level => allLevels.includes(level));
+        if (validLevels.length) selectedLevels = new Set(validLevels);
         if (!selectedLevels.has(formula().level)) selectedLevels.add(formula().level);
         openGroups.add(activeGroup()?.id);
         $('mobileListToggle').addEventListener('click', () => {

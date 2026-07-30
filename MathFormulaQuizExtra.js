@@ -151,11 +151,5 @@
         }
     };
 
-    window.MathFormulaQuiz = {
-        create(number) {
-            const generator = generators[number];
-            return generator ? generator() : baseQuiz.create(number);
-        },
-        isCorrect: baseQuiz.isCorrect
-    };
+    SmartStudy.QuizRegistry.registerFormulaGenerators('MathFormulaQuizExtra.js', generators);
 })();

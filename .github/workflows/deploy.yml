@@ -24,6 +24,19 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Run repository tests
+        shell: bash
+        run: |
+          set -euo pipefail
+          for test_file in *.test.js; do
+            node "$test_file"
+          done
+
       - name: Setup Pages
         uses: actions/configure-pages@v4
 

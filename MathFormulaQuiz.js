@@ -168,4 +168,5 @@ const MathFormulaQuiz = (() => {
     return { create, isCorrect };
 })();
 
-window.MathFormulaQuiz = MathFormulaQuiz;
+SmartStudy.QuizRegistry.setFormulaBase(MathFormulaQuiz);
+window.MathFormulaQuiz = SmartStudy.QuizRegistry.formulaFacade;

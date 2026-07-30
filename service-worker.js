@@ -3,11 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v49-stats-quiz-view';
-
-self.addEventListener('install', event => {
-    self.skipWaiting();
-});
+const CACHE_NAME = 'smart-study-v50-architecture';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
@@ -41,6 +37,17 @@ const STATIC_ASSETS = [
     './main.js',
     './utils.js',
     './ui-core.js',
+    './storage-keys.js',
+    './storage-events.js',
+    './schema-migrations.js',
+    './local-repository.js',
+    './app-bootstrap.js',
+    './firebase-client.js',
+    './firestore-repository.js',
+    './quiz-registry.js',
+    './report.js',
+    './firebase-sync.js',
+    './study-timer.js',
     './kakao-share.js',
     './VocabEng.js',
     './VocabHanja.js',
@@ -74,13 +81,12 @@ const STATIC_ASSETS = [
     './icons/icon-512.png',
     './images/spatial.png',
     './images/circle_area.png',
-    './images/solids.png',
-    './images/pythagoras.png',
-    './images/trigonometry.png'
+    './images/solids.png'
 ];
 
 // 설치 이벤트: 정적 자산 캐싱
 self.addEventListener('install', event => {
+    self.skipWaiting();
     event.waitUntil(
         caches.open(CACHE_NAME).then(cache => {
             console.log('[SW] Caching static assets');

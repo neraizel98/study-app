@@ -1,7 +1,7 @@
 {
     "name": "스마트 학습 앱",
     "short_name": "스마트학습",
-    "description": "영어 · 한자 · 수학 퀴즈 학습 앱",
+    "description": "국어 독해력 · 영어 단어 · 영어 문법 · 한자 · 수학 학습 앱",
     "start_url": "./index.html",
     "display": "standalone",
     "orientation": "portrait",
