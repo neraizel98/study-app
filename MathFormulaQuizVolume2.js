@@ -50,12 +50,9 @@
         59:()=>{const a=pick([3,4,5,7]);return triple(q(`모서리 ${a}인 정육면체 겉넓이는?`,6*a*a,`6a²`),q(`한 면 넓이는?`,a*a,`a²`),q(`정육면체의 면 개수는?`,6,`정사각형 6개`,'개'));},
         60:()=>{const a=pick([3,4,5]),b=pick([4,6,8]),c=pick([2,3,5]);return triple(q(`가로 ${a}, 세로 ${b}, 높이 ${c}인 직육면체 부피는?`,a*b*c,`abc`),q(`밑넓이는?`,a*b,`ab`),q(`부피가 ${a*b*c}, 밑넓이가 ${a*b}이면 높이는?`,c,`부피÷밑넓이`));}
     };
-    window.MathFormulaQuiz = {
-        create(number) {
-            return generators[number]
-                ? generators[number]().map((question, index) => ({ ...question, level: legacyLevels[index] }))
-                : previous.create(number);
-        },
-        isCorrect: previous.isCorrect
-    };
+    const normalized = Object.fromEntries(Object.entries(generators).map(([number, generator]) => [
+        number,
+        () => generator().map((question, index) => ({ ...question, level: legacyLevels[index] }))
+    ]));
+    SmartStudy.QuizRegistry.registerFormulaGenerators('MathFormulaQuizVolume2.js', normalized);
 })();

@@ -232,6 +232,7 @@ var MathQuizData = {
 };
 
 
+if (typeof window !== 'undefined') window.MathQuizData = MathQuizData;
 if (typeof module !== 'undefined' && module.exports) {
     module.exports = MathQuizData;
 }

@@ -2,6 +2,7 @@ const REPORT_KEY = 'SmartVocab_Reports';
 const ACTIVE_USER_KEY = 'SmartStudy_ActiveUser';
 const USER_DATA_PREFIX = 'SmartStudy_UserData_';
 const WRONG_NOTE_PREFIX = 'SmartStudy_WrongAnswers_';
+const LocalRepository = window.SmartStudy?.LocalRepository;
 
 const SubjectRegistry = {
     definitions: {
@@ -54,9 +55,9 @@ window.StudyPeriods = StudyPeriods;
  * 전역 사용자 세션 관리
  */
 const UserSession = {
-    getActiveUser: () => localStorage.getItem(ACTIVE_USER_KEY),
-    setActiveUser: (id) => localStorage.setItem(ACTIVE_USER_KEY, id),
-    logout: () => localStorage.removeItem(ACTIVE_USER_KEY),
+    getActiveUser: () => LocalRepository.getActiveUser(),
+    setActiveUser: (id) => LocalRepository.setActiveUser(id),
+    logout: () => LocalRepository.clearActiveUser(),
 
     // 성장형 레벨업에 필요한 경험치 계산 (현재 레벨 * 100)
     getRequiredEXP: (level) => level * 100,
@@ -65,7 +66,7 @@ const UserSession = {
         try {
             const userId = id || this.getActiveUser();
             if (!userId) return null;
-            const raw = localStorage.getItem(USER_DATA_PREFIX + userId);
+            const stored = LocalRepository.getUser(userId);
             const defaultData = {
                 id: userId,
                 level: 1,
@@ -95,9 +96,9 @@ const UserSession = {
                 }
             };
             
-            if (!raw) return defaultData;
+            if (!stored) return defaultData;
             
-            const data = JSON.parse(raw);
+            const data = stored;
             // 필드 누락 대비 초기화 (Deep Merge 느낌)
             if (!data.attendance) data.attendance = defaultData.attendance;
             if (!data.dailyStats) {
@@ -165,7 +166,7 @@ const UserSession = {
 
     saveUserData: function(data) {
         if (!data.id) return;
-        localStorage.setItem(USER_DATA_PREFIX + data.id, JSON.stringify(data));
+        LocalRepository.saveUser(data);
     },
 
     // 출석 체크 및 연속 출석 계산
@@ -271,10 +272,10 @@ const WrongNote = {
 
     getAll: function() {
         try {
-            const key = this.getStorageKey();
-            if (!key) return { english: [], grammar: [], hanja: [], math: [], reading: [] };
-            const raw = localStorage.getItem(key);
-            return raw ? JSON.parse(raw) : { english: [], grammar: [], hanja: [], math: [], reading: [] };
+            const userId = UserSession.getActiveUser();
+            if (!userId) return { english: [], grammar: [], hanja: [], math: [], reading: [] };
+            const stored = LocalRepository.getWrongAnswers(userId);
+            return Object.assign({ english: [], grammar: [], hanja: [], math: [], reading: [] }, stored);
         } catch (e) {
             console.error('[WrongNote Error]', e);
             return { english: [], grammar: [], hanja: [], math: [], reading: [] };
@@ -358,7 +359,7 @@ const WrongNote = {
             if (data.stageTitle) exists.stageTitle = data.stageTitle;
         }
         
-        localStorage.setItem(key, JSON.stringify(all));
+        LocalRepository.saveWrongAnswers(UserSession.getActiveUser(), all);
     },
 
     remove: function(subject, identifier) {
@@ -367,7 +368,7 @@ const WrongNote = {
         if (!key || !all[subject]) return;
 
         all[subject] = all[subject].filter(item => (item.word || item.hanja || item.type) !== identifier);
-        localStorage.setItem(key, JSON.stringify(all));
+        LocalRepository.saveWrongAnswers(UserSession.getActiveUser(), all);
     }
 };
 
@@ -431,11 +432,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     const userId = UserSession.getActiveUser();
     if (!userId) return;
 
-    let data = [];
-    try {
-        const raw = localStorage.getItem(REPORT_KEY + "_" + userId);
-        if (raw) data = JSON.parse(raw);
-    } catch (e) {}
+    const data = LocalRepository.listReports(userId);
 
     let timeDelta = timeSpentSeconds; // 신규 세션이면 전체 시간
     let correctDelta = currentScore;  // 이번에 새로 맞힌 정답 수
@@ -458,13 +455,16 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         data.push({ sessionId, subject, level, date: Date.now(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted, metadata });
     }
 
-    localStorage.setItem(REPORT_KEY + "_" + userId, JSON.stringify(data));
+    LocalRepository.saveReports(userId, data);
 
     // 경험치 및 통계 업데이트
     const user = UserSession.getUserData();
     if (user) {
         // 시간 계산 버그 방어: 델타 시간이 비정상적(1시간 초과 등)이면 무시
-        const safeDelta = (timeDelta >= 0 && timeDelta <= 3600) ? timeDelta : 0;
+        // 문법은 StudyTimer가 활성 학습 시간을 이미 실시간 합산하므로 보고 저장 시 중복 합산하지 않는다.
+        const safeDelta = subject === 'grammar'
+            ? 0
+            : ((timeDelta >= 0 && timeDelta <= 3600) ? timeDelta : 0);
         user.totalStudyTime += safeDelta;
 
         // 시도 횟수는 신규 세션일 때만 증가
@@ -477,7 +477,8 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
 
         // 일일 통계 업데이트 (미션용)
         UserSession.updateDailyStat('time', subject, safeDelta);
-        UserSession.updateDailyStat('score', subject, currentScore);
+        const scorePct = totalQuestions > 0 ? Math.round((currentScore / totalQuestions) * 100) : 0;
+        UserSession.updateDailyStat('score', subject, scorePct);
         if (isNewSession) UserSession.updateDailyStat('quiz', subject, currentScore);
     }
 }
@@ -486,9 +487,7 @@ function getQuizReports() {
     const userId = UserSession.getActiveUser();
     if (!userId) return [];
     try {
-        const raw = localStorage.getItem(REPORT_KEY + "_" + userId);
-        const data = raw ? JSON.parse(raw) : [];
-        return Array.isArray(data) ? data : [];
+        return LocalRepository.listReports(userId);
     } catch (e) {
         console.error('[Quiz Reports Load Error]', e);
         return [];
@@ -496,10 +495,9 @@ function getQuizReports() {
 }
 function exportUserData() {
     const exportData = {};
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
+    for (const key of LocalRepository.keys()) {
         if (key && (key.startsWith('SmartStudy') || key.startsWith('SmartVocab'))) {
-            exportData[key] = localStorage.getItem(key);
+            exportData[key] = LocalRepository.rawGet(key);
         }
     }
     const userId = UserSession.getActiveUser() || 'unknown';
@@ -520,7 +518,7 @@ function importUserData(file) {
                 const data = JSON.parse(e.target.result);
                 Object.entries(data).forEach(([key, value]) => {
                     if (key.startsWith('SmartStudy') || key.startsWith('SmartVocab')) {
-                        localStorage.setItem(key, value);
+                        LocalRepository.rawSet(key, value);
                     }
                 });
                 resolve();

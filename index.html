@@ -236,7 +236,7 @@
             <div class="login-box" style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); max-width: 400px; margin: 0 auto;">
                 <input type="text" id="userIdInput" placeholder="이름을 입력하세요 (예: 우준)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.1rem; margin-bottom: 20px; outline: none; transition: border-color 0.2s;">
                 <button id="loginBtn" class="nav-btn" style="width: 100%; justify-content: center; background: var(--accent); color: white; border: none; padding: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; border-radius: 12px; transition: transform 0.2s;">학습 시작하기</button>
-                <button type="button" onclick="if(confirm('모든 학습 데이터가 초기화됩니다. 계속하시겠습니까?')){localStorage.clear(); location.reload();}" style="background:none; border:none; color:var(--text-sub); font-size:0.8rem; margin-top:20px; cursor:pointer; text-decoration:underline; opacity:0.5; width:100%; text-align:center;">⚠️ 데이터 초기화 (문제가 있을 때만 클릭)</button>
+                <button type="button" onclick="if(confirm('Smart Study 학습 데이터가 초기화됩니다. 계속하시겠습니까?')){SmartStudy.LocalRepository.clearAppData(); location.reload();}" style="background:none; border:none; color:var(--text-sub); font-size:0.8rem; margin-top:20px; cursor:pointer; text-decoration:underline; opacity:0.5; width:100%; text-align:center;">⚠️ 데이터 초기화 (문제가 있을 때만 클릭)</button>
             </div>
         </div>
 
@@ -371,8 +371,14 @@
     </div>
 
     <script src="kakao-share.js"></script>
-    <script src="report.js?v=20260729-mission-periods"></script>
-    <script src="firebase-sync.js?v=20260729-mission-periods"></script>
+    <script src="storage-keys.js"></script>
+    <script src="storage-events.js"></script>
+    <script src="schema-migrations.js"></script>
+    <script src="local-repository.js"></script>
+    <script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260730-architecture"></script>
+    <script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
+    <script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="ui-core.js"></script>
     <script src="missions.js?v=20260729-mission-periods"></script>
     <script>
@@ -456,7 +462,7 @@
                     console.error('[Dashboard Error]', e);
                     const errOverlay = document.createElement('div');
                     errOverlay.style.cssText = 'position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background:rgba(255,0,0,0.9); color:white; padding:30px; border-radius:20px; z-index:9999; text-align:center; box-shadow:0 10px 30px rgba(0,0,0,0.5);';
-                    errOverlay.innerHTML = `<h3>⚠️ 학습 데이터를 불러오는 중 오류가 발생했습니다.</h3><p>${e.message}</p><button onclick="localStorage.clear(); location.reload();" style="margin-top:20px; padding:10px 20px; cursor:pointer; background:white; border:none; border-radius:10px; font-weight:bold;">초기화 후 다시 시도</button>`;
+                    errOverlay.innerHTML = `<h3>⚠️ 학습 데이터를 불러오는 중 오류가 발생했습니다.</h3><p>${e.message}</p><button onclick="SmartStudy.LocalRepository.clearAppData(); location.reload();" style="margin-top:20px; padding:10px 20px; cursor:pointer; background:white; border:none; border-radius:10px; font-weight:bold;">초기화 후 다시 시도</button>`;
                     document.body.appendChild(errOverlay);
                 }
             }

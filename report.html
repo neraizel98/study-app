@@ -345,8 +345,9 @@
     </div>
 
     <script src="utils.js"></script>
-    <script src="report.js?v=20260729-mission-periods"></script>
-    <script src="firebase-sync.js?v=20260729-mission-periods"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260730-architecture"></script>
+    <script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="ui-core.js"></script>
     <script src="kakao-share.js?v=20260728-subject-registry"></script>
     <script>
@@ -467,16 +468,14 @@
                 try {
                     const decoded = JSON.parse(decodeURIComponent(escape(atob(importAllData))));
                     const userId = UserSession.getActiveUser() || '우준';
-                    const storageKey = REPORT_KEY + "_" + userId;
-                    let currentReports = [];
-                    try { const raw = localStorage.getItem(storageKey); if (raw) currentReports = JSON.parse(raw); } catch(e) {}
+                    let currentReports = SmartStudy.LocalRepository.listReports(userId);
                     const newItems = Array.isArray(decoded) ? decoded : [decoded];
                     let addedCount = 0;
                     newItems.forEach(item => {
                         if (!currentReports.find(r => r.sessionId === item.sessionId)) { currentReports.push(item); addedCount++; }
                     });
                     if (addedCount > 0) {
-                        localStorage.setItem(storageKey, JSON.stringify(currentReports));
+                        SmartStudy.LocalRepository.saveReports(userId, currentReports);
                         alert(`${addedCount}개의 학습 기록을 불러왔습니다.`);
                     }
                     window.history.replaceState({}, document.title, window.location.pathname);

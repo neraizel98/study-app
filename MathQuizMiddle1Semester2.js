@@ -302,5 +302,4 @@
         };
     });
 
-    if (typeof window !== 'undefined') window.MathQuizData = MathQuizData;
 })();

@@ -9,68 +9,31 @@
  * - 저장 시:   localStorage 즉시 저장 + Firestore 백그라운드 업로드 (2초 디바운스)
  */
 
-const FIREBASE_CONFIG = {
-    apiKey:            "AIzaSyDQBCqKxumH-NOdAETKhY6_9xGX_AsVKWg",
-    authDomain:        "smart-study-wj.firebaseapp.com",
-    projectId:         "smart-study-wj",
-    storageBucket:     "smart-study-wj.firebasestorage.app",
-    messagingSenderId: "994757323327",
-    appId:             "1:994757323327:web:c0f68e95bbeea72a12e68a"
-};
+const _localRepository = window.SmartStudy.LocalRepository;
+const _remoteRepository = window.SmartStudy.FirestoreRepository;
+const _storageEvents = window.SmartStudy.StorageEvents;
 
 // ─────────────────────────────────────────────
 //  내부 상태
 // ─────────────────────────────────────────────
 let _db          = null;
 let _syncReady   = false;
-let _patched     = false;
 const _timers    = {};
-let _initDBPromise = null; // 동시 초기화 방지용 싱글턴 Promise
 
 // ─────────────────────────────────────────────
 //  Firebase SDK 동적 로드
 // ─────────────────────────────────────────────
-function _loadScript(src) {
-    return new Promise((resolve, reject) => {
-        if (document.querySelector(`script[src="${src}"]`)) { resolve(); return; }
-        const s = document.createElement('script');
-        s.src = src;
-        s.onload  = resolve;
-        s.onerror = reject;
-        document.head.appendChild(s);
-    });
-}
-
 async function _initDB() {
     if (_db) return _db;
-    // 동시에 여러 곳에서 호출돼도 하나의 Promise만 실행되도록 보장
-    if (_initDBPromise) return _initDBPromise;
-    _initDBPromise = (async () => {
-        try {
-            await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-            await _loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
-            if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-            _db = firebase.firestore();
-            _syncReady = true;
-            console.log('[FireSync] 연결됨');
-            return _db;
-        } catch (e) {
-            _initDBPromise = null; // 실패 시 재시도 가능하도록 초기화
-            console.warn('[FireSync] 초기화 실패 (오프라인 모드):', e.message);
-            return null;
-        }
-    })();
-    return _initDBPromise;
+    try {
+        _db = await _remoteRepository.getDB();
+        _syncReady = true;
+        return _db;
+    } catch (e) {
+        console.warn('[FireSync] 초기화 실패 (오프라인 모드):', e.message);
+        return null;
+    }
 }
-
-// ─────────────────────────────────────────────
-//  Firestore 문서 참조 헬퍼
-// ─────────────────────────────────────────────
-const _col  = (uid) => _db.collection('users').doc(uid).collection('data');
-const _uDoc = (uid) => _db.collection('users').doc(uid);              // userData
-const _rDoc = (uid) => _col(uid).doc('reports');                      // 퀴즈 기록
-const _wDoc = (uid) => _col(uid).doc('wrongAnswers');                 // 오답노트
-const ADMIN_UID = '우준아빠'; // 학습 시간 설정은 관리자 문서에 저장
 
 // ─────────────────────────────────────────────
 //  업로드 (localStorage → Firestore)
@@ -83,19 +46,16 @@ function _debounce(key, fn, ms = 2000) {
 async function _uploadUserData(userId) {
     if (!_syncReady) return;
     try {
-        const raw = localStorage.getItem('SmartStudy_UserData_' + userId);
-        if (!raw) return;
-        const data = JSON.parse(raw);
-        await _uDoc(userId).set({ ...data, _updatedAt: Date.now() }, { merge: true });
+        const data = _localRepository.getUser(userId);
+        if (!data) return;
+        await _remoteRepository.putUser(userId, data);
     } catch (e) { console.warn('[FireSync] userData 업로드 실패:', e.message); }
 }
 
 async function _uploadReports(userId) {
     if (!_syncReady) return;
     try {
-        const raw = localStorage.getItem('SmartVocab_Reports_' + userId);
-        const reports = raw ? JSON.parse(raw) : [];
-        await _rDoc(userId).set({ reports, _updatedAt: Date.now() });
+        await _remoteRepository.putReports(userId, _localRepository.listReports(userId));
     } catch (e) { console.warn('[FireSync] reports 업로드 실패:', e.message); }
 }
 
@@ -103,26 +63,24 @@ async function _uploadStudyConfig(cfg) {
     if (!_syncReady) return;
     try {
         // 관리자(우준아빠) 문서에 studyTimeConfig 필드로 저장 (기존 경로 재사용)
-        await _uDoc(ADMIN_UID).set({ studyTimeConfig: cfg }, { merge: true });
+        await _remoteRepository.saveStudyTimeConfig(cfg);
     } catch (e) { console.warn('[FireSync] studyConfig 업로드 실패:', e.message); }
 }
 
 async function _downloadStudyConfig() {
     if (!_syncReady) return;
     try {
-        const snap = await _uDoc(ADMIN_UID).get();
-        if (!snap.exists || !snap.data().studyTimeConfig) return;
-        localStorage.setItem('SmartStudy_MinStudyConfig', JSON.stringify(snap.data().studyTimeConfig));
+        const config = await _remoteRepository.getStudyTimeConfig();
+        if (config) _localRepository.saveTimerConfig(config);
     } catch (e) { console.warn('[FireSync] studyConfig 다운로드 실패:', e.message); }
 }
 
 async function _uploadWrong(userId) {
     if (!_syncReady) return;
     try {
-        const raw = localStorage.getItem('SmartStudy_WrongAnswers_' + userId);
-        const wrongAnswers = raw ? JSON.parse(raw) : {};
+        const wrongAnswers = _localRepository.getWrongAnswers(userId);
         const trimmed = _trimWrongHistory(wrongAnswers);
-        await _wDoc(userId).set({ wrongAnswers: trimmed, _updatedAt: Date.now() });
+        await _remoteRepository.putWrongAnswers(userId, trimmed);
     } catch (e) { console.warn('[FireSync] wrongAnswers 업로드 실패:', e.message); }
 }
 
@@ -143,11 +101,7 @@ function _trimWrongHistory(wrongAnswers) {
 async function _downloadAndMerge(userId) {
     if (!_syncReady) return;
     try {
-        const [uSnap, rSnap, wSnap] = await Promise.all([
-            _uDoc(userId).get(),
-            _rDoc(userId).get(),
-            _wDoc(userId).get()
-        ]);
+        const bundle = await _remoteRepository.getUserBundle(userId);
 
         // 전역 학습 시간 설정 항상 최신으로 받아옴 (관리자가 공유한 설정)
         await _downloadStudyConfig();
@@ -155,38 +109,35 @@ async function _downloadAndMerge(userId) {
         let needsUpload = false;
 
         // 1. userData 병합
-        if (uSnap.exists) {
-            const cloud    = uSnap.data();
-            const localRaw = localStorage.getItem('SmartStudy_UserData_' + userId);
-            const local    = localRaw ? JSON.parse(localRaw) : null;
+        if (bundle.user) {
+            const cloud    = bundle.user;
+            const local    = _localRepository.getUser(userId);
             // 로컬이 더 최신이면 클라우드에 다시 올려야 함
             if ((local?._localUpdatedAt || 0) > (cloud._updatedAt || 0)) needsUpload = true;
             const merged   = _mergeUserData(local, cloud, userId);
-            localStorage.setItem('SmartStudy_UserData_' + userId, JSON.stringify(merged));
+            _localRepository.saveUser(merged);
         } else {
             needsUpload = true;
         }
 
         // 2. reports 병합
-        if (rSnap.exists && Array.isArray(rSnap.data().reports)) {
-            const cloudReports = rSnap.data().reports;
-            const localRaw     = localStorage.getItem('SmartVocab_Reports_' + userId);
-            const localReports = localRaw ? JSON.parse(localRaw) : [];
+        if (Array.isArray(bundle.reports)) {
+            const cloudReports = bundle.reports;
+            const localReports = _localRepository.listReports(userId);
             // 로컬에만 있는 레포트가 있으면 업로드 필요
             if (localReports.some(r => !cloudReports.find(c => c.sessionId === r.sessionId))) needsUpload = true;
             const merged = _mergeReports(localReports, cloudReports);
-            localStorage.setItem('SmartVocab_Reports_' + userId, JSON.stringify(merged));
+            _localRepository.saveReports(userId, merged);
         } else {
             needsUpload = true;
         }
 
         // 3. wrongAnswers 병합
-        if (wSnap.exists && wSnap.data().wrongAnswers) {
-            const cloudWrong = wSnap.data().wrongAnswers;
-            const localRaw   = localStorage.getItem('SmartStudy_WrongAnswers_' + userId);
-            const local      = localRaw ? JSON.parse(localRaw) : {};
+        if (bundle.wrongAnswers) {
+            const cloudWrong = bundle.wrongAnswers;
+            const local      = _localRepository.getWrongAnswers(userId);
             const merged     = _mergeWrong(local, cloudWrong);
-            localStorage.setItem('SmartStudy_WrongAnswers_' + userId, JSON.stringify(merged));
+            _localRepository.saveWrongAnswers(userId, merged);
         } else {
             needsUpload = true;
         }
@@ -388,62 +339,19 @@ function _unionArr(a, b) {
     return [...new Set([...a, ...b])];
 }
 
-// ─────────────────────────────────────────────
-//  저장 함수 패치 (report.js 함수 래핑)
-// ─────────────────────────────────────────────
-function _patchSaveFunctions() {
-    if (_patched) return;
-    _patched = true;
-
-    // 1. UserSession.saveUserData
-    if (typeof UserSession !== 'undefined' && UserSession.saveUserData) {
-        const origSaveUser = UserSession.saveUserData.bind(UserSession);
-        UserSession.saveUserData = function(data) {
-            origSaveUser(data);
-            if (data.id) {
-                const raw = localStorage.getItem('SmartStudy_UserData_' + data.id);
-                if (raw) {
-                    const parsed = JSON.parse(raw);
-                    parsed._localUpdatedAt = Date.now();
-                    localStorage.setItem('SmartStudy_UserData_' + data.id, JSON.stringify(parsed));
-                }
-                _debounce('userData_' + data.id, () => _uploadUserData(data.id), 2000);
-            }
-        };
-    }
-
-    // 2. saveQuizResult (전역 함수) — 없는 페이지(admin 등)에서는 건너뜀
-    if (typeof window.saveQuizResult === 'function') {
-        const origSaveQuiz = window.saveQuizResult;
-        window.saveQuizResult = function(...args) {
-            origSaveQuiz(...args);
-            const uid = UserSession.getActiveUser();
-            if (uid) _debounce('reports_' + uid, () => _uploadReports(uid), 2000);
-        };
-    }
-
-    // 3. WrongNote.save — 없는 페이지에서는 건너뜀
-    if (typeof WrongNote !== 'undefined' && WrongNote.save) {
-        const origWrongSave = WrongNote.save.bind(WrongNote);
-        WrongNote.save = function(...args) {
-            origWrongSave(...args);
-            const uid = UserSession.getActiveUser();
-            if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
-        };
-    }
-
-    // 4. WrongNote.remove — 없는 페이지에서는 건너뜀
-    if (typeof WrongNote !== 'undefined' && WrongNote.remove) {
-        const origWrongRemove = WrongNote.remove.bind(WrongNote);
-        WrongNote.remove = function(...args) {
-            origWrongRemove(...args);
-            const uid = UserSession.getActiveUser();
-            if (uid) _debounce('wrong_' + uid, () => _uploadWrong(uid), 2000);
-        };
-    }
-
-    console.log('[FireSync] 저장 함수 패치 완료');
-}
+// 저장 완료 이벤트를 구독한다. 도메인 함수를 덮어쓰지 않으므로 로드 순서와 함수 참조에 안전하다.
+_storageEvents.subscribe('user:saved', ({ userId }) => {
+    if (_syncReady && userId) _debounce(`userData_${userId}`, () => _uploadUserData(userId), 2000);
+});
+_storageEvents.subscribe('reports:saved', ({ userId }) => {
+    if (_syncReady && userId) _debounce(`reports_${userId}`, () => _uploadReports(userId), 2000);
+});
+_storageEvents.subscribe('wrongAnswers:saved', ({ userId }) => {
+    if (_syncReady && userId) _debounce(`wrong_${userId}`, () => _uploadWrong(userId), 2000);
+});
+_storageEvents.subscribe('config:saved', () => {
+    if (_syncReady) _debounce('studyConfig', () => _uploadStudyConfig(_localRepository.getTimerConfig()), 2000);
+});
 
 // ─────────────────────────────────────────────
 //  동기화 상태 UI (작은 뱃지)
@@ -482,7 +390,6 @@ window.FireSync = {
         const db = await _initDB();
         if (!db) { _showSyncBadge('📵 오프라인 모드'); return; }
         await _downloadAndMerge(userId);
-        _patchSaveFunctions();
         _showSyncBadge('✅ 동기화 완료', '#56d364');
     },
 

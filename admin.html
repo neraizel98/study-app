@@ -155,22 +155,15 @@
         </div>
     </div>
 
-    <script src="report.js?v=20260729-mission-periods"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260730-architecture"></script>
+    <script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Admin 설정
     // ─────────────────────────────────────────────
     const ADMIN_IDS = ['우준아빠'];
-    const FIREBASE_CONFIG = {
-        apiKey:            "AIzaSyDQBCqKxumH-NOdAETKhY6_9xGX_AsVKWg",
-        authDomain:        "smart-study-wj.firebaseapp.com",
-        projectId:         "smart-study-wj",
-        storageBucket:     "smart-study-wj.firebasestorage.app",
-        messagingSenderId: "994757323327",
-        appId:             "1:994757323327:web:c0f68e95bbeea72a12e68a"
-    };
-
     const SUBJ_NAMES  = { reading:'국어 독해력', english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학' };
     const SUBJ_ICONS  = { english:'🇬🇧', grammar:'📘', hanja:'🏮', math:'📐', reading:'📖' };
     const SUBJ_COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
@@ -180,50 +173,24 @@
     // ─────────────────────────────────────────────
     //  Firebase 초기화
     // ─────────────────────────────────────────────
-    function loadScript(src) {
-        return new Promise((res, rej) => {
-            if (document.querySelector(`script[src="${src}"]`)) { res(); return; }
-            const s = document.createElement('script');
-            s.src = src; s.onload = res; s.onerror = rej;
-            document.head.appendChild(s);
-        });
-    }
-
     async function initFirebase() {
-        // firebase-sync.js가 이미 로드된 경우 동일한 DB 인스턴스 재사용 (타이밍 충돌 방지)
-        if (typeof FireSync !== 'undefined') {
-            db = await FireSync.getDB();
-            return;
-        }
-        await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js');
-        await loadScript('https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js');
-        if (!firebase.apps.length) firebase.initializeApp(FIREBASE_CONFIG);
-        db = firebase.firestore();
+        db = await SmartStudy.FirestoreRepository.getDB();
     }
 
     // ─────────────────────────────────────────────
     //  데이터 로드
     // ─────────────────────────────────────────────
     async function loadAllUsers() {
-        const snap = await db.collection('users').get();
-        const users = [];
-        snap.forEach(doc => {
-            const d = doc.data();
-            if (d.id) users.push({ userId: doc.id, ...d });
-        });
+        const users = (await SmartStudy.FirestoreRepository.listLearners()).filter(user => user.id);
         return users.sort((a, b) => (b._updatedAt || 0) - (a._updatedAt || 0));
     }
 
     async function loadUserDetail(userId) {
-        const [uSnap, rSnap, wSnap] = await Promise.all([
-            db.collection('users').doc(userId).get(),
-            db.collection('users').doc(userId).collection('data').doc('reports').get(),
-            db.collection('users').doc(userId).collection('data').doc('wrongAnswers').get()
-        ]);
+        const bundle = await SmartStudy.FirestoreRepository.getUserBundle(userId);
         return {
-            userData:     uSnap.exists     ? uSnap.data()                         : {},
-            reports:      rSnap.exists     ? (rSnap.data().reports || [])          : [],
-            wrongAnswers: wSnap.exists     ? (wSnap.data().wrongAnswers || {})     : {}
+            userData: bundle.user || {},
+            reports: bundle.reports || [],
+            wrongAnswers: bundle.wrongAnswers || {}
         };
     }
 
@@ -477,10 +444,7 @@
         button.disabled = true;
         button.textContent = '저장 중...';
         try {
-            await db.collection('users').doc(data.userId).update({
-                'missionProgress.rewards': rewards,
-                _updatedAt: Date.now()
-            });
+            await SmartStudy.FirestoreRepository.markRewardUsed(data.userId, rewards);
             button.textContent = '사용 완료';
         } catch (error) {
             button.disabled = false;
@@ -1076,11 +1040,8 @@
             cfg.levels[subject][level] = Math.max(0, parseInt(input.value, 10) || 0);
         });
         StudyTimer.setConfig(cfg);
-        // 전체 유저 공유: admin.html 자체 db로 Firestore에 직접 업로드
-        if (db) {
-            db.collection('users').doc('우준아빠').set({ studyTimeConfig: cfg }, { merge: true })
-              .catch(e => console.warn('[Admin] studyConfig 업로드 실패:', e.message));
-        }
+        SmartStudy.FirestoreRepository.saveStudyTimeConfig(cfg)
+            .catch(e => console.warn('[Admin] studyConfig 업로드 실패:', e.message));
         const msg = document.getElementById('stcSavedMsg');
         msg.style.display = 'inline';
         setTimeout(() => { msg.style.display = 'none'; }, 2000);

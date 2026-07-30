@@ -7,6 +7,8 @@
  * - 화면이 보이고 실제 학습 모드이며 최근 학습 행동이 있을 때만 시간 누적
  */
 const StudyTimer = (() => {
+    const repository = window.SmartStudy.LocalRepository;
+    const storageKeys = window.SmartStudy.StorageKeys;
     const CONFIG_KEY = 'SmartStudy_MinStudyConfig';
     const TIME_PREFIX = 'SmartStudy_UnitTime_';
     const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
@@ -47,12 +49,11 @@ const StudyTimer = (() => {
     }
 
     function getConfig() {
-        try { return Object.assign({}, DEFAULTS, JSON.parse(localStorage.getItem(CONFIG_KEY) || '{}')); }
-        catch { return { ...DEFAULTS }; }
+        return Object.assign({}, DEFAULTS, repository.getTimerConfig());
     }
 
     function setConfig(cfg) {
-        localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+        repository.saveTimerConfig(cfg);
     }
 
     function getLevelKey(subject, context = 'default') {
@@ -92,18 +93,18 @@ const StudyTimer = (() => {
     }
 
     function timeKey(subject, context) {
-        const today = new Date().toISOString().slice(0, 10);
-        return `${TIME_PREFIX}${getUserId()}_${encodeURIComponent(contextKey(subject, context))}_${today}`;
+        const today = typeof StudyPeriods !== 'undefined' ? StudyPeriods.daily() : new Date().toLocaleDateString('sv-SE');
+        return storageKeys.timerTime(getUserId(), contextKey(subject, context), today);
     }
 
     function getAccumulated(subject, context = 'default') {
-        return parseInt(localStorage.getItem(timeKey(subject, context)) || '0', 10);
+        return repository.getNumber(timeKey(subject, context));
     }
 
     function addSeconds(subject, context, seconds) {
         const safeSeconds = Math.max(0, Math.min(2, Number(seconds) || 0));
         if (!safeSeconds) return;
-        localStorage.setItem(timeKey(subject, context), String(getAccumulated(subject, context) + safeSeconds));
+        repository.setNumber(timeKey(subject, context), getAccumulated(subject, context) + safeSeconds);
 
         // 학습 잠금에 사용한 실제 학습 시간도 홈·미션·관리자 통계에 함께 기록한다.
         if (typeof UserSession !== 'undefined') {
@@ -117,19 +118,16 @@ const StudyTimer = (() => {
     }
 
     function resetAccumulated(subject, context = 'default') {
-        localStorage.setItem(timeKey(subject, context), '0');
+        repository.setNumber(timeKey(subject, context), 0);
     }
 
     function getScoreStore() {
-        try { return JSON.parse(localStorage.getItem(SCORE_PREFIX + getUserId()) || '{}'); }
-        catch { return {}; }
+        return repository.getTimerScores(getUserId());
     }
 
     function getReportScores(subject, aliases) {
         if (!aliases || aliases.length === 0) return [];
-        let reports = [];
-        try { reports = JSON.parse(localStorage.getItem(REPORT_PREFIX + getUserId()) || '[]'); }
-        catch { return []; }
+        const reports = repository.listReports(getUserId());
 
         const targets = aliases.map(normalize).filter(Boolean);
         const matches = reports
@@ -218,7 +216,7 @@ const StudyTimer = (() => {
         store[key] = {
             history: history.sort((a, b) => (b.date || 0) - (a.date || 0)).slice(0, 3)
         };
-        localStorage.setItem(SCORE_PREFIX + getUserId(), JSON.stringify(store));
+        repository.saveTimerScores(getUserId(), store);
         resetAccumulated(subject, context);
     }
 

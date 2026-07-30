@@ -329,5 +329,4 @@
         word: templates('m1_graph_word', 5, 'medium')
     };
 
-    if (typeof window !== 'undefined') window.MathQuizData = MathQuizData;
 })();

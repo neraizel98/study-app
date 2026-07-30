@@ -8,6 +8,7 @@ vm.createContext(context);
 vm.runInContext(fs.readFileSync('MathFormulaData.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataVolume2.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('quiz-registry.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuiz.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizVolume2.js', 'utf8'), context);
@@ -81,7 +82,7 @@ assert(page.includes('id="mobileListToggle"'), 'Mobile formula list reopen contr
 assert(page.includes('mobile-formula-toolbar'), 'Mobile selected-formula summary is missing');
 assert(app.includes("if (isMobile()) mobileMenuOpen = false"), 'Mobile formula selection must collapse the list');
 assert(app.includes("scrollIntoView({ behavior: 'smooth', block: 'start' })"), 'Mobile selection must scroll to learning content');
-assert(app.includes("localStorage.setItem('MathFormula_SelectedLevels'"), 'Level filter selection must persist');
+assert(app.includes('SmartStudy.LocalRepository.setPreference'), 'Level filter selection must persist through the repository');
 assert(app.includes('M220 180 L320 180 L320 105'), 'Pythagorean triangle alignment is missing');
 assert(app.includes('M220 180 L320 105 L245 5 L145 80'), 'Hypotenuse square must share the exact hypotenuse');
 assert(app.includes('<circle cx="260" cy="140" r="110"'), 'Circumcircle geometry must use a shared radius');
@@ -117,8 +118,8 @@ assert(randomizedPrompts.size > 1, 'Quiz values must vary between attempts');
 
 assert(!page.includes('study-timer.js'), 'Formula encyclopedia must not load the study timer');
 assert(!page.includes('missions.js'), 'Formula encyclopedia must not load missions');
-assert(page.includes('report.js?v=20260729-formula-time'), 'Formula encyclopedia needs the active user for admin-only time');
-assert(page.includes('firebase-sync.js?v=20260729-formula-time'), 'Formula encyclopedia time must sync for the admin');
+assert(page.includes('report.js?v=20260730-architecture'), 'Formula encyclopedia needs the active user for admin-only time');
+assert(page.includes('firebase-sync.js?v=20260730-architecture'), 'Formula encyclopedia time must sync for the admin');
 assert(page.includes('MathFormulaTime.js?v=20260729-formula-time'), 'Formula time tracker is missing');
 const timeTracker = fs.readFileSync('MathFormulaTime.js', 'utf8');
 assert(!timeTracker.includes('updateDailyStat'), 'Formula time must not enter normal subject or mission statistics');

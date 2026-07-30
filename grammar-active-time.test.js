@@ -45,6 +45,9 @@ const sandbox = {
 };
 
 vm.createContext(sandbox);
+for (const file of ['storage-keys.js', 'storage-events.js', 'schema-migrations.js', 'local-repository.js']) {
+    vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file });
+}
 vm.runInContext(`${fs.readFileSync('study-timer.js', 'utf8')}\nthis.timer = StudyTimer;`, sandbox);
 
 const controller = sandbox.timer.initBar('grammar', quizButton, {
