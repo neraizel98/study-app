@@ -265,6 +265,12 @@ const UserSession = {
  * 오답 관리 시스템
  */
 const WrongNote = {
+    getIdentifier: function(subject, data) {
+        if (data?.wrongNoteId) return data.wrongNoteId;
+        if (subject === 'grammar' || subject === 'reading') return data?.questionId || data?.type;
+        if (subject === 'math') return data?.type;
+        return data?.word || data?.hanja;
+    },
     getStorageKey: () => {
         const id = UserSession.getActiveUser();
         return id ? WRONG_NOTE_PREFIX + id : null;
@@ -298,8 +304,8 @@ const WrongNote = {
         if (!all[subject]) all[subject] = [];
         
         // 중복 방지 (English/Hanja는 word/hanja 기준, Math는 type 기준)
-        const identifier = (subject === 'math' || subject === 'grammar' || subject === 'reading') ? data.type : (data.word || data.hanja);
-        const exists = all[subject].find(item => (item.word || item.hanja || item.type) === identifier);
+        const identifier = this.getIdentifier(subject, data);
+        const exists = all[subject].find(item => this.getIdentifier(subject, item) === identifier);
         
         const historyEntry = {
             sessionId,
@@ -309,7 +315,15 @@ const WrongNote = {
             question: data.question || '',
             explanation: data.explanation || '',
             answer: data.answer,
-            choices: data.choices
+            choices: Array.isArray(data.choices) ? [...data.choices] : data.choices,
+            selectedAnswer: data.selectedAnswer,
+            correctAnswer: data.correctAnswer ?? data.answer,
+            questionId: data.questionId,
+            passageId: data.passageId,
+            passageTitle: data.passageTitle,
+            passageText: Array.isArray(data.passageText) ? [...data.passageText] : data.passageText,
+            skill: data.skill,
+            snapshotId: data.snapshotId
         };
 
         if (!exists) {
@@ -317,6 +331,7 @@ const WrongNote = {
             if (round === 1 && status === 'wrong') {
                 all[subject].push({
                     ...data,
+                    wrongNoteId: identifier,
                     date: Date.now(),
                     count: 1,
                     masteryScore: 0,  // 연속 정답 수 (0~3)
@@ -367,7 +382,7 @@ const WrongNote = {
         const key = this.getStorageKey();
         if (!key || !all[subject]) return;
 
-        all[subject] = all[subject].filter(item => (item.word || item.hanja || item.type) !== identifier);
+        all[subject] = all[subject].filter(item => this.getIdentifier(subject, item) !== identifier);
         LocalRepository.saveWrongAnswers(UserSession.getActiveUser(), all);
     }
 };

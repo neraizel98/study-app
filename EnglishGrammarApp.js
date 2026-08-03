@@ -294,8 +294,8 @@
             lessonIndex = Number(button.dataset.lesson); renderSelectors(); renderStudy();
         });
         $('examples').addEventListener('click', e => {
-            const button = e.target.closest('[data-speak]'); if (!button || !speechSynthesis) return;
-            speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(button.dataset.speak));
+            const button = e.target.closest('[data-speak]');
+            if (button) window.EnglishSpeech?.speak(button.dataset.speak);
         });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
         $('nextLesson').addEventListener('click', () => {
@@ -332,6 +332,7 @@
     }
 
     document.addEventListener('DOMContentLoaded', () => {
+        window.EnglishSpeech?.bindControls();
         if (!stage().units.some(item => item.id === unitId)) unitId = stage().units[0].id;
         lessonIndex = Math.min(lessonIndex, unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();

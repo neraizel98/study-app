@@ -681,8 +681,8 @@
             const history = (item.history || []).filter(entry => entry.sessionId === report.sessionId);
             history.forEach(entry => result.push({
                 question: entry.question || item.question || item.word || item.hanja || item.type || '문제',
-                selectedAnswer: item.selectedAnswer ?? '-',
-                correctAnswer: item.correctAnswer ?? entry.answer ?? item.answer ?? '-',
+                selectedAnswer: entry.selectedAnswer ?? item.selectedAnswer ?? '-',
+                correctAnswer: entry.correctAnswer ?? item.correctAnswer ?? entry.answer ?? item.answer ?? '-',
                 correct: entry.status === 'correct',
                 explanation: entry.explanation || item.explanation || item.meaning || ''
             }));

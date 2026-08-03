@@ -139,7 +139,7 @@ function handlePrev() { currentIndex = (currentIndex - 1 + vocabData[currentLeve
 // ============================================================
 // TTS
 // ============================================================
-function speak(t) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.85; window.speechSynthesis.speak(u); }
+function speak(t) { return window.EnglishSpeech?.speak(t); }
 
 // ============================================================
 // UTILS
@@ -964,6 +964,7 @@ window.AppEngine = {
 
     init: function(retryCount = 0) {
         console.log(`[AppEngine] Initializing... (Attempt ${retryCount + 1}/5)`);
+        if (retryCount === 0) window.EnglishSpeech?.bindControls();
         
         // 1. 데이터 로드 대기 확인 (최대 5회 재시도)
         if (!window.vocabData || Object.keys(window.vocabData).length === 0) {

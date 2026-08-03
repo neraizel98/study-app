@@ -126,7 +126,11 @@
         Utils.shuffle(base).forEach(item => {
             if (selected.length < Math.min(5, base.length)) addUnique(item);
         });
-        questions = selected.slice(0, Math.min(5, base.length));
+        questions = selected.slice(0, Math.min(5, base.length)).map(item => ({
+            ...item,
+            choices: [...item.choices],
+            snapshotId: `${passage.id}:${item.id}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`
+        }));
         if (!questions.length) { alert('다시 풀 오답이 없습니다.'); location.href = 'wrong_note.html'; return; }
         rememberPassage(passage.id);
         questionIndex = 0; score = 0; answered = false; attempts = [];
@@ -159,10 +163,10 @@
         const correct = selected === item.answer;
         if (correct) score += 1;
         const detail = {
-            type: `${passage.id}:${item.id}`, category: 'reading', level: level().title,
+            type: `${passage.id}:${item.id}`, wrongNoteId: `${passage.id}:${item.id}`, category: 'reading', level: level().title,
             unitId: passage.unitId, unitTitle: level().units.find(candidate => candidate.id === passage.unitId)?.title || '',
             passageId: passage.id, passageTitle: passage.title, passageText: passage.lines,
-            questionId: item.id, skill: item.skill, question: item.question, choices: item.choices,
+            questionId: item.id, snapshotId: item.snapshotId, skill: item.skill, question: item.question, choices: [...item.renderedChoices],
             selectedAnswer: selected, correctAnswer: item.answer, answer: item.answer,
             explanation: `${item.evidence} 정답: ${item.answer}`, correct
         };

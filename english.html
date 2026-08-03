@@ -55,6 +55,11 @@
             <button class="level-btn" data-level="level3">레벨 3</button>
             <button class="level-btn" data-level="level4">레벨 4</button>
         </section>
+        <section class="english-accent-picker" aria-label="영어 발음 선택">
+            <button type="button" data-english-accent="us">🇺🇸 미국식 발음</button>
+            <button type="button" data-english-accent="uk">🇬🇧 영국식 발음</button>
+            <small data-voice-status></small>
+        </section>
 
         <main id="studyView" class="study-view view-active">
             <div class="card-wrapper">
@@ -261,7 +266,8 @@
             }
         });
     </script>
-    <script src="main.js?v=20260728-three-scores"></script>
+    <script src="english-speech.js?v=20260803-accent"></script>
+    <script src="main.js?v=20260803-accent"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)
