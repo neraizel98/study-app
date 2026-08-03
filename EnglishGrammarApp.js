@@ -257,7 +257,12 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
-        const activeStudySeconds = timerController?.getActiveSeconds?.() || 0;
+        // The controller only knows about this page visit, but the level timer
+        // survives reloads. Attach the full active learning period to the quiz.
+        const activeStudySeconds = Math.max(
+            timerController?.getActiveSeconds?.() || 0,
+            typeof StudyTimer !== 'undefined' ? StudyTimer.getAccumulated('grammar', context()) : 0
+        );
         if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, activeStudySeconds, true, {

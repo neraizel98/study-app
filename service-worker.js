@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v53-desktop-english-accent';
+const CACHE_NAME = 'smart-study-v54-grammar-time-report';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
