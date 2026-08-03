@@ -10,36 +10,14 @@
 
     let accent = readAccent();
 
-    function availableVoices() {
-        return 'speechSynthesis' in window ? window.speechSynthesis.getVoices() : [];
-    }
-
-    function voiceScore(voice, lang) {
-        const name = `${voice.name} ${voice.voiceURI}`.toLowerCase();
-        let score = voice.lang.toLowerCase() === lang.toLowerCase() ? 100 : 0;
-        if (voice.lang.toLowerCase().startsWith(lang.slice(0, 2).toLowerCase())) score += 10;
-        if (/natural|neural|premium|enhanced|google|microsoft|samantha|daniel|serena|sonia|ryan|libby|jenny|aria/.test(name)) score += 30;
-        if (/compact|espeak/.test(name)) score -= 20;
-        return score;
-    }
-
-    function bestVoice(lang) {
-        return availableVoices()
-            .filter(voice => voice.lang.toLowerCase().startsWith('en'))
-            .sort((a, b) => voiceScore(b, lang) - voiceScore(a, lang))[0] || null;
-    }
-
     function updateControls() {
         document.querySelectorAll('[data-english-accent]').forEach(button => {
             const selected = button.dataset.englishAccent === accent;
             button.classList.toggle('active', selected);
             button.setAttribute('aria-pressed', String(selected));
         });
-        const voice = bestVoice(ACCENTS[accent].lang);
         document.querySelectorAll('[data-voice-status]').forEach(element => {
-            element.textContent = voice
-                ? `${ACCENTS[accent].flag} ${ACCENTS[accent].label} · ${voice.name}`
-                : `${ACCENTS[accent].flag} ${ACCENTS[accent].label} · 기기 기본 음성`;
+            element.textContent = `${ACCENTS[accent].flag} ${ACCENTS[accent].label} · 기기 최적 음성`;
         });
     }
 
@@ -55,11 +33,11 @@
         const selectedAccent = ACCENTS[requestedAccent] ? requestedAccent : accent;
         const settings = ACCENTS[selectedAccent];
         const utterance = new SpeechSynthesisUtterance(String(text));
-        const voice = bestVoice(settings.lang);
         utterance.lang = settings.lang;
-        utterance.rate = 0.88;
+        utterance.rate = 0.85;
         utterance.pitch = 1;
-        if (voice) utterance.voice = voice;
+        // 음성을 명시적으로 고르면 iOS가 저품질 compact 음성을 사용할 수 있다.
+        // 지역(lang)만 지정해 운영체제가 가장 자연스러운 음성을 선택하게 둔다.
         window.speechSynthesis.cancel();
         window.speechSynthesis.speak(utterance);
         return true;
