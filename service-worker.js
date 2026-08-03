@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v51-english-reading-integrity';
+const CACHE_NAME = 'smart-study-v52-dual-english-accent';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
