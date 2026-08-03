@@ -37,11 +37,11 @@ let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
 let wordIndexEl, englishWordEl, pronunciationEl, posBadgeEl, koreanMeaningEl;
 let verbFormsSec, vPresentEl, vPastEl, vPPEl, englishDefEl, exSentEl, exKoEl, toggleKoBtn;
 let phrasalSec, phrasalList, togglePhrasalBtn;
-let speakWordBtn, speakDefBtn, speakExBtn;
+let speakWordBtn, speakWordUkBtn, speakDefBtn, speakDefUkBtn, speakExBtn, speakExUkBtn;
 let prevBtn, nextBtn, levelBtns;
 let studyModeBtn, quizModeBtn, studyView, studyControls, quizView;
 let quizQNumEl, phaseBadgeEl, quizScoreEl, quizProgressBar, quizQuestionLabel;
-let phase1Area, phase2Area, quizWordEl, quizSpeakBtn, tenseBadgeEl, phase2ContextEl, phaseFeedback;
+let phase1Area, phase2Area, quizWordEl, quizSpeakBtn, quizSpeakUkBtn, tenseBadgeEl, phase2ContextEl, phaseFeedback;
 let quizChoices, quizChoicesParent;
 let resultModal, resultEmoji, resultTitle, resultScore, resultMessage, scoreCard;
 let retryWrongBtn, retryBtn, studyAgainBtn, kakaoReportBtn;
@@ -106,9 +106,7 @@ function updateCard() {
                     <div class="phrasal-ex-box">
                         <div class="phrasal-ex-en">
                             <span>${pv.ex}</span>
-                            <button class="speak-btn speak-xs" onclick="speak('${pv.ex.replace(/'/g, "\\'")}')">
-                                <svg viewBox="0 0 24 24"><path fill="currentColor" d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z"/></svg>
-                            </button>
+                            <span class="accent-listen-group"><button class="accent-listen-btn" onclick="speak('${pv.ex.replace(/'/g, "\\'")}', 'us')" title="미국식 예문 듣기">🇺🇸</button><button class="accent-listen-btn" onclick="speak('${pv.ex.replace(/'/g, "\\'")}', 'uk')" title="영국식 예문 듣기">🇬🇧</button></span>
                         </div>
                         <div class="phrasal-ex-ko">${pv.exKo}</div>
                     </div>
@@ -139,7 +137,7 @@ function handlePrev() { currentIndex = (currentIndex - 1 + vocabData[currentLeve
 // ============================================================
 // TTS
 // ============================================================
-function speak(t) { if (!('speechSynthesis' in window)) return; window.speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(t); u.lang = 'en-US'; u.rate = 0.85; window.speechSynthesis.speak(u); }
+function speak(t, accent = 'us') { return window.EnglishSpeech?.speak(t, accent); }
 
 // ============================================================
 // UTILS
@@ -933,7 +931,7 @@ window.AppEngine = {
         englishDefEl = $('englishDef'); exSentEl = $('exampleSentence'); exKoEl = $('exampleKorean');
         toggleKoBtn = $('toggleKoBtn');
         phrasalSec = $('phrasalVerbsSection'); phrasalList = $('phrasalList'); togglePhrasalBtn = $('togglePhrasalBtn');
-        speakWordBtn = $('speakWordBtn'); speakDefBtn = $('speakDefBtn'); speakExBtn = $('speakExBtn');
+        speakWordBtn = $('speakWordBtn'); speakWordUkBtn = $('speakWordUkBtn'); speakDefBtn = $('speakDefBtn'); speakDefUkBtn = $('speakDefUkBtn'); speakExBtn = $('speakExBtn'); speakExUkBtn = $('speakExUkBtn');
         prevBtn = $('prevBtn'); nextBtn = $('nextBtn');
         levelBtns = document.querySelectorAll('.level-btn');
         studyModeBtn = $('studyModeBtn'); quizModeBtn = $('quizModeBtn');
@@ -941,7 +939,7 @@ window.AppEngine = {
         quizQNumEl = $('quizQNum'); phaseBadgeEl = $('phaseBadge'); quizScoreEl = $('quizScoreEl');
         quizProgressBar = $('quizProgressBar'); quizQuestionLabel = $('quizQuestionLabel');
         phase1Area = $('phase1Area'); phase2Area = $('phase2Area');
-        quizWordEl = $('quizWord'); quizSpeakBtn = $('quizSpeakBtn');
+        quizWordEl = $('quizWord'); quizSpeakBtn = $('quizSpeakBtn'); quizSpeakUkBtn = $('quizSpeakUkBtn');
         tenseBadgeEl = $('tenseBadge'); phase2ContextEl = $('phase2Context');
         phaseFeedback = $('phaseFeedback');
         quizChoices = document.querySelectorAll('.choice-btn');
@@ -1026,18 +1024,33 @@ window.AppEngine = {
         });
         if (speakWordBtn) speakWordBtn.addEventListener('click', () => {
             const dataList = (window.vocabData || {})[currentLevel];
-            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].word);
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].word, 'us');
+        });
+        if (speakWordUkBtn) speakWordUkBtn.addEventListener('click', () => {
+            const dataList = (window.vocabData || {})[currentLevel];
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].word, 'uk');
         });
         if (speakDefBtn) speakDefBtn.addEventListener('click', () => {
             const dataList = (window.vocabData || {})[currentLevel];
-            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].def);
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].def, 'us');
+        });
+        if (speakDefUkBtn) speakDefUkBtn.addEventListener('click', () => {
+            const dataList = (window.vocabData || {})[currentLevel];
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].def, 'uk');
         });
         if (speakExBtn) speakExBtn.addEventListener('click', () => {
             const dataList = (window.vocabData || {})[currentLevel];
-            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].ex);
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].ex, 'us');
+        });
+        if (speakExUkBtn) speakExUkBtn.addEventListener('click', () => {
+            const dataList = (window.vocabData || {})[currentLevel];
+            if (dataList) speak(dataList[shuffledStudyIndices[currentIndex]].ex, 'uk');
         });
         if (quizSpeakBtn) quizSpeakBtn.addEventListener('click', () => {
-            if (quizWords[quizIndex]) speak(quizWords[quizIndex].word);
+            if (quizWords[quizIndex]) speak(quizWords[quizIndex].word, 'us');
+        });
+        if (quizSpeakUkBtn) quizSpeakUkBtn.addEventListener('click', () => {
+            if (quizWords[quizIndex]) speak(quizWords[quizIndex].word, 'uk');
         });
         if (levelBtns) levelBtns.forEach(btn => {
             btn.addEventListener('click', () => {

@@ -538,6 +538,34 @@ header p {
     transform: scale(1.1);
 }
 
+.accent-listen-group {
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+    flex-shrink: 0;
+}
+
+.accent-listen-btn {
+    border: 1px solid var(--card-border);
+    border-radius: 999px;
+    padding: 7px 10px;
+    background: rgba(255, 255, 255, .05);
+    color: var(--text);
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.accent-listen-btn:hover {
+    border-color: #58a6ff;
+    background: rgba(37, 99, 235, .3);
+}
+
+.quiz-accent-listen {
+    margin-left: 8px;
+}
+
 .speak-sm {
     width: 34px;
     height: 34px;

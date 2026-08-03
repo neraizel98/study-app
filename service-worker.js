@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v50-architecture';
+const CACHE_NAME = 'smart-study-v51-english-reading-integrity';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
@@ -35,6 +35,7 @@ const STATIC_ASSETS = [
     './report.html',
     './styles.css',
     './main.js',
+    './english-speech.js',
     './utils.js',
     './ui-core.js',
     './storage-keys.js',

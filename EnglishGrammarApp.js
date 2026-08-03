@@ -63,7 +63,7 @@
             || `${item.principle} 먼저 문장의 주어와 동사를 찾고, 핵심 형태가 어떤 의미와 역할을 만드는지 확인하세요. 규칙을 외우는 데서 끝내지 말고 예문을 긍정문·부정문·의문문으로 바꾸어 보면 원리를 더 정확히 이해할 수 있습니다.`;
         $('rules').innerHTML = item.rules.map((rule, i) => `<li><span>${i + 1}</span>${rule}</li>`).join('');
         $('examples').innerHTML = item.examples.map(([en, ko]) =>
-            `<article><strong>${en}</strong><p>${ko}</p><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}">🔊 듣기</button></article>`
+            `<article><strong>${en}</strong><p>${ko}</p><div class="accent-listen"><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="us">🇺🇸 미국식 듣기</button><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="uk">🇬🇧 영국식 듣기</button></div></article>`
         ).join('');
         $('tip').textContent = item.tip;
         $('prevLesson').disabled = lessonIndex === 0;
@@ -294,8 +294,8 @@
             lessonIndex = Number(button.dataset.lesson); renderSelectors(); renderStudy();
         });
         $('examples').addEventListener('click', e => {
-            const button = e.target.closest('[data-speak]'); if (!button || !speechSynthesis) return;
-            speechSynthesis.cancel(); speechSynthesis.speak(new SpeechSynthesisUtterance(button.dataset.speak));
+            const button = e.target.closest('[data-speak]');
+            if (button) window.EnglishSpeech?.speak(button.dataset.speak, button.dataset.accent);
         });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
         $('nextLesson').addEventListener('click', () => {

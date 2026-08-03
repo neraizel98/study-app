@@ -55,19 +55,20 @@
             <button class="level-btn" data-level="level3">레벨 3</button>
             <button class="level-btn" data-level="level4">레벨 4</button>
         </section>
-
         <main id="studyView" class="study-view view-active">
             <div class="card-wrapper">
                 <div class="study-card front-card">
                     <span class="index" id="wordIndex">1/40</span>
                     <div class="word-row">
                         <h2 id="englishWord">ability</h2>
-                        <button id="speakWordBtn" class="speak-btn">
+                        <div class="accent-listen-group"><button id="speakWordBtn" class="accent-listen-btn" title="미국식 발음">🇺🇸 미국식</button><button id="speakWordUkBtn" class="accent-listen-btn" title="영국식 발음">🇬🇧 영국식</button></div>
+                        <!--
+                        <button class="speak-btn">
                             <svg viewBox="0 0 24 24" width="22" height="22">
                                 <path fill="currentColor"
                                     d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                             </svg>
-                        </button>
+                        </button> -->
                     </div>
                     <p class="pronunciation" id="wordPronunciation"></p>
                     <div class="word-meta-row" id="wordMetaRow">
@@ -93,12 +94,13 @@
                         <div class="detail-label">영문 뜻</div>
                         <div class="detail-row">
                             <p id="englishDef" class="english-def"></p>
-                            <button class="speak-btn speak-sm" id="speakDefBtn">
+                            <div class="accent-listen-group"><button id="speakDefBtn" class="accent-listen-btn" title="미국식 영문 뜻 듣기">🇺🇸</button><button id="speakDefUkBtn" class="accent-listen-btn" title="영국식 영문 뜻 듣기">🇬🇧</button></div>
+                            <!-- <button class="speak-btn speak-sm">
                                 <svg viewBox="0 0 24 24" width="18" height="18">
                                     <path fill="currentColor"
                                         d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                                 </svg>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                     <div class="detail-section">
@@ -111,12 +113,13 @@
                                 <p id="exampleSentence" class="example-en"></p>
                                 <p id="exampleKorean" class="example-ko"></p>
                             </div>
-                            <button class="speak-btn speak-sm" id="speakExBtn">
+                            <div class="accent-listen-group"><button id="speakExBtn" class="accent-listen-btn" title="미국식 예문 듣기">🇺🇸</button><button id="speakExUkBtn" class="accent-listen-btn" title="영국식 예문 듣기">🇬🇧</button></div>
+                            <!-- <button class="speak-btn speak-sm">
                                 <svg viewBox="0 0 24 24" width="18" height="18">
                                     <path fill="currentColor"
                                         d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                                 </svg>
-                            </button>
+                            </button> -->
                         </div>
                     </div>
                     <div class="detail-section" id="phrasalVerbsSection" style="display:none">
@@ -154,12 +157,13 @@
                 <p class="quiz-question-label" id="quizQuestionLabel">이 단어의 뜻은?</p>
                 <div id="phase1Area">
                     <h2 id="quizWord" class="quiz-word"></h2>
-                    <button id="quizSpeakBtn" class="speak-btn quiz-speak">
+                    <div class="accent-listen-group quiz-accent-listen"><button id="quizSpeakBtn" class="accent-listen-btn" title="미국식 발음">🇺🇸</button><button id="quizSpeakUkBtn" class="accent-listen-btn" title="영국식 발음">🇬🇧</button></div>
+                    <!-- <button class="speak-btn quiz-speak">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor"
                                 d="M14,3.23V5.29C16.89,6.15 19,8.83 19,12C19,15.17 16.89,17.85 14,18.71V20.77C18.03,19.86 21,16.28 21,12C21,7.72 18.03,4.14 14,3.23M16.5,12C16.5,10.23 15.5,8.71 14,7.97V16.02C15.5,15.29 16.5,13.77 16.5,12M3,9V15H7L12,20V4L7,9H3Z" />
                         </svg>
-                    </button>
+                    </button> -->
                 </div>
                 <div id="phase2Area" style="display:none">
                     <div class="tense-badge" id="tenseBadge"></div>
@@ -261,7 +265,8 @@
             }
         });
     </script>
-    <script src="main.js?v=20260728-three-scores"></script>
+    <script src="english-speech.js?v=20260803-accent"></script>
+    <script src="main.js?v=20260803-accent"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)
