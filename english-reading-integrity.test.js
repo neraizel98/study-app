@@ -2,6 +2,8 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
+(async () => {
+
 const grammarData = fs.readFileSync('EnglishGrammarData.js', 'utf8');
 const grammarQuiz = fs.readFileSync('EnglishGrammarQuiz.js', 'utf8');
 const grammarContext = { window: {}, Math: Object.create(Math) };
@@ -37,6 +39,8 @@ const accentButtons = ['us', 'uk'].map(value => ({
 const speechContext = {
     SmartStudy: { LocalRepository: { value: {}, getPreference(key, fallback) { return this.value[key] || fallback; }, setPreference(key, value) { this.value[key] = value; } } },
     document: { querySelectorAll(selector) { return selector === '[data-english-accent]' ? accentButtons : []; } },
+    navigator: { userAgent: 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)' },
+    setTimeout(handler) { handler(); },
     SpeechSynthesisUtterance: function(text) { this.text = text; },
     speechSynthesis: {
         getVoices: () => [
@@ -45,20 +49,21 @@ const speechContext = {
         ],
         cancel() {},
         speak(utterance) { spoken.push(utterance); },
-        addEventListener() {}
+        addEventListener() {},
+        removeEventListener() {}
     }
 };
 speechContext.window = speechContext;
 vm.createContext(speechContext);
 vm.runInContext(fs.readFileSync('english-speech.js', 'utf8'), speechContext);
-speechContext.window.EnglishSpeech.speak('Good morning.');
+await speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-US');
-assert.equal(spoken.at(-1).voice, undefined);
+assert.equal(spoken.at(-1).voice.lang, 'en-US');
 assert.equal(spoken.at(-1).rate, 0.85);
 speechContext.window.EnglishSpeech.setAccent('uk');
-speechContext.window.EnglishSpeech.speak('Good morning.');
+await speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-GB');
-assert.equal(spoken.at(-1).voice, undefined);
+assert.equal(spoken.at(-1).voice.lang, 'en-GB');
 
 const reading = fs.readFileSync('ReadingApp.js', 'utf8');
 const report = fs.readFileSync('report.js', 'utf8');
@@ -76,3 +81,7 @@ assert.match(report, /subject === 'grammar' \|\| subject === 'reading'/);
 assert.match(report, /questionId: data\.questionId/);
 
 console.log('English speech, grammar prompt, and reading snapshot integrity tests passed.');
+})().catch(error => {
+    console.error(error);
+    process.exitCode = 1;
+});
