@@ -53,12 +53,12 @@ vm.createContext(speechContext);
 vm.runInContext(fs.readFileSync('english-speech.js', 'utf8'), speechContext);
 speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-US');
-assert.equal(spoken.at(-1).voice, undefined, 'the operating system must choose its best voice');
+assert.equal(spoken.at(-1).voice.lang, 'en-US');
 assert.equal(spoken.at(-1).rate, 0.85);
 speechContext.window.EnglishSpeech.setAccent('uk');
 speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-GB');
-assert.equal(spoken.at(-1).voice, undefined, 'the operating system must choose its best voice');
+assert.equal(spoken.at(-1).voice.lang, 'en-GB');
 
 const reading = fs.readFileSync('ReadingApp.js', 'utf8');
 const report = fs.readFileSync('report.js', 'utf8');
