@@ -62,6 +62,13 @@ assert.equal(spoken.at(-1).voice.lang, 'en-GB');
 
 const reading = fs.readFileSync('ReadingApp.js', 'utf8');
 const report = fs.readFileSync('report.js', 'utf8');
+const vocabPage = fs.readFileSync('english.html', 'utf8');
+const grammarApp = fs.readFileSync('EnglishGrammarApp.js', 'utf8');
+assert.match(vocabPage, /id="speakWordBtn"[^>]*>🇺🇸 미국식</);
+assert.match(vocabPage, /id="speakWordUkBtn"[^>]*>🇬🇧 영국식</);
+assert.match(vocabPage, /id="quizSpeakUkBtn"/);
+assert.match(grammarApp, /data-accent="us">🇺🇸 미국식 듣기/);
+assert.match(grammarApp, /data-accent="uk">🇬🇧 영국식 듣기/);
 assert.match(reading, /wrongNoteId: `\$\{passage\.id\}:\$\{item\.id\}`/);
 assert.match(reading, /choices: \[\.\.\.item\.renderedChoices\]/);
 assert.match(reading, /snapshotId:/);

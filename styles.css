@@ -538,35 +538,32 @@ header p {
     transform: scale(1.1);
 }
 
-.english-accent-picker {
-    display: flex;
+.accent-listen-group {
+    display: inline-flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    gap: 8px;
-    margin: -4px 0 18px;
+    gap: 6px;
+    flex-shrink: 0;
 }
 
-.english-accent-picker button {
+.accent-listen-btn {
     border: 1px solid var(--card-border);
     border-radius: 999px;
-    padding: 9px 14px;
+    padding: 7px 10px;
     background: rgba(255, 255, 255, .05);
-    color: var(--text-sub);
+    color: var(--text);
     cursor: pointer;
+    font-weight: 700;
 }
 
-.english-accent-picker button.active {
-    color: #fff;
+.accent-listen-btn:hover {
     border-color: #58a6ff;
-    background: rgba(37, 99, 235, .65);
+    background: rgba(37, 99, 235, .3);
 }
 
-.english-accent-picker small {
-    width: 100%;
-    color: var(--text-sub);
-    text-align: center;
-    font-size: .75rem;
+.quiz-accent-listen {
+    margin-left: 8px;
 }
 
 .speak-sm {
