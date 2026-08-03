@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v52-dual-english-accent';
+const CACHE_NAME = 'smart-study-v53-desktop-english-accent';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
