@@ -43,7 +43,7 @@ assert(report.includes('StudyPeriods.weekly()'), 'Monday-based weekly period is 
 assert(admin.includes("label:'월간 목표'"), 'Admin monthly reward management is missing');
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');
 assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note handling is missing');
-assert(timer.includes("UserSession.updateDailyStat('time', subject, safeSeconds)"), 'Active study time must update user/admin statistics');
+assert(timer.includes("UserSession.updateDailyStat('study_time', subject, safeSeconds)"), 'Active study time must update the learning-time statistics bucket');
 assert(readingPage.includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
 assert(!readingPage.includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');
 assert(readingPage.includes('<a href="index.html">🏠 홈</a>'), 'Reading top navigation must include a home link');

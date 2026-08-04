@@ -346,7 +346,7 @@
 
     <script src="utils.js"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260730-architecture"></script>
+    <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="ui-core.js"></script>
     <script src="kakao-share.js?v=20260728-subject-registry"></script>
@@ -409,9 +409,10 @@
                         const pad = n => n.toString().padStart(2,'0');
                         return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
                     };
-                    const elapsed = (r.startTime > 0 && r.endTime > r.startTime)
+                    const wallElapsed = (r.startTime > 0 && r.endTime > r.startTime)
                         ? Math.round((r.endTime - r.startTime) / 1000)
                         : null;
+                    const elapsed = r.timeSpentSeconds ?? wallElapsed;
                     const formatSec = s => {
                         if (!s) return '-';
                         const m = Math.floor(s / 60), sec = s % 60;
@@ -440,13 +441,18 @@
                                 <div class="shared-meta-value">${vInit}점 <small style="font-size:0.8rem;color:var(--text-sub);">(${r.initialScore}/${r.totalQuestions})</small></div>
                             </div>
                             <div class="shared-meta-card">
-                                <div class="shared-meta-label">소요 시간</div>
+                                <div class="shared-meta-label">퀴즈 시간 · 자리비움 제외</div>
                                 <div class="shared-meta-value">${formatSec(elapsed)}</div>
                             </div>
                             <div class="shared-meta-card">
                                 <div class="shared-meta-label">완료 여부</div>
                                 <div class="shared-meta-value" style="color:${isPerfect ? '#56d364' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
                             </div>
+                            ${r.subjectTime?.totalSeconds ? `<div class="shared-meta-card">
+                                <div class="shared-meta-label">과목 누적 시간</div>
+                                <div class="shared-meta-value">${formatSec(r.subjectTime.totalSeconds)}</div>
+                                <small style="color:var(--text-sub);">학습 ${formatSec(r.subjectTime.learningSeconds)} + 퀴즈 ${formatSec(r.subjectTime.quizSeconds)}</small>
+                            </div>` : ''}
                         </div>
                         ${buildSharedQuestionCards(r)}
                     `;

@@ -129,10 +129,23 @@ window.KakaoShare = {
         };
         const startTimeStr = formatTime(extra.startTime);
         const endTimeStr = formatTime(extra.endTime || Date.now());
+        const savedReport = typeof getQuizReports === 'function'
+            ? getQuizReports().find(report => report.sessionId === extra.sessionId)
+            : null;
+        const activeQuizSeconds = Math.max(0, Math.round(extra.timeSpentSeconds ?? savedReport?.timeSpentSeconds ?? 0));
+        const subjectStat = typeof UserSession !== 'undefined'
+            ? (UserSession.getUserData()?.subjectStats?.[subject] || {})
+            : {};
+        const formatDuration = seconds => {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return min > 0 ? `${min}분 ${sec}초` : `${sec}초`;
+        };
 
         // 3. 메시지 설명 구성
         let desc = `✅ 결과: ${score} / ${total} (${pct}%)\n`;
-        desc += `🕒 시간: ${startTimeStr} ~ ${endTimeStr}\n`;
+        desc += `🕒 퀴즈 시간: ${formatDuration(activeQuizSeconds)} (자리비움 제외)\n`;
+        if (subjectStat.studyTime > 0) desc += `📚 과목 누적: ${formatDuration(subjectStat.studyTime)} (학습+퀴즈)\n`;
         
         if (initialScore !== null && roundCount > 1) {
             desc += `🎯 최초 점수: ${initialScore} / ${total} (${roundCount}회 도전)`;
@@ -152,6 +165,12 @@ window.KakaoShare = {
             finalScore: score,
             startTime: extra.startTime,
             endTime: extra.endTime || Date.now(),
+            timeSpentSeconds: activeQuizSeconds,
+            subjectTime: {
+                learningSeconds: subjectStat.learningTime || 0,
+                quizSeconds: subjectStat.quizTime || 0,
+                totalSeconds: subjectStat.studyTime || 0
+            },
             isCompleted: isPerfect
         };
 
@@ -235,7 +254,7 @@ window.KakaoShare = {
             : '';
 
         const title = `📊 ${activeUser}의 오늘 학습 리포트`;
-        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 학습${scoreMsg}${streakMsg}`;
+        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 (학습+퀴즈 · 자리비움 제외)${scoreMsg}${streakMsg}`;
 
         const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
 

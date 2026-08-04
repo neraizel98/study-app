@@ -52,6 +52,64 @@ const StudyPeriods = {
 window.StudyPeriods = StudyPeriods;
 
 /**
+ * 화면이 실제로 보이고 최근 사용자 활동이 있을 때만 초를 누적합니다.
+ * 퀴즈의 단순 시작/종료 시각 차이에서 자리비움 시간을 제거하기 위한 공통 타이머입니다.
+ */
+const ActiveTimeTracker = {
+    create({ idleLimitMs = 45 * 1000 } = {}) {
+        const activityEvents = ['click', 'keydown', 'touchstart', 'pointerdown', 'scroll'];
+        let activeSeconds = 0;
+        let lastTimestamp = Date.now();
+        let lastActivityAt = Date.now();
+        let timerId = null;
+
+        const onActivity = () => { lastActivityAt = Date.now(); };
+        const isMobileLike = () => window.matchMedia?.('(pointer: coarse)').matches === true;
+        const canCount = () => document.visibilityState === 'visible'
+            && (isMobileLike() || typeof document.hasFocus !== 'function' || document.hasFocus())
+            && Date.now() - lastActivityAt <= idleLimitMs;
+
+        function sample() {
+            const now = Date.now();
+            const elapsed = Math.floor((now - lastTimestamp) / 1000);
+            lastTimestamp = now;
+            if (elapsed > 0 && canCount()) activeSeconds += Math.min(elapsed, 2);
+        }
+
+        function start({ reset = false } = {}) {
+            if (reset) activeSeconds = 0;
+            lastTimestamp = Date.now();
+            lastActivityAt = Date.now();
+            if (!timerId) timerId = setInterval(sample, 1000);
+        }
+
+        function getSeconds() {
+            sample();
+            return activeSeconds;
+        }
+
+        function stop() {
+            sample();
+            if (timerId) clearInterval(timerId);
+            timerId = null;
+        }
+
+        function destroy() {
+            stop();
+            activityEvents.forEach(event => window.removeEventListener(event, onActivity));
+            document.removeEventListener('visibilitychange', sample);
+        }
+
+        activityEvents.forEach(event => window.addEventListener(event, onActivity, { passive: true }));
+        document.addEventListener('visibilitychange', sample);
+        start({ reset: true });
+
+        return { start, stop, destroy, getSeconds };
+    }
+};
+window.ActiveTimeTracker = ActiveTimeTracker;
+
+/**
  * 전역 사용자 세션 관리
  */
 const UserSession = {
@@ -79,6 +137,8 @@ const UserSession = {
                 dailyStats: {
                     date: StudyPeriods.daily(),
                     studyTime: { reading: 0, english: 0, grammar: 0, hanja: 0, math: 0 },
+                    learningTime: { reading: 0, english: 0, grammar: 0, hanja: 0, math: 0 },
+                    quizTime: { reading: 0, english: 0, grammar: 0, hanja: 0, math: 0 },
                     quizScores: { reading: [], english: [], grammar: [], hanja: [], math: [] },
                     subjectsStudied: []
                 },
@@ -107,6 +167,8 @@ const UserSession = {
                 // 기존 유저 데이터에 신규 필드(quizScores 등) 추가
                 data.dailyStats.quizScores = data.dailyStats.quizScores || defaultData.dailyStats.quizScores;
                 data.dailyStats.studyTime = data.dailyStats.studyTime || defaultData.dailyStats.studyTime;
+                data.dailyStats.learningTime = data.dailyStats.learningTime || {};
+                data.dailyStats.quizTime = data.dailyStats.quizTime || {};
                 data.dailyStats.subjectsStudied = data.dailyStats.subjectsStudied || defaultData.dailyStats.subjectsStudied;
             }
             if (!data.missionProgress) {
@@ -134,6 +196,8 @@ const UserSession = {
                 data.dailyStats = {
                     date: today,
                     studyTime: { ...defaultData.dailyStats.studyTime },
+                    learningTime: { ...defaultData.dailyStats.learningTime },
+                    quizTime: { ...defaultData.dailyStats.quizTime },
                     quizScores: { ...defaultData.dailyStats.quizScores },
                     subjectsStudied: []
                 };
@@ -205,8 +269,13 @@ const UserSession = {
         const user = this.getUserData();
         if (!user) return;
 
-        if (type === 'time') {
+        const isTime = type === 'time' || type === 'study_time' || type === 'quiz_time';
+        if (isTime) {
             user.dailyStats.studyTime[subject] = (user.dailyStats.studyTime[subject] || 0) + value;
+            user.dailyStats.learningTime = user.dailyStats.learningTime || {};
+            user.dailyStats.quizTime = user.dailyStats.quizTime || {};
+            if (type === 'study_time') user.dailyStats.learningTime[subject] = (user.dailyStats.learningTime[subject] || 0) + value;
+            if (type === 'quiz_time') user.dailyStats.quizTime[subject] = (user.dailyStats.quizTime[subject] || 0) + value;
             if (value > 0 && !user.dailyStats.subjectsStudied.includes(subject)) {
                 user.dailyStats.subjectsStudied.push(subject);
             }
@@ -230,7 +299,9 @@ const UserSession = {
 
         user.subjectStats = user.subjectStats || {};
         const subjectStat = user.subjectStats[subject] || { studyTime: 0, quizCount: 0, bestScore: 0 };
-        if (type === 'time') subjectStat.studyTime += value;
+        if (isTime) subjectStat.studyTime = (subjectStat.studyTime || 0) + value;
+        if (type === 'study_time') subjectStat.learningTime = (subjectStat.learningTime || 0) + value;
+        if (type === 'quiz_time') subjectStat.quizTime = (subjectStat.quizTime || 0) + value;
         if (type === 'score') {
             subjectStat.bestScore = Math.max(subjectStat.bestScore || 0, value || 0);
         }
@@ -475,11 +546,9 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     // 경험치 및 통계 업데이트
     const user = UserSession.getUserData();
     if (user) {
-        // 시간 계산 버그 방어: 델타 시간이 비정상적(1시간 초과 등)이면 무시
-        // 문법은 StudyTimer가 활성 학습 시간을 이미 실시간 합산하므로 보고 저장 시 중복 합산하지 않는다.
-        const safeDelta = subject === 'grammar'
-            ? 0
-            : ((timeDelta >= 0 && timeDelta <= 3600) ? timeDelta : 0);
+        // 모든 과목의 timeSpentSeconds는 자리비움을 제외한 실제 퀴즈 시간이다.
+        // 학습 시간은 StudyTimer가 별도로 합산하므로 여기서는 퀴즈 시간만 더한다.
+        const safeDelta = (timeDelta >= 0 && timeDelta <= 3600) ? timeDelta : 0;
         user.totalStudyTime += safeDelta;
 
         // 시도 횟수는 신규 세션일 때만 증가
@@ -491,7 +560,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         UserSession.saveUserData(user);
 
         // 일일 통계 업데이트 (미션용)
-        UserSession.updateDailyStat('time', subject, safeDelta);
+        UserSession.updateDailyStat('quiz_time', subject, safeDelta);
         const scorePct = totalQuestions > 0 ? Math.round((currentScore / totalQuestions) * 100) : 0;
         UserSession.updateDailyStat('score', subject, scorePct);
         if (isNewSession) UserSession.updateDailyStat('quiz', subject, currentScore);

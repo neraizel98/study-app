@@ -9,7 +9,7 @@
     const requestedReview = params.get('mode') === 'review';
     const requestedQuiz = params.get('mode') === 'quiz' || requestedReview;
     let mode = requestedQuiz ? 'quiz' : 'study';
-    let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null;
+    let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null, quizActiveTimer = null;
     let sessionId = '', attempts = [];
     const principleDetails = {
         e1: '한국어는 조사가 문장 성분을 알려 주지만 영어는 자리와 순서가 그 역할을 합니다. 그래서 단어 뜻만 아는 것보다 주어와 동사의 위치를 먼저 찾는 습관이 중요합니다. 문장을 읽을 때 “누가 또는 무엇이”를 찾고, 바로 뒤에서 그 대상의 행동이나 상태를 나타내는 동사를 확인하세요.',
@@ -152,6 +152,8 @@
         }
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
         sessionId = `grammar-${Date.now()}`; attempts = [];
+        quizActiveTimer?.destroy();
+        quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         $('studyPanel').hidden = true;
         $('quizPanel').hidden = false;
         $('studyModeBtn').classList.remove('active');
@@ -257,15 +259,10 @@
 
     function finishQuiz() {
         const initialScore = score / 10;
-        // The controller only knows about this page visit, but the level timer
-        // survives reloads. Attach the full active learning period to the quiz.
-        const activeStudySeconds = Math.max(
-            timerController?.getActiveSeconds?.() || 0,
-            typeof StudyTimer !== 'undefined' ? StudyTimer.getAccumulated('grammar', context()) : 0
-        );
+        const activeQuizSeconds = quizActiveTimer?.getSeconds() || 0;
         if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
-            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, activeStudySeconds, true, {
+            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, activeQuizSeconds, true, {
                 category: 'grammar',
                 review: requestedReview,
                 stageId,

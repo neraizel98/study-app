@@ -189,6 +189,7 @@ function _mergeUserData(local, cloud, userId) {
         badges:          _unionArr(l.badges || [], c.badges || []),
         attendance:      finalAttendance,
         dailyStats:      _mergeDailyStats(l.dailyStats, c.dailyStats),
+        subjectStats:    _mergeSubjectStats(l.subjectStats, c.subjectStats),
         weeklyStats:     _mergePeriodStats(l.weeklyStats, c.weeklyStats, 'weekStart'),
         monthlyStats:    _mergePeriodStats(l.monthlyStats, c.monthlyStats, 'monthStart'),
         formulaStudyTime: _mergeFormulaStudyTime(l.formulaStudyTime, c.formulaStudyTime),
@@ -224,6 +225,13 @@ function _mergeDailyStats(local, cloud) {
         subjects.forEach(s => {
             studyTime[s] = Math.max(l.studyTime?.[s] || 0, c.studyTime?.[s] || 0);
         });
+        const mergeTimeMap = (left, right) => {
+            const result = {};
+            new Set([...Object.keys(left || {}), ...Object.keys(right || {})]).forEach(subject => {
+                result[subject] = Math.max(left?.[subject] || 0, right?.[subject] || 0);
+            });
+            return result;
+        };
         const quizScores = {};
         new Set([
             ...Object.keys(l.quizScores || {}),
@@ -236,6 +244,8 @@ function _mergeDailyStats(local, cloud) {
         return {
             date: l.date,
             studyTime,
+            learningTime: mergeTimeMap(l.learningTime, c.learningTime),
+            quizTime: mergeTimeMap(l.quizTime, c.quizTime),
             quizScores,
             subjectsStudied: [...new Set([
                 ...(l.subjectsStudied || []),
@@ -247,6 +257,26 @@ function _mergeDailyStats(local, cloud) {
     // 다른 날짜면 더 최근 날짜를 선택
     if ((l.date || '') >= (c.date || '')) return l;
     return c;
+}
+
+function _mergeSubjectStats(local, cloud) {
+    const l = local || {};
+    const c = cloud || {};
+    const merged = {};
+    new Set([...Object.keys(l), ...Object.keys(c)]).forEach(subject => {
+        const ls = l[subject] || {};
+        const cs = c[subject] || {};
+        merged[subject] = {
+            ...cs,
+            ...ls,
+            studyTime: Math.max(ls.studyTime || 0, cs.studyTime || 0),
+            learningTime: Math.max(ls.learningTime || 0, cs.learningTime || 0),
+            quizTime: Math.max(ls.quizTime || 0, cs.quizTime || 0),
+            quizCount: Math.max(ls.quizCount || 0, cs.quizCount || 0),
+            bestScore: Math.max(ls.bestScore || 0, cs.bestScore || 0)
+        };
+    });
+    return merged;
 }
 
 function _mergePeriodStats(local, cloud, periodField) {
