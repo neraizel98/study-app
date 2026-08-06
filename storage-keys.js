@@ -3,6 +3,7 @@
 
     const Keys = Object.freeze({
         activeUser: 'SmartStudy_ActiveUser',
+        deviceId: 'SmartStudy_DeviceId',
         user: userId => `SmartStudy_UserData_${userId}`,
         reports: userId => `SmartVocab_Reports_${userId}`,
         wrongAnswers: userId => `SmartStudy_WrongAnswers_${userId}`,

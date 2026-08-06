@@ -156,7 +156,7 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260730-architecture"></script>
+    <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
@@ -164,9 +164,12 @@
     //  Admin 설정
     // ─────────────────────────────────────────────
     const ADMIN_IDS = ['우준아빠'];
-    const SUBJ_NAMES  = { reading:'국어 독해력', english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학' };
-    const SUBJ_ICONS  = { english:'🇬🇧', grammar:'📘', hanja:'🏮', math:'📐', reading:'📖' };
+    const SUBJECTS = SubjectRegistry.list();
+    const SUBJECT_IDS = SUBJECTS.map(subject => subject.id);
+    const SUBJ_NAMES = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.name]));
+    const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
     const SUBJ_COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
+    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLORS[subject]) SUBJ_COLORS[subject] = '#8b949e'; });
 
     let db = null;
 
@@ -329,10 +332,10 @@
             Object.values(window._adminWeekCharts).forEach(c => c && c.destroy());
             window._adminWeekCharts = {};
         }
-        const { reports, wrongAnswers } = window._adminData;
+        const { ud, reports, wrongAnswers } = window._adminData;
         const el = document.getElementById('tabContent');
         if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports, wrongAnswers);
-        if (tab === 'subject') el.innerHTML = buildSubjectTab(reports);
+        if (tab === 'subject') el.innerHTML = buildSubjectTab(reports, ud);
         if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
         if (tab === 'weekly') {
@@ -357,11 +360,14 @@
         const items = subjects.map(s => {
             const info = typeof SubjectRegistry !== 'undefined' ? SubjectRegistry.get(s) : { icon:'📚', name:s };
             const sec = ds.studyTime?.[s] || 0;
+            const learningSec = ds.learningTime?.[s] || 0;
+            const quizSec = ds.quizTime?.[s] || 0;
             const min = Math.floor(sec / 60);
             const rem = sec % 60;
             const timeStr = min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
             return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
                 ${info.icon} ${info.name} <strong style="color:${SUBJ_COLORS[s] || '#a78bfa'}">${timeStr}</strong>
+                ${(learningSec || quizSec) ? `<small style="color:var(--text-sub);">학습 ${formatStudySeconds(learningSec)} · 퀴즈 ${formatStudySeconds(quizSec)}</small>` : ''}
             </span>`;
         });
 
@@ -520,8 +526,15 @@
     }
 
     // ── 과목별 통계 탭 ──
-    function buildSubjectTab(reports) {
-        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
+    function formatStudySeconds(sec) {
+        const value = Math.max(0, Math.round(sec || 0));
+        const min = Math.floor(value / 60);
+        const rem = value % 60;
+        return min > 0 ? `${min}분${rem ? ` ${rem}초` : ''}` : `${rem}초`;
+    }
+
+    function buildSubjectTab(reports, ud = {}) {
+        const subjects = SUBJECT_IDS;
         const pctOf = (r, field) => r.totalQuestions > 0 ? (r[field] ?? r.initialScore) / r.totalQuestions * 100 : 0;
         const avg = (arr, field = 'initialScore') => arr.length ? Math.round(arr.reduce((a, r) => a + pctOf(r, field), 0) / arr.length) : null;
 
@@ -529,10 +542,14 @@
 
         const cards = subjects.map(s => {
             const sub = reports.filter(r => r.subject === s);
-            if (!sub.length) return null;
+            const subjectTime = ud.subjectStats?.[s] || {};
+            if (!sub.length && !(subjectTime.studyTime > 0)) return null;
 
             const totalCount = sub.length;
-            const totalTime  = Math.round(sub.reduce((a, r) => a + (r.timeSpentSeconds || 0), 0) / 60);
+            const reportQuizSeconds = sub.reduce((a, r) => a + (r.timeSpentSeconds || 0), 0);
+            const totalSeconds = Math.max(subjectTime.studyTime || 0, reportQuizSeconds);
+            const learningSeconds = subjectTime.learningTime || 0;
+            const quizSeconds = subjectTime.quizTime || reportQuizSeconds;
             const overallPct = avg(sub, 'initialScore');
             const color      = SUBJ_COLORS[s];
 
@@ -573,8 +590,9 @@
                         <span style="font-size:1rem;font-weight:700;">${SUBJ_NAMES[s]}</span>
                     </div>
                     <div style="text-align:right;">
-                        <div style="font-size:1.2rem;font-weight:700;color:${color};">${overallPct}%</div>
-                        <div style="font-size:0.68rem;color:var(--text-sub);">${totalCount}회 · ${totalTime}분</div>
+                        <div style="font-size:1.2rem;font-weight:700;color:${color};">${overallPct === null ? '-' : `${overallPct}%`}</div>
+                        <div style="font-size:0.68rem;color:var(--text-sub);">${totalCount}회 · ${formatStudySeconds(totalSeconds)}</div>
+                        ${(learningSeconds || subjectTime.quizTime) ? `<div style="font-size:0.65rem;color:var(--text-sub);margin-top:3px;">학습 ${formatStudySeconds(learningSeconds)} + 퀴즈 ${formatStudySeconds(quizSeconds)}</div>` : ''}
                     </div>
                 </div>
                 ${roundBars}
@@ -663,7 +681,7 @@
     function buildStudyDetailTab(reports) {
         if (!reports.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
 
-        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
+        const subjects = SUBJECT_IDS;
         let html = '<div class="chart-title">레벨별 학습 현황</div>';
         let anyData = false;
 
@@ -736,7 +754,7 @@
 
     // ── 오답 현황 탭 ──
     function buildWrongTab(wrongAnswers) {
-        const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
+        const subjects = SUBJECT_IDS;
         let html = '<div class="chart-title">오답 현황</div>';
         let anyData = false;
 
@@ -852,7 +870,7 @@
         }
         window._adminWeekCharts = {};
 
-        const SUBJ   = ['reading','english','grammar','hanja','math'];
+        const SUBJ   = SUBJECT_IDS;
         const NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
         const COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
         const FILL   = { english:'rgba(79,172,254,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)', reading:'rgba(251,113,133,0.75)' };
@@ -1009,7 +1027,7 @@
     // ─────────────────────────────────────────────
     function loadStudyTimeConfig() {
         const cfg = StudyTimer.getConfig();
-        const subjectOrder = ['reading', 'english', 'grammar', 'hanja', 'math'];
+        const subjectOrder = SUBJECT_IDS;
         const inputs = document.getElementById('studyTimeInputs');
         inputs.innerHTML = subjectOrder.map(subject => {
             const info = SubjectRegistry.get(subject);

@@ -1,5 +1,5 @@
 (function () {
-    const Q = (question, answer, choices, explanation) => ({ question, answer, choices, explanation });
+    const Q = (question, answer, choices, explanation, options = {}) => ({ question, answer, choices, explanation, ...options });
     const banks = {
         e1: [Q('영어 문장의 기본 어순은?', '주어 + 동사', ['동사 + 주어', '목적어 + 주어', '동사 + 목적어'], '영어 문장은 주어 뒤에 동사가 옵니다.'), Q('The dog을 대신할 대명사는?', 'it', ['he', 'we', 'they'], '동물 한 마리를 가리킬 때 it을 쓸 수 있습니다.'), Q('“그녀는 책을 읽는다.”에 알맞은 시작은?', 'She reads', ['Her reads', 'She reades', 'She reading'], '주격 대명사 she와 동사 reads를 사용합니다.')],
         e2: [Q('I ___ a student.', 'am', ['is', 'are', 'be'], 'I와 함께 am을 씁니다.'), Q('They ___ happy.', 'are', ['am', 'is', 'be'], '복수 주어 they와 are를 씁니다.'), Q('She is tired.의 의문문은?', 'Is she tired?', ['Does she tired?', 'She is tired?', 'Do she tired?'], 'be동사를 문장 앞으로 보냅니다.')],
@@ -51,18 +51,28 @@
         const choices = shuffle([item.answer, ...item.choices]);
         const words = String(item.answer).trim().split(/\s+/);
         const roll = Math.random();
-        const supportsTyped = /^[A-Za-z0-9 ,.?!'’+\-()/]+$/.test(String(item.answer));
-        const incorrectSentence = supportsTyped ? makeCorrection(String(item.answer)) : null;
+        const supportsTyped = item.allowTyped !== false
+            && /^[A-Za-z0-9 ,.?!'’+\-()/]+$/.test(String(item.answer));
+        const isCompleteSentence = item.allowTyped === true;
+        const incorrectSentence = isCompleteSentence ? makeCorrection(String(item.answer)) : null;
         let type = 'choice';
-        if (supportsTyped && words.length >= 3 && words.length <= 10 && roll < 0.25) type = 'arrange';
+        if (isCompleteSentence && words.length >= 3 && words.length <= 10 && roll < 0.25) type = 'arrange';
         else if (supportsTyped && roll < 0.45) type = 'short';
-        else if (incorrectSentence && roll < 0.58) type = 'correction';
+        else if (isCompleteSentence && incorrectSentence && roll < 0.58) type = 'correction';
         const meaningMatch = question.match(/^다음 뜻에 알맞은 영어 문장을 완성하세요:\s*(.+)$/);
+        const choicePrompt = question.replace(
+            /^다음 뜻에 알맞은 영어 문장을 완성하세요:/,
+            '다음 뜻에 알맞은 영어 문장은?'
+        );
+        const shortPrompt = question.replace(
+            /^다음 뜻에 알맞은 영어 문장을 완성하세요:/,
+            '다음 뜻을 영어 문장으로 쓰세요:'
+        );
         const prompt = type === 'correction'
             ? `다음 문장을 자연스럽고 문법에 맞게 고쳐 쓰세요.\n${incorrectSentence}`
             : type === 'arrange'
                 ? `주어진 단어를 자연스러운 영어 문장으로 배열하세요.${meaningMatch ? `\n뜻: ${meaningMatch[1]}` : ''}`
-                : question;
+                : type === 'short' ? shortPrompt : choicePrompt;
         return {
             type,
             question: prompt,
@@ -96,20 +106,24 @@
         if (!found) return [];
 
         const stageLessons = (found.stage.units || []).flatMap(stageUnit => stageUnit.lessons || []);
-        const allRules = unique(stageLessons.flatMap(item => item.rules || []));
+        const lessonRules = stageLessons.map(lesson => ({ lesson, rules: lesson.rules || [] }));
         const allMeanings = unique(stageLessons.flatMap(item => (item.examples || []).map(example => example[1])));
         const allSentences = unique(stageLessons.flatMap(item => (item.examples || []).map(example => example[0])));
         const generated = [];
 
         (found.unit.lessons || []).forEach((currentLesson, lessonIndex) => {
-            (currentLesson.rules || []).forEach((rule, ruleIndex) => {
-                const choices = pickDistractors(allRules, rule);
-                if (choices.length === 3) {
+            (currentLesson.rules || []).forEach(rule => {
+                const distractors = pickDistractors(
+                    lessonRules.filter(item => item.lesson !== currentLesson).flatMap(item => item.rules),
+                    rule
+                );
+                if (distractors.length === 3) {
                     generated.push(Q(
-                        `${currentLesson.title}의 핵심 규칙 ${ruleIndex + 1}로 알맞은 것은?`,
+                        `다음 중 “${currentLesson.title}”에서 배운 규칙은?`,
                         rule,
-                        choices,
-                        `${currentLesson.title}에서 기억할 규칙은 “${rule}”입니다.`
+                        distractors,
+                        `이 단원의 규칙은 “${rule}”입니다.`,
+                        { allowTyped: false }
                     ));
                 }
             });
@@ -131,7 +145,8 @@
                         `다음 뜻에 알맞은 영어 문장을 완성하세요: ${meaning}`,
                         sentence,
                         sentenceChoices,
-                        `${currentLesson.title}의 알맞은 문장은 “${sentence}”입니다.`
+                        `${currentLesson.title}의 알맞은 문장은 “${sentence}”입니다.`,
+                        { allowTyped: true }
                     ));
                 }
             });

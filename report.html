@@ -346,7 +346,7 @@
 
     <script src="utils.js"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260730-architecture"></script>
+    <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="ui-core.js"></script>
     <script src="kakao-share.js?v=20260728-subject-registry"></script>
@@ -356,6 +356,13 @@
             const urlParams = new URLSearchParams(window.location.search);
             const importData = urlParams.get('import');
             const importAllData = urlParams.get('import_all');
+            const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+            function decodeSharedPayload(encoded, expectedKind) {
+                const parsed = JSON.parse(decodeURIComponent(escape(atob(encoded))));
+                if (!parsed || parsed.version !== 1 || parsed.kind !== expectedKind || !parsed.data) throw new Error('지원하지 않는 공유 데이터입니다.');
+                if (!Number.isFinite(parsed.expiresAt) || Date.now() > parsed.expiresAt) throw new Error('공유 링크의 7일 유효기간이 지났습니다.');
+                return parsed.data;
+            }
 
             function buildSharedQuestionCards(r) {
                 if (!r.wrongItems || r.wrongItems.length === 0) return '';
@@ -368,7 +375,7 @@
                     ).join('');
                     return `
                         <div class="q-card ${cls}">
-                            <div class="q-identifier">${item.display}</div>
+                            <div class="q-identifier">${escapeHtml(item.display)}</div>
                             <div class="q-rounds">${dots}</div>
                         </div>`;
                 }).join('');
@@ -395,7 +402,7 @@
             if (importData) {
                 // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
-                    const r = JSON.parse(decodeURIComponent(escape(atob(importData))));
+                    const r = decodeSharedPayload(importData, 'single-report');
                     const subjectInfo = SubjectRegistry.get(r.subject);
                     const subjectName = subjectInfo.name;
                     const emoji = subjectInfo.icon;
@@ -409,9 +416,10 @@
                         const pad = n => n.toString().padStart(2,'0');
                         return `${d.getFullYear()}. ${pad(d.getMonth()+1)}. ${pad(d.getDate())} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
                     };
-                    const elapsed = (r.startTime > 0 && r.endTime > r.startTime)
+                    const wallElapsed = (r.startTime > 0 && r.endTime > r.startTime)
                         ? Math.round((r.endTime - r.startTime) / 1000)
                         : null;
+                    const elapsed = r.timeSpentSeconds ?? wallElapsed;
                     const formatSec = s => {
                         if (!s) return '-';
                         const m = Math.floor(s / 60), sec = s % 60;
@@ -427,7 +435,7 @@
 
                     document.getElementById('sharedView').innerHTML = `
                         <div class="shared-notice">💬 카카오톡으로 공유된 학습 결과</div>
-                        <div class="shared-subject-header">${emoji} ${subjectName} · ${r.level || '기본'}</div>
+                        <div class="shared-subject-header">${emoji} ${escapeHtml(subjectName)} · ${escapeHtml(r.level || '기본')}</div>
                         <div class="shared-title">우준의 학습 결과</div>
                         <div class="shared-date">${formatTs(r.date)}</div>
                         <div class="shared-score-wrap">
@@ -440,13 +448,18 @@
                                 <div class="shared-meta-value">${vInit}점 <small style="font-size:0.8rem;color:var(--text-sub);">(${r.initialScore}/${r.totalQuestions})</small></div>
                             </div>
                             <div class="shared-meta-card">
-                                <div class="shared-meta-label">소요 시간</div>
+                                <div class="shared-meta-label">퀴즈 시간 · 자리비움 제외</div>
                                 <div class="shared-meta-value">${formatSec(elapsed)}</div>
                             </div>
                             <div class="shared-meta-card">
                                 <div class="shared-meta-label">완료 여부</div>
                                 <div class="shared-meta-value" style="color:${isPerfect ? '#56d364' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
                             </div>
+                            ${r.subjectTime?.totalSeconds ? `<div class="shared-meta-card">
+                                <div class="shared-meta-label">과목 누적 시간</div>
+                                <div class="shared-meta-value">${formatSec(r.subjectTime.totalSeconds)}</div>
+                                <small style="color:var(--text-sub);">학습 ${formatSec(r.subjectTime.learningSeconds)} + 퀴즈 ${formatSec(r.subjectTime.quizSeconds)}</small>
+                            </div>` : ''}
                         </div>
                         ${buildSharedQuestionCards(r)}
                     `;
@@ -466,13 +479,13 @@
             } else if (importAllData) {
                 // 전체 기록 공유 → 기존처럼 localStorage에 저장
                 try {
-                    const decoded = JSON.parse(decodeURIComponent(escape(atob(importAllData))));
+                    const decoded = decodeSharedPayload(importAllData, 'report-history');
                     const userId = UserSession.getActiveUser() || '우준';
                     let currentReports = SmartStudy.LocalRepository.listReports(userId);
                     const newItems = Array.isArray(decoded) ? decoded : [decoded];
                     let addedCount = 0;
-                    newItems.forEach(item => {
-                        if (!currentReports.find(r => r.sessionId === item.sessionId)) { currentReports.push(item); addedCount++; }
+                    if (confirm(`공유받은 학습 기록 ${newItems.length}개를 현재 사용자(${userId})에게 가져올까요?`)) newItems.forEach(item => {
+                        if (item && item.sessionId && item.subject && !currentReports.find(r => r.sessionId === item.sessionId)) { currentReports.push(item); addedCount++; }
                     });
                     if (addedCount > 0) {
                         SmartStudy.LocalRepository.saveReports(userId, currentReports);

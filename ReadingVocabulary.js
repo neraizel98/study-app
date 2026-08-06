@@ -44,6 +44,66 @@
             word: '공동체', choices: ['공동체', '경쟁자', '관찰자', '소비자'],
             meaning: '생활이나 목적을 함께하며 서로 연결된 집단'
         },
+        'chicago-reform': {
+            word: '종합', choices: ['종합', '분리', '생략', '모방'],
+            meaning: '여러 내용을 한데 모아 전체로 묶음'
+        },
+        'deep-reading-five': {
+            word: '근거', choices: ['근거', '소문', '기분', '우연'],
+            meaning: '어떤 생각이나 판단이 옳다고 뒷받침하는 까닭이나 자료'
+        },
+        'knowledge-judgment': {
+            word: '보완', choices: ['보완', '방해', '제거', '반복'],
+            meaning: '모자라거나 부족한 부분을 채워 더 완전하게 함'
+        },
+        'socrates-question': {
+            word: '모순', choices: ['모순', '결론', '사례', '순서'],
+            meaning: '두 생각이나 말이 서로 맞지 않아 함께 참일 수 없는 상태'
+        },
+        'plato-cave': {
+            word: '탐구', choices: ['탐구', '포기', '망각', '모방'],
+            meaning: '문제를 깊이 파고들어 이치나 사실을 알아봄'
+        },
+        'aristotle-habit': {
+            word: '무모함', choices: ['무모함', '신중함', '정직함', '다정함'],
+            meaning: '앞뒤를 충분히 살피지 않고 함부로 행동하는 성질'
+        },
+        'confucius-practice': {
+            word: '배려', choices: ['배려', '경쟁', '변명', '복종'],
+            meaning: '다른 사람의 처지와 마음을 생각하여 보살핌'
+        },
+        'theseus-ship': {
+            word: '정체성', choices: ['정체성', '속도', '가격', '방향'],
+            meaning: '다른 것과 구별되는 그 존재만의 성질'
+        },
+        'plato-justice-ring': {
+            word: '욕망', choices: ['욕망', '기억', '질서', '약속'],
+            meaning: '무엇을 얻거나 이루고 싶어 하는 강한 마음'
+        },
+        'hunmin-creation': {
+            word: '의의', choices: ['의의', '모양', '순서', '속도'],
+            meaning: '어떤 사실이나 일이 지니는 가치와 중요성'
+        },
+        'silk-roads-network': {
+            word: '교류망', choices: ['교류망', '방어선', '경계선', '일방통행'],
+            meaning: '여러 지역이 물건·정보·문화를 주고받도록 이어진 관계'
+        },
+        'daedong-law': {
+            word: '폐단', choices: ['폐단', '장점', '원칙', '기회'],
+            meaning: '어떤 제도나 일에서 나타나는 좋지 않은 문제점'
+        },
+        'industrial-two-faces': {
+            word: '동원', choices: ['동원', '보호', '해방', '휴식'],
+            meaning: '사람이나 물자를 어떤 목적에 쓰도록 불러 모음'
+        },
+        'donghak-gabo': {
+            word: '횡포', choices: ['횡포', '배려', '협력', '절약'],
+            meaning: '힘을 믿고 제멋대로 행동하며 남을 괴롭힘'
+        },
+        'udhr-making': {
+            word: '보편적', choices: ['보편적', '일시적', '개인적', '우연한'],
+            meaning: '일부에만 한정되지 않고 모든 경우에 두루 적용되는'
+        },
         'rabbit-court': {
             word: '재치', choices: ['재치', '고집', '허영', '욕심'],
             meaning: '상황에 맞게 슬기롭고 빠르게 대처하는 능력'

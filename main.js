@@ -26,6 +26,7 @@ let questionResults = [];
 let retryWrongList = [];
 let quizWrongWordCounts = {}; // 오답 유지
 let quizSessionData = { id: null, total: 0, initialScore: null, currentScore: 0, startTime: 0 }; // 세션 관리
+let quizActiveTimer = null;
 let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 let showKoEx = false;
 let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
@@ -250,6 +251,8 @@ function startQuiz(wordList) {
             quizSessionData.roundCount = (quizSessionData.roundCount || 0) + 1;
         } else {
             // [신규 세션]
+            quizActiveTimer?.destroy();
+            quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
             quizSessionData.id = Date.now().toString();
             quizSessionData.startTime = Date.now();
             quizSessionData.initialScore = null;
@@ -821,7 +824,7 @@ function showResult() {
     });
 
     const isCompleted = (retryWrongList.length === 0);
-    const timeSpent = Math.floor((Date.now() - quizSessionData.startTime) / 1000);
+    const timeSpent = quizActiveTimer?.getSeconds() || 0;
     
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
@@ -1104,7 +1107,8 @@ window.AppEngine = {
                 sessionId: quizSessionData.id,
                 levelInfo: levelInfo,
                 startTime: quizSessionData.startTime,
-                endTime: Date.now()
+                endTime: Date.now(),
+                timeSpentSeconds: quizActiveTimer?.getSeconds() || 0
             });
         });
 

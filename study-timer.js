@@ -112,7 +112,7 @@ const StudyTimer = (() => {
             if (user) {
                 user.totalStudyTime = (user.totalStudyTime || 0) + safeSeconds;
                 UserSession.saveUserData(user);
-                UserSession.updateDailyStat('time', subject, safeSeconds);
+                UserSession.updateDailyStat('study_time', subject, safeSeconds);
             }
         }
     }
@@ -324,9 +324,10 @@ const StudyTimer = (() => {
             const elapsed = Math.floor((now - lastTs) / 1000);
             lastTs = now;
             if (elapsed > 0 && canCount()) {
-                const { context, status } = current();
+                const { context } = current();
                 activeSeconds += Math.min(elapsed, 2);
-                if (!status.unlocked) addSeconds(subject, context, Math.min(elapsed, 2));
+                // 잠금이 이미 해제된 뒤에도 실제 학습은 통계에 포함한다.
+                addSeconds(subject, context, Math.min(elapsed, 2));
             }
             updateUI(!canCount());
         }

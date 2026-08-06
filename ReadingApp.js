@@ -10,7 +10,7 @@
     let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
     const reviewMode = params.get('mode') === 'review';
     let mode = 'study', timerController = null, passage = null, questions = [];
-    let questionIndex = 0, score = 0, answered = false, attempts = [], sessionId = '', startTime = 0;
+    let questionIndex = 0, score = 0, answered = false, attempts = [], sessionId = '', startTime = 0, quizActiveTimer = null;
 
     const unit = () => level().units.find(item => item.id === unitId) || level().units[0];
     const context = () => `reading:${levelId}`;
@@ -78,6 +78,12 @@
         let pool = unseen.length ? unseen : eligible;
         const priority = pool.filter(item => wrongPassageIds.has(item.id));
         if (priority.length && Math.random() < band.wrongRatio) pool = priority;
+        // 고득점 심화 단계에서는 긴 글을 실제로 자주 만나게 한다. 오답 우선 출제가
+        // 선택되지 않은 경우 15줄 이상 지문을 80% 확률로 우선한다.
+        if (band.name === 'challenge' && !(priority.length && pool === priority)) {
+            const longPassages = pool.filter(item => item.lines.length >= 15);
+            if (longPassages.length && Math.random() < 0.8) pool = longPassages;
+        }
         return Utils.shuffle(pool)[0];
     }
 
@@ -135,6 +141,8 @@
         rememberPassage(passage.id);
         questionIndex = 0; score = 0; answered = false; attempts = [];
         sessionId = `reading-${Date.now()}`; startTime = Date.now(); mode = 'quiz';
+        quizActiveTimer?.destroy();
+        quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         $('studyPanel').hidden = true; $('quizPanel').hidden = false;
         $('studyModeBtn').classList.remove('active'); $('quizModeBtn').classList.add('active');
         $('passageMeta').textContent = `${level().title} · ${passage.category} · ${band.name === 'foundation' ? '기초' : band.name === 'challenge' ? '심화' : '표준'}`;
@@ -189,7 +197,7 @@
     function finish() {
         const pct = Math.round(score / questions.length * 100);
         if (!reviewMode && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
-        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${passage.title}`, questions.length, score, score, Math.round((Date.now() - startTime) / 1000), true, {
+        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
             category: 'reading', review: reviewMode, levelId, passageId: passage.id, passageTitle: passage.title,
             unitId: passage.unitId, skills: attempts.map(item => item.skill), attempts
         });
@@ -216,7 +224,7 @@
         $('nextQuestion').addEventListener('click', () => { if (questionIndex < questions.length - 1) { questionIndex++; renderQuestion(); } else finish(); });
         $('retryQuiz').addEventListener('click', () => { $('resultModal').hidden = true; startQuiz(); });
         $('resultStudy').addEventListener('click', () => { $('resultModal').hidden = true; renderStudy(); });
-        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: level().title, startTime, endTime: Date.now() }));
+        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: level().title, startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
     }
 
     document.addEventListener('DOMContentLoaded', () => {

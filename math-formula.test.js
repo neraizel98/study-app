@@ -118,9 +118,9 @@ assert(randomizedPrompts.size > 1, 'Quiz values must vary between attempts');
 
 assert(!page.includes('study-timer.js'), 'Formula encyclopedia must not load the study timer');
 assert(!page.includes('missions.js'), 'Formula encyclopedia must not load missions');
-assert(page.includes('report.js?v=20260730-architecture'), 'Formula encyclopedia needs the active user for admin-only time');
-assert(page.includes('firebase-sync.js?v=20260730-architecture'), 'Formula encyclopedia time must sync for the admin');
-assert(page.includes('MathFormulaTime.js?v=20260729-formula-time'), 'Formula time tracker is missing');
+assert(/src=["']report\.js\?v=[^"']+["']/.test(page), 'Formula encyclopedia needs the active user for admin-only time');
+assert(/src=["']firebase-sync\.js\?v=[^"']+["']/.test(page), 'Formula encyclopedia time must sync for the admin');
+assert(/src=["']MathFormulaTime\.js\?v=[^"']+["']/.test(page), 'Formula time tracker is missing');
 const timeTracker = fs.readFileSync('MathFormulaTime.js', 'utf8');
 assert(!timeTracker.includes('updateDailyStat'), 'Formula time must not enter normal subject or mission statistics');
 assert(!timeTracker.includes('totalStudyTime'), 'Formula time must remain separately identifiable in the admin');

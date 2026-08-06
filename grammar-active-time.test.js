@@ -87,7 +87,7 @@ controller.resetActiveSeconds();
 assert.equal(controller.getActiveSeconds(), 0, 'A completed quiz must reset its active-time session');
 
 const grammarApp = fs.readFileSync('EnglishGrammarApp.js', 'utf8');
-assert(grammarApp.includes('activeStudySeconds'), 'Grammar reports must save active study time');
+assert(grammarApp.includes('activeQuizSeconds'), 'Grammar reports must save active quiz time');
 assert(!grammarApp.includes("initialScore, initialScore, 0, true"), 'Grammar reports must not hard-code zero seconds');
 
 console.log('Grammar active-time reporting and idle exclusion verified.');

@@ -55,6 +55,7 @@ let quizScore = 0;
 let quizHistory = [];
 let retryWrongList = [];
 let quizSessionData = { id: '', startTime: 0, total: 0, currentScore: 0, initialScore: null, roundCount: 1 };
+let quizActiveTimer = null;
 let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 
 let isIdiomEumVisible = false;
@@ -64,6 +65,21 @@ let writerInstance = null; // 퀴즈용
 let isPhaseTransition = false;
 let currentQuizType = 'meaning'; // 'meaning' | 'reverse' | 'radical' | 'idiom' | 'relation' | 'writing'
 let currentCorrectAnswer = '';
+
+// hanzi-writer-data는 아래 한국 표준 자형을 호환되는 중국 표준 자형
+// 파일명으로 제공합니다. 동일 글자의 획순 데이터로 연결해 로딩 오류를 막습니다.
+const STROKE_DATA_ALIASES = Object.freeze({
+    '擧': '舉',
+    '氷': '冰',
+    '査': '查',
+    '飮': '飲',
+    '窓': '窗',
+    '淸': '清'
+});
+
+function getStrokeDataCharacter(character) {
+    return STROKE_DATA_ALIASES[character] || character;
+}
 
 function $(id) { return document.getElementById(id); }
 function getQuizPool(q) {
@@ -163,6 +179,8 @@ function startQuiz(customList) {
     
     // 세션 정보 초기화
     if (!customList) {
+        quizActiveTimer?.destroy();
+        quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         quizSessionData = {
             id: Date.now().toString(),
             startTime: Date.now(),
@@ -305,13 +323,14 @@ const writingFinishBtn = $('writingFinishBtn');
 const writingResetBtn = $('writingResetBtn');
 
 function setupWritingQuiz(q) {
+    const strokeCharacter = getStrokeDataCharacter(q.hanja);
     phaseBadge.textContent = '한자 쓰기';
     $('phase3Area').style.display = 'block';
-    $('writingQuestionLabel').textContent = `[ ${q.eum} (${q.meaning}) ] 을(를) 써보세요`;
+    $('writingQuestionLabel').textContent = `[ ${q.eum} (${q.meaning}) ] 을(를) 써보세요${strokeCharacter !== q.hanja ? ` · 표준 획순 자형 ${strokeCharacter}` : ''}`;
     phaseFeedback.style.display = 'none';
 
     writingQuizContainer.innerHTML = '';
-    writerInstance = HanziWriter.create('writingQuizContainer', q.hanja, {
+    writerInstance = HanziWriter.create('writingQuizContainer', strokeCharacter, {
         width: 250,
         height: 250,
         showCharacter: false,
@@ -320,7 +339,11 @@ function setupWritingQuiz(q) {
         outlineColor: 'rgba(255,255,255,0.05)',
         drawingColor: '#00f2fe',
         drawingWidth: 20,
-        padding: 5
+        padding: 5,
+        onLoadCharDataError: () => {
+            writerInstance = null;
+            writingQuizContainer.textContent = '획순 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
+        }
     });
     writerInstance.quiz();
 }
@@ -426,7 +449,7 @@ function showResult() {
     });
 
     const isCompleted = (retryWrongList.length === 0);
-    const timeSpent = Math.floor((Date.now() - quizSessionData.startTime) / 1000);
+    const timeSpent = quizActiveTimer?.getSeconds() || 0;
 
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
@@ -514,7 +537,8 @@ if (kakaoReportBtn) {
             sessionId: quizSessionData.id,
             levelInfo: lvName,
             startTime: quizSessionData.startTime,
-            endTime: Date.now()
+            endTime: Date.now(),
+            timeSpentSeconds: quizActiveTimer?.getSeconds() || 0
         });
     });
 }
@@ -565,9 +589,15 @@ studyStrokeBtn.addEventListener('click', () => {
         studyStrokeContainer.innerHTML = '';
         studyStrokeContainer.classList.add('active');
         studyStrokeBtn.innerHTML = '✨ 애니메이션 재생 중...';
-        studyWriterInstance = HanziWriter.create('studyStrokeContainer', d.hanja, {
+        const strokeCharacter = getStrokeDataCharacter(d.hanja);
+        studyWriterInstance = HanziWriter.create('studyStrokeContainer', strokeCharacter, {
             width: 200, height: 200, showCharacter: false, showOutline: true, strokeColor: '#4facfe',
-            outlineColor: 'rgba(255,255,255,0.05)', padding: 5
+            outlineColor: 'rgba(255,255,255,0.05)', padding: 5,
+            onLoadCharDataError: () => {
+                studyWriterInstance = null;
+                studyStrokeContainer.textContent = '획순 데이터를 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.';
+                studyStrokeBtn.innerHTML = '🖌️ 획순 다시 시도';
+            }
         });
         studyWriterInstance.animateCharacter({ onComplete: () => { studyStrokeBtn.innerHTML = '🖌️ 획순 다시 보기'; } });
     } else { studyWriterInstance.animateCharacter(); }

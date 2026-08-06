@@ -14,10 +14,16 @@ vm.runInContext(grammarQuiz, grammarContext);
 
 Object.values(grammarContext.window.EnglishGrammarData).forEach(stage => {
     stage.units.forEach(unit => {
-        const questions = grammarContext.window.EnglishGrammarQuiz.generate(unit.id, 10);
-        questions.forEach(question => {
+        const questionRuns = Array.from({ length: 20 }, () => grammarContext.window.EnglishGrammarQuiz.generate(unit.id, 10));
+        questionRuns.flat().forEach(question => {
             assert.ok(!question.question.includes('다음 잘못된 표현'), `${unit.id}: stacked correction prompt found`);
+            assert.ok(!question.question.includes('핵심 규칙'), `${unit.id}: ambiguous rule-selection prompt found`);
             assert.ok(!/only| noun/.test(question.question), `${unit.id}: unnatural placeholder wording found`);
+            assert.equal(new Set(question.choices).size, question.choices.length, `${unit.id}: duplicate choices found`);
+            assert.equal(question.choices.filter(choice => choice === question.answer).length, 1, `${unit.id}: answer must appear exactly once`);
+            if (question.type !== 'choice') {
+                assert.ok(!/[+]/.test(question.answer), `${unit.id}: symbolic grammar rule must not become a typed question`);
+            }
             if (question.type === 'correction') {
                 assert.match(question.question, /^다음 문장을 자연스럽고 문법에 맞게 고쳐 쓰세요\./);
                 assert.equal(question.question.split('\n').length, 2, `${unit.id}: correction must contain one target sentence`);
@@ -28,6 +34,16 @@ Object.values(grammarContext.window.EnglishGrammarData).forEach(stage => {
         });
     });
 });
+
+let grammarSeed = 0;
+grammarContext.Math.random = () => ((grammarSeed++ * 37) % 997) / 997;
+const elementaryBeQuestions = Array.from(
+    { length: 30 },
+    () => grammarContext.window.EnglishGrammarQuiz.generate('e2', 10)
+).flat();
+assert.ok(elementaryBeQuestions.some(question => question.answer === 'am'));
+assert.ok(elementaryBeQuestions.some(question => question.answer === 'are'));
+assert.ok(elementaryBeQuestions.some(question => question.answer === 'Is she tired?'));
 
 const spoken = [];
 const accentButtons = ['us', 'uk'].map(value => ({

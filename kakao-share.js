@@ -7,6 +7,22 @@
 
 window.KakaoShare = {
     isInitialized: false,
+    SHARE_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+
+    _encodeSharePayload: function(kind, data) {
+        const now = Date.now();
+        const envelope = { version: 1, kind, createdAt: now, expiresAt: now + this.SHARE_TTL_MS, data };
+        return btoa(unescape(encodeURIComponent(JSON.stringify(envelope))));
+    },
+
+    _minimalReport: function(report) {
+        const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+        return {
+            sessionId: String(report.sessionId || ''), subject: String(report.subject || ''), level: String(report.level || ''),
+            date: number(report.date), totalQuestions: number(report.totalQuestions), initialScore: number(report.initialScore),
+            finalScore: number(report.finalScore), timeSpentSeconds: number(report.timeSpentSeconds), isCompleted: Boolean(report.isCompleted)
+        };
+    },
 
     _sendFeed: function({ title, description, imageUrl, url, buttonTitle }) {
         if (!this.isInitialized) {
@@ -129,10 +145,23 @@ window.KakaoShare = {
         };
         const startTimeStr = formatTime(extra.startTime);
         const endTimeStr = formatTime(extra.endTime || Date.now());
+        const savedReport = typeof getQuizReports === 'function'
+            ? getQuizReports().find(report => report.sessionId === extra.sessionId)
+            : null;
+        const activeQuizSeconds = Math.max(0, Math.round(extra.timeSpentSeconds ?? savedReport?.timeSpentSeconds ?? 0));
+        const subjectStat = typeof UserSession !== 'undefined'
+            ? (UserSession.getUserData()?.subjectStats?.[subject] || {})
+            : {};
+        const formatDuration = seconds => {
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            return min > 0 ? `${min}분 ${sec}초` : `${sec}초`;
+        };
 
         // 3. 메시지 설명 구성
         let desc = `✅ 결과: ${score} / ${total} (${pct}%)\n`;
-        desc += `🕒 시간: ${startTimeStr} ~ ${endTimeStr}\n`;
+        desc += `🕒 퀴즈 시간: ${formatDuration(activeQuizSeconds)} (자리비움 제외)\n`;
+        if (subjectStat.studyTime > 0) desc += `📚 과목 누적: ${formatDuration(subjectStat.studyTime)} (학습+퀴즈)\n`;
         
         if (initialScore !== null && roundCount > 1) {
             desc += `🎯 최초 점수: ${initialScore} / ${total} (${roundCount}회 도전)`;
@@ -152,6 +181,12 @@ window.KakaoShare = {
             finalScore: score,
             startTime: extra.startTime,
             endTime: extra.endTime || Date.now(),
+            timeSpentSeconds: activeQuizSeconds,
+            subjectTime: {
+                learningSeconds: subjectStat.learningTime || 0,
+                quizSeconds: subjectStat.quizTime || 0,
+                totalSeconds: subjectStat.studyTime || 0
+            },
             isCompleted: isPerfect
         };
 
@@ -177,7 +212,7 @@ window.KakaoShare = {
             if (sessionItems.length > 0) reportData.wrongItems = sessionItems;
         }
 
-        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
+        const encodedData = this._encodeSharePayload('single-report', reportData);
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodeURIComponent(encodedData);
 
         this._sendFeed({
@@ -235,7 +270,7 @@ window.KakaoShare = {
             : '';
 
         const title = `📊 ${activeUser}의 오늘 학습 리포트`;
-        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 학습${scoreMsg}${streakMsg}`;
+        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 (학습+퀴즈 · 자리비움 제외)${scoreMsg}${streakMsg}`;
 
         const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
 
@@ -259,8 +294,8 @@ window.KakaoShare = {
         }
 
         // 최신 10개로 제한 (URL 길이 초과 방지)
-        const recentReports = reports.slice(-10);
-        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
+        const recentReports = reports.slice(-10).map(report => this._minimalReport(report));
+        const encodedData = this._encodeSharePayload('report-history', recentReports);
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodeURIComponent(encodedData);
 
         this._sendFeed({

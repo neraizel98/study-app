@@ -299,15 +299,17 @@
     </div><!-- .stats-wrap -->
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260730-architecture"></script>
+    <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260730-architecture"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Constants
     // ─────────────────────────────────────────────
-    const SUBJ_NAMES  = { english: '영어 단어', grammar: '영어 문법', hanja: '한자', math: '수학', reading: '국어 독해력' };
-    const SUBJ_ICONS  = { english: '🇬🇧', grammar: '📘', hanja: '🏮', math: '📐', reading: '📖' };
+    const SUBJECTS = SubjectRegistry.list();
+    const SUBJECT_IDS = SUBJECTS.map(subject => subject.id);
+    const SUBJ_NAMES = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.name]));
+    const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
     const SUBJ_COLOR  = {
         english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
         grammar: { bg: 'rgba(167,139,250,0.6)', bd: '#a78bfa' },
@@ -331,6 +333,7 @@
         grid:   { color: 'rgba(255,255,255,0.06)' },
         border: { color: 'rgba(255,255,255,0.1)' }
     };
+    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLOR[subject]) SUBJ_COLOR[subject] = { bg:'rgba(255,255,255,0.16)', bd:'#8b949e' }; });
     const SCORE_FLOOR = 50;
     const scoreFloorLabelPlugin = {
         id: 'scoreFloorLabel',
@@ -425,7 +428,7 @@
     //  Chart 1 — daily study time (stacked bar)
     // ─────────────────────────────────────────────
     function buildStudyTimeChart(weekReports) {
-        const d = { reading: Array(7).fill(0), english: Array(7).fill(0), grammar: Array(7).fill(0), hanja: Array(7).fill(0), math: Array(7).fill(0) };
+        const d = Object.fromEntries(SUBJECT_IDS.map(subject => [subject, Array(7).fill(0)]));
         weekReports.forEach(r => {
             const dow = (new Date(r.date).getDay() + 6) % 7;
             if (d[r.subject] !== undefined) d[r.subject][dow] += (r.timeSpentSeconds || 0) / 60;
@@ -440,7 +443,7 @@
             type: 'bar',
             data: {
                 labels: DAYS,
-                datasets: ['reading','english','grammar','hanja','math'].map(s => ({
+                datasets: SUBJECT_IDS.map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  d[s].map(v => +v.toFixed(1)),
                     backgroundColor: SUBJ_COLOR[s].bg,
@@ -466,7 +469,7 @@
     function buildScoreTrendChart(allReports) {
         const N = 8;
         const labels = [];
-        const series = { reading: [], english: [], grammar: [], hanja: [], math: [] };
+        const series = Object.fromEntries(SUBJECT_IDS.map(subject => [subject, []]));
         let anyData = false;
 
         for (let i = N - 1; i >= 0; i--) {
@@ -474,7 +477,7 @@
             const mn = ws.getMonth() + 1, dn = ws.getDate();
             labels.push(`${mn}/${dn}`);
             const wr = filterWeek(allReports, ws);
-            ['reading','english','grammar','hanja','math'].forEach(s => {
+            SUBJECT_IDS.forEach(s => {
                 const sub = wr.filter(r => r.subject === s);
                 if (sub.length > 0) {
                     series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
@@ -493,7 +496,7 @@
             type: 'line',
             data: {
                 labels,
-                datasets: ['reading','english','grammar','hanja','math'].map(s => ({
+                datasets: SUBJECT_IDS.map(s => ({
                     label: SUBJ_NAMES[s],
                     data:  series[s].map(v => v === null ? null : Math.max(SCORE_FLOOR, v)),
                     actualScores: series[s],
