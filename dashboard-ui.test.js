@@ -24,8 +24,12 @@ assert(index.includes('await refreshCloudButtonState()'),
     'Initial screen must finish authentication restoration');
 assert(firebaseClient.includes('auth.getRedirectResult()'),
     'Mobile Google redirect results must be completed on return');
-assert(firebaseClient.includes("matchMedia?.('(display-mode: standalone)')"),
-    'Installed mobile app mode must use redirect authentication');
+assert(firebaseClient.includes('auth.signInWithPopup(provider)'),
+    'Mobile Safari must try user-initiated popup authentication before redirect fallback');
+assert(firebaseClient.includes('Promise.race(['),
+    'Redirect restoration must not block the app indefinitely');
+assert(index.includes('watchCloudAuthState()'),
+    'Firebase authentication changes must immediately refresh connection buttons');
 assert(index.includes("user ? 'connected' : 'disconnected'"), 'Cloud button state must reflect the restored Firebase user');
 assert(index.includes('button.dataset.cloudState = state'), 'Cloud button state must be represented explicitly for verification');
 assert(!index.includes('가족 클라우드'), 'The cloud action must use the concise account label');

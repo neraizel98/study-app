@@ -46,10 +46,16 @@
                         // Complete a mobile redirect login before exposing the
                         // restored auth state to the rest of the application.
                         if (!redirectPromise) {
-                            redirectPromise = auth.getRedirectResult().catch(error => {
+                            const redirectResult = auth.getRedirectResult().catch(error => {
                                 if (error?.code !== 'auth/no-auth-event') throw error;
                                 return null;
                             });
+                            // Safari can leave the cross-origin redirect helper
+                            // unresolved. Never let that block the whole app.
+                            redirectPromise = Promise.race([
+                                redirectResult,
+                                new Promise(resolve => setTimeout(() => resolve(null), 4000))
+                            ]);
                         }
                         await redirectPromise;
                         return auth;
@@ -84,12 +90,6 @@
             const auth = await this.getAuth();
             const provider = new root.firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
-            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
-                || window.matchMedia?.('(display-mode: standalone)').matches;
-            if (isMobile) {
-                await auth.signInWithRedirect(provider);
-                return null;
-            }
             try {
                 return await auth.signInWithPopup(provider);
             } catch (error) {

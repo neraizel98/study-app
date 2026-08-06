@@ -540,6 +540,24 @@
                     buttons.forEach(button => { button.disabled = false; });
                 }
             }
+            async function watchCloudAuthState() {
+                if (!window.SmartStudy?.FirebaseClient) return;
+                try {
+                    const auth = await SmartStudy.FirebaseClient.getAuth();
+                    auth.onAuthStateChanged(async user => {
+                        const buttons = [...document.querySelectorAll('.cloud-connect-btn, #cloudLoginBtn')];
+                        buttons.forEach(button => {
+                            button.disabled = false;
+                            setCloudButtonState(button, user ? 'connected' : 'disconnected');
+                        });
+                        const learner = UserSession.getActiveUser();
+                        if (user && learner && window.FireSync) await FireSync.onLogin(learner);
+                        if (learner) updateUI();
+                    });
+                } catch (error) {
+                    console.warn('[Cloud Auth Watch]', error);
+                }
+            }
             function bindCloudButtons() {
                 document.querySelectorAll('.cloud-connect-btn').forEach(button => {
                     if (button.dataset.cloudBound === 'true') return;
@@ -549,6 +567,7 @@
             }
             document.getElementById('cloudLoginBtn').addEventListener('click', connectCloud);
             bindCloudButtons();
+            watchCloudAuthState();
 
             window.addEventListener('firesynced', event => {
                 if (event.detail?.userId === UserSession.getActiveUser()) updateUI();

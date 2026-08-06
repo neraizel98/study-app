@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v58-mobile-cloud-connect';
+const CACHE_NAME = 'smart-study-v59-ios-cloud-auth';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
