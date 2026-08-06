@@ -364,8 +364,8 @@
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
         if (tab === 'weekly') {
             _weeklyOffset = 0;
-            el.innerHTML = _weeklyHTML(reports, 0);
-            requestAnimationFrame(() => _drawWeeklyCharts(reports, 0));
+            el.innerHTML = _weeklyHTML(reports, 0, ud);
+            requestAnimationFrame(() => _drawWeeklyCharts(reports, 0, ud));
         }
     }
 
@@ -380,7 +380,18 @@
         const isToday = displayDate === today || displayDate === StudyPeriods.daily();
         const label = isToday ? '오늘의 학습' : `${displayDate} 학습`;
 
-        const subjects = [...new Set(ds.subjectsStudied || [])];
+        // Time maps are authoritative because older/cross-device records can
+        // have valid seconds even when subjectsStudied is incomplete.
+        const timedSubjects = [
+            ...Object.keys(ds.studyTime || {}),
+            ...Object.keys(ds.learningTime || {}),
+            ...Object.keys(ds.quizTime || {})
+        ].filter(subject =>
+            (ds.studyTime?.[subject] || 0) > 0
+            || (ds.learningTime?.[subject] || 0) > 0
+            || (ds.quizTime?.[subject] || 0) > 0
+        );
+        const subjects = [...new Set([...(ds.subjectsStudied || []), ...timedSubjects])];
         const items = subjects.map(s => {
             const info = typeof SubjectRegistry !== 'undefined' ? SubjectRegistry.get(s) : { icon:'📚', name:s };
             const sec = ds.studyTime?.[s] || 0;
@@ -833,12 +844,16 @@
         return { start: mon, end: sun };
     }
 
-    function _weeklyHTML(reports, offset) {
+    function _weeklyHTML(reports, offset, ud = {}) {
         const { start, end } = _weekRange(offset);
         const fmt = d => `${d.getMonth()+1}/${d.getDate()}`;
 
         const wr = reports.filter(r => r.date >= start.getTime() && r.date <= end.getTime());
-        const totalMin = Math.round(wr.reduce((a,r) => a + (r.timeSpentSeconds||0), 0) / 60);
+        const reportSeconds = wr.reduce((a,r) => a + (r.timeSpentSeconds||0), 0);
+        const persistedSeconds = offset === 0 && ud.weeklyStats?.weekStart === StudyPeriods.weekly()
+            ? (ud.weeklyStats.studyTime || 0)
+            : 0;
+        const totalMin = Math.round(Math.max(reportSeconds, persistedSeconds) / 60);
         const quizCount = wr.length;
         const avgPct = quizCount > 0
             ? Math.round(wr.reduce((a,r) => a + (r.totalQuestions > 0 ? r.initialScore/r.totalQuestions*100 : 0), 0) / quizCount)
@@ -888,7 +903,7 @@
         </div>`;
     }
 
-    function _drawWeeklyCharts(reports, offset) {
+    function _drawWeeklyCharts(reports, offset, ud = {}) {
         if (window._adminWeekCharts) {
             Object.values(window._adminWeekCharts).forEach(c => c && c.destroy());
         }
@@ -913,6 +928,17 @@
             const idx = dow === 0 ? 6 : dow - 1;
             if (dailyMin[r.subject]) dailyMin[r.subject][idx] += Math.round((r.timeSpentSeconds||0) / 60);
         });
+
+        // Reports contain quiz time. Use today's persisted subject total when
+        // it includes more active learning time than the report-only value.
+        if (offset === 0 && ud.dailyStats?.date === StudyPeriods.daily()) {
+            const dow = new Date().getDay();
+            const idx = dow === 0 ? 6 : dow - 1;
+            SUBJ.forEach(subject => {
+                const totalSeconds = ud.dailyStats.studyTime?.[subject] || 0;
+                dailyMin[subject][idx] = Math.max(dailyMin[subject][idx], Math.round(totalSeconds / 60));
+            });
+        }
 
         const ctx1 = document.getElementById('adminChartDaily')?.getContext('2d');
         if (ctx1) {
@@ -1031,8 +1057,9 @@
         const { reports } = window._adminData;
         const el = document.getElementById('tabContent');
         if (!el) return;
-        el.innerHTML = _weeklyHTML(reports, _weeklyOffset);
-        requestAnimationFrame(() => _drawWeeklyCharts(reports, _weeklyOffset));
+        const ud = UserSession.getUserData() || {};
+        el.innerHTML = _weeklyHTML(reports, _weeklyOffset, ud);
+        requestAnimationFrame(() => _drawWeeklyCharts(reports, _weeklyOffset, ud));
     };
 
     // ─────────────────────────────────────────────

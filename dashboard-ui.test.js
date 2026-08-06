@@ -49,6 +49,10 @@ assert(admin.includes('actual < SCORE_FLOOR'), 'Admin chart must label actual sc
 
 compileInlineScripts('wrong_note.html', wrongNote);
 compileInlineScripts('stats.html', stats);
+assert(admin.includes('...timedSubjects'),
+    'Admin daily summary must recover subjects from recorded time maps');
+assert(admin.includes('ud.dailyStats.studyTime?.[subject]'),
+    'Weekly chart must include active per-subject learning time');
 compileInlineScripts('admin.html', admin);
 
 console.log('Dashboard learning status, wrong-note layout, and score chart range verified.');
