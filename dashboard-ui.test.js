@@ -17,6 +17,8 @@ assert(index.includes('bindCloudButtons()'), 'Dynamically rendered cloud action 
 assert(index.includes('refreshCloudButtonState()'), 'Persisted Firebase authentication must restore the cloud button state');
 assert(index.includes("user ? 'connected' : 'disconnected'"), 'Cloud button state must reflect the restored Firebase user');
 assert(index.includes('button.dataset.cloudState = state'), 'Cloud button state must be represented explicitly for verification');
+assert(!index.includes('가족 클라우드'), 'The cloud action must use the concise account label');
+assert(index.includes('계정 연결됨'), 'The connected account state must remain visible');
 assert(!index.includes('class="cloud-connect-btn nav-btn" style="margin:10px 0;"'),
     'Dashboard body must not retain the old cloud connection button');
 assert(uiCore.includes("this.config.headerActionHtml || ''"), 'Shared header must expose an action slot');
