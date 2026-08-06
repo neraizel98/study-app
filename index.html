@@ -379,11 +379,11 @@
     <script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
-    <script src="firebase-sync.js?v=20260730-architecture"></script>
+    <script src="firebase-sync.js?v=20260806-progress-resume"></script>
     <script src="ui-core.js"></script>
     <script src="missions.js?v=20260729-mission-periods"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             const loginSection = document.getElementById('login-section');
             const dashboardSection = document.getElementById('dashboard-section');
             const userIdInput = document.getElementById('userIdInput');
@@ -539,10 +539,16 @@
             document.getElementById('cloudLoginBtn').addEventListener('click', connectCloud);
             bindCloudButtons();
 
+            window.addEventListener('firesynced', event => {
+                if (event.detail?.userId === UserSession.getActiveUser()) updateUI();
+            });
+
             userIdInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') loginBtn.click();
             });
 
+            const activeUser = UserSession.getActiveUser();
+            if (activeUser && window.FireSync) await FireSync.onLogin(activeUser);
             updateUI();
         });
     </script>

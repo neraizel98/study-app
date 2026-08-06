@@ -19,6 +19,8 @@ const _storageEvents = window.SmartStudy.StorageEvents;
 let _db          = null;
 let _syncReady   = false;
 const _timers    = {};
+const _syncingUsers = new Set();
+const _loginPromises = {};
 
 // ─────────────────────────────────────────────
 //  Firebase SDK 동적 로드
@@ -156,8 +158,11 @@ async function _downloadAndMerge(userId) {
 
         console.log('[FireSync] 동기화 완료');
         window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
+        return true;
     } catch (e) {
         console.warn('[FireSync] 동기화 실패:', e.message);
+        window.dispatchEvent(new CustomEvent('firesyncerror', { detail: { userId, message: e.message } }));
+        return false;
     }
 }
 
@@ -172,7 +177,11 @@ function _mergeUserData(local, cloud, userId) {
     const localLevel = l.level || 1;
     const cloudLevel = c.level || 1;
     const finalLevel = Math.max(localLevel, cloudLevel);
-    const finalExp   = localLevel >= cloudLevel ? (l.exp || 0) : (c.exp || 0);
+    const finalExp = localLevel > cloudLevel
+        ? (l.exp || 0)
+        : cloudLevel > localLevel
+            ? (c.exp || 0)
+            : Math.max(l.exp || 0, c.exp || 0);
 
     // 출석: totalDays 가 더 많은 쪽 선택
     const localDays = l.attendance?.totalDays || 0;
@@ -387,13 +396,19 @@ function _unionArr(a, b) {
 
 // 저장 완료 이벤트를 구독한다. 도메인 함수를 덮어쓰지 않으므로 로드 순서와 함수 참조에 안전하다.
 _storageEvents.subscribe('user:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`userData_${userId}`, () => _uploadUserData(userId), 2000);
+    if (_syncReady && userId) _debounce(`userData_${userId}`, () => {
+        if (!_syncingUsers.has(userId)) _uploadUserData(userId);
+    }, 2000);
 });
 _storageEvents.subscribe('reports:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`reports_${userId}`, () => _uploadReports(userId), 2000);
+    if (_syncReady && userId) _debounce(`reports_${userId}`, () => {
+        if (!_syncingUsers.has(userId)) _uploadReports(userId);
+    }, 2000);
 });
 _storageEvents.subscribe('wrongAnswers:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`wrong_${userId}`, () => _uploadWrong(userId), 2000);
+    if (_syncReady && userId) _debounce(`wrong_${userId}`, () => {
+        if (!_syncingUsers.has(userId)) _uploadWrong(userId);
+    }, 2000);
 });
 _storageEvents.subscribe('config:saved', () => {
     if (_syncReady) _debounce('studyConfig', () => _uploadStudyConfig(_localRepository.getTimerConfig()), 2000);
@@ -432,18 +447,33 @@ window.FireSync = {
         if (!credential) return null;
         _db = null;
         _syncReady = false;
-        return _initDB();
+        const db = await _initDB();
+        const activeUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
+        if (db && activeUser) await this.onLogin(activeUser);
+        return db;
     },
     /**
      * 로그인 시 호출 — 클라우드에서 데이터 다운로드 후 병합
-     * @returns {Promise<void>}
+     * @returns {Promise<boolean>}
      */
     onLogin: async function(userId) {
-        _showSyncBadge('☁️ 동기화 중...');
-        const db = await _initDB();
-        if (!db) { _showSyncBadge('📵 오프라인 모드'); return; }
-        await _downloadAndMerge(userId);
-        _showSyncBadge('✅ 동기화 완료', '#56d364');
+        if (!userId) return false;
+        if (_loginPromises[userId]) return _loginPromises[userId];
+        _loginPromises[userId] = (async () => {
+            _syncingUsers.add(userId);
+            _showSyncBadge('☁️ 동기화 중...');
+            try {
+                const db = await _initDB();
+                if (!db) { _showSyncBadge('📵 오프라인 모드'); return false; }
+                const synced = await _downloadAndMerge(userId);
+                if (synced) _showSyncBadge('✅ 동기화 완료', '#56d364');
+                return synced;
+            } finally {
+                _syncingUsers.delete(userId);
+                delete _loginPromises[userId];
+            }
+        })();
+        return _loginPromises[userId];
     },
 
     /**
