@@ -37,6 +37,8 @@ const firebaseClient = fs.readFileSync('firebase-client.js', 'utf8');
 const firebaseSync = fs.readFileSync('firebase-sync.js', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 assert(firebaseClient.includes('firebase-auth-compat.js'));
+assert(firebaseClient.includes("'auth/popup-blocked'"));
+assert(firebaseClient.includes('signInWithRedirect(provider)'));
 assert(firebaseSync.includes('FirebaseClient.getCurrentUser()'));
 assert(rules.includes('allow read, write: if false'));
 assert(rules.includes('learnerIds'));
@@ -44,6 +46,8 @@ assert(rules.includes('learnerIds'));
 const admin = fs.readFileSync('admin.html', 'utf8');
 const stats = fs.readFileSync('stats.html', 'utf8');
 assert(admin.includes('const SUBJECT_IDS = SUBJECTS.map'));
+assert(admin.includes("error.code = 'auth/login-required'"));
+assert(admin.includes('Google로 관리자 연결'));
 assert(stats.includes('const SUBJECT_IDS = SUBJECTS.map'));
 assert(stats.includes('datasets: SUBJECT_IDS.map'));
 

@@ -428,7 +428,8 @@ function _showSyncBadge(text, color = '#4facfe') {
 // ─────────────────────────────────────────────
 window.FireSync = {
     connectCloud: async function() {
-        await window.SmartStudy.FirebaseClient.signInWithGoogle();
+        const credential = await window.SmartStudy.FirebaseClient.signInWithGoogle();
+        if (!credential) return null;
         _db = null;
         _syncReady = false;
         return _initDB();

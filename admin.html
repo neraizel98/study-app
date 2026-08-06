@@ -178,7 +178,31 @@
     // ─────────────────────────────────────────────
     async function initFirebase() {
         db = await SmartStudy.FirestoreRepository.getDB();
+        const user = await SmartStudy.FirebaseClient.getCurrentUser();
+        if (!user) {
+            const error = new Error('Google 로그인이 필요합니다.');
+            error.code = 'auth/login-required';
+            throw error;
+        }
     }
+
+    async function connectAdminCloud(button) {
+        button.disabled = true;
+        button.textContent = 'Google 로그인 중...';
+        try {
+            const result = await SmartStudy.FirebaseClient.signInWithGoogle();
+            // 리다이렉트 방식이면 여기까지 돌아오지 않고 페이지가 이동된다.
+            if (result) location.reload();
+        } catch (error) {
+            button.disabled = false;
+            button.textContent = '🔐 Google로 관리자 연결';
+            const message = error?.code === 'auth/popup-closed-by-user'
+                ? 'Google 로그인 창이 닫혔습니다. 버튼을 눌러 다시 로그인해 주세요.'
+                : `Google 로그인 실패: ${error.message}`;
+            document.getElementById('userList').innerHTML = `<div class="error-msg">⚠️ ${message}</div>`;
+        }
+    }
+    window.connectAdminCloud = connectAdminCloud;
 
     // ─────────────────────────────────────────────
     //  데이터 로드
@@ -1084,8 +1108,13 @@
             const users = await loadAllUsers();
             renderUserList(users);
         } catch(e) {
-            document.getElementById('userList').innerHTML =
-                `<div class="error-msg">⚠️ Firebase 연결 실패: ${e.message}</div>`;
+            const loginRequired = e?.code === 'auth/login-required' || e?.code === 'permission-denied';
+            document.getElementById('userList').innerHTML = loginRequired
+                ? `<div class="error-msg" style="display:flex; flex-direction:column; align-items:center; gap:12px;">
+                    <span>🔐 관리자 데이터를 보려면 허용된 Google 계정으로 연결해야 합니다.</span>
+                    <button type="button" class="detail-back" onclick="connectAdminCloud(this)" style="margin:0;">Google로 관리자 연결</button>
+                  </div>`
+                : `<div class="error-msg">⚠️ Firebase 연결 실패: ${e.message}</div>`;
         }
     });
     </script>

@@ -488,8 +488,8 @@
                 button.disabled = true;
                 button.textContent = '🔐 인증 중...';
                 try {
-                    await FireSync.connectCloud();
-                    button.textContent = '✅ 가족 클라우드 연결됨';
+                    const db = await FireSync.connectCloud();
+                    if (db) button.textContent = '✅ 가족 클라우드 연결됨';
                 } catch (error) {
                     button.textContent = '🔐 Google로 가족 클라우드 연결';
                     alert(`클라우드 연결에 실패했습니다. 로컬 학습은 계속할 수 있습니다.\n${error.message}`);

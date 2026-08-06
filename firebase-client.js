@@ -52,7 +52,18 @@
         async signInWithGoogle() {
             const auth = await this.getAuth();
             const provider = new root.firebase.auth.GoogleAuthProvider();
-            return auth.signInWithPopup(provider);
+            provider.setCustomParameters({ prompt: 'select_account' });
+            try {
+                return await auth.signInWithPopup(provider);
+            } catch (error) {
+                // PC 브라우저·인앱 브라우저가 팝업을 막는 경우에는 같은 탭에서
+                // 로그인한 뒤 앱으로 돌아오는 리다이렉트 방식으로 자동 전환한다.
+                if (error && ['auth/popup-blocked', 'auth/operation-not-supported-in-this-environment'].includes(error.code)) {
+                    await auth.signInWithRedirect(provider);
+                    return null;
+                }
+                throw error;
+            }
         },
         async signOut() {
             const auth = await this.getAuth();
