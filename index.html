@@ -235,7 +235,7 @@
             </div>
             <div class="login-box" style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); max-width: 400px; margin: 0 auto;">
                 <input type="text" id="userIdInput" placeholder="이름을 입력하세요 (예: 우준)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.1rem; margin-bottom: 20px; outline: none; transition: border-color 0.2s;">
-                <button id="cloudLoginBtn" type="button" class="nav-btn" style="width:100%; justify-content:center; margin-bottom:12px;">🔐 Google로 가족 클라우드 연결</button>
+                <button id="cloudLoginBtn" type="button" class="nav-btn" style="width:100%; justify-content:center; margin-bottom:12px;">🔐 Google로 계정 연결</button>
                 <button id="loginBtn" class="nav-btn" style="width: 100%; justify-content: center; background: var(--accent); color: white; border: none; padding: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; border-radius: 12px; transition: transform 0.2s;">학습 시작하기</button>
                 <button type="button" onclick="if(confirm('Smart Study 학습 데이터가 초기화됩니다. 계속하시겠습니까?')){SmartStudy.LocalRepository.clearAppData(); location.reload();}" style="background:none; border:none; color:var(--text-sub); font-size:0.8rem; margin-top:20px; cursor:pointer; text-decoration:underline; opacity:0.5; width:100%; text-align:center;">⚠️ 데이터 초기화 (문제가 있을 때만 클릭)</button>
             </div>
@@ -403,7 +403,7 @@
                         // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
                         if (window.AppUI) AppUI.init({
                             title: '오늘의 학습 대시보드',
-                            headerActionHtml: '<button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="가족 클라우드 연결">🔐 <span class="cloud-label">가족 클라우드 연결</span></button>'
+                            headerActionHtml: '<button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="계정 연결">🔐 <span class="cloud-label">계정 연결</span></button>'
                         });
                         bindCloudButtons();
                         refreshCloudButtonState();
@@ -503,17 +503,17 @@
                 if (!button) return;
                 button.dataset.cloudState = state;
                 if (state === 'connected') {
-                    button.innerHTML = '✅ <span class="cloud-label">가족 클라우드 연결됨</span>';
-                    button.setAttribute('aria-label', '가족 클라우드 연결됨');
+                    button.innerHTML = '✅ <span class="cloud-label">계정 연결됨</span>';
+                    button.setAttribute('aria-label', '계정 연결됨');
                     return;
                 }
                 if (state === 'loading') {
                     button.innerHTML = '⏳ <span class="cloud-label">연결 확인 중...</span>';
-                    button.setAttribute('aria-label', '가족 클라우드 연결 확인 중');
+                    button.setAttribute('aria-label', '계정 연결 확인 중');
                     return;
                 }
-                button.innerHTML = '🔐 <span class="cloud-label">가족 클라우드 연결</span>';
-                button.setAttribute('aria-label', '가족 클라우드 연결');
+                button.innerHTML = '🔐 <span class="cloud-label">계정 연결</span>';
+                button.setAttribute('aria-label', '계정 연결');
             }
             async function refreshCloudButtonState() {
                 const buttons = [...document.querySelectorAll('.cloud-connect-btn')];
