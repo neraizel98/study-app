@@ -118,8 +118,47 @@
         ['설상가상', '어려운 일 위에 또 어려운 일이 생긴다.'],
         ['과유불급', '지나친 것은 모자란 것만큼 좋지 않다.'],
         ['새옹지마', '좋고 나쁜 일은 쉽게 예측할 수 없다.'],
-        ['백문불여일견', '여러 번 듣는 것보다 한 번 직접 보는 것이 낫다.']
+        ['백문불여일견', '여러 번 듣는 것보다 한 번 직접 보는 것이 낫다.'],
+        ['온고지신', '옛것을 익혀 새로운 지식이나 깨달음을 얻는다.'],
+        ['임기응변', '그때그때의 상황에 맞게 일을 알맞게 처리한다.']
     ];
+
+    // Only passages with a genuine semantic connection receive an idiom
+    // question. The learner must read the passage to identify its situation.
+    const passageIdioms = {
+        'library-light': {
+            answer: '일석이조', choices: ['일석이조', '동문서답', '설상가상', '새옹지마'],
+            evidence: '새 조명은 전기료와 환경 부담이라는 두 문제를 함께 줄인다.'
+        },
+        'sleep-memory': {
+            answer: '과유불급', choices: ['과유불급', '일석이조', '동문서답', '전화위복'],
+            evidence: '4~5행은 잠만 많이 자는 것이 아니라 학습과 적절한 수면의 균형이 필요하다고 설명한다.'
+        },
+        'after-rain': {
+            answer: '전화위복', choices: ['전화위복', '설상가상', '동문서답', '유비무환'],
+            evidence: '비 때문에 생긴 어려움이 인물들이 서로 돕고 성장하는 계기로 바뀐다.'
+        },
+        'community-garden': {
+            answer: '일석이조', choices: ['일석이조', '과유불급', '동문서답', '설상가상'],
+            evidence: '옥상 텃밭은 먹거리뿐 아니라 이웃 관계와 환경에도 긍정적인 변화를 만든다.'
+        },
+        'deep-reading-five': {
+            answer: '백문불여일견', choices: ['백문불여일견', '동문서답', '설상가상', '새옹지마'],
+            evidence: '지문은 해설만 듣는 것보다 원문을 직접 읽고 기록하고 토론하는 과정을 강조한다.'
+        },
+        'plato-cave': {
+            answer: '백문불여일견', choices: ['백문불여일견', '유비무환', '동문서답', '과유불급'],
+            evidence: '동굴 밖으로 나간 사람은 그림자만 보던 때와 달리 실제 사물과 빛을 직접 확인한다.'
+        },
+        'confucius-practice': {
+            answer: '온고지신', choices: ['온고지신', '설상가상', '동문서답', '새옹지마'],
+            evidence: '지문은 배운 내용을 거듭 익히고 생활에서 실천하며 새로운 깨달음을 얻는 태도를 설명한다.'
+        },
+        'rabbit-court': {
+            answer: '임기응변', choices: ['임기응변', '유비무환', '과유불급', '설상가상'],
+            evidence: '토끼는 위험한 상황에서 재치 있는 말로 즉시 대처해 위기를 벗어난다.'
+        }
+    };
 
     const normalize = value => String(value).normalize('NFC').trim();
 
@@ -141,39 +180,34 @@
         };
     }
 
-    function idiomQuestions() {
-        const meanings = idioms.map(item => item[1]);
-        return idioms.map(([idiom, meaning], index) => {
-            const distractors = [1, 3, 5].map(offset => meanings[(index + offset) % meanings.length]);
-            return {
-                id: `idiom-${index + 1}`,
-                skill: '사자성어',
-                question: `사자성어 ‘${idiom}’의 뜻으로 가장 알맞은 것은?`,
-                choices: [meaning, ...distractors],
-                answer: meaning,
-                evidence: `‘${idiom}’은(는) ${meaning}`,
-                difficulty: index < 4 ? 'foundation' : 'standard',
-                vocabularyType: 'idiom',
-                vocabulary: idiom
-            };
-        });
+    function idiomContextQuestion(passage) {
+        const item = passageIdioms[passage.id];
+        if (!item) return null;
+        return {
+            id: `idiom-context-${passage.id}`,
+            skill: '문맥 사자성어',
+            question: '지문의 핵심 내용이나 인물의 행동을 나타내는 사자성어로 가장 적절한 것은?',
+            choices: [...item.choices],
+            answer: item.answer,
+            evidence: item.evidence,
+            difficulty: passage.difficulty === 'foundation' ? 'foundation' : 'standard',
+            vocabularyType: 'idiom-context',
+            vocabulary: item.answer,
+            passageRequired: true
+        };
     }
-
-    const idiomPool = idiomQuestions();
 
     window.ReadingVocabulary = {
         getQuestions(passage) {
             const context = contextQuestion(passage);
+            const idiom = idiomContextQuestion(passage);
             return [
                 ...(context ? [context] : []),
-                ...idiomPool.map(item => ({
-                    ...item,
-                    id: `${item.id}-${passage.id}`,
-                    choices: [...item.choices]
-                }))
+                ...(idiom ? [idiom] : [])
             ];
         },
         contextItems,
-        idioms
+        idioms,
+        passageIdioms
     };
 })();

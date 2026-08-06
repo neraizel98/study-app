@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v59-ios-cloud-auth';
+const CACHE_NAME = 'smart-study-v60-reading-context-questions';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());

@@ -75,7 +75,12 @@ for (const passage of passages) {
     assert.ok(passage.questions.length >= 3 && passage.questions.length <= 5, `${passage.id}: question count`);
     const vocabularyQuestions = vocabulary.getQuestions(passage);
     assert.ok(vocabularyQuestions.some(question => question.vocabularyType === 'context'), `${passage.id}: context vocabulary`);
-    assert.ok(vocabularyQuestions.filter(question => question.vocabularyType === 'idiom').length >= 8, `${passage.id}: idiom pool`);
+    assert.ok(!vocabularyQuestions.some(question => /사자성어 .*의 뜻으로/.test(question.question)),
+        `${passage.id}: standalone idiom question must not be mixed into passage quiz`);
+    vocabularyQuestions.filter(question => question.vocabularyType === 'idiom-context').forEach(question => {
+        assert.equal(question.passageRequired, true, `${question.id}: passage connection marker`);
+        assert.ok(question.id.endsWith(passage.id), `${question.id}: passage-specific id`);
+    });
     for (const question of [...passage.questions, ...vocabularyQuestions]) {
         assert.ok(!questionIds.has(question.id), `duplicate question id: ${question.id}`);
         questionIds.add(question.id);
@@ -87,6 +92,7 @@ for (const passage of passages) {
     }
 }
 assert.ok(vocabulary.idioms.length >= 8, 'idiom variety');
+assert.ok(Object.keys(vocabulary.passageIdioms).length >= 8, 'passage-linked idiom variety');
 assert.deepEqual([...difficulties].sort(), ['challenge', 'foundation', 'standard']);
 assert.ok(categories.size >= 7);
 console.log(`Reading content verified: ${passages.length} passages, ${questionIds.size} questions.`);
