@@ -37,6 +37,8 @@ const firebaseClient = fs.readFileSync('firebase-client.js', 'utf8');
 const firebaseSync = fs.readFileSync('firebase-sync.js', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
 assert(firebaseClient.includes('firebase-auth-compat.js'));
+assert(firebaseClient.includes('Auth.Persistence.LOCAL'));
+assert(firebaseClient.includes('auth.setPersistence'));
 assert(firebaseClient.includes("'auth/popup-blocked'"));
 assert(firebaseClient.includes('signInWithRedirect(provider)'));
 assert(firebaseSync.includes('FirebaseClient.getCurrentUser()'));
