@@ -16,6 +16,7 @@
     ];
     let promise = null;
     let authPromise = null;
+    let redirectPromise = null;
 
     function loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -41,7 +42,18 @@
             if (!authPromise) {
                 const auth = root.firebase.auth();
                 authPromise = auth.setPersistence(root.firebase.auth.Auth.Persistence.LOCAL)
-                    .then(() => auth)
+                    .then(async () => {
+                        // Complete a mobile redirect login before exposing the
+                        // restored auth state to the rest of the application.
+                        if (!redirectPromise) {
+                            redirectPromise = auth.getRedirectResult().catch(error => {
+                                if (error?.code !== 'auth/no-auth-event') throw error;
+                                return null;
+                            });
+                        }
+                        await redirectPromise;
+                        return auth;
+                    })
                     .catch(error => {
                         authPromise = null;
                         throw error;
@@ -53,9 +65,18 @@
             const auth = await this.getAuth();
             if (auth.currentUser) return auth.currentUser;
             await new Promise(resolve => {
+                let settled = false;
                 let unsubscribe = () => {};
-                unsubscribe = auth.onAuthStateChanged(() => { unsubscribe(); resolve(); });
-                setTimeout(() => { unsubscribe(); resolve(); }, 5000);
+                let timeoutId = null;
+                const finish = () => {
+                    if (settled) return;
+                    settled = true;
+                    unsubscribe();
+                    if (timeoutId) clearTimeout(timeoutId);
+                    resolve();
+                };
+                unsubscribe = auth.onAuthStateChanged(finish, finish);
+                timeoutId = setTimeout(finish, 5000);
             });
             return auth.currentUser;
         },
@@ -63,6 +84,12 @@
             const auth = await this.getAuth();
             const provider = new root.firebase.auth.GoogleAuthProvider();
             provider.setCustomParameters({ prompt: 'select_account' });
+            const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent)
+                || window.matchMedia?.('(display-mode: standalone)').matches;
+            if (isMobile) {
+                await auth.signInWithRedirect(provider);
+                return null;
+            }
             try {
                 return await auth.signInWithPopup(provider);
             } catch (error) {

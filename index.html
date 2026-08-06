@@ -489,15 +489,21 @@
 
             async function connectCloud(event) {
                 const button = event.currentTarget;
-                button.disabled = true;
-                setCloudButtonState(button, 'loading');
+                const buttons = [...document.querySelectorAll('.cloud-connect-btn, #cloudLoginBtn')];
+                buttons.forEach(item => { item.disabled = true; setCloudButtonState(item, 'loading'); });
                 try {
                     const db = await FireSync.connectCloud();
-                    if (db) setCloudButtonState(button, 'connected');
+                    if (db) {
+                        buttons.forEach(item => setCloudButtonState(item, 'connected'));
+                        updateUI();
+                    } else {
+                        // Mobile Google authentication continues by redirect.
+                        buttons.forEach(item => setCloudButtonState(item, 'redirecting'));
+                    }
                 } catch (error) {
-                    setCloudButtonState(button, 'disconnected');
+                    buttons.forEach(item => setCloudButtonState(item, 'disconnected'));
                     alert(`클라우드 연결에 실패했습니다. 로컬 학습은 계속할 수 있습니다.\n${error.message}`);
-                } finally { button.disabled = false; }
+                } finally { buttons.forEach(item => { item.disabled = false; }); }
             }
             function setCloudButtonState(button, state) {
                 if (!button) return;
@@ -512,11 +518,16 @@
                     button.setAttribute('aria-label', '계정 연결 확인 중');
                     return;
                 }
+                if (state === 'redirecting') {
+                    button.innerHTML = '↗️ <span class="cloud-label">Google 로그인 이동 중...</span>';
+                    button.setAttribute('aria-label', 'Google 로그인 이동 중');
+                    return;
+                }
                 button.innerHTML = '🔐 <span class="cloud-label">계정 연결</span>';
                 button.setAttribute('aria-label', '계정 연결');
             }
             async function refreshCloudButtonState() {
-                const buttons = [...document.querySelectorAll('.cloud-connect-btn')];
+                const buttons = [...document.querySelectorAll('.cloud-connect-btn, #cloudLoginBtn')];
                 if (!buttons.length || !window.SmartStudy?.FirebaseClient) return;
                 buttons.forEach(button => setCloudButtonState(button, 'loading'));
                 try {
@@ -550,6 +561,7 @@
             const activeUser = UserSession.getActiveUser();
             if (activeUser && window.FireSync) await FireSync.onLogin(activeUser);
             updateUI();
+            await refreshCloudButtonState();
         });
     </script>
 

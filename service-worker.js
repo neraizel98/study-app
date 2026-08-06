@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v57-grammar-time-recovery';
+const CACHE_NAME = 'smart-study-v58-mobile-cloud-connect';
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());

@@ -12,9 +12,20 @@ const compileInlineScripts = (file, html) => {
 
 const index = read('index.html');
 const uiCore = read('ui-core.js');
+const firebaseClient = read('firebase-client.js');
 assert(index.includes('headerActionHtml'), 'Cloud connection action must be rendered in the shared header');
 assert(index.includes('bindCloudButtons()'), 'Dynamically rendered cloud action must be bound');
 assert(index.includes('refreshCloudButtonState()'), 'Persisted Firebase authentication must restore the cloud button state');
+assert(index.includes("setCloudButtonState(item, 'redirecting')"),
+    'Mobile redirect authentication must expose a non-stuck button state');
+assert(index.includes("querySelectorAll('.cloud-connect-btn, #cloudLoginBtn')"),
+    'The first-screen connect button must share restored cloud state');
+assert(index.includes('await refreshCloudButtonState()'),
+    'Initial screen must finish authentication restoration');
+assert(firebaseClient.includes('auth.getRedirectResult()'),
+    'Mobile Google redirect results must be completed on return');
+assert(firebaseClient.includes("matchMedia?.('(display-mode: standalone)')"),
+    'Installed mobile app mode must use redirect authentication');
 assert(index.includes("user ? 'connected' : 'disconnected'"), 'Cloud button state must reflect the restored Firebase user');
 assert(index.includes('button.dataset.cloudState = state'), 'Cloud button state must be represented explicitly for verification');
 assert(!index.includes('가족 클라우드'), 'The cloud action must use the concise account label');
