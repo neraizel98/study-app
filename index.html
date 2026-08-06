@@ -406,6 +406,7 @@
                             headerActionHtml: '<button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="가족 클라우드 연결">🔐 <span class="cloud-label">가족 클라우드 연결</span></button>'
                         });
                         bindCloudButtons();
+                        refreshCloudButtonState();
 
                         // 관리자 배너 표시 여부
                         const adminBanner = document.getElementById('adminBanner');
@@ -489,14 +490,44 @@
             async function connectCloud(event) {
                 const button = event.currentTarget;
                 button.disabled = true;
-                button.textContent = '🔐 인증 중...';
+                setCloudButtonState(button, 'loading');
                 try {
                     const db = await FireSync.connectCloud();
-                    if (db) button.textContent = '✅ 가족 클라우드 연결됨';
+                    if (db) setCloudButtonState(button, 'connected');
                 } catch (error) {
-                    button.textContent = '🔐 Google로 가족 클라우드 연결';
+                    setCloudButtonState(button, 'disconnected');
                     alert(`클라우드 연결에 실패했습니다. 로컬 학습은 계속할 수 있습니다.\n${error.message}`);
                 } finally { button.disabled = false; }
+            }
+            function setCloudButtonState(button, state) {
+                if (!button) return;
+                button.dataset.cloudState = state;
+                if (state === 'connected') {
+                    button.innerHTML = '✅ <span class="cloud-label">가족 클라우드 연결됨</span>';
+                    button.setAttribute('aria-label', '가족 클라우드 연결됨');
+                    return;
+                }
+                if (state === 'loading') {
+                    button.innerHTML = '⏳ <span class="cloud-label">연결 확인 중...</span>';
+                    button.setAttribute('aria-label', '가족 클라우드 연결 확인 중');
+                    return;
+                }
+                button.innerHTML = '🔐 <span class="cloud-label">가족 클라우드 연결</span>';
+                button.setAttribute('aria-label', '가족 클라우드 연결');
+            }
+            async function refreshCloudButtonState() {
+                const buttons = [...document.querySelectorAll('.cloud-connect-btn')];
+                if (!buttons.length || !window.SmartStudy?.FirebaseClient) return;
+                buttons.forEach(button => setCloudButtonState(button, 'loading'));
+                try {
+                    const user = await SmartStudy.FirebaseClient.getCurrentUser();
+                    buttons.forEach(button => setCloudButtonState(button, user ? 'connected' : 'disconnected'));
+                } catch (error) {
+                    console.warn('[Cloud Auth State]', error);
+                    buttons.forEach(button => setCloudButtonState(button, 'disconnected'));
+                } finally {
+                    buttons.forEach(button => { button.disabled = false; });
+                }
             }
             function bindCloudButtons() {
                 document.querySelectorAll('.cloud-connect-btn').forEach(button => {

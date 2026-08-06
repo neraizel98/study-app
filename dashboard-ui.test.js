@@ -14,6 +14,9 @@ const index = read('index.html');
 const uiCore = read('ui-core.js');
 assert(index.includes('headerActionHtml'), 'Cloud connection action must be rendered in the shared header');
 assert(index.includes('bindCloudButtons()'), 'Dynamically rendered cloud action must be bound');
+assert(index.includes('refreshCloudButtonState()'), 'Persisted Firebase authentication must restore the cloud button state');
+assert(index.includes("user ? 'connected' : 'disconnected'"), 'Cloud button state must reflect the restored Firebase user');
+assert(index.includes('button.dataset.cloudState = state'), 'Cloud button state must be represented explicitly for verification');
 assert(!index.includes('class="cloud-connect-btn nav-btn" style="margin:10px 0;"'),
     'Dashboard body must not retain the old cloud connection button');
 assert(uiCore.includes("this.config.headerActionHtml || ''"), 'Shared header must expose an action slot');
