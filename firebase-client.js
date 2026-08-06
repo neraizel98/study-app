@@ -11,6 +11,7 @@
     });
     const SDK_URLS = [
         'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
+        'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js',
         'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
     ];
     let promise = null;
@@ -34,6 +35,29 @@
 
     const Client = {
         CONFIG,
+        async getAuth() {
+            await this.getDB();
+            return root.firebase.auth();
+        },
+        async getCurrentUser() {
+            const auth = await this.getAuth();
+            if (auth.currentUser) return auth.currentUser;
+            await new Promise(resolve => {
+                let unsubscribe = () => {};
+                unsubscribe = auth.onAuthStateChanged(() => { unsubscribe(); resolve(); });
+                setTimeout(() => { unsubscribe(); resolve(); }, 2500);
+            });
+            return auth.currentUser;
+        },
+        async signInWithGoogle() {
+            const auth = await this.getAuth();
+            const provider = new root.firebase.auth.GoogleAuthProvider();
+            return auth.signInWithPopup(provider);
+        },
+        async signOut() {
+            const auth = await this.getAuth();
+            return auth.signOut();
+        },
         async getDB() {
             if (promise) return promise;
             promise = (async () => {

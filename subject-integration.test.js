@@ -23,8 +23,9 @@ assert(report.indexOf('reading: { name:') < report.indexOf('english: { name:'), 
 assert(home.indexOf('<!-- Korean Reading -->') < home.indexOf('<!-- English Vocabulary -->'), 'Reading card must precede English vocabulary');
 assert(home.includes("KakaoShare.sendRequest('grammar')"), 'Grammar sharing must use the grammar subject key');
 
-assert(stats.includes("const d = { reading: Array(7).fill(0)"), 'Reading study-time series is missing');
-assert(stats.includes("const series = { reading: []"), 'Reading score series is missing');
+assert(stats.includes('const d = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven study-time series is missing');
+assert(stats.includes('const series = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven score series is missing');
+assert(stats.includes('datasets: SUBJECT_IDS.map'), 'Charts must include every registered subject');
 assert(stats.includes('data-subj="reading"'), 'Reading level/unit statistics tab is missing');
 
 assert(admin.includes('StudyTimer.LEVELS[subject]'), 'Admin study-time settings must be generated from the shared level registry');

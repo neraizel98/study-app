@@ -7,6 +7,22 @@
 
 window.KakaoShare = {
     isInitialized: false,
+    SHARE_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+
+    _encodeSharePayload: function(kind, data) {
+        const now = Date.now();
+        const envelope = { version: 1, kind, createdAt: now, expiresAt: now + this.SHARE_TTL_MS, data };
+        return btoa(unescape(encodeURIComponent(JSON.stringify(envelope))));
+    },
+
+    _minimalReport: function(report) {
+        const number = value => Number.isFinite(Number(value)) ? Number(value) : 0;
+        return {
+            sessionId: String(report.sessionId || ''), subject: String(report.subject || ''), level: String(report.level || ''),
+            date: number(report.date), totalQuestions: number(report.totalQuestions), initialScore: number(report.initialScore),
+            finalScore: number(report.finalScore), timeSpentSeconds: number(report.timeSpentSeconds), isCompleted: Boolean(report.isCompleted)
+        };
+    },
 
     _sendFeed: function({ title, description, imageUrl, url, buttonTitle }) {
         if (!this.isInitialized) {
@@ -196,7 +212,7 @@ window.KakaoShare = {
             if (sessionItems.length > 0) reportData.wrongItems = sessionItems;
         }
 
-        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(reportData))));
+        const encodedData = this._encodeSharePayload('single-report', reportData);
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import=' + encodeURIComponent(encodedData);
 
         this._sendFeed({
@@ -278,8 +294,8 @@ window.KakaoShare = {
         }
 
         // 최신 10개로 제한 (URL 길이 초과 방지)
-        const recentReports = reports.slice(-10);
-        const encodedData = btoa(unescape(encodeURIComponent(JSON.stringify(recentReports))));
+        const recentReports = reports.slice(-10).map(report => this._minimalReport(report));
+        const encodedData = this._encodeSharePayload('report-history', recentReports);
         const url = window.location.origin + window.location.pathname.split('/').slice(0, -1).join('/') + '/report.html?import_all=' + encodeURIComponent(encodedData);
 
         this._sendFeed({

@@ -1,7 +1,7 @@
 (function (root) {
     'use strict';
 
-    const CURRENT = Object.freeze({ user: 3, reports: 2, wrongAnswers: 2, timerConfig: 2, timerScores: 1 });
+    const CURRENT = Object.freeze({ user: 3, reports: 3, wrongAnswers: 3, timerConfig: 2, timerScores: 1 });
     const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
     const periodStats = () => ({ periodKey: '', studyTime: {}, subjectsStudied: [], scores: [], quizCount: 0 });
     const formulaTime = value => ({
@@ -31,11 +31,34 @@
                     ...item,
                     updatedAt: item.updatedAt || item.date || Date.now()
                 }))
+            }),
+            2: data => ({
+                schemaVersion: 3,
+                items: (data.items || []).map(item => ({
+                    ...item,
+                    createdAt: item.createdAt || item.date || item.updatedAt || Date.now(),
+                    updatedAt: item.updatedAt || item.date || Date.now(),
+                    deviceId: item.deviceId || 'legacy'
+                }))
             })
         },
         wrongAnswers: {
             0: data => ({ schemaVersion: 1, subjects: data?.subjects || data || {} }),
-            1: data => ({ schemaVersion: 2, subjects: data.subjects || {} })
+            1: data => ({ schemaVersion: 2, subjects: data.subjects || {} }),
+            2: data => ({
+                schemaVersion: 3,
+                subjects: Object.fromEntries(Object.entries(data.subjects || {}).map(([subject, items]) => [subject,
+                    (items || []).map(item => ({
+                        ...item,
+                        history: (item.history || []).map((entry, index) => ({
+                            ...entry,
+                            eventId: entry.eventId || [entry.sessionId || 'legacy', entry.round || index + 1, entry.questionId || item.wrongNoteId || item.word || item.hanja || item.type || index].join(':'),
+                            createdAt: entry.createdAt || entry.date || item.date || Date.now(),
+                            deviceId: entry.deviceId || item.deviceId || 'legacy'
+                        }))
+                    }))
+                ]))
+            })
         },
         timerConfig: {
             0: data => ({ ...data, schemaVersion: 1 }),

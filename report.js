@@ -379,6 +379,9 @@ const WrongNote = {
         const exists = all[subject].find(item => this.getIdentifier(subject, item) === identifier);
         
         const historyEntry = {
+            eventId: [sessionId || 'session', round, data.questionId || identifier].join(':'),
+            deviceId: LocalRepository.getDeviceId(),
+            createdAt: Date.now(),
             sessionId,
             round,
             status,
@@ -535,10 +538,12 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         data[existingIdx].finalScore = currentScore;
         data[existingIdx].isCompleted = data[existingIdx].isCompleted || isCompleted;
         data[existingIdx].timeSpentSeconds = timeSpentSeconds;
+        data[existingIdx].updatedAt = Date.now();
         if (metadata) data[existingIdx].metadata = metadata;
         // totalQuestions는 최초 기록 값을 보존함
     } else {
-        data.push({ sessionId, subject, level, date: Date.now(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted, metadata });
+        const now = Date.now();
+        data.push({ sessionId, subject, level, date: now, createdAt: now, updatedAt: now, deviceId: LocalRepository.getDeviceId(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted, metadata });
     }
 
     LocalRepository.saveReports(userId, data);

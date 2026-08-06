@@ -235,6 +235,7 @@
             </div>
             <div class="login-box" style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); max-width: 400px; margin: 0 auto;">
                 <input type="text" id="userIdInput" placeholder="이름을 입력하세요 (예: 우준)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); background: rgba(255,255,255,0.05); color: var(--text); font-size: 1.1rem; margin-bottom: 20px; outline: none; transition: border-color 0.2s;">
+                <button id="cloudLoginBtn" type="button" class="nav-btn" style="width:100%; justify-content:center; margin-bottom:12px;">🔐 Google로 가족 클라우드 연결</button>
                 <button id="loginBtn" class="nav-btn" style="width: 100%; justify-content: center; background: var(--accent); color: white; border: none; padding: 15px; font-weight: 700; font-size: 1.1rem; cursor: pointer; border-radius: 12px; transition: transform 0.2s;">학습 시작하기</button>
                 <button type="button" onclick="if(confirm('Smart Study 학습 데이터가 초기화됩니다. 계속하시겠습니까?')){SmartStudy.LocalRepository.clearAppData(); location.reload();}" style="background:none; border:none; color:var(--text-sub); font-size:0.8rem; margin-top:20px; cursor:pointer; text-decoration:underline; opacity:0.5; width:100%; text-align:center;">⚠️ 데이터 초기화 (문제가 있을 때만 클릭)</button>
             </div>
@@ -243,6 +244,7 @@
         <!-- 로그인 후: 개인 대시보드 -->
         <div id="dashboard-section" style="display: none;">
             <div id="app-header"></div>
+            <button type="button" class="cloud-connect-btn nav-btn" style="margin:10px 0;">🔐 가족 클라우드 연결</button>
 
             <div class="dashboard-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 25px; margin-top: 20px; text-align: left;">
                 <!-- 스탯 카드 (클릭 시 성적표 이동) -->
@@ -480,6 +482,21 @@
                 }
                 updateUI();
             });
+
+            async function connectCloud(event) {
+                const button = event.currentTarget;
+                button.disabled = true;
+                button.textContent = '🔐 인증 중...';
+                try {
+                    await FireSync.connectCloud();
+                    button.textContent = '✅ 가족 클라우드 연결됨';
+                } catch (error) {
+                    button.textContent = '🔐 Google로 가족 클라우드 연결';
+                    alert(`클라우드 연결에 실패했습니다. 로컬 학습은 계속할 수 있습니다.\n${error.message}`);
+                } finally { button.disabled = false; }
+            }
+            document.getElementById('cloudLoginBtn').addEventListener('click', connectCloud);
+            document.querySelectorAll('.cloud-connect-btn').forEach(button => button.addEventListener('click', connectCloud));
 
             userIdInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') loginBtn.click();

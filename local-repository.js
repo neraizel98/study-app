@@ -33,6 +33,14 @@
     }
 
     const Repository = {
+        getDeviceId() {
+            let id = localStorage.getItem(Keys.deviceId);
+            if (!id) {
+                id = root.crypto?.randomUUID?.() || `device-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+                localStorage.setItem(Keys.deviceId, id);
+            }
+            return id;
+        },
         getActiveUser: () => localStorage.getItem(Keys.activeUser),
         setActiveUser(userId) {
             localStorage.setItem(Keys.activeUser, userId);
@@ -54,9 +62,12 @@
             return migrateAndPersist('reports', key, parse(key, []), value => value.items);
         },
         saveReports(userId, reports) {
-            const envelope = Migrations.migrate('reports', { items: reports });
+            const now = Date.now();
+            const deviceId = Repository.getDeviceId();
+            const items = reports.map(item => ({ ...item, createdAt: item.createdAt || item.date || now, updatedAt: item.updatedAt || item.date || now, deviceId: item.deviceId || deviceId }));
+            const envelope = Migrations.migrate('reports', { items });
             write(Keys.reports(userId), envelope, 'reports:saved', { userId });
-            return reports;
+            return items;
         },
         getWrongAnswers(userId) {
             const key = Keys.wrongAnswers(userId);

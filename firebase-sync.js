@@ -26,6 +26,8 @@ const _timers    = {};
 async function _initDB() {
     if (_db) return _db;
     try {
+        const authUser = await window.SmartStudy.FirebaseClient.getCurrentUser();
+        if (!authUser) throw new Error('클라우드 인증이 필요합니다. 로컬 모드로 계속합니다.');
         _db = await _remoteRepository.getDB();
         _syncReady = true;
         return _db;
@@ -341,8 +343,11 @@ function _mergeReports(local, cloud) {
     [...cloud, ...local].forEach(r => {
         if (!r.sessionId) return;
         const prev = map.get(r.sessionId);
-        if (!prev || (r.timeSpentSeconds || 0) >= (prev.timeSpentSeconds || 0)) {
-            map.set(r.sessionId, r);
+        if (!prev) { map.set(r.sessionId, r); return; }
+        const currentUpdated = Number(r.updatedAt || r.date || 0);
+        const previousUpdated = Number(prev.updatedAt || prev.date || 0);
+        if (currentUpdated > previousUpdated || (currentUpdated === previousUpdated && (r.timeSpentSeconds || 0) > (prev.timeSpentSeconds || 0))) {
+            map.set(r.sessionId, { ...prev, ...r, createdAt: prev.createdAt || r.createdAt || r.date });
         }
     });
     return Array.from(map.values()).sort((a, b) => (a.date || 0) - (b.date || 0));
@@ -358,7 +363,18 @@ function _mergeWrong(local, cloud) {
             if (!id) return;
             const prev = map.get(id);
             // 더 최근 기록 우선
-            if (!prev || (item.date || 0) >= (prev.date || 0)) map.set(id, item);
+            if (!prev) { map.set(id, item); return; }
+            const historyMap = new Map();
+            [...(prev.history || []), ...(item.history || [])].forEach((entry, index) => {
+                const eventId = entry.eventId || [entry.sessionId || 'legacy', entry.round || index + 1, entry.questionId || id].join(':');
+                const existing = historyMap.get(eventId);
+                if (!existing || Number(entry.createdAt || entry.date || 0) >= Number(existing.createdAt || existing.date || 0)) historyMap.set(eventId, { ...entry, eventId });
+            });
+            const history = Array.from(historyMap.values()).sort((a, b) => Number(a.createdAt || a.date || 0) - Number(b.createdAt || b.date || 0)).slice(-15);
+            const newer = Number(item.date || 0) >= Number(prev.date || 0) ? item : prev;
+            let streak = 0;
+            for (let index = history.length - 1; index >= 0 && history[index].status === 'correct'; index--) streak++;
+            map.set(id, { ...prev, ...newer, history, count: Math.max(Number(prev.count || 0), Number(item.count || 0), history.filter(entry => entry.status === 'wrong').length), masteryScore: Math.min(3, streak), isMastered: streak >= 3 });
         });
         result[subj] = Array.from(map.values());
     });
@@ -411,6 +427,12 @@ function _showSyncBadge(text, color = '#4facfe') {
 //  공개 API
 // ─────────────────────────────────────────────
 window.FireSync = {
+    connectCloud: async function() {
+        await window.SmartStudy.FirebaseClient.signInWithGoogle();
+        _db = null;
+        _syncReady = false;
+        return _initDB();
+    },
     /**
      * 로그인 시 호출 — 클라우드에서 데이터 다운로드 후 병합
      * @returns {Promise<void>}

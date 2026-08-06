@@ -78,6 +78,12 @@
         let pool = unseen.length ? unseen : eligible;
         const priority = pool.filter(item => wrongPassageIds.has(item.id));
         if (priority.length && Math.random() < band.wrongRatio) pool = priority;
+        // 고득점 심화 단계에서는 긴 글을 실제로 자주 만나게 한다. 오답 우선 출제가
+        // 선택되지 않은 경우 15줄 이상 지문을 80% 확률로 우선한다.
+        if (band.name === 'challenge' && !(priority.length && pool === priority)) {
+            const longPassages = pool.filter(item => item.lines.length >= 15);
+            if (longPassages.length && Math.random() < 0.8) pool = longPassages;
+        }
         return Utils.shuffle(pool)[0];
     }
 
