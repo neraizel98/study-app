@@ -10,6 +10,16 @@ const compileInlineScripts = (file, html) => {
     });
 };
 
+const index = read('index.html');
+const uiCore = read('ui-core.js');
+assert(index.includes('headerActionHtml'), 'Cloud connection action must be rendered in the shared header');
+assert(index.includes('bindCloudButtons()'), 'Dynamically rendered cloud action must be bound');
+assert(!index.includes('class="cloud-connect-btn nav-btn" style="margin:10px 0;"'),
+    'Dashboard body must not retain the old cloud connection button');
+assert(uiCore.includes("this.config.headerActionHtml || ''"), 'Shared header must expose an action slot');
+assert(uiCore.includes('.header-cloud-connect .cloud-label { display: none; }'),
+    'Mobile header must collapse the cloud action label');
+
 const wrongNote = read('wrong_note.html');
 const retryPosition = wrongNote.indexOf('id="retryAllBtn"');
 const listPosition = wrongNote.indexOf('id="wrongListContainer"');

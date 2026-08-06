@@ -15,6 +15,7 @@
         'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
     ];
     let promise = null;
+    let authPromise = null;
 
     function loadScript(src) {
         return new Promise((resolve, reject) => {
@@ -37,7 +38,16 @@
         CONFIG,
         async getAuth() {
             await this.getDB();
-            return root.firebase.auth();
+            if (!authPromise) {
+                const auth = root.firebase.auth();
+                authPromise = auth.setPersistence(root.firebase.auth.Auth.Persistence.LOCAL)
+                    .then(() => auth)
+                    .catch(error => {
+                        authPromise = null;
+                        throw error;
+                    });
+            }
+            return authPromise;
         },
         async getCurrentUser() {
             const auth = await this.getAuth();
@@ -45,7 +55,7 @@
             await new Promise(resolve => {
                 let unsubscribe = () => {};
                 unsubscribe = auth.onAuthStateChanged(() => { unsubscribe(); resolve(); });
-                setTimeout(() => { unsubscribe(); resolve(); }, 2500);
+                setTimeout(() => { unsubscribe(); resolve(); }, 5000);
             });
             return auth.currentUser;
         },

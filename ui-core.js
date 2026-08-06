@@ -81,6 +81,7 @@ const AppUI = {
                         <a href="${homeUrl}" class="nav-logo-link">🏠 <span class="logo-text">Smart Study</span></a>
                     </div>
                     <div class="nav-right">
+                        ${this.config.headerActionHtml || ''}
                         ${profileHtml}
                     </div>
                 </div>
@@ -159,6 +160,15 @@ const AppUI = {
             }
             
             .nav-right { display: flex; align-items: center; gap: 15px; }
+            .header-cloud-connect {
+                display: inline-flex; align-items: center; justify-content: center; gap: 6px;
+                min-height: 38px; padding: 8px 13px; border: 1px solid var(--card-border);
+                border-radius: 11px; background: rgba(79,172,254,0.08); color: var(--text);
+                font-family: inherit; font-size: 0.78rem; font-weight: 700;
+                white-space: nowrap; cursor: pointer;
+            }
+            .header-cloud-connect:hover { border-color: var(--accent); background: rgba(79,172,254,0.16); }
+            .header-cloud-connect:disabled { cursor: wait; opacity: 0.65; }
             .nav-links { display: flex; gap: 10px; }
             .nav-link-item { 
                 text-decoration: none; 
@@ -214,7 +224,10 @@ const AppUI = {
             @media (max-width: 768px) {
                 .nav-row-top { padding: 8px 12px; }
                 .page-main-title { font-size: 1.6rem; }
-                .nav-right { gap: 10px; }
+                .nav-right { gap: 7px; }
+                .header-cloud-connect { width: 38px; min-width: 38px; padding: 8px; }
+                .header-cloud-connect .cloud-label { display: none; }
+                .user-profile-mini { min-width: 108px; padding: 6px 10px; }
                 .nav-links { display: none; } /* 모바일에서는 링크 숨김 */
             }
         `;
