@@ -54,6 +54,30 @@
             const r = await refs(userId);
             return r.user.update({ 'missionProgress.rewards': rewards, _updatedAt: Date.now() });
         },
+        async getAccess(uid) {
+            const db = await client.getDB();
+            const snap = await db.collection('access').doc(uid).get();
+            return snap.exists ? snap.data() : null;
+        },
+        async saveNotificationDevice(deviceId, data) {
+            const db = await client.getDB();
+            return db.collection('notificationDevices').doc(deviceId).set({
+                ...data,
+                updatedAt: root.firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true });
+        },
+        async removeNotificationDevice(deviceId) {
+            const db = await client.getDB();
+            return db.collection('notificationDevices').doc(deviceId).delete();
+        },
+        async createNotificationEvent(eventId, data) {
+            const db = await client.getDB();
+            return db.collection('notificationEvents').doc(eventId).set({
+                ...data,
+                createdAt: root.firebase.firestore.FieldValue.serverTimestamp(),
+                status: 'pending'
+            });
+        },
         getDB: () => client.getDB()
     };
 

@@ -548,6 +548,33 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
 
     LocalRepository.saveReports(userId, data);
 
+    if (isCompleted && isNewSession) {
+        const previous = data
+            .filter(report => report.sessionId !== sessionId && report.subject === subject && report.level === level && report.isCompleted)
+            .sort((a, b) => Number(b.date || b.createdAt || 0) - Number(a.date || a.createdAt || 0))
+            .slice(0, 3);
+        const previousThreeAverage = previous.length
+            ? Math.round(previous.reduce((sum, report) => sum + (report.totalQuestions > 0 ? report.initialScore / report.totalQuestions * 100 : 0), 0) / previous.length)
+            : null;
+        const userSnapshot = UserSession.getUserData(userId);
+        const daily = userSnapshot?.dailyStats || {};
+        window.SmartStudy?.StorageEvents?.publish('quiz:completed', {
+            sessionId,
+            learnerId: userId,
+            subject,
+            subjectName: SubjectRegistry.get(subject).name,
+            level,
+            totalQuestions,
+            initialScore,
+            initialScorePercent: totalQuestions > 0 ? Math.round(initialScore / totalQuestions * 100) : 0,
+            quizSeconds: Math.max(0, Number(timeSpentSeconds) || 0),
+            learningSeconds: Math.max(0, Number(daily.learningTime?.[subject]) || 0),
+            previousThreeAverage,
+            previousAttemptCount: previous.length,
+            completedAt: Date.now()
+        });
+    }
+
     // 경험치 및 통계 업데이트
     const user = UserSession.getUserData();
     if (user) {

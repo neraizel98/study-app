@@ -34,9 +34,11 @@ assert(reportPage.includes('Date.now() > parsed.expiresAt'));
 assert(reportPage.includes('escapeHtml(item.display)'));
 
 const firebaseClient = fs.readFileSync('firebase-client.js', 'utf8');
+const firebaseConfig = fs.readFileSync('firebase-config.js', 'utf8');
 const firebaseSync = fs.readFileSync('firebase-sync.js', 'utf8');
 const rules = fs.readFileSync('firestore.rules', 'utf8');
-assert(firebaseClient.includes('firebase-auth-compat.js'));
+assert(firebaseConfig.includes('firebase-auth-compat.js'));
+assert(firebaseClient.includes('FirebaseConfig'));
 assert(firebaseClient.includes('Auth.Persistence.LOCAL'));
 assert(firebaseClient.includes('auth.setPersistence'));
 assert(firebaseClient.includes("'auth/popup-blocked'"));

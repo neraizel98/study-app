@@ -3,7 +3,35 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v60-reading-context-questions';
+const CACHE_NAME = 'smart-study-v61-notifications';
+
+try {
+    importScripts('./firebase-config.js');
+    importScripts(self.SmartStudy.FirebaseConfig.sdk.app);
+    importScripts(self.SmartStudy.FirebaseConfig.sdk.messaging);
+    firebase.initializeApp(self.SmartStudy.FirebaseConfig.app);
+    firebase.messaging().onBackgroundMessage(payload => {
+        const data = payload.data || {};
+        self.registration.showNotification(data.title || 'Smart Study', {
+            body: data.body || '',
+            icon: './icons/icon-192.png',
+            badge: './icons/icon-96.png',
+            tag: payload.data?.eventId || undefined,
+            data: { url: payload.data?.url || './index.html' }
+        });
+    });
+} catch (error) {
+    console.warn('[SW] Firebase Messaging unavailable:', error.message);
+}
+
+self.addEventListener('notificationclick', event => {
+    event.notification.close();
+    const target = new URL(event.notification.data?.url || './index.html', self.location.href).href;
+    event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windows => {
+        const existing = windows.find(client => client.url === target);
+        return existing ? existing.focus() : clients.openWindow(target);
+    }));
+});
 
 self.addEventListener('activate', event => {
     event.waitUntil(clients.claim());
@@ -44,10 +72,12 @@ const STATIC_ASSETS = [
     './local-repository.js',
     './app-bootstrap.js',
     './firebase-client.js',
+    './firebase-config.js',
     './firestore-repository.js',
     './quiz-registry.js',
     './report.js',
     './firebase-sync.js',
+    './notification-client.js',
     './study-timer.js',
     './kakao-share.js',
     './VocabEng.js',

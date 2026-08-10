@@ -1,18 +1,14 @@
 (function (root) {
     'use strict';
 
-    const CONFIG = Object.freeze({
-        apiKey: "AIzaSyDQBCqKxumH-NOdAETKhY6_9xGX_AsVKWg",
-        authDomain: "smart-study-wj.firebaseapp.com",
-        projectId: "smart-study-wj",
-        storageBucket: "smart-study-wj.firebasestorage.app",
-        messagingSenderId: "994757323327",
-        appId: "1:994757323327:web:c0f68e95bbeea72a12e68a"
-    });
+    const firebaseConfig = root.SmartStudy?.FirebaseConfig;
+    if (!firebaseConfig) throw new Error('firebase-config.js must load before firebase-client.js');
+    const CONFIG = firebaseConfig.app;
     const SDK_URLS = [
-        'https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js',
-        'https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js',
-        'https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js'
+        firebaseConfig.sdk.app,
+        firebaseConfig.sdk.auth,
+        firebaseConfig.sdk.firestore,
+        firebaseConfig.sdk.messaging
     ];
     let promise = null;
     let authPromise = null;
@@ -117,6 +113,13 @@
                 throw error;
             });
             return promise;
+        },
+        async getMessaging() {
+            await this.getDB();
+            if (!root.firebase.messaging.isSupported()) {
+                throw new Error('이 브라우저는 웹 푸시 알림을 지원하지 않습니다.');
+            }
+            return root.firebase.messaging();
         }
     };
 

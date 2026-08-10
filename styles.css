@@ -29,6 +29,28 @@ body {
     touch-action: manipulation; /* 모바일 클릭 지연 제거 */
 }
 
+.notification-settings-btn {
+    border: 1px solid rgba(255,255,255,.16); border-radius: 12px; padding: 9px 12px;
+    background: rgba(255,255,255,.06); color: var(--text); font: inherit; cursor: pointer;
+}
+#notificationSetupModal {
+    display: none; position: fixed; inset: 0; z-index: 10000; padding: 20px;
+    align-items: center; justify-content: center; background: rgba(3,8,18,.78); backdrop-filter: blur(8px);
+}
+#notificationSetupModal.open { display: flex; }
+.notification-setup-card {
+    width: min(420px, 100%); padding: 24px; border: 1px solid var(--card-border); border-radius: 22px;
+    background: #161b26; box-shadow: 0 24px 70px rgba(0,0,0,.45); text-align: center;
+}
+.notification-setup-card h3 { margin: 0 0 8px; }
+.notification-setup-card p { margin: 0 0 18px; color: var(--text-sub); }
+.notification-setup-card button {
+    display: block; width: 100%; margin: 9px 0; padding: 13px; border: 1px solid rgba(255,255,255,.13);
+    border-radius: 13px; background: rgba(255,255,255,.06); color: var(--text); font: inherit; cursor: pointer;
+}
+.notification-setup-card button[data-notification-role] { font-weight: 700; }
+.notification-setup-card small { color: var(--text-sub); font-weight: 400; }
+
 /* Blobs */
 .bg-blobs,
 .background-blobs {

@@ -378,8 +378,9 @@
     <script src="local-repository.js"></script>
     <script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260804-active-time"></script>
-    <script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
     <script src="firebase-sync.js?v=20260806-progress-resume"></script>
+    <script src="notification-client.js?v=20260810"></script>
     <script src="ui-core.js"></script>
     <script src="missions.js?v=20260729-mission-periods"></script>
     <script>
@@ -403,7 +404,7 @@
                         // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
                         if (window.AppUI) AppUI.init({
                             title: '오늘의 학습 대시보드',
-                            headerActionHtml: '<button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="계정 연결">🔐 <span class="cloud-label">계정 연결</span></button>'
+                            headerActionHtml: '<button type="button" class="notification-settings-btn" onclick="SmartStudy.NotificationClient.showSetup()">🔔 알림 설정</button><button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="계정 연결">🔐 <span class="cloud-label">계정 연결</span></button>'
                         });
                         bindCloudButtons();
                         refreshCloudButtonState();

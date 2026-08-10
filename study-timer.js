@@ -267,6 +267,7 @@ const StudyTimer = (() => {
         let lastTs = Date.now();
         let lastActivityAt = Date.now();
         let activeSeconds = 0;
+        let startEventSent = false;
 
         const onActivity = () => { lastActivityAt = Date.now(); };
         ACTIVITY_EVENTS.forEach(ev => window.addEventListener(ev, onActivity, { passive: true }));
@@ -325,9 +326,19 @@ const StudyTimer = (() => {
             lastTs = now;
             if (elapsed > 0 && canCount()) {
                 const { context } = current();
-                activeSeconds += Math.min(elapsed, 2);
+                const counted = Math.min(elapsed, 2);
+                activeSeconds += counted;
                 // 잠금이 이미 해제된 뒤에도 실제 학습은 통계에 포함한다.
-                addSeconds(subject, context, Math.min(elapsed, 2));
+                addSeconds(subject, context, counted);
+                if (!startEventSent) {
+                    startEventSent = true;
+                    window.SmartStudy?.StorageEvents?.publish('study:active-start', {
+                        subject,
+                        context,
+                        label: getLabel(),
+                        startedAt: Date.now()
+                    });
+                }
             }
             updateUI(!canCount());
         }
@@ -358,6 +369,7 @@ const StudyTimer = (() => {
 
         function resetActiveSeconds() {
             activeSeconds = 0;
+            startEventSent = false;
             lastTs = Date.now();
             lastActivityAt = Date.now();
         }
