@@ -113,10 +113,11 @@ assert.match(adminSource, /학습 \$\{formatStudySeconds\(learningSeconds\)\} \+
 assert.match(shareSource, /timeSpentSeconds: activeQuizSeconds/, 'Shared reports must include active quiz seconds');
 assert.match(sharedReportSource, /r\.timeSpentSeconds \?\? wallElapsed/, 'Shared report view must prefer active time');
 assert.match(shareSource, /learning \+ quiz/, 'Daily Kakao time must explicitly combine active learning and quiz time');
-assert.match(shareSource, /_encodeSharePayload\('daily-report'/, 'Daily Kakao link must carry an immutable daily report snapshot');
-assert.match(shareSource, /report\.html\?daily=/, 'Daily Kakao card must open the shared snapshot instead of device-local history');
+assert.match(shareSource, /new URLSearchParams\(\{ learner: activeUser, date: dateKey \}\)/, 'Daily Kakao link must stay short and identify learner/date');
+assert.doesNotMatch(shareSource, /report\.html\?daily=/, 'Daily Kakao card must not embed oversized report data in its URL');
 assert.match(sharedReportSource, /decodeSharedPayload\(dailyData, 'daily-report'\)/, 'Report page must decode the shared daily snapshot');
 assert.match(sharedReportSource, /Array\.isArray\(window\.__sharedReports\) \? window\.__sharedReports : getQuizReports\(\)/, 'Shared daily report must not be replaced with the recipient device history');
+assert.match(sharedReportSource, /FirestoreRepository\.getUserBundle\(sharedLearnerId\)/, 'Shared report must load the requested learner directly from Firestore');
 
 for (const file of ['main.js', 'hanja.js', 'EnglishGrammarApp.js', 'ReadingApp.js', 'math_quiz.html']) {
     const source = fs.readFileSync(file, 'utf8');

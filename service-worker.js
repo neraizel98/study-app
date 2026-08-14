@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v61-notifications';
+const CACHE_NAME = 'smart-study-v62-short-report-link';
 
 try {
     importScripts('./firebase-config.js');

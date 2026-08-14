@@ -350,7 +350,7 @@
     <script src="report.js?v=20260804-active-time"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260806-progress-resume"></script>
     <script src="ui-core.js"></script>
-    <script src="kakao-share.js?v=20260728-subject-registry"></script>
+    <script src="kakao-share.js?v=20260814-short-report-link"></script>
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             // URL 파라미터 처리 (데이터 가져오기)
@@ -358,6 +358,7 @@
             const importData = urlParams.get('import');
             const importAllData = urlParams.get('import_all');
             const dailyData = urlParams.get('daily');
+            const sharedLearnerId = urlParams.get('learner');
             const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
             function decodeSharedPayload(encoded, expectedKind) {
                 const parsed = JSON.parse(decodeURIComponent(escape(atob(encoded))));
@@ -531,19 +532,66 @@
 
             AppUI.init({
                 title: '학습 성적표',
-                subtitle: '지금까지의 학습 성과를 확인하고 발전하는 모습을 지켜보세요!'
+                subtitle: sharedLearnerId
+                    ? `${sharedLearnerId}의 공유된 학습 기록을 확인합니다.`
+                    : '지금까지의 학습 성과를 확인하고 발전하는 모습을 지켜보세요!'
             });
         });
     </script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
             if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
 
-            let allReports = Array.isArray(window.__sharedReports) ? window.__sharedReports : getQuizReports(); // 공유 스냅샷 또는 현재 사용자 기록
+            const params = new URLSearchParams(window.location.search);
+            const sharedLearnerId = params.get('learner');
+            const sharedDate = params.get('date');
+            const escapeText = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
+            let allReports = Array.isArray(window.__sharedReports) ? window.__sharedReports : getQuizReports();
+            if (sharedLearnerId) {
+                const notice = document.getElementById('dailySharedNotice');
+                notice.style.display = 'block';
+                notice.innerHTML = `⏳ ${escapeText(sharedLearnerId)}의 최신 성적표를 불러오는 중입니다.`;
+                try {
+                    const authUser = await SmartStudy.FirebaseClient.getCurrentUser();
+                    if (!authUser) throw new Error('부모 Google 계정 연결이 필요합니다. 홈에서 계정을 연결한 뒤 다시 열어주세요.');
+                    const bundle = await SmartStudy.FirestoreRepository.getUserBundle(sharedLearnerId);
+                    const cloudReports = Array.isArray(bundle.reports) ? bundle.reports : [];
+                    allReports = sharedDate
+                        ? cloudReports.filter(report => StudyPeriods.dateKey(new Date(Number(report.date || report.createdAt || 0))) === sharedDate)
+                        : cloudReports;
+                    window.__sharedReports = allReports;
+
+                    const daily = bundle.user?.dailyStats || {};
+                    const canShowTimes = !sharedDate || daily.date === sharedDate;
+                    const subjectIds = canShowTimes ? [...new Set([
+                        ...(daily.subjectsStudied || []),
+                        ...Object.keys(daily.learningTime || {}),
+                        ...Object.keys(daily.quizTime || {})
+                    ])] : [];
+                    const formatSec = seconds => {
+                        const value = Math.max(0, Math.round(Number(seconds) || 0));
+                        const minutes = Math.floor(value / 60), remain = value % 60;
+                        return minutes > 0 ? `${minutes}분 ${remain}초` : `${remain}초`;
+                    };
+                    const lines = subjectIds.map(subject => {
+                        const info = SubjectRegistry.get(subject);
+                        const learning = Math.max(0, Number(daily.learningTime?.[subject]) || 0);
+                        const quiz = Math.max(0, Number(daily.quizTime?.[subject]) || 0);
+                        const total = Math.max(Number(daily.studyTime?.[subject]) || 0, learning + quiz);
+                        return `<span style="display:inline-block;margin:4px 14px 4px 0;">${info.icon} ${info.name} <b>${formatSec(total)}</b> <small style="color:var(--text-sub);">(학습 ${formatSec(learning)} + 퀴즈 ${formatSec(quiz)})</small></span>`;
+                    }).join('');
+                    notice.innerHTML = `<b>💬 ${escapeText(sharedLearnerId)}의 ${escapeText(sharedDate || '전체')} 학습 성적표</b><br>${lines || `퀴즈 기록 ${allReports.length}건`}<br><small style="color:var(--text-sub);">Firestore에서 불러온 최신 기록입니다.</small>`;
+                } catch (error) {
+                    console.error('[Shared learner report]', error);
+                    allReports = [];
+                    window.__sharedReports = allReports;
+                    notice.innerHTML = `⚠️ 성적표를 불러오지 못했습니다.<br><small>${escapeText(error.message)}</small>`;
+                }
+            }
             const subjects = SubjectRegistry.list({ reports: allReports, wrongAnswers: WrongNote.getAll() });
             const tabsContainer = document.getElementById('reportSubjectTabs');
             const shareButton = document.getElementById('shareHistoryBtn');
-            if (Array.isArray(window.__sharedReports)) shareButton.style.display = 'none';
+            if (Array.isArray(window.__sharedReports) || sharedLearnerId) shareButton.style.display = 'none';
             tabsContainer.insertAdjacentHTML('afterbegin', subjects.map((subject, index) => `
                 <div class="subject-tab ${index === 0 ? 'active' : ''}" data-subject="${subject.id}">
                     ${subject.icon} ${subject.name}

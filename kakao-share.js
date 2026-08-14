@@ -291,26 +291,15 @@ window.KakaoShare = {
         const desc = `${studiedLines}\n⏱ 총 ${formatDuration(totalSeconds)} (학습+퀴즈 · 자리비움 제외)${scoreMsg}${streakMsg}`;
 
         const dateKey = daily.date || (typeof StudyPeriods !== 'undefined' ? StudyPeriods.daily() : new Date().toISOString().slice(0, 10));
-        const reports = (typeof getQuizReports === 'function' ? getQuizReports() : [])
-            .filter(report => {
-                const date = new Date(Number(report.date || report.createdAt || 0));
-                const localKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-                return localKey === dateKey;
-            })
-            .map(report => this._minimalReport(report));
-        const subjectTimes = Object.fromEntries(subjects.map(subject => [subject, {
-            learningSeconds: Math.max(0, Number(daily.learningTime?.[subject]) || 0),
-            quizSeconds: Math.max(0, Number(daily.quizTime?.[subject]) || 0),
-            totalSeconds: this._dailySubjectSeconds(daily, subject)
-        }]));
-        const sharedSnapshot = this._encodeSharePayload('daily-report', {
-            learnerId: activeUser,
-            date: dateKey,
-            subjectTimes,
-            quizScores: daily.quizScores || {},
-            reports
-        });
-        const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html?daily=${encodeURIComponent(sharedSnapshot)}`;
+        // Kakao rejects oversized template links. Keep the link short and let
+        // report.html load the authorized learner's latest Firestore records.
+        const params = new URLSearchParams({ learner: activeUser, date: dateKey });
+        const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html?${params}`;
+
+        // Start an immediate cloud upload before Kakao opens. Do not await it:
+        // keeping sendDefault in the original click gesture prevents mobile
+        // browsers from treating the Kakao picker as a blocked popup.
+        window.FireSync?.forceUpload?.().catch(error => console.warn('[KakaoShare] pre-share sync failed:', error));
 
         this._sendFeed({
             title, description: desc,
