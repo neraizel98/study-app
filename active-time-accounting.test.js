@@ -76,6 +76,35 @@ const adminSource = fs.readFileSync('admin.html', 'utf8');
 const shareSource = fs.readFileSync('kakao-share.js', 'utf8');
 const sharedReportSource = fs.readFileSync('report.html', 'utf8');
 
+const shareSandbox = {
+    console,
+    alert() {},
+    document: {
+        createElement: () => ({}),
+        head: { appendChild() {} }
+    }
+};
+shareSandbox.window = shareSandbox;
+vm.createContext(shareSandbox);
+vm.runInContext(shareSource, shareSandbox);
+assert.equal(
+    shareSandbox.KakaoShare._dailySubjectSeconds({
+        studyTime: { math: 170 },
+        learningTime: { math: 120 },
+        quizTime: { math: 50 }
+    }, 'math'),
+    170,
+    'Daily card must show active learning + quiz time without double counting'
+);
+assert.equal(
+    shareSandbox.KakaoShare._dailySubjectSeconds({
+        studyTime: { math: 170 },
+        quizTime: { math: 50 }
+    }, 'math'),
+    170,
+    'Legacy combined totals must remain intact when detailed learning time is unavailable'
+);
+
 assert.match(timerSource, /updateDailyStat\('study_time'/, 'Learning time must use the study bucket');
 assert.match(reportSource, /updateDailyStat\('quiz_time'/, 'Quiz time must use the quiz bucket');
 assert.doesNotMatch(reportSource, /subject === 'grammar'\s*\?\s*0/, 'Grammar quiz time must not be discarded');
@@ -83,6 +112,11 @@ assert.match(adminSource, /Math\.max\(subjectTime\.studyTime \|\| 0, reportQuizS
 assert.match(adminSource, /학습 \$\{formatStudySeconds\(learningSeconds\)\} \+ 퀴즈/, 'Admin must show the time formula');
 assert.match(shareSource, /timeSpentSeconds: activeQuizSeconds/, 'Shared reports must include active quiz seconds');
 assert.match(sharedReportSource, /r\.timeSpentSeconds \?\? wallElapsed/, 'Shared report view must prefer active time');
+assert.match(shareSource, /learning \+ quiz/, 'Daily Kakao time must explicitly combine active learning and quiz time');
+assert.match(shareSource, /_encodeSharePayload\('daily-report'/, 'Daily Kakao link must carry an immutable daily report snapshot');
+assert.match(shareSource, /report\.html\?daily=/, 'Daily Kakao card must open the shared snapshot instead of device-local history');
+assert.match(sharedReportSource, /decodeSharedPayload\(dailyData, 'daily-report'\)/, 'Report page must decode the shared daily snapshot');
+assert.match(sharedReportSource, /Array\.isArray\(window\.__sharedReports\) \? window\.__sharedReports : getQuizReports\(\)/, 'Shared daily report must not be replaced with the recipient device history');
 
 for (const file of ['main.js', 'hanja.js', 'EnglishGrammarApp.js', 'ReadingApp.js', 'math_quiz.html']) {
     const source = fs.readFileSync(file, 'utf8');

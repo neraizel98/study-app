@@ -24,6 +24,15 @@ window.KakaoShare = {
         };
     },
 
+    _dailySubjectSeconds: function(daily, subject) {
+        const learning = Math.max(0, Number(daily?.learningTime?.[subject]) || 0);
+        const quiz = Math.max(0, Number(daily?.quizTime?.[subject]) || 0);
+        const legacyCombined = Math.max(0, Number(daily?.studyTime?.[subject]) || 0);
+        // Detailed buckets are authoritative for new data. Math.max preserves
+        // older combined-only records without ever counting quiz time twice.
+        return Math.max(legacyCombined, learning + quiz);
+    },
+
     _sendFeed: function({ title, description, imageUrl, url, buttonTitle }) {
         if (!this.isInitialized) {
             alert('카카오톡 초기화 중입니다. 잠시 후 다시 시도해주세요.');
@@ -240,8 +249,12 @@ window.KakaoShare = {
         const activeUser = user.id || '우준';
         const streak = user.attendance?.currentStreak || 0;
         const daily = user.dailyStats || {};
-        const times = daily.studyTime || {};
-        const subjects = daily.subjectsStudied || [];
+        const subjects = [...new Set([
+            ...(daily.subjectsStudied || []),
+            ...Object.keys(daily.learningTime || {}),
+            ...Object.keys(daily.quizTime || {}),
+            ...Object.keys(daily.quizScores || {})
+        ])].filter(subject => this._dailySubjectSeconds(daily, subject) > 0 || (daily.quizScores?.[subject] || []).length > 0);
 
         if (subjects.length === 0) {
             alert('오늘 학습한 기록이 없습니다. 먼저 공부하고 보내세요!');
@@ -252,12 +265,17 @@ window.KakaoShare = {
             ? SubjectRegistry.get(subject)
             : { name: subject, icon: '📚' };
 
-        const toMin = (sec) => Math.round((sec || 0) / 60);
+        const formatDuration = seconds => {
+            const value = Math.max(0, Math.round(Number(seconds) || 0));
+            const minutes = Math.floor(value / 60);
+            const remain = value % 60;
+            return minutes > 0 ? `${minutes}분 ${remain}초` : `${remain}초`;
+        };
         const studiedLines = subjects
-            .map(s => `${subjectInfo(s).icon} ${subjectInfo(s).name} ${toMin(times[s])}분`)
+            .map(s => `${subjectInfo(s).icon} ${subjectInfo(s).name} ${formatDuration(this._dailySubjectSeconds(daily, s))}`)
             .join('  ·  ');
 
-        const totalMin = toMin(Object.values(times).reduce((a, b) => a + b, 0));
+        const totalSeconds = subjects.reduce((sum, subject) => sum + this._dailySubjectSeconds(daily, subject), 0);
         const streakMsg = streak >= 3 ? ` 🔥 ${streak}일 연속 출석 중!` : '';
         const scores = daily.quizScores || {};
         const bestScore = Object.entries(scores).reduce((best, [subj, arr]) => {
@@ -270,9 +288,29 @@ window.KakaoShare = {
             : '';
 
         const title = `📊 ${activeUser}의 오늘 학습 리포트`;
-        const desc = `${studiedLines}\n⏱ 총 ${totalMin}분 (학습+퀴즈 · 자리비움 제외)${scoreMsg}${streakMsg}`;
+        const desc = `${studiedLines}\n⏱ 총 ${formatDuration(totalSeconds)} (학습+퀴즈 · 자리비움 제외)${scoreMsg}${streakMsg}`;
 
-        const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html`;
+        const dateKey = daily.date || (typeof StudyPeriods !== 'undefined' ? StudyPeriods.daily() : new Date().toISOString().slice(0, 10));
+        const reports = (typeof getQuizReports === 'function' ? getQuizReports() : [])
+            .filter(report => {
+                const date = new Date(Number(report.date || report.createdAt || 0));
+                const localKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                return localKey === dateKey;
+            })
+            .map(report => this._minimalReport(report));
+        const subjectTimes = Object.fromEntries(subjects.map(subject => [subject, {
+            learningSeconds: Math.max(0, Number(daily.learningTime?.[subject]) || 0),
+            quizSeconds: Math.max(0, Number(daily.quizTime?.[subject]) || 0),
+            totalSeconds: this._dailySubjectSeconds(daily, subject)
+        }]));
+        const sharedSnapshot = this._encodeSharePayload('daily-report', {
+            learnerId: activeUser,
+            date: dateKey,
+            subjectTimes,
+            quizScores: daily.quizScores || {},
+            reports
+        });
+        const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html?daily=${encodeURIComponent(sharedSnapshot)}`;
 
         this._sendFeed({
             title, description: desc,

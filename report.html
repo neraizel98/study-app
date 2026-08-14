@@ -305,6 +305,7 @@
 
         <!-- 일반 성적표 뷰 -->
         <div id="normalView">
+        <div id="dailySharedNotice" class="shared-notice" style="display:none; text-align:left; margin-bottom:20px;"></div>
         <div class="subject-tabs" id="reportSubjectTabs">
             <button id="shareHistoryBtn" style="margin-left: auto; background: #FEE500; color: #3A1D1D; border: none; padding: 8px 15px; border-radius: 12px; font-weight: bold; cursor: pointer; display: flex; align-items: center; gap: 5px;">
                 <span>💬</span> 전체 공유
@@ -356,6 +357,7 @@
             const urlParams = new URLSearchParams(window.location.search);
             const importData = urlParams.get('import');
             const importAllData = urlParams.get('import_all');
+            const dailyData = urlParams.get('daily');
             const escapeHtml = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
             function decodeSharedPayload(encoded, expectedKind) {
                 const parsed = JSON.parse(decodeURIComponent(escape(atob(encoded))));
@@ -399,7 +401,32 @@
                     </div>`;
             }
 
-            if (importData) {
+            if (dailyData) {
+                try {
+                    const snapshot = decodeSharedPayload(dailyData, 'daily-report');
+                    window.__sharedDailyReport = snapshot;
+                    window.__sharedReports = Array.isArray(snapshot.reports) ? snapshot.reports : [];
+                    const formatSec = seconds => {
+                        const value = Math.max(0, Math.round(Number(seconds) || 0));
+                        const minutes = Math.floor(value / 60);
+                        const remain = value % 60;
+                        return minutes > 0 ? `${minutes}분 ${remain}초` : `${remain}초`;
+                    };
+                    const lines = Object.entries(snapshot.subjectTimes || {}).map(([subject, time]) => {
+                        const info = SubjectRegistry.get(subject);
+                        return `<span style="display:inline-block;margin:4px 14px 4px 0;">${info.icon} ${escapeHtml(info.name)} <b>${formatSec(time.totalSeconds)}</b> <small style="color:var(--text-sub);">(학습 ${formatSec(time.learningSeconds)} + 퀴즈 ${formatSec(time.quizSeconds)})</small></span>`;
+                    }).join('');
+                    const notice = document.getElementById('dailySharedNotice');
+                    notice.style.display = 'block';
+                    notice.innerHTML = `<b>💬 ${escapeHtml(snapshot.learnerId || '우준')}의 ${escapeHtml(snapshot.date || '오늘')} 학습 성적표</b><br>${lines || '학습 시간 기록 없음'}<br><small style="color:var(--text-sub);">공유 버튼을 누른 시점의 오늘 퀴즈 기록입니다.</small>`;
+                } catch (e) {
+                    console.error('[Daily Shared View Error]', e);
+                    document.getElementById('sharedView').style.display = 'block';
+                    document.getElementById('normalView').style.display = 'none';
+                    window.__sharedMode = true;
+                    document.getElementById('sharedView').innerHTML = `<div class="shared-notice">⚠️ 공유된 오늘 성적표를 불러오지 못했습니다.<br><small>${escapeHtml(e.message)}</small></div>`;
+                }
+            } else if (importData) {
                 // 단일 퀴즈 결과 공유 → 읽기 전용 뷰로 표시 (localStorage 저장 안 함)
                 try {
                     const r = decodeSharedPayload(importData, 'single-report');
@@ -512,10 +539,11 @@
         document.addEventListener('DOMContentLoaded', () => {
             if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
 
-            let allReports = getQuizReports(); // from report.js
+            let allReports = Array.isArray(window.__sharedReports) ? window.__sharedReports : getQuizReports(); // 공유 스냅샷 또는 현재 사용자 기록
             const subjects = SubjectRegistry.list({ reports: allReports, wrongAnswers: WrongNote.getAll() });
             const tabsContainer = document.getElementById('reportSubjectTabs');
             const shareButton = document.getElementById('shareHistoryBtn');
+            if (Array.isArray(window.__sharedReports)) shareButton.style.display = 'none';
             tabsContainer.insertAdjacentHTML('afterbegin', subjects.map((subject, index) => `
                 <div class="subject-tab ${index === 0 ? 'active' : ''}" data-subject="${subject.id}">
                     ${subject.icon} ${subject.name}
@@ -526,6 +554,7 @@
 
             // 동기화 완료 시 데이터 갱신 후 현재 탭 재렌더링
             window.addEventListener('firesynced', () => {
+                if (Array.isArray(window.__sharedReports)) return;
                 allReports = getQuizReports();
                 const activeTab = document.querySelector('.subject-tab.active');
                 if (activeTab) renderReports(activeTab.dataset.subject);
