@@ -455,7 +455,7 @@
                     quizSessionData.initialScore = score;
                     quizSessionData.currentScore = score;
                 } else {
-                    quizSessionData.currentScore += score;
+                    quizSessionData.currentScore = Math.min(quizSessionData.total, quizSessionData.currentScore + score);
                 }
 
                 const total = quizSessionData.total;

@@ -10,7 +10,7 @@ vm.runInContext(fs.readFileSync('schema-migrations.js', 'utf8'), migrationsConte
 
 const migrations = migrationsContext.SmartStudy.SchemaMigrations;
 const reportEnvelope = migrations.migrate('reports', [{ sessionId: 's1', date: 100 }]);
-assert.strictEqual(reportEnvelope.schemaVersion, 3);
+assert.strictEqual(reportEnvelope.schemaVersion, migrations.CURRENT.reports);
 assert.strictEqual(reportEnvelope.items[0].createdAt, 100);
 assert.strictEqual(reportEnvelope.items[0].updatedAt, 100);
 assert.strictEqual(reportEnvelope.items[0].deviceId, 'legacy');

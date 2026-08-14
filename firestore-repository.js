@@ -3,6 +3,16 @@
 
     const ADMIN_UID = '우준아빠';
     const client = root.SmartStudy.FirebaseClient;
+    const normalizeReports = reports => (reports || []).map(report => {
+        const totalQuestions = Math.max(0, Math.floor(Number(report.totalQuestions) || 0));
+        const clampScore = value => Math.min(totalQuestions, Math.max(0, Math.floor(Number(value) || 0)));
+        return {
+            ...report,
+            totalQuestions,
+            initialScore: clampScore(report.initialScore),
+            finalScore: clampScore(report.finalScore)
+        };
+    });
     const refs = async userId => {
         const db = await client.getDB();
         const user = db.collection('users').doc(userId);
@@ -18,7 +28,7 @@
             ]);
             return {
                 user: user.exists ? user.data() : null,
-                reports: reports.exists ? reports.data().reports || [] : null,
+                reports: reports.exists ? normalizeReports(reports.data().reports || []) : null,
                 wrongAnswers: wrongAnswers.exists ? wrongAnswers.data().wrongAnswers || {} : null
             };
         },
@@ -28,7 +38,7 @@
         },
         async putReports(userId, reports) {
             const r = await refs(userId);
-            return r.reports.set({ reports, _updatedAt: Date.now() });
+            return r.reports.set({ reports: normalizeReports(reports), _updatedAt: Date.now() });
         },
         async putWrongAnswers(userId, wrongAnswers) {
             const r = await refs(userId);

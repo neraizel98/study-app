@@ -1,7 +1,7 @@
 (function (root) {
     'use strict';
 
-    const CURRENT = Object.freeze({ user: 3, reports: 3, wrongAnswers: 3, timerConfig: 2, timerScores: 1 });
+    const CURRENT = Object.freeze({ user: 3, reports: 4, wrongAnswers: 3, timerConfig: 2, timerScores: 1 });
     const clone = value => value == null ? value : JSON.parse(JSON.stringify(value));
     const periodStats = () => ({ periodKey: '', studyTime: {}, subjectsStudied: [], scores: [], quizCount: 0 });
     const formulaTime = value => ({
@@ -40,6 +40,19 @@
                     updatedAt: item.updatedAt || item.date || Date.now(),
                     deviceId: item.deviceId || 'legacy'
                 }))
+            }),
+            3: data => ({
+                schemaVersion: 4,
+                items: (data.items || []).map(item => {
+                    const totalQuestions = Math.max(0, Math.floor(Number(item.totalQuestions) || 0));
+                    const clampScore = value => Math.min(totalQuestions, Math.max(0, Math.floor(Number(value) || 0)));
+                    return {
+                        ...item,
+                        totalQuestions,
+                        initialScore: clampScore(item.initialScore),
+                        finalScore: clampScore(item.finalScore)
+                    };
+                })
             })
         },
         wrongAnswers: {

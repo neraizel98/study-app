@@ -521,6 +521,12 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     const userId = UserSession.getActiveUser();
     if (!userId) return;
 
+    totalQuestions = Math.max(0, Math.floor(Number(totalQuestions) || 0));
+    const clampScore = value => Math.min(totalQuestions, Math.max(0, Math.floor(Number(value) || 0)));
+    currentScore = clampScore(currentScore);
+    initialScore = clampScore(initialScore);
+    isCompleted = Boolean(isCompleted) && totalQuestions > 0 && currentScore === totalQuestions;
+
     const data = LocalRepository.listReports(userId);
 
     let timeDelta = timeSpentSeconds; // 신규 세션이면 전체 시간
@@ -535,6 +541,8 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         const prevScore = data[existingIdx].finalScore || 0;
         correctDelta = Math.max(0, currentScore - prevScore);
 
+        data[existingIdx].totalQuestions = totalQuestions;
+        data[existingIdx].initialScore = clampScore(data[existingIdx].initialScore);
         data[existingIdx].finalScore = currentScore;
         data[existingIdx].isCompleted = data[existingIdx].isCompleted || isCompleted;
         data[existingIdx].timeSpentSeconds = timeSpentSeconds;

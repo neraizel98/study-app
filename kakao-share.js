@@ -135,6 +135,10 @@ window.KakaoShare = {
             return;
         }
 
+        total = Math.max(1, Math.floor(Number(total) || 0));
+        score = Math.min(total, Math.max(0, Math.floor(Number(score) || 0)));
+        initialScore = initialScore === null ? null : Math.min(total, Math.max(0, Math.floor(Number(initialScore) || 0)));
+        pct = Math.round(score / total * 100);
         const activeUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : '우준';
         const isPerfect = pct === 100;
         const emoji = isPerfect ? '🏆' : '👍';

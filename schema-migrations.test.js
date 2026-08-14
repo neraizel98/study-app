@@ -19,6 +19,10 @@ assert.equal(reports.schemaVersion, CURRENT.reports);
 assert.equal(reports.items[0].updatedAt, 1);
 assert.deepEqual(migrate('reports', reports), reports);
 
+const invalidScores = migrate('reports', [{ sessionId: 'bad', totalQuestions: 20, initialScore: 19, finalScore: 21 }]);
+assert.equal(invalidScores.items[0].initialScore, 19);
+assert.equal(invalidScores.items[0].finalScore, 20, 'Final score must never exceed total questions');
+
 const wrong = migrate('wrongAnswers', { grammar: [{ type: 'q1' }] });
 assert.equal(wrong.schemaVersion, CURRENT.wrongAnswers);
 assert.equal(wrong.subjects.grammar.length, 1);

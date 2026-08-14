@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v62-short-report-link';
+const CACHE_NAME = 'smart-study-v63-score-integrity';
 
 try {
     importScripts('./firebase-config.js');

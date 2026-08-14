@@ -764,7 +764,7 @@ function showResult() {
         quizSessionData.initialScore = quizScore;
         quizSessionData.currentScore = quizScore;
     } else {
-        quizSessionData.currentScore += quizScore;
+        quizSessionData.currentScore = Math.min(quizSessionData.total, quizSessionData.currentScore + quizScore);
     }
 
     const total = quizSessionData.total;

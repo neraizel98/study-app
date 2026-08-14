@@ -675,11 +675,13 @@
                 function buildDetailHTML(log, subject) {
                     const details = getSessionDetails(subject, log.sessionId);
                     const subjectName = SubjectRegistry.get(subject).name;
+                    const totalCount = Math.max(0, Math.floor(Number(log.totalQuestions) || 0));
+                    const firstOkCount = Math.min(totalCount, Math.max(0, Math.floor(Number(log.initialScore) || 0)));
+                    const finalOkCount = Math.min(totalCount, Math.max(0, Math.floor(Number(log.finalScore) || 0)));
 
                     // 분류: 재도전 정답 / 미해결
-                    const retryOk   = details.filter(d => d.hist[d.hist.length - 1].status === 'correct');
+                    const retryOk   = details.filter(d => d.hist[0]?.status === 'wrong' && d.hist[d.hist.length - 1].status === 'correct');
                     const stillFail = details.filter(d => d.hist[d.hist.length - 1].status === 'wrong');
-                    const firstOkCount = (log.initialScore || 0); // 첫 시도 정답 수
 
                     // 요약 바
                     const summaryHTML = `
@@ -717,7 +719,12 @@
 
                     // 틀린 문항이 없으면 안내
                     if (details.length === 0) {
-                        return summaryHTML + `<p style="color:var(--text-sub); font-size:0.9rem; margin:0;">🎉 모든 문제를 첫 시도에 맞혔습니다!</p>`;
+                        const message = firstOkCount === totalCount
+                            ? '🎉 모든 문제를 첫 시도에 맞혔습니다!'
+                            : finalOkCount === totalCount
+                                ? `🔄 최초 오답 ${totalCount - firstOkCount}문제를 재도전으로 모두 해결했습니다. 문항별 상세 기록은 없습니다.`
+                                : `📝 최초 오답 ${totalCount - firstOkCount}문제 중 ${finalOkCount - firstOkCount}문제를 추가로 맞혔습니다. 문항별 상세 기록은 없습니다.`;
+                        return summaryHTML + `<p style="color:var(--text-sub); font-size:0.9rem; margin:0;">${message}</p>`;
                     }
 
                     const retryCards  = retryOk.map(d => makeCard(d, 'retry')).join('');
@@ -734,10 +741,12 @@
                 // 테이블은 최신이 위로 오게 (역순 렌더링)
                 [...logs].reverse().forEach((log, reversedIdx) => {
                     const nth = logs.length - reversedIdx;
-
-                    const QRatio = `${log.finalScore} / ${log.totalQuestions}`;
-                    const vInit  = Math.round((log.initialScore / log.totalQuestions) * 100);
-                    const vFinal = Math.round((log.finalScore  / log.totalQuestions) * 100);
+                    const totalQuestions = Math.max(0, Math.floor(Number(log.totalQuestions) || 0));
+                    const initialScore = Math.min(totalQuestions, Math.max(0, Math.floor(Number(log.initialScore) || 0)));
+                    const finalScore = Math.min(totalQuestions, Math.max(0, Math.floor(Number(log.finalScore) || 0)));
+                    const QRatio = `${finalScore} / ${totalQuestions}`;
+                    const vInit  = totalQuestions > 0 ? Math.round((initialScore / totalQuestions) * 100) : 0;
+                    const vFinal = totalQuestions > 0 ? Math.round((finalScore  / totalQuestions) * 100) : 0;
                     const initCls  = vInit  >= 80 ? 'score-good' : vInit  < 50 ? 'score-bad' : 'score-neutral';
                     const finalCls = vFinal === 100 || log.isCompleted ? 'score-good' : 'score-neutral';
 
@@ -752,9 +761,9 @@
                         <div>${log.level}</div>
                         <div>${QRatio}</div>
                         <div>
-                            <span class="score-badge ${initCls}">${vInit}점 <small>(${log.initialScore}/${log.totalQuestions})</small></span>
+                            <span class="score-badge ${initCls}">${vInit}점 <small>(${initialScore}/${totalQuestions})</small></span>
                             <span style="color:var(--text-sub); margin:0 5px;">/</span>
-                            <span class="score-badge ${finalCls}">${vFinal}점 <small>(${log.finalScore}/${log.totalQuestions})</small>${log.isCompleted ? ' (통과)' : ''}</span>
+                            <span class="score-badge ${finalCls}">${vFinal}점 <small>(${finalScore}/${totalQuestions})</small>${finalScore === totalQuestions && totalQuestions > 0 ? ' (통과)' : ''}</span>
                         </div>
                         <div class="time-text">${formatTime(log.timeSpentSeconds)}</div>
                     `;
