@@ -5,10 +5,91 @@
     const Keys = SmartStudy.StorageKeys;
     const Events = SmartStudy.StorageEvents;
     const Migrations = SmartStudy.SchemaMigrations;
+    const overflowMemory = new Map();
+
+    function rawValue(key) {
+        return overflowMemory.has(key) ? overflowMemory.get(key) : localStorage.getItem(key);
+    }
+
+    function isQuotaError(error) {
+        return error?.name === 'QuotaExceededError'
+            || error?.name === 'NS_ERROR_DOM_QUOTA_REACHED'
+            || error?.code === 22
+            || /quota/i.test(String(error?.message || ''));
+    }
+
+    function removeMigrationBackups() {
+        const keys = Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)).filter(Boolean);
+        keys.filter(key => key.includes('.backup.')).forEach(key => localStorage.removeItem(key));
+        Array.from(overflowMemory.keys()).filter(key => key.includes('.backup.')).forEach(key => overflowMemory.delete(key));
+    }
+
+    function compactValue(key, value) {
+        if (key.startsWith('SmartVocab_Reports_') && Array.isArray(value?.items)) {
+            const detailStart = Math.max(0, value.items.length - 100);
+            return {
+                ...value,
+                items: value.items.map((item, index) => index >= detailStart ? item : {
+                    ...item,
+                    metadata: item.metadata ? { ...item.metadata, attempts: undefined } : item.metadata,
+                    wrongItems: undefined
+                })
+            };
+        }
+        if (key.startsWith('SmartStudy_WrongAnswers_') && value?.subjects) {
+            return {
+                ...value,
+                subjects: Object.fromEntries(Object.entries(value.subjects).map(([subject, items]) => [subject,
+                    (items || []).slice(-500).map(item => ({ ...item, history: (item.history || []).slice(-10) }))
+                ]))
+            };
+        }
+        return value;
+    }
+
+    function safeSetItem(key, value, { json = false } = {}) {
+        const serialize = candidate => json ? JSON.stringify(candidate) : String(candidate);
+        try {
+            localStorage.setItem(key, serialize(value));
+            overflowMemory.delete(key);
+            return true;
+        } catch (error) {
+            if (!isQuotaError(error)) throw error;
+        }
+
+        // Schema backups are recovery-only and can duplicate several MB after
+        // a migration. Remove them first, then retry the real current data.
+        removeMigrationBackups();
+        try {
+            localStorage.setItem(key, serialize(value));
+            overflowMemory.delete(key);
+            return true;
+        } catch (error) {
+            if (!isQuotaError(error)) throw error;
+        }
+
+        if (json) {
+            try {
+                const compacted = compactValue(key, value);
+                localStorage.setItem(key, serialize(compacted));
+                overflowMemory.delete(key);
+                console.warn(`[LocalRepository] Storage compacted at ${key}`);
+                return true;
+            } catch (error) {
+                if (!isQuotaError(error)) throw error;
+            }
+        }
+
+        // Keep the newest value available for the current session so the quiz
+        // can continue and Firebase synchronization can still read/upload it.
+        overflowMemory.set(key, serialize(value));
+        console.warn(`[LocalRepository] Storage quota still exceeded at ${key}; keeping this session in memory for cloud sync.`);
+        return true;
+    }
 
     function parse(key, fallback) {
         try {
-            const raw = localStorage.getItem(key);
+            const raw = rawValue(key);
             return raw == null ? fallback : JSON.parse(raw);
         } catch (error) {
             console.warn(`[LocalRepository] Invalid JSON at ${key}`, error);
@@ -17,8 +98,8 @@
     }
 
     function write(key, value, event, payload) {
-        localStorage.setItem(key, JSON.stringify(value));
-        if (event) Events.publish(event, payload);
+        const saved = safeSetItem(key, value, { json: true });
+        if (saved && event) Events.publish(event, payload);
         return value;
     }
 
@@ -26,27 +107,31 @@
         const migrated = Migrations.migrate(kind, raw);
         const changed = JSON.stringify(migrated) !== JSON.stringify(raw);
         if (changed && raw != null) {
-            localStorage.setItem(Keys.backup(key), JSON.stringify(raw));
-            localStorage.setItem(key, JSON.stringify(migrated));
+            const rawJson = JSON.stringify(raw);
+            // Only small backups are useful in localStorage. Large backups can
+            // consume the entire quota and prevent the migrated value itself.
+            if (rawJson.length <= 100 * 1024) safeSetItem(Keys.backup(key), rawJson);
+            safeSetItem(key, migrated, { json: true });
         }
         return unwrap(migrated);
     }
 
     const Repository = {
         getDeviceId() {
-            let id = localStorage.getItem(Keys.deviceId);
+            let id = rawValue(Keys.deviceId);
             if (!id) {
                 id = root.crypto?.randomUUID?.() || `device-${Date.now()}-${Math.random().toString(36).slice(2)}`;
-                localStorage.setItem(Keys.deviceId, id);
+                safeSetItem(Keys.deviceId, id);
             }
             return id;
         },
-        getActiveUser: () => localStorage.getItem(Keys.activeUser),
+        getActiveUser: () => rawValue(Keys.activeUser),
         setActiveUser(userId) {
-            localStorage.setItem(Keys.activeUser, userId);
+            safeSetItem(Keys.activeUser, userId);
         },
         clearActiveUser() {
             localStorage.removeItem(Keys.activeUser);
+            overflowMemory.delete(Keys.activeUser);
         },
         getUser(userId) {
             const key = Keys.user(userId);
@@ -93,11 +178,11 @@
             write(Keys.timerScores(userId), envelope, 'timerScores:saved', { userId });
         },
         getNumber(key, fallback = 0) {
-            const value = Number.parseInt(localStorage.getItem(key), 10);
+            const value = Number.parseInt(rawValue(key), 10);
             return Number.isFinite(value) ? value : fallback;
         },
         setNumber(key, value) {
-            localStorage.setItem(key, String(value));
+            safeSetItem(key, value);
         },
         getPreference(key, fallback) {
             return parse(key, fallback);
@@ -106,21 +191,29 @@
             return write(key, value, 'preference:saved', { key });
         },
         rawGet(key) {
-            return localStorage.getItem(key);
+            return rawValue(key);
         },
         rawSet(key, value) {
-            localStorage.setItem(key, value);
+            safeSetItem(key, value);
         },
         keys() {
-            return Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)).filter(Boolean);
+            return Array.from(new Set([
+                ...Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)).filter(Boolean),
+                ...overflowMemory.keys()
+            ]));
         },
         clearAppData() {
             const prefixes = ['SmartStudy_', 'SmartVocab_', 'MathFormula_'];
             Repository.keys().filter(key => prefixes.some(prefix => key.startsWith(prefix)))
-                .forEach(key => localStorage.removeItem(key));
+                .forEach(key => {
+                    localStorage.removeItem(key);
+                    overflowMemory.delete(key);
+                });
         }
     };
 
     SmartStudy.LocalRepository = Repository;
+    // Clean up abandoned migration copies from interrupted older builds.
+    removeMigrationBackups();
     if (typeof module !== 'undefined' && module.exports) module.exports = Repository;
 })(typeof window !== 'undefined' ? window : globalThis);

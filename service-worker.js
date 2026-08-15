@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v63-score-integrity';
+const CACHE_NAME = 'smart-study-v64-storage-quota-recovery';
 
 try {
     importScripts('./firebase-config.js');
