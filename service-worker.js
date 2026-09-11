@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v64-storage-quota-recovery';
+const CACHE_NAME = 'smart-study-v65-english-content-accuracy';
 
 try {
     importScripts('./firebase-config.js');

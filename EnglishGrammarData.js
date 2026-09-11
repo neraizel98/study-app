@@ -16,7 +16,7 @@
                     lesson('be동사의 부정문과 의문문', '부정문은 be동사 뒤에 not, 의문문은 be동사를 문장 앞으로 보냅니다.', ['She is not tired.', 'Is she tired?', '대답: Yes, she is. / No, she is not.'], [['We are not late.', '우리는 늦지 않았다.'], ['Are you ready?', '너는 준비됐니?']], '일반동사처럼 do를 쓰지 않습니다.')
                 ]),
                 unit('e3', '3. 일반동사', '행동을 나타내는 동사의 현재형을 사용합니다.', [
-                    lesson('현재형과 3인칭 단수', '현재의 습관은 동사원형을 쓰되, he/she/it에는 -(e)s를 붙입니다.', ['I/you/we/they play', 'he/she/it plays', '자음+y는 y를 i로 바꾸고 -es: study→studies'], [['I walk to school.', '나는 학교에 걸어간다.'], ['He watches TV.', '그는 TV를 본다.']], '주어가 한 명인지 먼저 확인하세요.'),
+                    lesson('현재형과 3인칭 단수', '현재의 습관은 동사원형을 쓰되, he/she/it에는 -(e)s를 붙입니다.', ['I/you/we/they play', 'he/she/it plays', '자음+y는 y를 i로 바꾸고 -es: study→studies'], [['I walk to school.', '나는 학교에 걸어간다.'], ['He watches TV.', '그는 TV를 본다.']], 'I와 you를 제외한 3인칭 단수 주어인지 확인하세요.'),
                     lesson('do와 does', '일반동사의 부정문·의문문에는 do/does가 필요합니다.', ['I/you/we/they + do', 'he/she/it + does', 'does 뒤의 본동사는 원형'], [['She does not like milk.', '그녀는 우유를 좋아하지 않는다.'], ['Does he run fast?', '그는 빨리 달리니?']], 'does가 이미 s 역할을 하므로 likes가 아니라 like입니다.')
                 ]),
                 unit('e4', '4. 시제의 기초', '현재·과거·미래의 시간을 구별합니다.', [
@@ -39,7 +39,7 @@
             units: [
                 unit('m1', '1. 문장의 형식', '1~5형식의 핵심 성분과 보어를 이해합니다.', [
                     lesson('1·2·3형식', '동사 뒤에 무엇이 필요한지에 따라 문장의 형식이 달라집니다.', ['1형식 S+V', '2형식 S+V+C', '3형식 S+V+O'], [['Birds fly.', '새들이 난다.'], ['She became a doctor.', '그녀는 의사가 되었다.'], ['I like music.', '나는 음악을 좋아한다.']], '보어는 주어나 목적어를 설명합니다.'),
-                    lesson('4·5형식', '4형식은 두 목적어, 5형식은 목적어와 목적격보어를 가집니다.', ['4형식 S+V+IO+DO', '5형식 S+V+O+OC', 'make/keep/call은 5형식에 자주 사용'], [['He gave me a book.', '그는 내게 책을 주었다.'], ['The news made me happy.', '그 소식은 나를 행복하게 했다.']], 'me와 happy가 같은 대상을 가리키면 5형식입니다.')
+                    lesson('4·5형식', '4형식은 두 목적어, 5형식은 목적어와 목적격보어를 가집니다.', ['4형식 S+V+IO+DO', '5형식 S+V+O+OC', 'make/keep/call은 5형식에 자주 사용'], [['He gave me a book.', '그는 내게 책을 주었다.'], ['The news made me happy.', '그 소식은 나를 행복하게 했다.']], 'happy가 목적어 me의 상태를 설명하므로 5형식입니다.')
                 ]),
                 unit('m2', '2. 시제와 진행형', '현재·과거·미래와 진행 중인 일을 구별합니다.', [
                     lesson('진행시제', 'be동사 + -ing는 특정 시점에 진행 중인 동작을 나타냅니다.', ['현재진행: am/are/is + -ing', '과거진행: was/were + -ing', '상태동사는 보통 진행형으로 쓰지 않음'], [['She is studying now.', '그녀는 지금 공부 중이다.'], ['They were sleeping at ten.', '그들은 10시에 자고 있었다.']], '진행형에는 be동사와 -ing가 모두 필요합니다.'),
@@ -51,18 +51,18 @@
                 ]),
                 unit('m4', '4. to부정사와 동명사', '동사를 명사·형용사·부사처럼 활용합니다.', [
                     lesson('to부정사의 세 용법', 'to + 동사원형은 문장에서 명사·형용사·부사 역할을 합니다.', ['명사적: To read is fun.', '형용사적: something to eat', '부사적: came to help'], [['I want to travel.', '나는 여행하고 싶다.'], ['I need a chair to sit on.', '나는 앉을 의자가 필요하다.']], 'to부정사가 무엇을 설명하는지 살펴보세요.'),
-                    lesson('동명사와 목적어', '동사 + -ing가 명사 역할을 하면 동명사입니다.', ['enjoy/finish/mind + -ing', 'want/hope/plan + to부정사', 'stop은 목적어에 따라 뜻이 달라짐'], [['She enjoys cooking.', '그녀는 요리를 즐긴다.'], ['We decided to leave.', '우리는 떠나기로 결정했다.']], '동사마다 뒤에 오는 형태를 묶어 익히세요.')
+                    lesson('동명사와 목적어', '동사 + -ing가 명사 역할을 하면 동명사입니다.', ['enjoy/finish/mind + -ing', 'want/hope/plan + to부정사', 'stop doing: 하던 일을 그만둠 / stop to do: 다른 일을 하려고 멈춤'], [['She enjoys cooking.', '그녀는 요리를 즐긴다.'], ['We decided to leave.', '우리는 떠나기로 결정했다.']], '동사마다 뒤에 오는 형태를 묶어 익히세요.')
                 ]),
                 unit('m5', '5. 명사·대명사와 수식어', '수·양을 나타내고 형용사와 부사를 구별합니다.', [
                     lesson('명사와 대명사의 수', '셀 수 있는 명사와 셀 수 없는 명사에 따라 수량 표현이 달라집니다.', ['many + 셀 수 있는 복수명사', 'much + 셀 수 없는 명사', 'some/any는 둘 다 가능', '재귀대명사: myself, yourself, themselves'], [['There are many books.', '책이 많이 있다.'], ['We need some water.', '우리는 물이 조금 필요하다.']], '명사를 셀 수 있는지 먼저 판단하세요.'),
-                    lesson('형용사와 부사', '형용사는 명사·주어를 설명하고, 부사는 동사·형용사·다른 부사를 꾸밉니다.', ['a careful student', 'The student is careful.', 'The student writes carefully.', '빈도부사는 일반동사 앞, be동사 뒤'], [['He is always kind.', '그는 항상 친절하다.'], ['She speaks English well.', '그녀는 영어를 잘 말한다.']], 'be동사 뒤에는 상태를 나타내는 형용사가 옵니다.')
+                    lesson('형용사와 부사', '형용사는 명사·주어를 설명하고, 부사는 동사·형용사·다른 부사를 꾸밉니다.', ['a careful student', 'The student is careful.', 'The student writes carefully.', '빈도부사는 일반동사 앞, be동사 뒤'], [['He is always kind.', '그는 항상 친절하다.'], ['She speaks English well.', '그녀는 영어를 잘 말한다.']], 'be동사 뒤에는 상태를 나타내는 형용사뿐 아니라 명사나 장소 표현도 올 수 있습니다.')
                 ]),
                 unit('m6', '6. 비교와 문장 연결', '대상을 비교하고 접속사·전치사로 의미를 연결합니다.', [
-                    lesson('비교급과 최상급', '두 대상은 비교급, 셋 이상은 최상급으로 비교합니다.', ['비교급 + than', 'the + 최상급', 'as + 원급 + as'], [['Tom is taller than Jim.', '톰은 짐보다 키가 크다.'], ['This is the most useful tool.', '이것은 가장 유용한 도구다.']], '비교 범위가 셋 이상이면 최상급을 검토하세요.'),
-                    lesson('접속사와 전치사', '접속사는 말·구·절을 연결하고, 전치사는 명사 앞에서 시간·장소 관계를 나타냅니다.', ['and/but/or/because', 'when/before/after/if', '시간: at 7, on Monday, in July', '장소: at the station, on the desk, in the room'], [['I stayed home because it rained.', '비가 와서 집에 있었다.'], ['Call me when you arrive.', '도착하면 전화해 줘.']], '접속사 뒤에는 주어+동사, 전치사 뒤에는 명사(구)가 옵니다.')
+                    lesson('비교급과 최상급', '비교급은 두 대상이나 집단을 비교하고, 최상급은 한 범위에서 정도가 가장 높음을 나타냅니다.', ['비교급 + than', 'the + 최상급', 'as + 원급 + as'], [['Tom is taller than Jim.', '톰은 짐보다 키가 크다.'], ['This is the most useful tool.', '이것은 가장 유용한 도구다.']], '여럿을 비교하더라도 두 집단 사이의 비교에는 비교급을 씁니다.'),
+                    lesson('접속사와 전치사', '접속사는 말·구·절을 연결하고, 전치사는 명사 앞에서 시간·장소 관계를 나타냅니다.', ['and/but/or/because', 'when/before/after/if', '시간: at 7, on Monday, in July', '장소: at the station, on the desk, in the room'], [['I stayed home because it rained.', '비가 와서 집에 있었다.'], ['Call me when you arrive.', '도착하면 전화해 줘.']], 'because 같은 부사절 접속사 뒤에는 주어+동사가 옵니다. and/but/or는 단어·구도 연결하며, 전치사 뒤에는 명사(구)나 동명사가 옵니다.')
                 ]),
                 unit('m7', '7. 의문문과 문장의 종류', '의문사와 문장의 목적에 맞는 어순을 익힙니다.', [
-                    lesson('의문사 의문문', '알고 싶은 정보에 맞는 의문사를 문장 맨 앞에 둡니다.', ['사람 who', '사물·내용 what', '장소 where', '시간 when', '이유 why', '방법 how'], [['Where do you live?', '너는 어디에 사니?'], ['Why is she late?', '그녀는 왜 늦었니?']], '의문사 뒤에도 be동사 의문문 또는 do/does 의문문의 어순을 지킵니다.'),
+                    lesson('의문사 의문문', '알고 싶은 정보에 맞는 의문사를 문장 맨 앞에 둡니다.', ['사람 who', '사물·내용 what', '장소 where', '시간 when', '이유 why', '방법 how'], [['Where do you live?', '너는 어디에 사니?'], ['Why is she late?', '그녀는 왜 늦었니?']], '목적어나 장소 등을 물으면 의문문 어순을 씁니다. who/what이 주어이면 Who lives here?처럼 바로 동사를 씁니다.'),
                     lesson('선택·부가·부정 의문문', '선택지는 or로 연결하고, 부가의문문은 앞 문장의 반대 형태를 덧붙입니다.', ['A or B?', '긍정문, 부정 부가의문?', '부정문, 긍정 부가의문?', '부정의문문은 놀람·확인을 나타낼 수 있음'], [['Do you want tea or juice?', '차와 주스 중 무엇을 원하니?'], ['You are ready, aren’t you?', '너는 준비됐지, 그렇지?']], '앞 문장의 동사와 주어에 맞춰 부가의문문을 만드세요.')
                 ]),
                 unit('m8', '8. There is와 비인칭 주어', '존재·날씨·시간·거리 표현을 자연스럽게 만듭니다.', [
@@ -84,7 +84,7 @@
                     lesson('시제 일치와 예외', '주절이 과거면 종속절도 보통 과거 계열이지만, 보편적 사실은 현재형을 유지합니다.', ['동시: said that he was tired', '이전: said that he had left', '불변의 진리: The earth moves around the sun.'], [['She said that she needed help.', '그녀는 도움이 필요하다고 말했다.'], ['The teacher explained that water boils at 100°C.', '선생님은 물이 100도에서 끓는다고 설명했다.']], '내용이 지금도 참인지 판단하세요.')
                 ]),
                 unit('h3', '3. 가정법', '사실과 반대되는 상황과 아쉬움을 표현합니다.', [
-                    lesson('가정법 과거·과거완료', '현재 반대는 과거형, 과거 반대는 had p.p.를 사용합니다.', ['If + 과거, would + 원형', 'If + had p.p., would have p.p.', 'be동사는 격식체에서 were'], [['If I were you, I would apologize.', '내가 너라면 사과하겠다.'], ['If she had left earlier, she would have caught it.', '더 일찍 떠났다면 그것을 탔을 것이다.']], '형태는 과거지만 의미 시점은 한 단계 뒤로 물러납니다.'),
+                    lesson('가정법 과거·과거완료', '현재 반대는 과거형, 과거 반대는 had p.p.를 사용합니다.', ['If + 과거, would + 원형', 'If + had p.p., would have p.p.', 'be동사는 격식체에서 were'], [['If I were you, I would apologize.', '내가 너라면 사과하겠다.'], ['If she had left earlier, she would have caught it.', '더 일찍 떠났다면 그것을 탔을 것이다.']], '가정법 과거는 주로 현재의 비현실적 상황을, 가정법 과거완료는 과거 사실과 반대되는 상황을 나타냅니다.'),
                     lesson('I wish와 without', 'wish·as if·without도 가정의 의미를 만들 수 있습니다.', ['I wish + 과거: 현재의 아쉬움', 'I wish + had p.p.: 과거의 후회', 'without = if it were not for / if it had not been for'], [['I wish I knew the answer.', '내가 답을 안다면 좋을 텐데.'], ['Without your help, I could not have succeeded.', '네 도움이 없었다면 성공하지 못했을 것이다.']], '실제 사실과 반대되는 시점을 먼저 정하세요.')
                 ]),
                 unit('h4', '4. 준동사 심화', '준동사의 의미상 주어·태·시제를 해석합니다.', [
@@ -119,7 +119,7 @@
         ]),
         unit('m10', '10. 수동태와 관계대명사 기초', '행동을 받는 대상과 명사를 꾸미는 절을 이해합니다.', [
             lesson('수동태 기초', '수동태는 행동을 하는 사람보다 행동을 받는 대상을 강조하며 be동사 + 과거분사로 만듭니다.', ['현재: am/are/is + p.p.', '과거: was/were + p.p.', '행위자는 필요할 때 by + 목적격', '시제는 be동사가 담당함'], [['English is spoken in many countries.', '영어는 많은 나라에서 사용된다.'], ['The window was broken by the ball.', '창문은 그 공에 의해 깨졌다.']], '먼저 능동문의 목적어를 찾으면 수동태의 주어를 쉽게 정할 수 있습니다.'),
-            lesson('who·which·that', '관계대명사는 앞의 명사를 다시 설명하는 절을 연결합니다. 사람은 who, 사물은 which, 둘 다 that을 쓸 수 있습니다.', ['선행사가 사람: who/that', '선행사가 사물: which/that', '관계대명사 뒤에는 불완전한 절이 옴', '주격 관계대명사 뒤에는 동사가 바로 옴'], [['I know the boy who won the race.', '나는 경주에서 우승한 소년을 안다.'], ['This is the book that I wanted.', '이것은 내가 원했던 책이다.']], '관계대명사 앞의 명사와 뒤 절에서 비어 있는 자리가 같은 대상을 가리키는지 확인하세요.')
+            lesson('who·which·that', '관계대명사는 앞의 명사를 다시 설명하는 절을 연결합니다. 사람은 who, 사물은 which, 둘 다 that을 쓸 수 있습니다.', ['선행사가 사람: who/that', '선행사가 사물: which/that', '관계대명사 뒤에는 불완전한 절이 옴', '주격 관계대명사는 관계절의 주어 역할을 함'], [['I know the boy who won the race.', '나는 경주에서 우승한 소년을 안다.'], ['This is the book that I wanted.', '이것은 내가 원했던 책이다.']], '관계대명사 앞의 명사와 뒤 절에서 비어 있는 자리가 같은 대상을 가리키는지 확인하세요.')
         ])
     );
 
@@ -129,27 +129,27 @@
         units: [
             unit('n2u1', '1. 현재완료 심화', '완료·경험·계속·결과와 단순과거를 구별합니다.', [
                 lesson('현재완료 네 가지 용법', 'have/has + p.p.라는 같은 형태라도 문맥과 부사에 따라 경험, 완료, 계속, 결과의 의미가 달라집니다.', ['경험: ever, never, before', '완료: just, already, yet', '계속: for, since', '결과: 현재 상태에 초점'], [['Have you ever seen a whale?', '고래를 본 적이 있니?'], ['I have lost my key.', '나는 열쇠를 잃어버려 지금 가지고 있지 않다.']], '현재완료를 해석할 때 부사와 현재 상황을 함께 보세요.'),
-                lesson('현재완료와 단순과거', '단순과거는 끝난 과거 시점에, 현재완료는 과거와 현재의 연결에 초점을 둡니다.', ['yesterday/ago/last + 단순과거', 'so far/up to now + 현재완료', 'When 의문문은 보통 단순과거', 'have been to: 다녀온 경험'], [['I went to Busan last year.', '나는 작년에 부산에 갔다.'], ['I have been to Busan three times.', '나는 부산에 세 번 가 본 적이 있다.']], '과거 시점이 문장에 명시되어 있으면 현재완료를 쓰지 않습니다.')
+                lesson('현재완료와 단순과거', '단순과거는 끝난 과거 시점에, 현재완료는 과거와 현재의 연결에 초점을 둡니다.', ['yesterday/ago/last + 단순과거', 'so far/up to now + 현재완료', 'When 의문문은 보통 단순과거', 'have been to: 다녀온 경험'], [['I went to Busan last year.', '나는 작년에 부산에 갔다.'], ['I have been to Busan three times.', '나는 부산에 세 번 가 본 적이 있다.']], 'yesterday처럼 끝난 과거 시점을 직접 나타내면 단순과거를 씁니다. since 2023처럼 계속되는 상태의 시작점을 나타내면 현재완료와 함께 쓸 수 있습니다.')
             ]),
             unit('n2u2', '2. 수동태', '여러 시제와 조동사가 있는 수동태를 만듭니다.', [
                 lesson('시제별 수동태', '수동태의 시제는 be동사를 바꾸고 핵심 동사는 과거분사로 유지합니다.', ['현재: is/am/are p.p.', '과거: was/were p.p.', '미래: will be p.p.', '현재완료: have/has been p.p.'], [['The bridge was built in 2010.', '그 다리는 2010년에 건설되었다.'], ['The work will be finished tomorrow.', '그 일은 내일 끝날 것이다.']], 'be동사의 수와 시제를 먼저 정한 뒤 과거분사를 붙이세요.'),
-                lesson('조동사·4형식 수동태', '조동사가 있으면 조동사 + be + p.p.를 사용하며, 4형식 문장은 두 종류의 수동태가 가능합니다.', ['can/must/should + be + p.p.', '간접목적어를 주어로 만들 수 있음', '직접목적어를 주어로 만들 때 전치사 필요', 'by 행위자는 중요할 때만 표시'], [['The rule must be followed.', '그 규칙은 지켜져야 한다.'], ['I was given a useful tip.', '나는 유용한 조언을 받았다.']], '수동태에서도 조동사 뒤에는 언제나 동사원형 be가 옵니다.')
+                lesson('조동사·4형식 수동태', '조동사가 있으면 조동사 + be + p.p.를 사용하며, give처럼 두 목적어를 각각 주어로 하는 수동태가 가능한 동사가 있지만, 모든 4형식 동사가 두 형태를 허용하지는 않습니다.', ['can/must/should + be + p.p.', '간접목적어를 주어로 만들 수 있음', '직접목적어를 주어로 만들 때 전치사 필요', 'by 행위자는 중요할 때만 표시'], [['The rule must be followed.', '그 규칙은 지켜져야 한다.'], ['I was given a useful tip.', '나는 유용한 조언을 받았다.']], '수동태에서도 조동사 뒤에는 언제나 동사원형 be가 옵니다.')
             ]),
             unit('n2u3', '3. to부정사와 동명사 심화', '준동사의 의미상 역할과 목적어 선택을 이해합니다.', [
                 lesson('의문사 + to부정사', '의문사 + to부정사는 무엇을·어떻게·어디서 해야 하는지를 간결하게 표현합니다.', ['what to do', 'how to use it', 'where to go', 'when to start'], [['I do not know what to say.', '나는 무슨 말을 해야 할지 모르겠다.'], ['Show me how to open it.', '그것을 여는 방법을 보여 줘.']], '의문사 뒤의 주어와 조동사가 생략된 간결한 구조로 이해하세요.'),
-                lesson('to부정사와 동명사의 의미 차이', 'remember, forget, stop, try는 목적어 형태에 따라 이미 한 일과 앞으로 할 일이 달라집니다.', ['remember to do: 할 일을 기억', 'remember doing: 한 일을 기억', 'stop to do: ~하려고 멈춤', 'stop doing: 하던 일을 그만둠'], [['Remember to lock the door.', '문 잠그는 것을 기억해.'], ['He stopped talking.', '그는 말하는 것을 멈췄다.']], '형태만 외우지 말고 행동의 시간 순서를 그려 보세요.')
+                lesson('to부정사와 동명사의 의미 차이', 'remember/forget은 to do와 doing에 따라 할 일과 한 일을 구별합니다. stop doing은 하던 일을 그만두는 뜻이고, stop to do의 to부정사는 멈춘 목적을 나타냅니다. try to do는 노력, try doing은 시험 삼아 해 봄을 나타냅니다.', ['remember to do: 할 일을 기억', 'remember doing: 한 일을 기억', 'stop to do: ~하려고 멈춤', 'stop doing: 하던 일을 그만둠'], [['Remember to lock the door.', '문 잠그는 것을 기억해.'], ['He stopped talking.', '그는 말하는 것을 멈췄다.']], 'stop to do의 to부정사는 목적어가 아니라 목적을 나타내는 부사적 용법입니다.')
             ]),
             unit('n2u4', '4. 분사와 5형식', '현재분사·과거분사와 목적격보어의 관계를 파악합니다.', [
                 lesson('현재분사와 과거분사', '-ing는 능동·진행, p.p.는 수동·완료의 관계를 나타냅니다.', ['an exciting game: 흥미를 주는', 'excited students: 흥미를 느낀', 'a sleeping baby: 자고 있는', 'a broken chair: 부서진'], [['The movie was surprising.', '그 영화는 놀라움을 주었다.'], ['We were surprised at the ending.', '우리는 결말에 놀랐다.']], '감정을 일으키는 대상은 -ing, 감정을 느끼는 사람은 p.p.가 기본입니다.'),
                 lesson('목적격보어의 여러 형태', '5형식에서 목적어 뒤에는 명사, 형용사, 원형부정사, to부정사, 분사가 올 수 있습니다.', ['make/let/have + O + 동사원형', 'ask/tell/want + O + to do', 'keep/find + O + 형용사', 'see/hear + O + 동사원형/-ing'], [['My parents want me to be honest.', '부모님은 내가 정직하기를 원하신다.'], ['I saw him crossing the street.', '나는 그가 길을 건너는 것을 보았다.']], '목적어와 목적격보어 사이에 주어-서술어 관계가 있는지 확인하세요.')
             ]),
             unit('n2u5', '5. 관계대명사', '주격·목적격·소유격 관계대명사를 구별합니다.', [
-                lesson('주격과 목적격', '관계절에서 빠진 성분이 주어이면 주격, 목적어이면 목적격 관계대명사를 사용합니다.', ['사람 주격: who/that', '사물 주격: which/that', '목적격: whom/who/which/that', '목적격 관계대명사는 생략 가능'], [['The girl who is singing is my sister.', '노래하고 있는 소녀는 내 동생이다.'], ['The bag that I bought is light.', '내가 산 가방은 가볍다.']], '관계대명사 뒤에 주어가 이미 있으면 목적격일 가능성이 큽니다.'),
-                lesson('소유격과 전치사', 'whose는 소유 관계를, 전치사 + whom/which는 격식 있는 목적격 관계를 나타냅니다.', ['whose + 명사', '전치사 + whom/which', '전치사 바로 뒤에는 that 불가', '관계절의 동사는 선행사 수에 일치'], [['I met a writer whose books are famous.', '나는 책들이 유명한 작가를 만났다.'], ['This is the house in which he lived.', '이것은 그가 살았던 집이다.']], 'whose 뒤에는 소유되는 명사가 바로 온다는 점을 기억하세요.')
+                lesson('주격과 목적격', '관계절에서 빠진 성분이 주어이면 주격, 목적어이면 목적격 관계대명사를 사용합니다.', ['사람 주격: who/that', '사물 주격: which/that', '목적격: whom/who/which/that', '제한적 용법에서 전치사가 앞에 없는 목적격 관계대명사는 생략 가능'], [['The girl who is singing is my sister.', '노래하고 있는 소녀는 내 동생이다.'], ['The bag that I bought is light.', '내가 산 가방은 가볍다.']], '관계대명사 뒤에 주어가 이미 있으면 목적격일 가능성이 큽니다.'),
+                lesson('소유격과 전치사', 'whose는 소유 관계를, 전치사 + whom/which는 격식 있는 목적격 관계를 나타냅니다.', ['whose + 명사', '전치사 + whom/which', '전치사 바로 뒤에는 that 불가', '주격 관계대명사가 주어일 때 관계절 동사는 선행사의 수에 일치'], [['I met a writer whose books are famous.', '나는 책들이 유명한 작가를 만났다.'], ['This is the house in which he lived.', '이것은 그가 살았던 집이다.']], 'whose 뒤에는 소유되는 명사가 바로 온다는 점을 기억하세요.')
             ]),
             unit('n2u6', '6. 접속사와 간접의문문', '명사절·부사절과 간접의문문의 어순을 익힙니다.', [
                 lesson('명사절과 부사절 접속사', 'that·whether·if는 명사절을, when·because·although·if는 상황 관계를 나타내는 부사절을 이끕니다.', ['that: 사실·생각의 내용', 'whether/if: ~인지 아닌지', 'although: 비록 ~이지만', '조건절에서는 미래 대신 현재형'], [['I think that he is right.', '나는 그가 옳다고 생각한다.'], ['If it rains, we will stay home.', '비가 오면 우리는 집에 있을 것이다.']], '접속사 뒤에는 주어와 동사가 갖춰진 완전한 절이 옵니다.'),
-                lesson('간접의문문', '질문이 문장 속에 들어가면 의문사 + 주어 + 동사의 평서문 어순을 사용합니다.', ['Do you know + 의문사절?', '의문사 + 주어 + 동사', '의문사가 주어이면 그대로 동사 연결', 'yes/no 의문문은 if/whether 사용'], [['Do you know where she lives?', '그녀가 어디 사는지 아니?'], ['I wonder if he is busy.', '나는 그가 바쁜지 궁금하다.']], '간접의문문에서는 do/does/did를 다시 쓰지 않습니다.')
+                lesson('간접의문문', '질문이 문장 속에 들어가면 의문사 + 주어 + 동사의 평서문 어순을 사용합니다.', ['Do you know + 의문사절?', '의문사 + 주어 + 동사', '의문사가 주어이면 그대로 동사 연결', 'yes/no 의문문은 if/whether 사용'], [['Do you know where she lives?', '그녀가 어디 사는지 아니?'], ['I wonder if he is busy.', '나는 그가 바쁜지 궁금하다.']], '의문문을 만들기 위한 do/does/did 도치는 쓰지 않습니다. 일반동사 do나 부정문의 do not 등은 쓸 수 있습니다.')
             ])
         ]
     };
@@ -167,7 +167,7 @@
                 lesson('가정법 과거완료와 I wish', '과거 사실의 반대는 if + had p.p., would have p.p.로 나타내며 wish도 같은 시제 후퇴 원리를 사용합니다.', ['If + had p.p.', 'would/could have + p.p.', 'I wish + 과거: 현재의 소망', 'I wish + had p.p.: 과거의 후회'], [['If I had left earlier, I would have caught the bus.', '더 일찍 떠났다면 버스를 탔을 텐데.'], ['I wish I had studied harder.', '더 열심히 공부했더라면 좋았을 텐데.']], '실제 사실을 먼저 적고 그 반대 상황으로 바꾸면 형태를 고르기 쉽습니다.')
             ]),
             unit('n3u3', '3. 관계사 심화', '관계부사·계속적 용법·복합관계사를 이해합니다.', [
-                lesson('관계부사', 'where, when, why, how는 선행사와 완전한 절을 연결하며 전치사 + which로 바꿀 수 있습니다.', ['place + where', 'time + when', 'reason + why', 'the way + (how 생략 또는 the way 생략)'], [['This is the place where we first met.', '이곳은 우리가 처음 만난 장소이다.'], ['I remember the day when it happened.', '나는 그 일이 일어난 날을 기억한다.']], '관계사 뒤 절이 완전하면 관계부사, 불완전하면 관계대명사를 검토하세요.'),
+                lesson('관계부사', 'where/when/why는 장소·시간·이유를 나타내며 문맥에 맞는 전치사 + which로 바꿀 수 있습니다. 방법을 나타내는 how는 the way와 함께 쓰지 않습니다.', ['place + where', 'time + when', 'reason + why', 'the way + (how 생략 또는 the way 생략)'], [['This is the place where we first met.', '이곳은 우리가 처음 만난 장소이다.'], ['I remember the day when it happened.', '나는 그 일이 일어난 날을 기억한다.']], '관계사 뒤 절이 완전하면 관계부사, 불완전하면 관계대명사를 검토하세요.'),
                 lesson('계속적 용법과 복합관계사', '쉼표 뒤의 관계사는 앞 내용을 추가 설명하며, whoever·whatever 등은 선행사를 포함합니다.', ['계속적 용법에는 that 사용 불가', 'which가 앞 문장 전체를 받을 수 있음', 'whoever = anyone who', 'whatever = anything that'], [['My brother, who lives in Seoul, is a chef.', '서울에 사는 내 형은 요리사이다.'], ['Take whatever you need.', '필요한 것은 무엇이든 가져가라.']], '쉼표가 있으면 정보를 제한하는 것이 아니라 덧붙이는 설명입니다.')
             ]),
             unit('n3u4', '4. 분사구문', '부사절을 분사구문으로 줄이고 의미 관계를 판단합니다.', [
@@ -175,12 +175,12 @@
                 lesson('수동·완료 분사구문', '수동 관계는 p.p., 주절보다 앞선 일은 having p.p.를 사용합니다.', ['수동: (being) p.p.', '완료: having p.p.', '부정: not + 분사', '의미가 모호하면 접속사 유지 가능'], [['Surprised by the news, he said nothing.', '소식에 놀라 그는 아무 말도 하지 않았다.'], ['Having finished the work, she went home.', '일을 끝낸 뒤 그녀는 집에 갔다.']], '분사와 숨은 주어의 능동·수동 관계를 먼저 판단하세요.')
             ]),
             unit('n3u5', '5. 특수구문', '강조·도치·부정·생략 구조를 해석합니다.', [
-                lesson('강조와 도치', 'It is/was ... that 강조구문은 특정 성분을 강조하고, 부정어가 문두에 오면 조동사와 주어가 도치됩니다.', ['It is/was + 강조어 + that', 'Never/Rarely + 조동사 + 주어', '장소 부사구 도치', '강조 대상을 빼면 완전한 문장이 남음'], [['It was Mina that solved the problem.', '그 문제를 푼 사람은 바로 미나였다.'], ['Never have I seen such a view.', '나는 그런 경치를 본 적이 전혀 없다.']], '강조구문인지 확인하려면 It is/was와 that을 빼고 문장이 성립하는지 보세요.'),
+                lesson('강조와 도치', 'It is/was ... that 강조구문은 특정 성분을 강조하고, 부정어가 문두에 오면 조동사와 주어가 도치됩니다.', ['It is/was + 강조어 + that', 'Never/Rarely + 조동사 + 주어', '장소 부사구 도치', 'It is/was와 that을 빼고 강조한 성분을 원래 자리에 두면 기본 문장이 됨'], [['It was Mina that solved the problem.', '그 문제를 푼 사람은 바로 미나였다.'], ['Never have I seen such a view.', '나는 그런 경치를 본 적이 전혀 없다.']], '강조구문인지 확인하려면 It is/was와 that을 빼고 문장이 성립하는지 보세요.'),
                 lesson('so·neither·대동사', '앞 문장의 반복을 피하기 위해 so/neither + 조동사 + 주어 또는 do so를 사용합니다.', ['So + 조동사 + 주어: ~도 그렇다', 'Neither + 조동사 + 주어: ~도 아니다', 'do so: 앞의 동작을 대신함', '조동사는 앞 문장의 시제에 맞춤'], [['I like science, and so does he.', '나는 과학을 좋아하고 그도 그렇다.'], ['She cannot swim, and neither can I.', '그녀는 수영을 못하고 나도 못한다.']], '앞 문장이 긍정인지 부정인지 먼저 확인하세요.')
             ]),
             unit('n3u6', '6. 화법과 복합문', '직접화법을 간접화법으로 바꾸고 긴 문장의 절 구조를 분석합니다.', [
-                lesson('평서문·의문문의 화법 전환', '전달 시점에 따라 시제·인칭·시간 표현을 바꾸며, 의문문은 ask + if/whether 또는 의문사절을 사용합니다.', ['say to → tell + 목적어', 'yes/no 질문: ask if/whether', '의문사 질문: ask + 의문사절', '간접화법은 평서문 어순'], [['She said, “I am busy.” → She said that she was busy.', '그녀는 바쁘다고 말했다.'], ['He asked me where I lived.', '그는 내가 어디 사는지 물었다.']], '따옴표를 없앤 뒤 말한 사람 기준으로 인칭과 시간을 바꾸세요.'),
-                lesson('명령문 화법과 복합문 분석', '명령문은 tell/ask + 목적어 + to부정사로 바꾸며, 긴 문장은 접속사와 동사를 기준으로 절을 나눕니다.', ['명령: tell + O + to do', '부정 명령: tell + O + not to do', '요청: ask + O + to do', '동사 수를 세어 절의 수 파악'], [['The teacher told us to be quiet.', '선생님은 우리에게 조용히 하라고 말했다.'], ['Mom asked me not to be late.', '엄마는 내게 늦지 말라고 부탁했다.']], '긴 문장은 먼저 동사에 표시하고 각 절의 주어를 찾으세요.')
+                lesson('평서문·의문문의 화법 전환', '전달 시점에 따라 시제·인칭·시간 표현을 바꾸며, 의문문은 ask + if/whether 또는 의문사절을 사용합니다.', ['say to → tell + 목적어', 'yes/no 질문: ask if/whether', '의문사 질문: ask + 의문사절', '간접화법은 평서문 어순'], [['She said that she was busy.', '그녀는 바쁘다고 말했다.'], ['He asked me where I lived.', '그는 내가 어디 사는지 물었다.']], '따옴표를 없앤 뒤 말한 사람 기준으로 인칭과 시간을 바꾸세요.'),
+                lesson('명령문 화법과 복합문 분석', '명령문은 tell/ask + 목적어 + to부정사로 바꾸며, 긴 문장은 접속사와 동사를 기준으로 절을 나눕니다.', ['명령: tell + O + to do', '부정 명령: tell + O + not to do', '요청: ask + O + to do', '각 절의 주어와 서술동사를 찾아 구조 파악'], [['The teacher told us to be quiet.', '선생님은 우리에게 조용히 하라고 말했다.'], ['Mom asked me not to be late.', '엄마는 내게 늦지 말라고 부탁했다.']], '긴 문장은 먼저 동사에 표시하고 각 절의 주어를 찾으세요.')
             ])
         ]
     };

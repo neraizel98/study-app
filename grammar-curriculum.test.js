@@ -42,5 +42,5 @@ for (const stage of Object.values(data)) {
         }
     }
 }
-assert.deepEqual([...testedTypes].sort(), ['arrange', 'choice', 'correction', 'short']);
+assert.deepEqual([...testedTypes].sort(), ['choice', 'short']);
 console.log('Grammar curriculum and quiz tests passed.');

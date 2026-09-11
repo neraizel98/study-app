@@ -4,6 +4,8 @@ const POS_LABEL = {
     'v.i.': { label: 'v.i. 자동사', cls: 'pos-vi' },
     'adj.': { label: 'adj. 형용사', cls: 'pos-adj' },
     'adv.': { label: 'adv. 부사', cls: 'pos-adv' },
+    'prep.': { label: 'prep. 전치사', cls: 'pos-adv' },
+    'conj.': { label: 'conj. 접속사', cls: 'pos-adv' },
 };
 const TENSE_NAMES = ['현재형', '과거형', '미래형'];
 
@@ -184,11 +186,25 @@ function getWordChoices(cur) {
 // BLANK SENTENCE UTILS
 // ============================================================
 // 문장에서 빈칸을 뚫고, 실제로 뚫린 형태(단수/복수/과거 등)를 함께 리턴하는 함수
-function blankVerbSentence(sentence, forms, tenseIdx) {
+function thirdPersonVerb(base) {
+    const [verb, ...rest] = base.split(' ');
+    const inflected = ({ have: 'has', be: 'is' })[verb] ||
+        (/[^aeiou]y$/.test(verb) ? verb.slice(0, -1) + 'ies' : /(?:s|sh|ch|x|z|o)$/.test(verb) ? verb + 'es' : verb + 's');
+    return [inflected, ...rest].join(' ');
+}
+
+function blankVerbSentence(sentence, forms, tenseIdx = null) {
+    if (!sentence || !forms || forms.length !== 3) return null;
     let candidates = [];
-    if (tenseIdx === 0) {
+    if (tenseIdx === null) {
+        const base = forms[0];
+        const ing = /ie$/.test(base) ? base.slice(0, -2) + 'ying'
+            : /[^e]e$/.test(base) ? base.slice(0, -1) + 'ing' : base + 'ing';
+        candidates = [...forms, thirdPersonVerb(base), ing];
+        candidates.sort((a, b) => b.length - a.length);
+    } else if (tenseIdx === 0) {
         // 현재형일 때 가능한 모든 형태 (가장 긴 것부터 검사하여 carries, catches 등을 먼저 매칭)
-        candidates = [forms[0] + 'es', forms[0] + 's', forms[0].replace(/y$/, 'ies'), forms[0]];
+        candidates = [thirdPersonVerb(forms[0]), forms[0]];
         candidates.sort((a, b) => b.length - a.length);
     } else if (tenseIdx === 1) {
         candidates = [forms[1]];
@@ -202,17 +218,12 @@ function blankVerbSentence(sentence, forms, tenseIdx) {
         if (re.test(sentence)) {
             return {
                 html: sentence.replace(re, '<span class="blank-word">( ___ )</span>'),
-                matchedWord: c // 실제 뚫린 문장 속 형태 저장
+                matchedWord: sentence.match(re)[0] // 실제 문장 속 형태
             };
         }
     }
 
-    // 예외 상황 대비 기본값
-    const fallbackWord = tenseIdx === 0 ? forms[0] : tenseIdx === 1 ? forms[1] : 'will ' + forms[0];
-    return {
-        html: sentence + ' <span class="blank-word">( ___ )</span>',
-        matchedWord: fallbackWord
-    };
+    return null;
 }
 
 function blankNonVerbSentence(sentence, word) {
@@ -225,10 +236,7 @@ function blankNonVerbSentence(sentence, word) {
             matchedWord: match[0]
         };
     }
-    return {
-        html: sentence + ' <span class="blank-word">( ___ )</span>',
-        matchedWord: word
-    };
+    return null;
 }
 
 // ============================================================
@@ -354,6 +362,13 @@ function showQuestion() {
         const challengeBadge = $('challengeBadge') || createChallengeBadge();
         challengeBadge.style.display = cur.isChallenge ? 'flex' : 'none';
 
+        if (quizPhase === 8 && !(isVerb(cur)
+            ? blankVerbSentence(cur.ex || '', cur.forms)
+            : blankNonVerbSentence(cur.ex || '', cur.word))) quizPhase = 1;
+        if (quizPhase === 2 && isVerb(cur) && (!cur.tenseExs || !cur.forms ||
+            cur.tenseExs.length !== 3 || cur.tenseExs.some((sentence, index) => !blankVerbSentence(sentence, cur.forms, index)))) quizPhase = 1;
+        if (quizPhase === 2 && !isVerb(cur) && !blankNonVerbSentence(cur.ex || '', cur.word)) quizPhase = 1;
+
         if (quizPhase === 1) {
             // 1. 뜻 맞추기 형태
             phaseBadgeEl.textContent = '뜻 맞추기'; phaseBadgeEl.className = 'phase-badge';
@@ -363,7 +378,11 @@ function showQuestion() {
             
             quizWordEl.textContent = cur.word;
             const dataList = (window.vocabData || {})[currentLevel] || [];
-            const wrong = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).slice(0, 3);
+            const seenMeanings = new Set([cur.meaning]);
+            const wrong = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).filter(w => {
+                if (seenMeanings.has(w.meaning)) return false;
+                seenMeanings.add(w.meaning); return true;
+            }).slice(0, 3);
             const choices = Utils.shuffle([cur, ...wrong]);
 
             questionResults[quizIndex] = {
@@ -403,8 +422,8 @@ function showQuestion() {
                 const koHint = currentLevel === 'level1' ? `<div class="quiz-ko-hint">뜻: ${cur.meaning}</div>` : '';
                 phase2ContextEl.innerHTML = `${koHint}<span class="quiz-def-hint">${cur.def}</span>${blankRes.html}`;
                 const wordChoices = getWordChoices(cur);
-                choices = wordChoices.map(w => w.word);
-                correctAnswer = cur.word;
+                choices = wordChoices.map(w => w.word === cur.word ? blankRes.matchedWord : w.word);
+                correctAnswer = blankRes.matchedWord;
             }
 
             questionResults[quizIndex] = {
@@ -491,14 +510,14 @@ function showQuestion() {
             quizSubmitArea.style.display = 'block';
 
             const blankRes = isVerb(cur)
-                ? blankVerbSentence(cur.ex || (cur.tenseExs && cur.tenseExs[0]) || '', cur.forms, 0)
+                ? blankVerbSentence(cur.ex || '', cur.forms)
                 : blankNonVerbSentence(cur.ex || '', cur.word);
             
             subjectiveContextEl.innerHTML = blankRes.html;
             subjectiveInputEl.value = '';
             subjectiveInputEl.focus();
 
-            quizQuestionLabel.textContent = `뜻: ${cur.meaning}`;
+            quizQuestionLabel.textContent = `‘${cur.word}’의 알맞은 형태를 쓰세요. 뜻: ${cur.meaning}`;
             questionResults[quizIndex] = { 
                 word: cur.word, meaning: cur.meaning, qType: 8,
                 correctValue: blankRes.matchedWord,
@@ -529,14 +548,16 @@ function showQuestion() {
             phase1Area.style.display = '';
             quizChoicesParent.style.display = 'grid';
             quizWordEl.textContent = cur.word;
-            quizQuestionLabel.textContent = '이 단어의 품사는 무엇인가요?';
+            quizQuestionLabel.textContent = `다음 예문에서 ‘${cur.word}’의 품사는 무엇인가요? ${cur.ex}`;
 
             const posOptions = [
                 { id: 'n.', label: '명사' },
                 { id: 'v.t.', label: '타동사' },
                 { id: 'v.i.', label: '자동사' },
                 { id: 'adj.', label: '형용사' },
-                { id: 'adv.', label: '부사' }
+                { id: 'adv.', label: '부사' },
+                { id: 'prep.', label: '전치사' },
+                { id: 'conj.', label: '접속사' }
             ];
             
             const correctPos = posOptions.find(p => p.id === cur.pos) || { id: cur.pos, label: cur.pos };
@@ -667,6 +688,19 @@ function handleUnscrambleClick(chip) {
     }
 }
 
+function matchesVerbForm(input, expected, word, formIndex) {
+    const alternatives = {
+        learned: ['learnt'], burned: ['burnt'], canceled: ['cancelled'],
+        traveled: ['travelled'], practiced: ['practised'], analyzed: ['analysed'],
+        realized: ['realised'], recognized: ['recognised']
+    };
+    const accepted = [expected.toLowerCase(), ...(alternatives[expected.toLowerCase()] || [])];
+    if (word === 'get' && formIndex === 2) accepted.push('got');
+    if (word === 'show' && formIndex === 2) accepted.push('showed');
+    if (word === 'shine' && expected === 'shone') accepted.push('shined');
+    return accepted.includes(input.trim().toLowerCase());
+}
+
 function handleQuizSubmit() {
     const res = questionResults[quizIndex];
     let ok = false;
@@ -684,18 +718,13 @@ function handleQuizSubmit() {
         const pVal = vQuizPastEl.value.trim().toLowerCase();
         const ppVal = vQuizPPEl.value.trim().toLowerCase();
         const [correctP, correctPP] = res.correctValue.split('|');
-        ok = (pVal === correctP.toLowerCase() && ppVal === correctPP.toLowerCase());
+        ok = matchesVerbForm(pVal, correctP, res.word, 1) && matchesVerbForm(ppVal, correctPP, res.word, 2);
         userVal = `${pVal} - ${ppVal}`;
     } else if (res.qType === 8) {
         // 주관식 빈칸 체크
         userVal = subjectiveInputEl.value.trim().toLowerCase();
         const correct = res.correctValue.toLowerCase();
-        const base = (res.word || '').toLowerCase();
-        const wData = (vocabData[currentLevel] || []).find(w => w.word === res.word);
-        const altWords = (wData && wData.altWords) ? wData.altWords.map(w => w.toLowerCase()) : [];
-
-        // 문장 내 실제 형태, 기본형, 또는 등록된 유사어와 일치하면 정답 인정
-        ok = (userVal === correct || (base && userVal === base) || altWords.includes(userVal));
+        ok = matchesVerbForm(userVal, correct, res.word, null);
     }
 
     finishQuestion(ok, userVal);
