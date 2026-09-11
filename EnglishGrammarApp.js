@@ -84,7 +84,7 @@
     function getReviewQuestions(sourceItems = null) {
         if (typeof WrongNote === 'undefined') return [];
         const wrongItems = (sourceItems || WrongNote.getAll().grammar || []).filter(item =>
-            !item.isMastered && item.stageId === stageId && item.unitId === unit().id
+            (!item.isMastered || LearningPolicy.isDue(item)) && item.stageId === stageId && item.unitId === unit().id
         );
         // Rebuild from current content so corrected/retired questions cannot re-enter a quiz.
         return wrongItems.map(item => EnglishGrammarQuiz.restoreReview(unit().id, item)).filter(Boolean);
@@ -102,11 +102,11 @@
             questions = getReviewQuestions();
         } else {
             const band = typeof AdaptiveQuiz !== 'undefined'
-                ? AdaptiveQuiz.getBand('grammar', context(), aliases())
+                ? AdaptiveQuiz.getBand('grammar', `grammar:${stageId}:${unit().id}`, aliases())
                 : { name: 'standard', score: null, wrongRatio: 0.45 };
             const activeWrong = typeof WrongNote !== 'undefined'
                 ? (WrongNote.getAll().grammar || []).filter(item =>
-                    !item.isMastered && item.stageId === stageId && item.unitId === unit().id
+                    (!item.isMastered || LearningPolicy.isDue(item)) && item.stageId === stageId && item.unitId === unit().id
                 )
                 : [];
             const wrongTarget = Math.min(activeWrong.length, Math.max(1, Math.round(10 * band.wrongRatio)));
@@ -114,13 +114,8 @@
                 ? AdaptiveQuiz.weightedWrongItems(activeWrong, wrongTarget)
                 : activeWrong.slice(0, wrongTarget);
             const priorityQuestions = getReviewQuestions(selectedWrong);
-            const currentQuestions = EnglishGrammarQuiz.generate(unit().id, 10);
+            const currentQuestions = EnglishGrammarQuiz.generate(unit().id, 10, band.name);
             let challengeQuestions = [];
-            if (band.name === 'challenge') {
-                const unitIndex = stage().units.findIndex(item => item.id === unit().id);
-                const nextUnit = stage().units[unitIndex + 1];
-                if (nextUnit) challengeQuestions = EnglishGrammarQuiz.generate(nextUnit.id, 2);
-            }
             const seen = new Set(priorityQuestions.map(item => item.question));
             const fresh = [...challengeQuestions, ...currentQuestions].filter(item => {
                 if (seen.has(item.question)) return false;

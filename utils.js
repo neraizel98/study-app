@@ -548,7 +548,7 @@ const Utils = {
                 else { knownA = vrW; knownB = vrH; hideVal = vrL; }
                 q = hideWhich === '높이'
                     ? `가로 ${knownA}cm, 세로 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 높이는 몇 cm입니까?`
-                    : `세로 ${knownA}cm, 높이 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 ${hideWhich}는 몇 cm입니까?`;
+                    : `${hideWhich === '가로' ? '세로' : '가로'} ${knownA}cm, 높이 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 ${hideWhich}는 몇 cm입니까?`;
                 ans = `$${hideVal}$cm`;
                 exp = `부피 = 가로 × 세로 × 높이 이므로 ${hideWhich} $= ${vrVol} \\div (${knownA} \\times ${knownB}) = ${hideVal}$cm 입니다.`;
                 wrong = [`$${hideVal + 1}$cm`, `$${hideVal * 2}$cm`, `$${hideVal - 1}$cm`];

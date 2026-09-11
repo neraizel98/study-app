@@ -59,21 +59,23 @@
     }
 
     function activeWrongItems() {
-        return typeof WrongNote === 'undefined' ? [] : (WrongNote.getAll().reading || []).filter(item => !item.isMastered);
+        return typeof WrongNote === 'undefined' ? [] : (WrongNote.getAll().reading || []).filter(item => (!item.isMastered || LearningPolicy.isDue(item)));
     }
 
     function selectPassage(band) {
-        const wrong = activeWrongItems();
+        const wrong = activeWrongItems().filter(item => reviewMode || LearningPolicy.isDue(item));
         if (reviewMode && wrong.length) {
             const ids = [...new Set(wrong.map(item => item.passageId))];
             return ReadingPassages.find(item => item.id === ids[Math.floor(Math.random() * ids.length)]);
         }
         const wrongPassageIds = new Set(wrong.map(item => item.passageId));
-        const eligible = ReadingPassages.filter(item => {
+        const unitPassages = ReadingPassages.filter(item => item.unitId === unit().id);
+        const matched = unitPassages.filter(item => {
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
             if (band.name === 'challenge') return item.difficulty !== 'foundation';
             return true;
         });
+        const eligible = matched.length ? matched : unitPassages;
         const unseen = eligible.filter(item => !recentPassageIds().includes(item.id));
         let pool = unseen.length ? unseen : eligible;
         const priority = pool.filter(item => wrongPassageIds.has(item.id));
@@ -103,7 +105,7 @@
             renderStudy();
             return;
         }
-        const band = typeof AdaptiveQuiz !== 'undefined' ? AdaptiveQuiz.getBand('reading', context(), aliases()) : { name: 'standard', wrongRatio: .45 };
+        const band = typeof AdaptiveQuiz !== 'undefined' ? AdaptiveQuiz.getBand('reading', `reading:${levelId}:${unit().id}`, aliases()) : { name: 'standard', wrongRatio: .45 };
         passage = selectPassage(band);
         const vocabularyQuestions = typeof ReadingVocabulary !== 'undefined'
             ? ReadingVocabulary.getQuestions(passage)
@@ -113,7 +115,7 @@
             alert('검증된 지문을 불러오지 못했습니다.');
             return;
         }
-        const wrongIds = new Set(activeWrongItems().filter(item => item.passageId === passage.id).map(item => item.questionId));
+        const wrongIds = new Set(activeWrongItems().filter(item => item.passageId === passage.id && (reviewMode || LearningPolicy.isDue(item))).map(item => item.questionId));
         const base = questionPool.filter(item => {
             if (reviewMode) return wrongIds.has(item.id);
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
@@ -124,7 +126,7 @@
         const addUnique = item => {
             if (item && !selected.some(existing => existing.id === item.id)) selected.push(item);
         };
-        priority.slice(0, 3).forEach(addUnique);
+        priority.slice(0, reviewMode ? 5 : 1).forEach(addUnique);
         if (!reviewMode) {
             const vocabulary = Utils.shuffle(base.filter(item => item.vocabularyType));
             vocabulary.slice(0, 2).forEach(addUnique);

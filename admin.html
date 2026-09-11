@@ -155,8 +155,8 @@
         </div>
     </div>
 
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260804-active-time"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260911-adaptive"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
     <script src="notification-client.js?v=20260810"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
@@ -637,7 +637,29 @@
         }).filter(Boolean);
 
         if (!cards.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
-        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}${buildGrammarAnalysis(reports)}${buildReadingAnalysis(reports)}`;
+        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}${buildAdaptiveAnalysis(reports)}${buildGrammarAnalysis(reports)}${buildReadingAnalysis(reports)}`;
+    }
+
+    function buildAdaptiveAnalysis(reports) {
+        const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+        const groups = new Map();
+        reports.filter(r => r.metadata?.contentVersion === LearningPolicy.version).forEach(r => {
+            groups.set(`${r.subject}:${r.metadata.context}`, r);
+        });
+        const rows = [...groups.values()].map(r => {
+            const band = LearningPolicy.evaluate(reports, r.subject, r.metadata.context);
+            const wrong = (window._adminData?.wrongAnswers?.[r.subject] || []).filter(item =>
+                LearningPolicy.context(r.subject, {...item, unitId:item.unitId || item.level}) === r.metadata.context);
+            const due = wrong.filter(item => LearningPolicy.isDue(item)).length;
+            const stable = wrong.filter(item => item.reviewVersion === LearningPolicy.version && item.isMastered).length;
+            return `<div style="padding:12px 0;border-bottom:1px solid var(--card-border)">
+                <b>${escape(SUBJ_NAMES[r.subject])} · ${escape(r.metadata.unitTitle || r.metadata.unitId)}</b><br>
+                ${{foundation:'기초 다지기',standard:'실력 쌓기',challenge:'응용 도전'}[band.name]} · 유효 최초 풀이 ${band.samples}문항 · ${band.score ?? '—'}%<br>
+                복습 시기 도래 ${due}개 · 날짜를 두고 기억 확인 ${stable}개<br><small>${escape(band.reason)}</small></div>`;
+        });
+        return `<section style="padding:18px"><div class="chart-title">단원별 난이도와 기억 확인</div>
+            <p>재시험·힌트 사용은 승급 근거에서 제외합니다. 이전 버전 기록은 기존 통계에 보존됩니다.</p>
+            ${rows.join('') || '새 기준으로 학습 기록을 모으고 있습니다.'}</section>`;
     }
 
     function buildReadingAnalysis(reports) {
@@ -798,7 +820,7 @@
             const items = (wrongAnswers[s] || []).sort((a,b) => (b.count||0) - (a.count||0));
             if (!items.length) return;
             anyData = true;
-            const mastered = items.filter(i => i.isMastered).length;
+            const mastered = items.filter(i => i.reviewVersion === LearningPolicy.version && i.isMastered).length;
             html += `
                 <div style="margin-bottom:20px;">
                     <div style="font-size:0.85rem; font-weight:700; color:${SUBJ_COLORS[s]}; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
@@ -818,7 +840,7 @@
                             <div class="wrong-row">
                                 <div class="wrong-identifier">${id}${meaning}</div>
                                 <span class="wrong-count">오답 ${item.count||0}회</span>
-                                ${item.isMastered ? '<span class="mastered-badge">✅ 마스터</span>' : ''}
+                                ${item.reviewVersion === LearningPolicy.version && item.isMastered ? '<span class="mastered-badge">✅ 기억 확인</span>' : ''}
                             </div>`;
                     }).join('')}
                 </div>`;

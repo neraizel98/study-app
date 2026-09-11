@@ -221,10 +221,10 @@
     </div>
 
     <script src="kakao-share.js"></script>
-    <script src="utils.js?v=20260727-m1quiz"></script>
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260804-active-time"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260806-progress-resume"></script><script src="notification-client.js?v=20260810"></script>
+    <script src="utils.js?v=20260911-adaptive"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260911-adaptive"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260911-adaptive"></script><script src="notification-client.js?v=20260810"></script>
     <script src="ui-core.js"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script src="MathData.js"></script>
@@ -328,11 +328,12 @@
                     : { name: 'standard', score: null, wrongRatio: 0.45 };
                 const unitWrong = typeof WrongNote !== 'undefined'
                     ? (WrongNote.getAll().math || []).filter(item =>
-                        !item.isMastered && item.levelId === levelId
+                        (!item.isMastered || LearningPolicy.isDue(item)) && item.levelId === levelId
                         && item.semesterId === semesterId && item.unitId === unitId
                     )
                     : [];
                 let adaptivePool = [...quizzes];
+                if (band.name === 'foundation') adaptivePool = [...(window.MathQuizData[unitId].basic || quizzes)];
                 if (band.name === 'challenge' && typeId === 'basic') {
                     adaptivePool = [
                         ...adaptivePool,
@@ -398,6 +399,7 @@
                     hintBtn.className = 'hint-btn';
                     hintBtn.innerText = '💡 너무 어렵나요? 힌트 (풀이 과정) 보기';
                     hintBtn.onclick = () => {
+                        quiz.hintUsed = true;
                         const expBox = document.getElementById('explanationBox');
                         expBox.style.display = 'block';
                         document.getElementById('explanationText').innerHTML = Utils.renderMath(quiz.explanation);
@@ -427,6 +429,7 @@
 
                 // [Enhanced] 정답/오답 관계없이 히스토리 저장
                 WrongNote.save('math', { 
+                    hintUsed: Boolean(quiz.hintUsed),
                     type: quiz.generator, 
                     question: quiz.question, 
                     explanation: quiz.explanation,
@@ -562,6 +565,7 @@
                             unitId,
                             unitTitle: unit.title,
                             attempts: results.map((r, i) => ({
+                                hintUsed: Boolean(quizzes[i]?.hintUsed),
                                 question: quizzes[i]?.question || `문제 ${i + 1}`,
                                 selectedAnswer: quizzes[i]?.choices?.[Number(r.selected)] ?? r.selected,
                                 correctAnswer: quizzes[i]?.choices?.[Number(r.correct)] ?? r.correct,

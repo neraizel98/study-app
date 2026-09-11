@@ -244,7 +244,6 @@ function blankNonVerbSentence(sentence, word) {
 // ============================================================
 function startQuiz(wordList) {
     try {
-        const LEVEL_ORDER = ['level1', 'level2', 'level3', 'level4'];
         
         // 퀴즈 상태 초기화
         quizIndex = 0;
@@ -269,7 +268,7 @@ function startQuiz(wordList) {
 
             if (isReviewMode) {
                 const wrongAnswers = (typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [])
-                    .filter(w => !w.isMastered)
+                    .filter(w => !w.isMastered || LearningPolicy.isDue(w))
                     .map(w => w.word);
                 if (wrongAnswers.length === 0) {
                     alert('오답 노트가 비어 있습니다!');
@@ -285,15 +284,6 @@ function startQuiz(wordList) {
                 currentQuizBand = typeof AdaptiveQuiz !== 'undefined'
                     ? AdaptiveQuiz.getBand('english', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
                     : { name: 'standard', score: null, wrongRatio: 0.45 };
-                const curIdx = LEVEL_ORDER.indexOf(currentLevel);
-                if (curIdx < LEVEL_ORDER.length - 1 && currentQuizBand.name !== 'foundation') {
-                    const nextLevel = LEVEL_ORDER[curIdx + 1];
-                    const challengeCount = currentQuizBand.name === 'challenge'
-                        ? Math.floor(Math.random() * 3) + 3
-                        : Math.floor(Math.random() * 2) + 1;
-                    challengeWords = Utils.shuffle((window.vocabData || {})[nextLevel] || []).slice(0, challengeCount);
-                    challengeWords.forEach(w => w.isChallenge = true);
-                }
                 const baseCount = QUIZ_COUNT - challengeWords.length;
                 const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
                 const baseWords = typeof AdaptiveQuiz !== 'undefined'
@@ -309,7 +299,9 @@ function startQuiz(wordList) {
             quizWords.forEach(w => {
                 if (!w._keepQType) {
                     const rand = Math.random();
-                    if (w.phrasalVerbs && w.phrasalVerbs.length > 0 && rand < 0.3) {
+                    if (currentQuizBand.name === 'foundation') {
+                        w.qType = Math.random() < .5 ? 1 : 2;
+                    } else if (w.phrasalVerbs && w.phrasalVerbs.length > 0 && rand < 0.3) {
                         w.qType = 3 + Math.floor(Math.random() * 4); // 3~6: 구동사
                     } else if (isVerb(w) && w.forms && rand < 0.5) {
                         w.qType = 7; // 동사 3단 변화
@@ -325,7 +317,7 @@ function startQuiz(wordList) {
                         if (Math.random() < subjectiveProb) {
                             w.qType = 8; // 주관식 빈칸
                         } else {
-                            w.qType = 9; // 문장 배열
+                            w.qType = 2; // 문맥 객관식
                         }
                     } else if (rand < 0.93) {
                         w.qType = 10; // 품사 맞히기
@@ -632,7 +624,7 @@ function showQuestion() {
                 cur.phrasalVerbs.forEach(pv => pTxt += `<br>🔥 ${pv.phrase}: ${pv.meaning}`);
             }
             popup.innerHTML = pTxt;
-            wrap.querySelector('.hint-btn').onclick = () => popup.classList.toggle('show');
+            wrap.querySelector('.hint-btn').onclick = () => { questionResults[quizIndex].hintUsed = true; popup.classList.toggle('show'); };
             wrap.appendChild(popup);
 
             // 주관식/배열 퀴즈에서는 quizSubmitArea 뒤에, 아니면 quizChoices 뒤에 삽입
@@ -732,12 +724,14 @@ function handleQuizSubmit() {
 
 function finishQuestion(ok, userVal) {
     const res = questionResults[quizIndex];
+    if (res.answered) return;
+    res.answered = true;
     res.isOk = ok;
     res.selectedAnswer = userVal;
     res.correctAnswer = res.displayCorrect || res.correctValue || '';
     
     const status = ok ? 'correct' : 'wrong';
-    const wData = vocabData[currentLevel].find(w => w.word === res.word);
+    const wData = Object.values(vocabData).flat().find(w => w.word === res.word);
     
     if (ok) {
         quizScore++;
@@ -761,9 +755,12 @@ function finishQuestion(ok, userVal) {
     if (wData) {
         const explanation = `뜻: ${wData.meaning}<br>예문: ${wData.ex || ''}<br>해석: ${wData.exKo || ''}`;
         WrongNote.save('english', { 
+            selectedAnswer: res.selectedAnswer,
+            correctAnswer: res.correctAnswer,
+            hintUsed: res.hintUsed,
             word: wData.word, 
             meaning: wData.meaning, 
-            level: currentLevel,
+            level: Object.keys(vocabData).find(key => vocabData[key].some(w => w.word === res.word)) || currentLevel,
             question: document.getElementById('quizWord')?.textContent || phase2ContextEl?.textContent || res.correctValue,
             explanation: explanation
         }, status, quizSessionData.id, quizSessionData.roundCount);
@@ -864,6 +861,7 @@ function showResult() {
             unitTitle: lvName,
             attempts: questionResults.map(r => ({
                 question: r.word,
+                hintUsed: Boolean(r.hintUsed),
                 questionType: r.qType,
                 selectedAnswer: r.selectedAnswer,
                 correctAnswer: r.correctAnswer,

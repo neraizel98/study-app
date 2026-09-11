@@ -356,7 +356,9 @@ function _mergeReports(local, cloud) {
         const currentUpdated = Number(r.updatedAt || r.date || 0);
         const previousUpdated = Number(prev.updatedAt || prev.date || 0);
         if (currentUpdated > previousUpdated || (currentUpdated === previousUpdated && (r.timeSpentSeconds || 0) > (prev.timeSpentSeconds || 0))) {
-            map.set(r.sessionId, { ...prev, ...r, createdAt: prev.createdAt || r.createdAt || r.date });
+            map.set(r.sessionId, { ...prev, ...r, createdAt: prev.createdAt || r.createdAt || r.date,
+                initialScore: prev.initialScore,
+                metadata: {...r.metadata, initialAttempts: prev.metadata?.initialAttempts || r.metadata?.initialAttempts || []} });
         }
     });
     return Array.from(map.values()).sort((a, b) => (a.date || 0) - (b.date || 0));
@@ -368,7 +370,7 @@ function _mergeWrong(local, cloud) {
     subjects.forEach(subj => {
         const map = new Map();
         [...(cloud[subj] || []), ...(local[subj] || [])].forEach(item => {
-            const id = item.word || item.hanja || item.type || '';
+            const id = (subj === 'math' ? [item.levelId, item.semesterId, item.unitId, item.type].join(':') : item.wrongNoteId || item.questionId || item.word || item.hanja || item.type || '');
             if (!id) return;
             const prev = map.get(id);
             // 더 최근 기록 우선
@@ -379,11 +381,9 @@ function _mergeWrong(local, cloud) {
                 const existing = historyMap.get(eventId);
                 if (!existing || Number(entry.createdAt || entry.date || 0) >= Number(existing.createdAt || existing.date || 0)) historyMap.set(eventId, { ...entry, eventId });
             });
-            const history = Array.from(historyMap.values()).sort((a, b) => Number(a.createdAt || a.date || 0) - Number(b.createdAt || b.date || 0)).slice(-15);
+            const history = Array.from(historyMap.values()).sort((a, b) => Number(a.createdAt || a.date || 0) - Number(b.createdAt || b.date || 0));
             const newer = Number(item.date || 0) >= Number(prev.date || 0) ? item : prev;
-            let streak = 0;
-            for (let index = history.length - 1; index >= 0 && history[index].status === 'correct'; index--) streak++;
-            map.set(id, { ...prev, ...newer, history, count: Math.max(Number(prev.count || 0), Number(item.count || 0), history.filter(entry => entry.status === 'wrong').length), masteryScore: Math.min(3, streak), isMastered: streak >= 3 });
+            map.set(id, { ...prev, ...newer, history, count: Math.max(Number(prev.count || 0), Number(item.count || 0), history.filter(entry => entry.status === 'wrong').length), ...(window.LearningPolicy ? window.LearningPolicy.review(history) : {masteryScore: 0, isMastered: false}) });
         });
         result[subj] = Array.from(map.values());
     });

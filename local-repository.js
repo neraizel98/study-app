@@ -40,7 +40,7 @@
             return {
                 ...value,
                 subjects: Object.fromEntries(Object.entries(value.subjects).map(([subject, items]) => [subject,
-                    (items || []).slice(-500).map(item => ({ ...item, history: (item.history || []).slice(-10) }))
+                    (items || []).slice(-500).map(item => ({ ...item, history: item.reviewVersion ? item.history : (item.history || []).slice(-10) }))
                 ]))
             };
         }

@@ -335,11 +335,80 @@ const UserSession = {
 /**
  * 오답 관리 시스템
  */
+// Versioned evidence: legacy scores remain visible but cannot raise difficulty.
+const LearningPolicy = {
+    version: '20260911-v1',
+    day: 86400000,
+    context(subject, m = {}) {
+        if (subject === 'grammar') return `grammar:${m.stageId}:${m.unitId}`;
+        if (subject === 'math') return `${m.levelId}:${m.semesterId}:${m.unitId}`;
+        if (subject === 'reading') return `reading:${m.levelId}:${m.unitId}`;
+        return m.unitId || 'default';
+    },
+    evaluate(reports, subject, context) {
+        const rows = (reports || []).filter(r => r.subject === subject && r.metadata?.contentVersion === this.version
+            && !r.metadata.review && r.metadata.context === context).sort((a,b) => a.date-b.date);
+        const seen = new Map();
+        const sessions = rows.map(r => {
+            const eligible = (r.metadata.initialAttempts || []).filter(a => {
+                const key = a.questionId || a.question;
+                if (!key || a.assisted || a.hintUsed || a.invalid) return false;
+                const previous = seen.get(key);
+                if (previous !== undefined && r.date - previous < 7*this.day) return false;
+                seen.set(key, r.date);
+                return true;
+            });
+            return {date:r.date, n:eligible.length, correct:eligible.filter(a => a.correct).length};
+        }).filter(r => r.n > 0);
+        let rank = 0, lastChange = -1;
+        for (let i=2;i<sessions.length;i++) {
+            if (i-lastChange < 2) continue;
+            const recent = sessions.slice(Math.max(lastChange+1,i-4),i+1);
+            const n = recent.reduce((sum,r)=>sum+r.n,0);
+            const days = new Set(recent.map(r=>new Date(r.date).toLocaleDateString('en-CA'))).size;
+            if (n<20 || days<2) continue;
+            const last = recent.slice(-3);
+            if (last.length===3 && last.every(r=>r.correct/r.n>=.9) && rank<2) { rank++; lastChange=i; }
+            else if (recent.slice(-2).every(r=>r.correct/r.n<.7) && rank>0) { rank--; lastChange=i; }
+        }
+        const recent=sessions.slice(-5), n=recent.reduce((sum,r)=>sum+r.n,0);
+        const score=n?Math.round(recent.reduce((sum,r)=>sum+r.correct,0)/n*100):null;
+        return {name:['foundation','standard','challenge'][rank], score, samples:n, wrongRatio:rank===2?.2:.3,
+            reason:n<20||sessions.length<3?'서로 다른 문제를 더 풀며 기초를 확인하고 있어요.':
+                '힌트 없이 처음 푼 결과와 여러 날의 기록으로 조절해요.'};
+    },
+    review(history = []) {
+        let masteryScore=0, dueAt=0, lastSession=null, reviewStage='retry';
+        const unique=new Map(history.map(e=>[e.eventId||JSON.stringify(e),e]));
+        for (const e of [...unique.values()].filter(e=>!e.invalid).sort((a,b)=>(a.createdAt||a.date)-(b.createdAt||b.date) || (a.status===b.status ? 0 : a.status==='wrong' ? -1 : 1))) {
+            const at=Number(e.createdAt||e.date||0);
+            if (e.status==='wrong') {masteryScore=0;dueAt=at;reviewStage='retry';lastSession=e.sessionId;continue;}
+            if (e.contentVersion!==this.version) continue;
+            if (reviewStage==='retry') {reviewStage='scheduled';dueAt=at+this.day;lastSession=e.sessionId;continue;}
+            if (e.assisted || e.hintUsed) continue;
+            if (at<dueAt || e.sessionId===lastSession || Number(e.round)>1) continue;
+            masteryScore=Math.min(3,masteryScore+1);
+            reviewStage=masteryScore===3?'stable':'scheduled';
+            dueAt=at+[2,4,30][masteryScore-1]*this.day;
+            lastSession=e.sessionId;
+        }
+        return {reviewVersion:this.version,masteryScore,isMastered:masteryScore>=3,reviewStage,dueAt};
+    },
+    isDue(item, now=Date.now()) { return !item.invalid && !item.quarantined && (!item.dueAt || item.dueAt<=now); },
+    label(item) {
+        if (item.reviewVersion!==this.version) return '기억 확인이 필요해요';
+        if (item.reviewStage==='retry') return '풀이 확인 후 다시 도전';
+        const date=new Date(item.dueAt).toLocaleDateString('ko-KR');
+        return `${item.isMastered?'기억 확인 완료':`${item.masteryScore}/3 날짜를 두고 확인`} · ${date} 복습`;
+    }
+};
+window.LearningPolicy = LearningPolicy;
+
 const WrongNote = {
     getIdentifier: function(subject, data) {
+        if (subject === 'math') return [data?.levelId, data?.semesterId, data?.unitId, data?.type].join(':');
         if (data?.wrongNoteId) return data.wrongNoteId;
         if (subject === 'grammar' || subject === 'reading') return data?.questionId || data?.type;
-        if (subject === 'math') return data?.type;
         return data?.word || data?.hanja;
     },
     getStorageKey: () => {
@@ -352,7 +421,15 @@ const WrongNote = {
             const userId = UserSession.getActiveUser();
             if (!userId) return { english: [], grammar: [], hanja: [], math: [], reading: [] };
             const stored = LocalRepository.getWrongAnswers(userId);
-            return Object.assign({ english: [], grammar: [], hanja: [], math: [], reading: [] }, stored);
+            const all = Object.assign({ english: [], grammar: [], hanja: [], math: [], reading: [] }, stored);
+            for (const items of Object.values(all)) if (Array.isArray(items)) for (const item of items) {
+                if (item.reviewVersion !== LearningPolicy.version) {
+                    item.legacyMasteryScore = item.masteryScore;
+                    item.legacyIsMastered = item.isMastered;
+                    Object.assign(item, LearningPolicy.review(item.history));
+                }
+            }
+            return all;
         } catch (e) {
             console.error('[WrongNote Error]', e);
             return { english: [], grammar: [], hanja: [], math: [], reading: [] };
@@ -379,7 +456,9 @@ const WrongNote = {
         const exists = all[subject].find(item => this.getIdentifier(subject, item) === identifier);
         
         const historyEntry = {
-            eventId: [sessionId || 'session', round, data.questionId || identifier].join(':'),
+            eventId: [sessionId || 'session', round, data.questionId || identifier, data.question || '', status, data.selectedAnswer ?? ''].join(':'),
+            contentVersion: LearningPolicy.version,
+            assisted: Boolean(data.assisted || data.hintUsed),
             deviceId: LocalRepository.getDeviceId(),
             createdAt: Date.now(),
             sessionId,
@@ -410,35 +489,21 @@ const WrongNote = {
                     count: 1,
                     masteryScore: 0,  // 연속 정답 수 (0~3)
                     isMastered: false,
-                    history: [historyEntry]
+                    history: [historyEntry],
+                    ...LearningPolicy.review([historyEntry])
                 });
             }
         } else {
-            // 기존 데이터 업데이트
-            if (status === 'wrong') exists.count++;
-            exists.date = Date.now();
-
-            // 연속 정답 3회 = Mastered (틀리면 0으로 리셋)
-            if (status === 'correct') {
-                exists.masteryScore = Math.min(3, (exists.masteryScore || 0) + 1);
-            } else {
-                exists.masteryScore = 0;
-            }
-            exists.isMastered = exists.masteryScore >= 3;
-            
             if (!exists.history) exists.history = [];
-            
-            // 동일 세션/회차의 기록이 이미 있으면 업데이트, 없으면 추가
-            const sameIdx = exists.history.findIndex(h => h.sessionId === sessionId && h.round === round);
-            if (sameIdx >= 0) {
-                exists.history[sameIdx] = historyEntry;
-            } else {
-                exists.history.push(historyEntry);
-            }
-            
-            // 최근 15개 이력만 유지 (10개보다 조금 더 여유있게 변경)
-            if (exists.history.length > 15) exists.history.shift();
-            
+            if (exists.history.some(h => h.eventId === historyEntry.eventId)) return;
+            exists.history.push(historyEntry);
+            if (status === 'wrong') exists.count = Number(exists.count || 0) + 1;
+            exists.date = Date.now();
+            Object.assign(exists, LearningPolicy.review(exists.history));
+            // Keep the evidence that establishes the current spaced-review cycle.
+            const lastWrong = exists.history.findLastIndex(h => h.status === 'wrong');
+            if (lastWrong > 0) exists.history = exists.history.slice(lastWrong);
+
             // 문항 데이터 필드 최신화 (마지막 문제나 풀이가 바뀔 수 있으므로)
             if (data.question) exists.question = data.question;
             if (data.explanation) exists.explanation = data.explanation;
@@ -468,16 +533,23 @@ const WrongNote = {
  */
 const AdaptiveQuiz = {
     getBand(subject, context = 'default', aliases = []) {
-        if (typeof StudyTimer === 'undefined') return { name: 'standard', score: null, wrongRatio: 0.4 };
-        const result = StudyTimer.getLatestScore(subject, context, aliases);
-        const score = result ? result.pct : null;
-        if (score === null || score < 70) return { name: 'foundation', score, wrongRatio: 0.55 };
-        if (score < 85) return { name: 'standard', score, wrongRatio: 0.45 };
-        return { name: 'challenge', score, wrongRatio: 0.35 };
+        const band = LearningPolicy.evaluate(LocalRepository.listReports(UserSession.getActiveUser()), subject, context);
+        if (typeof document !== 'undefined' && document.body) {
+            let notice = document.getElementById('adaptiveNotice');
+            if (!notice) {
+                notice = document.createElement('p'); notice.id = 'adaptiveNotice';
+                notice.style.cssText = 'padding:12px;text-align:center;color:inherit;font-size:.9rem';
+                const panel = document.getElementById('quizPanel') || document.getElementById('quizView') || document.querySelector('main') || document.body;
+                panel.prepend(notice);
+            }
+            notice.setAttribute('role', 'status');
+            notice.textContent = `${{foundation:'기초 다지기',standard:'실력 쌓기',challenge:'응용 도전'}[band.name]} · ${band.reason}`;
+        }
+        return band;
     },
 
     weightedWrongItems(items, count) {
-        const candidates = (items || []).filter(item => !item.isMastered).map(item => ({ item, weight:
+        const candidates = (items || []).filter(item => LearningPolicy.isDue(item)).map(item => ({ item, weight:
             2
             + Math.min(6, Number(item.count || 1)) * 1.5
             + (Number(item.masteryScore || 0) === 0 ? 2 : 0)
@@ -500,16 +572,18 @@ const AdaptiveQuiz = {
     mix(pool, wrongItems, idOfPool, idOfWrong, count, wrongRatio = 0.45) {
         const source = [...(pool || [])];
         const byId = new Map(source.map(item => [idOfPool(item), item]));
-        const eligibleWrong = (wrongItems || []).filter(item => byId.has(idOfWrong(item)) && !item.isMastered);
+        const eligibleWrong = (wrongItems || []).filter(item => byId.has(idOfWrong(item)) && LearningPolicy.isDue(item));
         const targetWrong = Math.min(eligibleWrong.length, Math.max(1, Math.round(count * wrongRatio)));
         const priority = this.weightedWrongItems(eligibleWrong, targetWrong)
             .map(item => byId.get(idOfWrong(item)))
             .filter(Boolean);
         const used = new Set(priority.map(idOfPool));
+        const reviewIds = new Set((wrongItems || []).map(idOfWrong));
         const fresh = typeof Utils !== 'undefined'
-            ? Utils.shuffle(source.filter(item => !used.has(idOfPool(item))))
-            : source.filter(item => !used.has(idOfPool(item))).sort(() => Math.random() - 0.5);
-        return [...priority, ...fresh.slice(0, Math.max(0, count - priority.length))]
+            ? Utils.shuffle(source.filter(item => !used.has(idOfPool(item)) && !reviewIds.has(idOfPool(item))))
+            : source.filter(item => !used.has(idOfPool(item)) && !reviewIds.has(idOfPool(item))).sort(() => Math.random() - 0.5);
+        const fallback = source.filter(item => !used.has(idOfPool(item)) && reviewIds.has(idOfPool(item)));
+        return [...priority, ...[...fresh, ...fallback].slice(0, Math.max(0, count - priority.length))]
             .sort(() => Math.random() - 0.5);
     }
 };
@@ -527,6 +601,8 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     initialScore = clampScore(initialScore);
     isCompleted = Boolean(isCompleted) && totalQuestions > 0 && currentScore === totalQuestions;
 
+    if (metadata) metadata = {...metadata, contentVersion: LearningPolicy.version,
+        context: LearningPolicy.context(subject, metadata), initialAttempts: (metadata.attempts || []).map(a=>({...a}))};
     const data = LocalRepository.listReports(userId);
 
     let timeDelta = timeSpentSeconds; // 신규 세션이면 전체 시간
@@ -547,7 +623,9 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         data[existingIdx].isCompleted = data[existingIdx].isCompleted || isCompleted;
         data[existingIdx].timeSpentSeconds = timeSpentSeconds;
         data[existingIdx].updatedAt = Date.now();
-        if (metadata) data[existingIdx].metadata = metadata;
+        if (metadata) data[existingIdx].metadata = {...metadata,
+            contentVersion: data[existingIdx].metadata?.contentVersion || 'legacy',
+            initialAttempts: data[existingIdx].metadata?.initialAttempts || []};
         // totalQuestions는 최초 기록 값을 보존함
     } else {
         const now = Date.now();

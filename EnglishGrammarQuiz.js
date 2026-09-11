@@ -45,11 +45,11 @@
         }
         return copy;
     }
-    function vary(item) {
+    function vary(item, band = 'standard') {
         const choices = shuffle([item.answer, ...item.choices]);
         // Only closed, single-word questions can use exact text grading.
         const type = item.allowTyped !== false && /^[A-Za-z]+$/.test(item.answer)
-            && Math.random() < 0.35 ? 'short' : 'choice';
+            && Math.random() < ({foundation:0,standard:.35,challenge:.8}[band] ?? .35) ? 'short' : 'choice';
         return {
             type,
             question: item.question.replace('영어 문장을 완성하세요:', '영어 문장은?'),
@@ -123,7 +123,7 @@
                 item.question.replace('영어 문장을 완성하세요:', '영어 문장은?') === saved.question);
             return current ? vary(current) : null;
         },
-        generate(unitId, count = 10) {
+        generate(unitId, count = 10, band = 'standard') {
             const pool = [...(banks[unitId] || []), ...buildLearningQuestions(unitId)];
             const seen = new Set();
             const distinct = shuffle(pool).filter(item => {
@@ -132,7 +132,7 @@
                 seen.add(key);
                 return true;
             });
-            return distinct.slice(0, count).map(vary);
+            return distinct.slice(0, count).map(item => vary(item, band));
         }
     };
 })();

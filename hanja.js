@@ -150,7 +150,7 @@ function handlePrev() {
 function startQuiz(customList) {
     let reviewWords = null;
     if (!customList && isReviewMode && typeof WrongNote !== 'undefined') {
-        const active = (WrongNote.getAll().hanja || []).filter(item => !item.isMastered);
+        const active = (WrongNote.getAll().hanja || []).filter(item => (!item.isMastered || LearningPolicy.isDue(item)));
         const allWords = Object.values(vocabHanja || {}).flat();
         reviewWords = active.map(item => allWords.find(word => word.hanja === item.hanja)).filter(Boolean);
         reviewWords = [...new Map(reviewWords.map(word => [word.hanja, word])).values()];
@@ -322,7 +322,19 @@ const writingHintBtn = $('writingHintBtn');
 const writingFinishBtn = $('writingFinishBtn');
 const writingResetBtn = $('writingResetBtn');
 
+let writingComplete = false, writingAssisted = false;
+function startWritingAttempt() {
+    writingComplete = false;
+    writingFinishBtn.disabled = true;
+    writerInstance?.quiz({
+        onMistake: () => { writingAssisted = true; },
+        onComplete: summary => { if (summary.totalMistakes > 0) writingAssisted = true; writingComplete = true; writingFinishBtn.disabled = false; }
+    });
+}
 function setupWritingQuiz(q) {
+    writingAssisted = false;
+    writingComplete = false;
+    writingFinishBtn.disabled = true;
     const strokeCharacter = getStrokeDataCharacter(q.hanja);
     phaseBadge.textContent = '한자 쓰기';
     $('phase3Area').style.display = 'block';
@@ -334,7 +346,7 @@ function setupWritingQuiz(q) {
         width: 250,
         height: 250,
         showCharacter: false,
-        showOutline: true,
+        showOutline: false,
         strokeColor: '#4facfe',
         outlineColor: 'rgba(255,255,255,0.05)',
         drawingColor: '#00f2fe',
@@ -345,7 +357,7 @@ function setupWritingQuiz(q) {
             writingQuizContainer.textContent = '획순 데이터를 불러오지 못했습니다. 잠시 후 다시 시도해 주세요.';
         }
     });
-    writerInstance.quiz();
+    startWritingAttempt();
 }
 
 function checkAnswer(selected, correct) {
@@ -353,7 +365,7 @@ function checkAnswer(selected, correct) {
     isPhaseTransition = true;
 
     const normalizeAnswer = value => String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ');
-    const isOk = normalizeAnswer(selected) === normalizeAnswer(correct);
+    const isOk = normalizeAnswer(selected) === normalizeAnswer(correct) && (currentQuizType !== 'writing' || !writingAssisted);
     if (isOk) {
         quizScore += 10;
         quizSessionData.currentScore++;
@@ -361,6 +373,8 @@ function checkAnswer(selected, correct) {
     
     const currentWord = quizWords[quizIndex];
     quizHistory.push({
+        assisted: currentQuizType === 'writing' && writingAssisted,
+        questionType: currentQuizType,
         word: currentWord.hanja,
         question: `${currentWord.hanja} (${currentWord.eum})`,
         selectedAnswer: selected,
@@ -375,15 +389,19 @@ function checkAnswer(selected, correct) {
         const status = isOk ? 'correct' : 'wrong';
         const lvName = document.querySelector('.level-btn.active')?.textContent || '기본';
         WrongNote.save('hanja', {
+            assisted: currentQuizType === 'writing' && writingAssisted,
+            question: `${q.hanja} (${q.eum})`,
+            selectedAnswer: selected, correctAnswer: correct,
             hanja: q.hanja,
             meaning: q.meaning,
             eum: q.eum,
+            unitId: Object.keys(vocabHanja).find(key => vocabHanja[key].some(w => w.hanja === q.hanja)) || currentLevel,
             level: lvName
         }, status, quizSessionData.id, quizSessionData.roundCount);
     }
     
     const feedbackOk = isOk ? '정답입니다! ✨' : `아쉬워요! 정답은 [ ${correct} ] 입니다.`;
-    phaseFeedback.textContent = (currentQuizType === 'writing') ? '수고했어요! 다음 문제로 넘어갑니다 ✏️' : feedbackOk;
+    phaseFeedback.textContent = (currentQuizType === 'writing') ? (writingAssisted ? '끝까지 썼어요! 다음에는 도움 없이 다시 확인해요 ✏️' : '도움 없이 완성했어요! ✨') : feedbackOk;
     phaseFeedback.className = `phase-feedback ${isOk ? 'correct' : 'wrong'}`;
     phaseFeedback.style.display = 'block';
 
@@ -459,6 +477,8 @@ function showResult() {
             unitId: currentLevel,
             unitTitle: lvName,
             attempts: quizHistory.map(r => ({
+                assisted: Boolean(r.assisted),
+                questionType: r.questionType,
                 question: r.question || r.word,
                 selectedAnswer: r.selectedAnswer,
                 correctAnswer: r.correctAnswer,
@@ -545,18 +565,21 @@ if (kakaoReportBtn) {
 
 writingHintBtn.addEventListener('click', () => {
     if (writerInstance) {
+        writingAssisted = true;
+        writingComplete = false;
+        writingFinishBtn.disabled = true;
         writerInstance.cancelQuiz();
-        writerInstance.animateCharacter({ onComplete: () => { writerInstance.quiz(); } });
+        writerInstance.animateCharacter({ onComplete: startWritingAttempt });
     }
 });
 
 writingFinishBtn.addEventListener('click', () => {
-    if (isPhaseTransition) return;
-    // 쓰기 퀴즈는 완료 시 정답 처리 (HanziWriter 내부 체크와 별도로 완료 인정)
+    if (isPhaseTransition || !writingComplete || !writerInstance) return;
+    // Actual stroke completion is required; assistance is recorded separately.
     checkAnswer('__writing_done__', '__writing_done__');
 });
 
-writingResetBtn.addEventListener('click', () => { if (writerInstance) writerInstance.quiz(); });
+writingResetBtn.addEventListener('click', () => { if (writerInstance) { writingAssisted = true; startWritingAttempt(); } });
 
 levelBtns.forEach(btn => {
     if (btn.classList.contains('disabled')) return;
