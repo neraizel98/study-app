@@ -266,6 +266,7 @@ const UserSession = {
 
     // 일일 통계 업데이트
     updateDailyStat: function(type, subject, value) {
+        window.SmartStudy?.DailyLedger?.record(this.getActiveUser(), type, subject, value);
         const user = this.getUserData();
         if (!user) return;
 
@@ -502,7 +503,7 @@ const WrongNote = {
             Object.assign(exists, LearningPolicy.review(exists.history));
             // Keep the evidence that establishes the current spaced-review cycle.
             const lastWrong = exists.history.findLastIndex(h => h.status === 'wrong');
-            if (lastWrong > 0) exists.history = exists.history.slice(lastWrong);
+            // All prior cycles remain available for historical analysis.
 
             // 문항 데이터 필드 최신화 (마지막 문제나 풀이가 바뀔 수 있으므로)
             if (data.question) exists.question = data.question;
@@ -632,6 +633,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
         data.push({ sessionId, subject, level, date: now, createdAt: now, updatedAt: now, deviceId: LocalRepository.getDeviceId(), totalQuestions, initialScore, finalScore: currentScore, timeSpentSeconds, isCompleted, metadata });
     }
 
+    if (metadata) data.find(r=>r.sessionId===sessionId).metadata.adaptiveBand = LearningPolicy.evaluate(data, subject, LearningPolicy.context(subject,metadata));
     LocalRepository.saveReports(userId, data);
 
     if (isCompleted && isNewSession) {
@@ -695,7 +697,8 @@ function getQuizReports() {
         return [];
     }
 }
-function exportUserData() {
+async function exportUserData() {
+    try { await LocalRepository.flush?.(); } catch (error) { console.warn('저장 대기 중인 기록도 백업에 포함합니다.', error); }
     const exportData = {};
     for (const key of LocalRepository.keys()) {
         if (key && (key.startsWith('SmartStudy') || key.startsWith('SmartVocab'))) {
@@ -715,14 +718,29 @@ function exportUserData() {
 function importUserData(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
-        reader.onload = (e) => {
+        reader.onload = async (e) => {
             try {
                 const data = JSON.parse(e.target.result);
+                await LocalRepository.ready;
                 Object.entries(data).forEach(([key, value]) => {
-                    if (key.startsWith('SmartStudy') || key.startsWith('SmartVocab')) {
+                    if (key.startsWith('SmartVocab_Reports_')) {
+                        const user = key.slice('SmartVocab_Reports_'.length), parsed = typeof value === 'string' ? JSON.parse(value) : value;
+                        const incoming = parsed.items || parsed;
+                        LocalRepository.saveReports(user, typeof _mergeReports === 'function'
+                            ? _mergeReports(LocalRepository.listReports(user), incoming) : incoming);
+                    } else if (key.startsWith('SmartStudy_WrongAnswers_')) {
+                        const user = key.slice('SmartStudy_WrongAnswers_'.length), parsed = typeof value === 'string' ? JSON.parse(value) : value;
+                        const incoming = parsed.subjects || parsed;
+                        LocalRepository.saveWrongAnswers(user, typeof _mergeWrong === 'function'
+                            ? _mergeWrong(LocalRepository.getWrongAnswers(user), incoming) : incoming);
+                    } else if (key.startsWith('SmartStudy_UserData_')) {
+                        const user = key.slice('SmartStudy_UserData_'.length), incoming = typeof value === 'string' ? JSON.parse(value) : value;
+                        LocalRepository.saveUser(typeof _mergeUserData === 'function' ? _mergeUserData(LocalRepository.getUser(user), incoming, user) : incoming);
+                    } else if ((key.startsWith('SmartStudy') || key.startsWith('SmartVocab')) && LocalRepository.rawGet(key) == null) {
                         LocalRepository.rawSet(key, value);
                     }
                 });
+                await LocalRepository.flush?.();
                 resolve();
             } catch (err) {
                 reject(err);

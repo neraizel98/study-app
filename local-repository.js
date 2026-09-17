@@ -7,7 +7,9 @@
     const Migrations = SmartStudy.SchemaMigrations;
     const overflowMemory = new Map();
 
+    const Durable = SmartStudy.DurableStore;
     function rawValue(key) {
+        if (Durable?.isReady && Durable.handles(key) && Durable.has(key)) return Durable.read(key);
         return overflowMemory.has(key) ? overflowMemory.get(key) : localStorage.getItem(key);
     }
 
@@ -48,6 +50,7 @@
     }
 
     function safeSetItem(key, value, { json = false } = {}) {
+        if (Durable?.isReady && Durable.handles(key)) { Durable.write(key, value); return true; }
         const serialize = candidate => json ? JSON.stringify(candidate) : String(candidate);
         try {
             localStorage.setItem(key, serialize(value));
@@ -117,6 +120,8 @@
     }
 
     const Repository = {
+        ready: Durable?.ready || Promise.resolve(),
+        flush: () => Durable?.flush() || Promise.resolve(),
         getDeviceId() {
             let id = rawValue(Keys.deviceId);
             if (!id) {
@@ -139,6 +144,9 @@
             return raw == null ? null : migrateAndPersist('user', key, raw);
         },
         saveUser(user) {
+            const previous = Repository.getUser(user.id);
+            if (Durable?.isReady && previous?.dailyStats?.date && previous.dailyStats.date !== user.dailyStats?.date)
+                Durable.setMeta(`legacyDay:${user.id}:${previous.dailyStats.date}`, previous.dailyStats).catch(()=>{});
             const migrated = Migrations.migrate('user', { ...user, _localUpdatedAt: Date.now() });
             return write(Keys.user(user.id), migrated, 'user:saved', { userId: user.id });
         },
@@ -156,7 +164,8 @@
         },
         getWrongAnswers(userId) {
             const key = Keys.wrongAnswers(userId);
-            return migrateAndPersist('wrongAnswers', key, parse(key, {}), value => value.subjects);
+            const subjects = migrateAndPersist('wrongAnswers', key, parse(key, {}), value => value.subjects);
+            return Object.fromEntries(Object.entries(subjects).map(([subject,items])=>[subject,items.filter(item=>!item.deleted)]));
         },
         saveWrongAnswers(userId, wrongAnswers) {
             const envelope = Migrations.migrate('wrongAnswers', { subjects: wrongAnswers });
@@ -199,10 +208,12 @@
         keys() {
             return Array.from(new Set([
                 ...Array.from({ length: localStorage.length }, (_, index) => localStorage.key(index)).filter(Boolean),
+                ...(Durable?.keys() || []),
                 ...overflowMemory.keys()
             ]));
         },
-        clearAppData() {
+        async clearAppData() {
+            await Durable?.clear();
             const prefixes = ['SmartStudy_', 'SmartVocab_', 'MathFormula_'];
             Repository.keys().filter(key => prefixes.some(prefix => key.startsWith(prefix)))
                 .forEach(key => {

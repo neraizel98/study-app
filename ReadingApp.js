@@ -229,7 +229,8 @@
         $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: level().title, startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
         renderSelectors(); bind(); renderStudy();
         if (typeof StudyTimer !== 'undefined') {
             timerController = StudyTimer.initBar('reading', $('startQuiz'), {

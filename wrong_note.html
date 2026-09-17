@@ -204,12 +204,13 @@
         </div>
     </div>
 
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260911-adaptive"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260911-adaptive"></script>
-    <script src="ui-core.js"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-storage2"></script><script src="firebase-sync.js?v=20260917-storage2"></script>
+    <script src="ui-core.js?v=20260917-storage2"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
             AppUI.init({ title: '통합 오답 노트', subtitle: '각 문항의 학습 이력을 확인하고 부족함을 채우세요!' });
 
             const container = document.getElementById('wrongListContainer');

@@ -26,6 +26,7 @@ const _loginPromises = {};
 //  Firebase SDK 동적 로드
 // ─────────────────────────────────────────────
 async function _initDB() {
+    if (window.navigator?.onLine === false) return null;
     if (_db) return _db;
     try {
         const authUser = await window.SmartStudy.FirebaseClient.getCurrentUser();
@@ -44,7 +45,10 @@ async function _initDB() {
 // ─────────────────────────────────────────────
 function _debounce(key, fn, ms = 2000) {
     clearTimeout(_timers[key]);
-    _timers[key] = setTimeout(fn, ms);
+    _timers[key] = setTimeout(() => Promise.resolve().then(fn).then(() => _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364')).catch(() => {
+        _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true);
+        _debounce(key, fn, Math.min(60000, ms * 2));
+    }), ms);
 }
 
 async function _uploadUserData(userId) {
@@ -52,15 +56,18 @@ async function _uploadUserData(userId) {
     try {
         const data = _localRepository.getUser(userId);
         if (!data) return;
+        await _localRepository.flush?.();
         await _remoteRepository.putUser(userId, data);
-    } catch (e) { console.warn('[FireSync] userData 업로드 실패:', e.message); }
+        await _remoteRepository.putDaily?.(userId);
+    } catch (e) { _showSyncBadge('⚠️ 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
 async function _uploadReports(userId) {
     if (!_syncReady) return;
     try {
+        await _localRepository.flush?.();
         await _remoteRepository.putReports(userId, _localRepository.listReports(userId));
-    } catch (e) { console.warn('[FireSync] reports 업로드 실패:', e.message); }
+    } catch (e) { _showSyncBadge('⚠️ 퀴즈 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
 async function _uploadStudyConfig(cfg) {
@@ -82,10 +89,11 @@ async function _downloadStudyConfig() {
 async function _uploadWrong(userId) {
     if (!_syncReady) return;
     try {
-        const wrongAnswers = _localRepository.getWrongAnswers(userId);
-        const trimmed = _trimWrongHistory(wrongAnswers);
+        const raw = window.SmartStudy.DurableStore?.read(`SmartStudy_WrongAnswers_${userId}`);
+        const wrongAnswers = raw ? JSON.parse(raw).subjects : _localRepository.getWrongAnswers(userId);
+        const trimmed = wrongAnswers; // V2 preserves every historical attempt.
         await _remoteRepository.putWrongAnswers(userId, trimmed);
-    } catch (e) { console.warn('[FireSync] wrongAnswers 업로드 실패:', e.message); }
+    } catch (e) { _showSyncBadge('⚠️ 오답 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
 function _trimWrongHistory(wrongAnswers) {
@@ -105,6 +113,7 @@ function _trimWrongHistory(wrongAnswers) {
 async function _downloadAndMerge(userId) {
     if (!_syncReady) return;
     try {
+        await _localRepository.ready;
         const bundle = await _remoteRepository.getUserBundle(userId);
 
         // 전역 학습 시간 설정 항상 최신으로 받아옴 (관리자가 공유한 설정)
@@ -147,7 +156,7 @@ async function _downloadAndMerge(userId) {
         }
 
         // 로컬이 더 최신이거나 첫 디바이스 → 클라우드에 즉시 업로드
-        if (needsUpload) {
+        if (needsUpload || _remoteRepository.confirmBundle) {
             await Promise.all([
                 _uploadUserData(userId),
                 _uploadReports(userId),
@@ -156,6 +165,8 @@ async function _downloadAndMerge(userId) {
             console.log('[FireSync] 로컬→클라우드 업로드 완료');
         }
 
+        await _remoteRepository.confirmBundle?.(userId, bundle);
+        await _localRepository.flush?.();
         console.log('[FireSync] 동기화 완료');
         window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
         return true;
@@ -397,17 +408,17 @@ function _unionArr(a, b) {
 // 저장 완료 이벤트를 구독한다. 도메인 함수를 덮어쓰지 않으므로 로드 순서와 함수 참조에 안전하다.
 _storageEvents.subscribe('user:saved', ({ userId }) => {
     if (_syncReady && userId) _debounce(`userData_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) _uploadUserData(userId);
-    }, 2000);
+        if (!_syncingUsers.has(userId)) return _uploadUserData(userId);
+    }, 15000);
 });
 _storageEvents.subscribe('reports:saved', ({ userId }) => {
     if (_syncReady && userId) _debounce(`reports_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) _uploadReports(userId);
+        if (!_syncingUsers.has(userId)) return _uploadReports(userId);
     }, 2000);
 });
 _storageEvents.subscribe('wrongAnswers:saved', ({ userId }) => {
     if (_syncReady && userId) _debounce(`wrong_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) _uploadWrong(userId);
+        if (!_syncingUsers.has(userId)) return _uploadWrong(userId);
     }, 2000);
 });
 _storageEvents.subscribe('config:saved', () => {
@@ -417,7 +428,7 @@ _storageEvents.subscribe('config:saved', () => {
 // ─────────────────────────────────────────────
 //  동기화 상태 UI (작은 뱃지)
 // ─────────────────────────────────────────────
-function _showSyncBadge(text, color = '#4facfe') {
+function _showSyncBadge(text, color = '#4facfe', persistent = false) {
     let badge = document.getElementById('_firesync_badge');
     if (!badge) {
         badge = document.createElement('div');
@@ -435,6 +446,7 @@ function _showSyncBadge(text, color = '#4facfe') {
     badge.textContent = text;
     badge.style.opacity = '1';
     clearTimeout(badge._hideTimer);
+    if (persistent) return;
     badge._hideTimer = setTimeout(() => { badge.style.opacity = '0'; }, 2500);
 }
 
@@ -463,6 +475,7 @@ window.FireSync = {
             _syncingUsers.add(userId);
             _showSyncBadge('☁️ 동기화 중...');
             try {
+                await _localRepository.ready;
                 const db = await _initDB();
                 if (!db) { _showSyncBadge('📵 오프라인 모드'); return false; }
                 const synced = await _downloadAndMerge(userId);
@@ -497,6 +510,8 @@ window.FireSync = {
      * 강제 전체 업로드 (데이터 가져오기 후 사용)
      */
     forceUpload: async function() {
+        await _localRepository.ready;
+        await _localRepository.flush?.();
         const uid = UserSession.getActiveUser();
         if (!uid || !_syncReady) return;
         _showSyncBadge('☁️ 업로드 중...');
@@ -518,3 +533,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         await window.FireSync.onLogin(userId);
     }
 });
+
+window.addEventListener?.('online', () => { const uid = _localRepository.getActiveUser(); if (uid) window.FireSync.onLogin(uid); });
+window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true));
+window.addEventListener?.('smartstudy:storage-error', () => _showSyncBadge('⚠️ 기기 저장 실패 · 앱을 닫지 말고 백업해 주세요', '#ff5f6d', true));
+window.addEventListener?.('smartstudy:sync-state', event => _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true));
+
+window.addEventListener?.('pagehide', () => { const uid = _localRepository.getActiveUser(); if (_syncReady && uid) _uploadUserData(uid).catch(()=>{}); });

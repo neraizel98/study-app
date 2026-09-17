@@ -313,7 +313,8 @@
         $('studyAgainBtn').addEventListener('click', () => { $('resultModal').classList.add('hidden'); renderStudy(); });
     }
 
-    document.addEventListener('DOMContentLoaded', () => {
+    document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
         if (!stage().units.some(item => item.id === unitId)) unitId = stage().units[0].id;
         lessonIndex = Math.min(lessonIndex, unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();

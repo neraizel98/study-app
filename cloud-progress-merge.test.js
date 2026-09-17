@@ -59,7 +59,7 @@ for (const file of fs.readdirSync('.').filter(name => name.endsWith('.html'))) {
     const html = fs.readFileSync(file, 'utf8');
     if (!html.includes('firebase-sync.js')) continue;
     assert(
-        html.includes('firebase-sync.js?v=20260911-adaptive'),
+        html.includes('firebase-sync.js?v=20260917-storage2'),
         `${file} must load the protected progress-sync build instead of a cached older build`
     );
 }

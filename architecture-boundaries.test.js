@@ -11,7 +11,7 @@ const locations = pattern => files.flatMap(file => read(file).split(/\r?\n/).fla
 }));
 
 const directStorage = files.filter(file =>
-    /localStorage\.(getItem|setItem|removeItem|clear)/.test(read(file)) && file !== 'local-repository.js'
+    /localStorage\.(getItem|setItem|removeItem|clear)/.test(read(file)) && !['local-repository.js', 'durable-store.js'].includes(file)
 );
 assert.deepEqual(directStorage, [], `Direct localStorage access: ${directStorage}`);
 
@@ -24,7 +24,7 @@ const patches = files.filter(file => file !== 'report.js').flatMap(file =>
 assert.deepEqual(patches, [], `Runtime persistence patch: ${patches}`);
 
 const firestoreOutsideRepository = files.filter(file =>
-    /\.(collection|doc)\(/.test(read(file)) && file !== 'firestore-repository.js'
+    /\.(collection|doc)\(/.test(read(file)) && !['firestore-repository.js', 'partition-repository.js'].includes(file)
 );
 assert.deepEqual(firestoreOutsideRepository, [], `Direct Firestore access: ${firestoreOutsideRepository}`);
 

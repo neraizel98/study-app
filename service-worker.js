@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v65-english-content-accuracy';
+const CACHE_NAME = 'smart-study-v66-partition-storage';
 
 try {
     importScripts('./firebase-config.js');
@@ -69,6 +69,8 @@ const STATIC_ASSETS = [
     './storage-keys.js',
     './storage-events.js',
     './schema-migrations.js',
+    './durable-store.js',
+    './partition-repository.js',
     './local-repository.js',
     './app-bootstrap.js',
     './firebase-client.js',

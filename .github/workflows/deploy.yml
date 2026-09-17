@@ -29,6 +29,9 @@ jobs:
         with:
           node-version: 22
 
+      - name: Install test dependencies
+        run: npm install --ignore-scripts --no-audit --no-fund
+
       - name: Run repository tests
         shell: bash
         run: |
@@ -40,10 +43,13 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
+      - name: Prepare tracked site files
+        run: mkdir -p _site && git archive HEAD | tar -x -C _site
+
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: '.'
+          path: '_site'
 
       - name: Deploy to GitHub Pages
         id: deployment

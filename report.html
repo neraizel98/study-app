@@ -346,13 +346,14 @@
     </div>
 
     <script src="utils.js?v=20260911-adaptive"></script>
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260911-adaptive"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260911-adaptive"></script>
-    <script src="ui-core.js"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-storage2"></script><script src="firebase-sync.js?v=20260917-storage2"></script>
+    <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="kakao-share.js?v=20260814-short-report-link"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
             // URL 파라미터 처리 (데이터 가져오기)
             const urlParams = new URLSearchParams(window.location.search);
             const importData = urlParams.get('import');
@@ -540,6 +541,7 @@
     </script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
             if (window.__sharedMode) return; // 공유 뷰일 때는 일반 성적표 렌더링 스킵
 
             const params = new URLSearchParams(window.location.search);

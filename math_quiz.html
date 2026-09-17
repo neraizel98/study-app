@@ -222,10 +222,10 @@
 
     <script src="kakao-share.js"></script>
     <script src="utils.js?v=20260911-adaptive"></script>
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260911-adaptive"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="firebase-sync.js?v=20260911-adaptive"></script><script src="notification-client.js?v=20260810"></script>
-    <script src="ui-core.js"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-storage2"></script><script src="firebase-sync.js?v=20260917-storage2"></script><script src="notification-client.js?v=20260810"></script>
+    <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script src="MathData.js"></script>
     <script src="MathDataMiddle1.js"></script>
@@ -234,7 +234,8 @@
     <script src="MathQuizMiddle1.js?v=20260727-m1quiz"></script>
     <script src="MathQuizMiddle1Semester2.js?v=20260727-m1s2quiz"></script>
     <script>
-        document.addEventListener('DOMContentLoaded', () => {
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
             try {
                 const params = new URLSearchParams(window.location.search);
                 const levelId = params.get('level');

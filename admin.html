@@ -155,9 +155,9 @@
         </div>
     </div>
 
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="local-repository.js?v=20260911-adaptive"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260911-adaptive"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
+    <script src="report.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-storage2"></script>
     <script src="notification-client.js?v=20260810"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
@@ -214,7 +214,8 @@
     }
 
     async function loadUserDetail(userId) {
-        const bundle = await SmartStudy.FirestoreRepository.getUserBundle(userId);
+        const bundle = await SmartStudy.FirestoreRepository.getAdminOverview(userId);
+        window._adminPaging = {userId, ...(bundle.page || {}), legacy: !!bundle.legacy};
         return {
             userData: bundle.user || {},
             reports: bundle.reports || [],
@@ -348,7 +349,7 @@
         window._adminData = { userId, ud, reports, wrongAnswers };
     }
 
-    function switchTab(btn, tab, userId) {
+    async function switchTab(btn, tab, userId) {
         document.querySelectorAll('.d-tab').forEach(b => b.classList.remove('active'));
         btn.classList.add('active');
         _currentTab = tab;
@@ -365,8 +366,8 @@
         if (tab === 'wrong')   el.innerHTML = buildWrongTab(wrongAnswers);
         if (tab === 'weekly') {
             _weeklyOffset = 0;
-            el.innerHTML = _weeklyHTML(reports, 0, ud);
-            requestAnimationFrame(() => _drawWeeklyCharts(reports, 0, ud));
+            el.textContent = '선택 기간을 불러오는 중...';
+            try { await loadAdminWeek(0); } catch (error) { el.textContent = '기록을 받지 못했습니다. 다시 선택해 주세요.'; }
         }
     }
 
@@ -497,10 +498,53 @@
     window.markRewardUsed = markRewardUsed;
 
     // ── 퀴즈 기록 탭 ──
+    window._loadQuizDetail = async function(index, button) {
+        button.disabled = true;
+        try {
+            const data = window._adminData;
+            const summary = [...data.reports].sort((a,b)=>b.date-a.date)[index];
+            const detail = await SmartStudy.FirestoreRepository.getReportDetail(data.userId, summary);
+            const container = document.getElementById(`lazy_quiz_${index}`);
+            container.replaceChildren();
+            for (const answer of detail.metadata?.initialAttempts || detail.metadata?.attempts || []) {
+                const line = document.createElement('p');
+                line.textContent = `${answer.correct ? '✅' : '❌'} ${answer.question || ''} · 내 답: ${answer.selectedAnswer ?? '기록 없음'} · 정답: ${answer.correctAnswer ?? ''}`;
+                container.appendChild(line);
+            }
+            if (!container.children.length) container.textContent = '이전 기록에는 문제별 답안이 저장되어 있지 않습니다.';
+            button.textContent = '답안 불러오기 완료';
+        } catch(error) { button.disabled = false; button.textContent = '다시 불러오기'; }
+    };
+    window._loadMoreQuizzes = async function(button) {
+        button.disabled = true;
+        try {
+            const data = window._adminData, page = await SmartStudy.FirestoreRepository.getReportsPage(data.userId, {before:window._adminPaging.cursor});
+            window._adminPaging = {...window._adminPaging,...page};
+            data.reports = [...new Map([...data.reports,...page.reports].map(r=>[r.sessionId,r])).values()];
+            document.getElementById('tabContent').innerHTML = buildQuizTab(data.reports,data.wrongAnswers);
+        } catch(error) { button.disabled = false; button.textContent = '다시 불러오기'; }
+    };
+    async function loadAdminWeek(offset) {
+        const data=window._adminData, range=_weekRange(offset), oldest=_weekRange(offset-7).start;
+        if (!window._adminPaging?.legacy) {
+            let cursor=null, rows=[];
+            do {
+                const page=await SmartStudy.FirestoreRepository.getReportsPage(data.userId,{start:oldest.getTime(),end:range.end.getTime(),before:cursor,limit:100});
+                rows.push(...page.reports);cursor=page.hasMore?page.cursor:null;
+            } while(cursor);
+            const days=await SmartStudy.FirestoreRepository.getDaily(data.userId,StudyPeriods.dateKey(range.start),StudyPeriods.dateKey(range.end));
+            data.ud._dailyRecords=days;
+            data._weeklyReports=rows;
+        } else data._weeklyReports=data.reports;
+        const el=document.getElementById('tabContent');
+        el.innerHTML=_weeklyHTML(data._weeklyReports,offset,data.ud);
+        requestAnimationFrame(()=>_drawWeeklyCharts(data._weeklyReports,offset,data.ud));
+    }
+
     function buildQuizTab(reports, wrongAnswers) {
         if (!reports.length) return '<div class="empty-msg">퀴즈 기록이 없습니다.</div>';
         const wa = wrongAnswers || {};
-        const sorted = [...reports].sort((a,b) => b.date - a.date).slice(0, 30);
+        const sorted = [...reports].sort((a,b) => b.date - a.date);
         const rows = sorted.map((r, idx) => {
             const pct   = r.totalQuestions > 0 ? Math.round(r.initialScore / r.totalQuestions * 100) : 0;
             const color = pct >= 80 ? '#56d364' : pct >= 50 ? '#f9826c' : '#ff5f6d';
@@ -543,6 +587,10 @@
                 }
             }
 
+            if (r._body) {
+                detailBtn = `<button onclick="window._loadQuizDetail(${idx}, this)">문제별 답안 보기</button>`;
+                detailDiv = `<div id="lazy_quiz_${idx}"></div>`;
+            }
             return `
                 <div style="border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 0;">
                     <div class="quiz-row" style="border:none;padding:0;">
@@ -558,7 +606,7 @@
                     ${detailDiv}
                 </div>`;
         }).join('');
-        return `<div class="chart-title">최근 퀴즈 기록 (최대 30회)</div>${rows}`;
+        return `<div class="chart-title">퀴즈 기록 · 최근 순</div>${rows}<p>현재 불러온 기록 ${reports.length}회${window._adminPaging?.legacy ? ' · 기존 저장 형식 (학습 기기 연결 시 이전)' : ''}</p>${window._adminPaging?.hasMore ? '<button onclick="window._loadMoreQuizzes(this)">이전 기록 20회 더 보기</button>' : ''}`;
     }
 
     // ── 과목별 통계 탭 ──
@@ -637,24 +685,25 @@
         }).filter(Boolean);
 
         if (!cards.length) return '<div class="empty-msg">데이터가 없습니다.</div>';
-        return `<div class="chart-title">과목별 정답률 · 회차별 분석</div>${cards.join('')}${buildAdaptiveAnalysis(reports)}${buildGrammarAnalysis(reports)}${buildReadingAnalysis(reports)}`;
+        return `<div class="chart-title">현재 불러온 기록의 과목별 정답률 · 회차별 분석</div>${cards.join('')}${buildAdaptiveAnalysis(reports)}${buildGrammarAnalysis(reports)}${buildReadingAnalysis(reports)}`;
     }
 
     function buildAdaptiveAnalysis(reports) {
         const escape = value => String(value ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
         const groups = new Map();
         reports.filter(r => r.metadata?.contentVersion === LearningPolicy.version).forEach(r => {
-            groups.set(`${r.subject}:${r.metadata.context}`, r);
+            const key = `${r.subject}:${r.metadata.context}`;
+            if (!groups.has(key) || groups.get(key).date < r.date) groups.set(key, r);
         });
         const rows = [...groups.values()].map(r => {
-            const band = LearningPolicy.evaluate(reports, r.subject, r.metadata.context);
+            const band = r.metadata.adaptiveBand || (r._body ? {name:'unknown',samples:0,score:null,reason:'이전 기록의 난이도는 다음 학습 후 갱신됩니다.'} : LearningPolicy.evaluate(reports, r.subject, r.metadata.context));
             const wrong = (window._adminData?.wrongAnswers?.[r.subject] || []).filter(item =>
                 LearningPolicy.context(r.subject, {...item, unitId:item.unitId || item.level}) === r.metadata.context);
             const due = wrong.filter(item => LearningPolicy.isDue(item)).length;
             const stable = wrong.filter(item => item.reviewVersion === LearningPolicy.version && item.isMastered).length;
             return `<div style="padding:12px 0;border-bottom:1px solid var(--card-border)">
                 <b>${escape(SUBJ_NAMES[r.subject])} · ${escape(r.metadata.unitTitle || r.metadata.unitId)}</b><br>
-                ${{foundation:'기초 다지기',standard:'실력 쌓기',challenge:'응용 도전'}[band.name]} · 유효 최초 풀이 ${band.samples}문항 · ${band.score ?? '—'}%<br>
+                ${{foundation:'기초 다지기',standard:'실력 쌓기',challenge:'응용 도전',unknown:'판정 대기'}[band.name]} · 유효 최초 풀이 ${band.samples}문항 · ${band.score ?? '—'}%<br>
                 복습 시기 도래 ${due}개 · 날짜를 두고 기억 확인 ${stable}개<br><small>${escape(band.reason)}</small></div>`;
         });
         return `<section style="padding:18px"><div class="chart-title">단원별 난이도와 기억 확인</div>
@@ -813,7 +862,7 @@
     // ── 오답 현황 탭 ──
     function buildWrongTab(wrongAnswers) {
         const subjects = SUBJECT_IDS;
-        let html = '<div class="chart-title">오답 현황</div>';
+        let html = '<div class="chart-title">복습 시기가 된 오답 (최대 50개)</div>';
         let anyData = false;
 
         subjects.forEach(s => {
@@ -876,12 +925,13 @@
         const persistedSeconds = offset === 0 && ud.weeklyStats?.weekStart === StudyPeriods.weekly()
             ? (ud.weeklyStats.studyTime || 0)
             : 0;
-        const totalMin = Math.round(Math.max(reportSeconds, persistedSeconds) / 60);
+        const ledgerSeconds = (ud._dailyRecords || []).reduce((sum,row)=>sum+Object.values(row.subjects || {}).reduce((n,item)=>n+(item.learningTime||0)+(item.quizTime||0),0),0);
+        const totalMin = Math.round(Math.max(reportSeconds, persistedSeconds, ledgerSeconds) / 60);
         const quizCount = wr.length;
         const avgPct = quizCount > 0
             ? Math.round(wr.reduce((a,r) => a + (r.totalQuestions > 0 ? r.initialScore/r.totalQuestions*100 : 0), 0) / quizCount)
             : 0;
-        const studyDays = new Set(wr.map(r => new Date(r.date).toDateString())).size;
+        const studyDays = new Set([...wr.map(r => StudyPeriods.dateKey(new Date(r.date))), ...(ud._dailyRecords||[]).filter(r=>Object.values(r.subjects||{}).some(s=>(s.learningTime||0)+(s.quizTime||0)>0)).map(r=>r.date)]).size;
 
         const weekMonth = start.getMonth() + 1;
         const weekNum   = Math.ceil(start.getDate() / 7);
@@ -916,7 +966,7 @@
         </div>
 
         <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;margin-bottom:12px;">
-            <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">일별 학습 시간 (분)</div>
+            <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">일별 학습 시간 (분) · 빈 날짜는 미학습 확정이 아닌 기록 미확인입니다.</div>
             <canvas id="adminChartDaily" height="150"></canvas>
         </div>
 
@@ -963,6 +1013,12 @@
             });
         }
 
+        for (const row of ud._dailyRecords || []) {
+            const date = new Date(`${row.date}T12:00:00+09:00`);
+            const index = (date.getDay() + 6) % 7;
+            for (const [subject,item] of Object.entries(row.subjects || {})) if (dailyMin[subject])
+                dailyMin[subject][index] = Math.max(dailyMin[subject][index], Math.round(((item.learningTime||0)+(item.quizTime||0))/60));
+        }
         const ctx1 = document.getElementById('adminChartDaily')?.getContext('2d');
         if (ctx1) {
             window._adminWeekCharts.daily = new Chart(ctx1, {
@@ -1073,16 +1129,12 @@
 
     window.switchTab = switchTab;
 
-    window._navWeek = function(delta) {
+    window._navWeek = async function(delta) {
         const next = _weeklyOffset + delta;
         if (next > 0) return;
         _weeklyOffset = next;
-        const { reports } = window._adminData;
-        const el = document.getElementById('tabContent');
-        if (!el) return;
-        const ud = UserSession.getUserData() || {};
-        el.innerHTML = _weeklyHTML(reports, _weeklyOffset, ud);
-        requestAnimationFrame(() => _drawWeeklyCharts(reports, _weeklyOffset, ud));
+        try { await loadAdminWeek(next); }
+        catch(error) { document.getElementById('tabContent').textContent = '기록을 받지 못했습니다. 다시 시도해 주세요.'; }
     };
 
     // ─────────────────────────────────────────────
@@ -1141,6 +1193,7 @@
     window.saveStudyTimeConfig = saveStudyTimeConfig;
 
     document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
         const me = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
         if (!me || !ADMIN_IDS.includes(me)) {
             document.querySelector('.wrap').innerHTML = `

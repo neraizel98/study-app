@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260911-adaptive';
+    const APP_VERSION = '20260917-storage2';
 
     (async function () {
         try {
