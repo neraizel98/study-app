@@ -9,7 +9,7 @@
     });
     const hash=async text=>Array.from(new Uint8Array(await root.crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),b=>b.toString(16).padStart(2,'0')).join('');
     const base=async user=>(await R.getDB()).collection('users').doc(user);
-    const emit=(state,message)=>root.dispatchEvent?.(new CustomEvent('smartstudy:sync-state',{detail:{state,message}}));
+    const emitProgress=(user,kind,count,total)=>root.dispatchEvent?.(new CustomEvent('smartstudy:sync-progress',{detail:{user,kind,count,total}}));
     const identifier=(subject,item)=>subject==='math'?[item.levelId,item.semesterId,item.unitId,item.type].join(':')
         :item.wrongNoteId||item.questionId||item.word||item.hanja||item.type;
     async function pack(value){
@@ -83,17 +83,22 @@
         try{return await run;}finally{if(locks.get(key)===run)locks.delete(key);}
     }
     R.putReports=async(user,reports)=>serial(`reports:${user}`,async()=>{
-        await D.flush();emit('uploading','퀴즈 기록 동기화 중');
+        await D.flush();
+        if(!reports.length)emitProgress(user,'reports',0,0);
         for(let i=0;i<reports.length;i+=4){
             await Promise.all(reports.slice(i,i+4).map(report=>writeRecord(user,'quizRecords',String(report.sessionId),clean(report))));
-            if(i%80===0)emit('uploading',`퀴즈 기록 확인 ${Math.min(i+4,reports.length)}/${reports.length}`);
+            emitProgress(user,'reports',Math.min(i+4,reports.length),reports.length);
         }
     });
     R.putWrongAnswers=async(user,subjects)=>serial(`wrong:${user}`,async()=>{
-        await D.flush();emit('uploading','오답 기록 동기화 중');
+        await D.flush();
         const entries=Object.entries(subjects).flatMap(([subject,items])=>items.map(item=>({subject,item})));
-        for(let i=0;i<entries.length;i+=4)await Promise.all(entries.slice(i,i+4).map(({subject,item})=>
-            writeRecord(user,'wrongRecords',JSON.stringify([subject,identifier(subject,item)]),clean({subject,item}))));
+        if(!entries.length)emitProgress(user,'wrong',0,0);
+        for(let i=0;i<entries.length;i+=4){
+            await Promise.all(entries.slice(i,i+4).map(({subject,item})=>
+                writeRecord(user,'wrongRecords',JSON.stringify([subject,identifier(subject,item)]),clean({subject,item}))));
+            emitProgress(user,'wrong',Math.min(i+4,entries.length),entries.length);
+        }
     });
     async function changes(user,collection){
         const ref=await base(user), cursorKey=`cursor:${user}:${collection}`, cursor=D.getMeta(cursorKey)||0;
@@ -119,15 +124,14 @@
         return {user:profile.exists?profile.data():null,reports:[...(legacy.reports||[]),...reports.values],wrongAnswers:subjects,
             checkpoints:[reports,wrong].map(({cursorKey,checkpoint})=>({cursorKey,checkpoint})),migrationRequired:!marker.exists};
     };
-    R.confirmBundle=async(user,bundle)=>{
+    R.confirmBundle=async(user,bundle,{uploaded=false}={})=>{
         await D.flush();
-        for(const c of bundle.checkpoints||[])await D.setMeta(c.cursorKey,c.checkpoint);
         if(bundle.migrationRequired){
-            // Only mark complete after all legacy/local records have confirmed individual writes.
-            await R.putReports(user,app.LocalRepository.listReports(user));
-            await R.putWrongAnswers(user,app.LocalRepository.getWrongAnswers(user));
+            // The caller confirms every upload before publishing the migration marker.
+            if(!uploaded)throw new Error('이전 기록 업로드 확인이 필요합니다.');
             await (await base(user)).collection('data').doc('storageV2').set({version:2,completedAt:root.firebase.firestore.FieldValue.serverTimestamp()});
         }
+        for(const c of bundle.checkpoints||[])await D.setMeta(c.cursorKey,c.checkpoint);
     };
     R.getReportsPage=async(user,{before=null,start=null,end=null,limit=20}={})=>{
         let query=(await base(user)).collection('quizRecords').orderBy('date','desc');

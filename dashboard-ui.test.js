@@ -20,8 +20,12 @@ assert(index.includes("setCloudButtonState(item, 'redirecting')"),
     'Mobile redirect authentication must expose a non-stuck button state');
 assert(index.includes("querySelectorAll('.cloud-connect-btn, #cloudLoginBtn')"),
     'The first-screen connect button must share restored cloud state');
-assert(index.includes('await refreshCloudButtonState()'),
-    'Initial screen must finish authentication restoration');
+assert(index.includes('refreshCloudButtonState();'),
+    'Initial screen must restore authentication without blocking the dashboard');
+assert(index.includes('if (reconcile && typeof MissionManager.checkMissions'),
+    'Mission reconciliation must be optional when the screen refreshes');
+assert(index.includes("if (event.detail?.userId === UserSession.getActiveUser()) updateUI({ reconcile: false });"),
+    'Cloud completion must refresh the dashboard without writing missions again');
 assert(firebaseClient.includes('auth.getRedirectResult()'),
     'Mobile Google redirect results must be completed on return');
 assert(firebaseClient.includes('auth.signInWithPopup(provider)'),

@@ -21,6 +21,76 @@ let _syncReady   = false;
 const _timers    = {};
 const _syncingUsers = new Set();
 const _loginPromises = {};
+const _dirty = new Map();
+let _badgeOwner = null;
+const _watchdogs = new Map();
+const _initialSucceeded = new Set();
+const _retryTimers = new Map();
+const _retryDelays = new Map();
+function _retryLogin(userId) {
+    if (_retryTimers.has(userId) || window.navigator?.onLine === false) return;
+    const delay = Math.min(60000, (_retryDelays.get(userId) || 1000) * 2);
+    _retryDelays.set(userId, delay);
+    _retryTimers.set(userId, setTimeout(() => {
+        _retryTimers.delete(userId);
+        window.FireSync.onLogin(userId).catch(error => console.warn('[FireSync retry]', error));
+    }, delay));
+}
+function _touchSync(userId) {
+    clearTimeout(_watchdogs.get(userId));
+    _watchdogs.set(userId, setTimeout(() => _showSyncBadge('☁️ 서버 응답 대기 중 · 학습 기록은 기기에 보관됩니다', '#f0c674', true, userId), 30000));
+}
+
+function _dirtyKey(userId, kind) { return `${userId}:${kind}`; }
+function _queueUpload(userId, kind, delay) {
+    if (!userId) return;
+    const key = _dirtyKey(userId, kind);
+    const state = _dirty.get(key) || { generation: 0, confirmed: 0, running: false, delay };
+    state.generation++;
+    _dirty.set(key, state);
+    if (_syncReady && !_syncingUsers.has(userId)) _scheduleUpload(userId, kind, delay);
+}
+function _scheduleUpload(userId, kind, delay = 2000) {
+    const key = _dirtyKey(userId, kind);
+    clearTimeout(_timers[key]);
+    _timers[key] = setTimeout(() => { _timers[key] = null; _drainUpload(userId, kind); }, delay);
+}
+async function _drainUpload(userId, kind) {
+    const key = _dirtyKey(userId, kind), state = _dirty.get(key);
+    if (!state || state.running || _syncingUsers.has(userId) || !_syncReady) return;
+    state.running = true;
+    try {
+        while (state.confirmed < state.generation && !_syncingUsers.has(userId)) {
+            const generation = state.generation;
+            await ({user: _uploadUserData, reports: _uploadReports, wrong: _uploadWrong})[kind](userId);
+            state.confirmed = generation;
+        }
+        if (_initialSucceeded.has(userId) && !_hasPendingUploads(userId) && !_syncingUsers.has(userId)) {
+            _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364', false, userId);
+            window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
+        }
+        state.delay = 2000;
+    } catch (error) {
+        state.delay = Math.min(60000, (state.delay || 2000) * 2);
+        _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
+        _scheduleUpload(userId, kind, state.delay);
+    } finally {
+        state.running = false;
+        if (state.confirmed < state.generation && !_timers[key] && !_syncingUsers.has(userId)) _scheduleUpload(userId, kind, 0);
+    }
+}
+function _resumeUploads(userId) {
+    for (const kind of ['user', 'reports', 'wrong']) {
+        const state = _dirty.get(_dirtyKey(userId, kind));
+        if (state && state.confirmed < state.generation) _scheduleUpload(userId, kind, 0);
+    }
+}
+function _hasPendingUploads(userId) {
+    return ['user', 'reports', 'wrong'].some(kind => {
+        const state = _dirty.get(_dirtyKey(userId, kind));
+        return state && state.confirmed < state.generation;
+    });
+}
 
 // ─────────────────────────────────────────────
 //  Firebase SDK 동적 로드
@@ -54,9 +124,9 @@ function _debounce(key, fn, ms = 2000) {
 async function _uploadUserData(userId) {
     if (!_syncReady) return;
     try {
+        await _localRepository.flush?.();
         const data = _localRepository.getUser(userId);
         if (!data) return;
-        await _localRepository.flush?.();
         await _remoteRepository.putUser(userId, data);
         await _remoteRepository.putDaily?.(userId);
     } catch (e) { _showSyncBadge('⚠️ 저장 재시도 필요', '#ff5f6d', true); throw e; }
@@ -89,6 +159,7 @@ async function _downloadStudyConfig() {
 async function _uploadWrong(userId) {
     if (!_syncReady) return;
     try {
+        await _localRepository.flush?.();
         const raw = window.SmartStudy.DurableStore?.read(`SmartStudy_WrongAnswers_${userId}`);
         const wrongAnswers = raw ? JSON.parse(raw).subjects : _localRepository.getWrongAnswers(userId);
         const trimmed = wrongAnswers; // V2 preserves every historical attempt.
@@ -155,20 +226,31 @@ async function _downloadAndMerge(userId) {
             needsUpload = true;
         }
 
-        // 로컬이 더 최신이거나 첫 디바이스 → 클라우드에 즉시 업로드
-        if (needsUpload || _remoteRepository.confirmBundle) {
-            await Promise.all([
-                _uploadUserData(userId),
-                _uploadReports(userId),
-                _uploadWrong(userId)
-            ]);
+        // A migration must confirm each category before publishing its marker.
+        if (needsUpload || bundle.migrationRequired || _remoteRepository.confirmBundle) {
+            let generation = _dirty.get(_dirtyKey(userId, 'user'))?.generation || 0;
+            await _uploadUserData(userId);
+            const userState = _dirty.get(_dirtyKey(userId, 'user'));
+            if (userState) userState.confirmed = Math.max(userState.confirmed, generation);
+            _touchSync(userId);
+            _showSyncBadge('☁️ 학습 기록 1/1', '#4facfe', true, userId);
+            generation = _dirty.get(_dirtyKey(userId, 'reports'))?.generation || 0;
+            await _uploadReports(userId);
+            const reportsState = _dirty.get(_dirtyKey(userId, 'reports'));
+            if (reportsState) reportsState.confirmed = Math.max(reportsState.confirmed, generation);
+            generation = _dirty.get(_dirtyKey(userId, 'wrong'))?.generation || 0;
+            await _uploadWrong(userId);
+            const wrongState = _dirty.get(_dirtyKey(userId, 'wrong'));
+            if (wrongState) wrongState.confirmed = Math.max(wrongState.confirmed, generation);
             console.log('[FireSync] 로컬→클라우드 업로드 완료');
         }
 
-        await _remoteRepository.confirmBundle?.(userId, bundle);
+        _touchSync(userId);
+        _showSyncBadge('☁️ 최종 저장 확인 중', '#4facfe', true, userId);
+        await _remoteRepository.confirmBundle?.(userId, bundle, { uploaded: true });
         await _localRepository.flush?.();
         console.log('[FireSync] 동기화 완료');
-        window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
+        window.dispatchEvent(new CustomEvent('firemerged', { detail: { userId } }));
         return true;
     } catch (e) {
         console.warn('[FireSync] 동기화 실패:', e.message);
@@ -407,19 +489,13 @@ function _unionArr(a, b) {
 
 // 저장 완료 이벤트를 구독한다. 도메인 함수를 덮어쓰지 않으므로 로드 순서와 함수 참조에 안전하다.
 _storageEvents.subscribe('user:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`userData_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) return _uploadUserData(userId);
-    }, 15000);
+    _queueUpload(userId, 'user', 15000);
 });
 _storageEvents.subscribe('reports:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`reports_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) return _uploadReports(userId);
-    }, 2000);
+    _queueUpload(userId, 'reports', 2000);
 });
 _storageEvents.subscribe('wrongAnswers:saved', ({ userId }) => {
-    if (_syncReady && userId) _debounce(`wrong_${userId}`, () => {
-        if (!_syncingUsers.has(userId)) return _uploadWrong(userId);
-    }, 2000);
+    _queueUpload(userId, 'wrong', 2000);
 });
 _storageEvents.subscribe('config:saved', () => {
     if (_syncReady) _debounce('studyConfig', () => _uploadStudyConfig(_localRepository.getTimerConfig()), 2000);
@@ -428,7 +504,8 @@ _storageEvents.subscribe('config:saved', () => {
 // ─────────────────────────────────────────────
 //  동기화 상태 UI (작은 뱃지)
 // ─────────────────────────────────────────────
-function _showSyncBadge(text, color = '#4facfe', persistent = false) {
+function _showSyncBadge(text, color = '#4facfe', persistent = false, userId = null) {
+    if (userId && userId !== _localRepository.getActiveUser()) return;
     let badge = document.getElementById('_firesync_badge');
     if (!badge) {
         badge = document.createElement('div');
@@ -461,7 +538,7 @@ window.FireSync = {
         _syncReady = false;
         const db = await _initDB();
         const activeUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
-        if (db && activeUser) await this.onLogin(activeUser);
+        if (db && activeUser) this.onLogin(activeUser).catch(error => console.warn('[FireSync]', error));
         return db;
     },
     /**
@@ -473,17 +550,40 @@ window.FireSync = {
         if (_loginPromises[userId]) return _loginPromises[userId];
         _loginPromises[userId] = (async () => {
             _syncingUsers.add(userId);
-            _showSyncBadge('☁️ 동기화 중...');
+            _badgeOwner = userId;
+            _showSyncBadge('☁️ 동기화 중...', '#4facfe', true, userId);
+            _touchSync(userId);
             try {
                 await _localRepository.ready;
                 const db = await _initDB();
-                if (!db) { _showSyncBadge('📵 오프라인 모드'); return false; }
+                if (!db) { _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true, userId); return false; }
                 const synced = await _downloadAndMerge(userId);
-                if (synced) _showSyncBadge('✅ 동기화 완료', '#56d364');
+                if (synced) {
+                    _initialSucceeded.add(userId);
+                    _retryDelays.delete(userId);
+                    clearTimeout(_retryTimers.get(userId));
+                    _retryTimers.delete(userId);
+                } else { _initialSucceeded.delete(userId); _retryLogin(userId); }
+                if (synced && !_hasPendingUploads(userId)) {
+                    _showSyncBadge('✅ 동기화 완료', '#56d364', false, userId);
+                    window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
+                }
+                else if (synced) _showSyncBadge('☁️ 추가 변경 기록 전송 중', '#4facfe', true, userId);
+                else _showSyncBadge('⚠️ 기기에 보관 중 · 연결되면 재시도', '#ff5f6d', true, userId);
                 return synced;
+            } catch (error) {
+                _initialSucceeded.delete(userId);
+                _retryLogin(userId);
+                _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
+                console.warn('[FireSync] 동기화 오류:', error);
+                return false;
             } finally {
+                clearTimeout(_watchdogs.get(userId));
+                _watchdogs.delete(userId);
                 _syncingUsers.delete(userId);
                 delete _loginPromises[userId];
+                if (_badgeOwner === userId) _badgeOwner = null;
+                _resumeUploads(userId);
             }
         })();
         return _loginPromises[userId];
@@ -537,6 +637,12 @@ document.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener?.('online', () => { const uid = _localRepository.getActiveUser(); if (uid) window.FireSync.onLogin(uid); });
 window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true));
 window.addEventListener?.('smartstudy:storage-error', () => _showSyncBadge('⚠️ 기기 저장 실패 · 앱을 닫지 말고 백업해 주세요', '#ff5f6d', true));
-window.addEventListener?.('smartstudy:sync-state', event => _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true));
+window.addEventListener?.('smartstudy:sync-state', event => { if (!_badgeOwner) _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true); });
+window.addEventListener?.('smartstudy:sync-progress', event => {
+    const {user, kind, count, total} = event.detail || {};
+    if (!user || !['reports', 'wrong'].includes(kind) || !Number.isFinite(count) || !Number.isFinite(total)) return;
+    if (_syncingUsers.has(user)) _touchSync(user);
+    _showSyncBadge(`☁️ ${kind === 'reports' ? '퀴즈' : '오답'} 기록 ${count}/${total}`, '#4facfe', true, user);
+});
 
 window.addEventListener?.('pagehide', () => { const uid = _localRepository.getActiveUser(); if (_syncReady && uid) _uploadUserData(uid).catch(()=>{}); });

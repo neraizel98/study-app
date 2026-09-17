@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v66-partition-storage';
+const CACHE_NAME = 'smart-study-v67-syncfix';
 
 try {
     importScripts('./firebase-config.js');

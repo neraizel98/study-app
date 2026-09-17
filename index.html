@@ -378,8 +378,8 @@
     <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script>
     <script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260917-storage2"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-storage2"></script>
-    <script src="firebase-sync.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-syncfix"></script>
+    <script src="firebase-sync.js?v=20260917-syncfix"></script>
     <script src="notification-client.js?v=20260810"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="missions.js?v=20260729-mission-periods"></script>
@@ -391,7 +391,7 @@
             const userIdInput = document.getElementById('userIdInput');
             const loginBtn = document.getElementById('loginBtn');
 
-            function updateUI() {
+            function updateUI({ reconcile = true } = {}) {
                 try {
                     const activeUser = UserSession.getActiveUser();
                     if (activeUser) {
@@ -399,8 +399,8 @@
                         dashboardSection.style.display = 'block';
                         
                         // 출석 체크 및 미션 갱신
-                        if (typeof UserSession.checkIn === 'function') UserSession.checkIn();
-                        if (typeof MissionManager.checkMissions === 'function') MissionManager.checkMissions();
+                        if (reconcile && typeof UserSession.checkIn === 'function') UserSession.checkIn();
+                        if (reconcile && typeof MissionManager.checkMissions === 'function') MissionManager.checkMissions();
                         
                         // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
                         if (window.AppUI) AppUI.init({
@@ -480,11 +480,7 @@
                 if (!id) { alert('이름을 입력해주세요!'); return; }
                 UserSession.setActiveUser(id);
                 if (window.FireSync) {
-                    loginBtn.disabled = true;
-                    loginBtn.textContent = '☁️ 동기화 중...';
-                    await FireSync.onLogin(id);
-                    loginBtn.disabled = false;
-                    loginBtn.textContent = '학습 시작하기';
+                    FireSync.onLogin(id).catch(error => console.warn('[Cloud Sync]', error));
                 }
                 updateUI();
             });
@@ -553,8 +549,8 @@
                             setCloudButtonState(button, user ? 'connected' : 'disconnected');
                         });
                         const learner = UserSession.getActiveUser();
-                        if (user && learner && window.FireSync) await FireSync.onLogin(learner);
                         if (learner) updateUI();
+                        if (user && learner && window.FireSync) FireSync.onLogin(learner).catch(error => console.warn('[Cloud Sync]', error));
                     });
                 } catch (error) {
                     console.warn('[Cloud Auth Watch]', error);
@@ -572,7 +568,10 @@
             watchCloudAuthState();
 
             window.addEventListener('firesynced', event => {
-                if (event.detail?.userId === UserSession.getActiveUser()) updateUI();
+                if (event.detail?.userId === UserSession.getActiveUser()) updateUI({ reconcile: false });
+            });
+            window.addEventListener('firemerged', event => {
+                if (event.detail?.userId === UserSession.getActiveUser()) updateUI({ reconcile: false });
             });
 
             userIdInput.addEventListener('keypress', (e) => {
@@ -580,9 +579,9 @@
             });
 
             const activeUser = UserSession.getActiveUser();
-            if (activeUser && window.FireSync) await FireSync.onLogin(activeUser);
             updateUI();
-            await refreshCloudButtonState();
+            if (activeUser && window.FireSync) FireSync.onLogin(activeUser).catch(error => console.warn('[Cloud Sync]', error));
+            refreshCloudButtonState();
         });
     </script>
 

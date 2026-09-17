@@ -78,6 +78,13 @@ function mockFirestore(){
     const detail=await R.getReportDetail('test',page.reports[0]);assert.equal(detail.metadata.attempts.length,1);
     const older=await R.getReportsPage('test',{before:page.cursor});assert.equal(older.reports.length,5);
     const bundle=await R.getUserBundle('test');assert.equal(bundle.reports.length,25);
+    const markerPath='users/test/data/storageV2';
+    await assert.rejects(R.confirmBundle('test',bundle),/업로드 확인/);
+    assert.equal(remote.docs.has(markerPath),false,'migration marker requires confirmed uploads');
+    const beforeConfirmation=remote.writes;
+    await R.confirmBundle('test',bundle,{uploaded:true});
+    assert.equal(remote.docs.has(markerPath),true,'migration marker follows confirmed uploads');
+    assert.equal(remote.writes-beforeConfirmation,1,'confirmation never repeats the entire upload');
     remote.fail=true;
     await assert.rejects(R.putReports('test',[{sessionId:'failed',date:3000,subject:'math'}]),/offline/);
     assert.equal([...remote.docs.keys()].filter(k=>k.includes('/quizRecords/')).length,25,'failed upload never acknowledges or publishes an incomplete record');
