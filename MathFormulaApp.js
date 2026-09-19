@@ -1,9 +1,17 @@
 const MathFormulaApp = (() => {
     let formulaNumber = 1;
     let mode = 'study';
+    let reviewMode = false;
     let questions = [];
     let answers = {};
     let submitted = false;
+    let sessionId = null;
+    let initialScore = null;
+    let submittedAt = null;
+    let round = 0;
+    let gradedAnswers = {};
+    let attemptHistory = [];
+    let hintUsed = new Set();
     const allLevels = ['초6', '중1', '중2', '중3', '고1', '고2', '고3'];
     let selectedLevels = new Set(allLevels);
     let mobileMenuOpen = true;
@@ -380,25 +388,44 @@ const MathFormulaApp = (() => {
 
     function renderQuiz() {
         if (!questions.length || questions[0].formulaNumber !== formulaNumber) {
-            questions = createCalculationQuestions(formulaNumber).map(q => ({ ...q, formulaNumber }));
+            const savedWrong = reviewMode && typeof WrongNote !== 'undefined'
+                ? (WrongNote.getAll().math || []).filter(item => item.levelId === 'formula'
+                    && item.unitId === `formula-${formulaNumber}` && Array.isArray(item.choices)
+                    && item.choices.length && item.question && item.answer !== undefined)
+                : [];
+            questions = (savedWrong.length ? savedWrong.map(item => ({
+                kind: 'choice', prompt: item.question, choices: item.choices, answer: item.answer,
+                solution: item.explanation || '', noteType: item.type
+            })) : createCalculationQuestions(formulaNumber)).map(q => ({ ...q, formulaNumber }));
             answers = {};
             submitted = false;
+            sessionId = `formula-${Date.now()}-${window.crypto?.randomUUID?.() || Math.random().toString(36).slice(2)}`;
+            initialScore = null;
+            submittedAt = null;
+            round = 0;
+            gradedAnswers = {};
+            attemptHistory = [];
+            hintUsed = new Set();
+            window.MathFormulaTime?.startQuizSession();
         }
         const item = formula();
+        const score = submitted ? questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length : 0;
         const quizLabels = ['원리 이해', '기호·조건', '계산 적용'];
         $('content').innerHTML = `
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')} · RANDOM QUIZ</div>
                 <h2>${item.title} 퀴즈</h2>
-                <p class="lesson-summary">공식을 직접 대입하고 계산하는 객관식 문제 3개가 매번 새로운 수치로 출제됩니다.</p>
+                <p class="lesson-summary">${reviewMode ? '기기에 보관된 공식 오답 원문을 다시 풀어봅니다.' : '공식을 직접 대입하고 계산하는 객관식 문제 3개가 매번 새로운 수치로 출제됩니다.'}</p>
                 <div class="quiz-list">${questions.map((q, qi) => {
                     const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
                         <div class="quiz-label">${quizLabels[qi]} ${qi + 1}</div>
                         <h3>${q.prompt}</h3>
                         ${q.kind === 'choice'
-                            ? `<div class="choice-grid">${q.choices.map(choice => `<button class="choice-btn ${String(answers[qi]) === choice ? 'selected' : ''}" data-question="${qi}" data-answer="${choice}" ${submitted ? 'disabled' : ''}>${choice}${q.unit ? ` ${q.unit}` : ''}</button>`).join('')}</div>`
-                            : `<textarea class="written-answer" data-written="${qi}" placeholder="풀이를 적고 마지막에 답을 숫자로 입력하세요." ${submitted ? 'disabled' : ''}>${answers[qi] || ''}</textarea>`}
+                            ? `<div class="choice-grid">${q.choices.map(choice => `<button class="choice-btn ${String(answers[qi]) === choice ? 'selected' : ''}" data-question="${qi}" data-answer="${choice}" ${submitted && result ? 'disabled' : ''}>${choice}${q.unit ? ` ${q.unit}` : ''}</button>`).join('')}</div>`
+                            : `<textarea class="written-answer" data-written="${qi}" placeholder="풀이를 적고 마지막에 답을 숫자로 입력하세요." ${submitted && result ? 'disabled' : ''}>${answers[qi] || ''}</textarea>`}
+                        ${!submitted || !result ? `<button type="button" class="secondary-btn" data-hint="${qi}">💡 힌트</button>` : ''}
+                        ${hintUsed.has(qi) ? `<p class="formula-hint">${q.solution}</p>` : ''}
                         ${submitted ? `<div class="solution ${result ? 'ok' : 'no'}">
                             <strong>${result ? '✅ 정답입니다.' : `❌ 다시 확인해 보세요. 정답: ${q.answer}${q.unit ? ` ${q.unit}` : ''}`}</strong>
                             <p>${q.solution}</p>
@@ -407,9 +434,9 @@ const MathFormulaApp = (() => {
                 }).join('')}</div>
                 <div class="quiz-actions">
                     <button id="newQuizBtn" class="secondary-btn">🔄 다른 문제</button>
-                    <button id="submitQuizBtn" class="primary-btn">${submitted ? '다시 채점하기' : '채점하기'}</button>
+                    <button id="submitQuizBtn" class="primary-btn" ${submitted ? 'disabled' : ''}>${submitted ? (score === questions.length ? '채점 완료' : '틀린 답을 바꿔 다시 도전') : round ? '다시 채점하기' : '채점하기'}</button>
                 </div>
-                ${submitted ? `<div class="score-box">${questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length} / ${questions.length} 정답</div>` : ''}
+                ${submitted ? `<div class="score-box">${score} / ${questions.length} 정답</div>` : ''}
             </article>`;
         bindQuiz();
     }
@@ -502,21 +529,69 @@ const MathFormulaApp = (() => {
     function bindQuiz() {
         document.querySelectorAll('[data-question]').forEach(button => button.addEventListener('click', () => {
             answers[Number(button.dataset.question)] = button.dataset.answer;
+            submitted = false;
             renderQuiz();
         }));
         document.querySelectorAll('[data-written]').forEach(area => {
-            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; });
+            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; submitted = false; });
         });
+        document.querySelectorAll('[data-hint]').forEach(button => button.addEventListener('click', () => {
+            hintUsed.add(Number(button.dataset.hint));
+            renderQuiz();
+        }));
         $('newQuizBtn').addEventListener('click', () => {
+            reviewMode = false;
             questions = [];
             answers = {};
             submitted = false;
+            setUrl();
             renderQuiz();
         });
         $('submitQuizBtn').addEventListener('click', () => {
             document.querySelectorAll('[data-written]').forEach(area => {
                 answers[Number(area.dataset.written)] = area.value;
             });
+            if (submitted) return;
+            if (round && questions.every((_, index) => answers[index] === gradedAnswers[index])) {
+                submitted = true;
+                renderQuiz();
+                return;
+            }
+            const item = formula();
+            const nextRound = round + 1;
+            const attempts = questions.map((q, index) => ({
+                questionId: `formula-${formulaNumber}-${q.noteType || `question-${index}`}`,
+                question: q.prompt,
+                selectedAnswer: answers[index] ?? '',
+                correctAnswer: q.answer,
+                correct: window.MathFormulaQuiz.isCorrect(q, answers[index]),
+                assisted: hintUsed.has(index),
+                hintUsed: hintUsed.has(index),
+                round: nextRound
+            }));
+            const score = attempts.filter(attempt => attempt.correct).length;
+            if (initialScore === null) { initialScore = score; submittedAt = Date.now(); }
+            attemptHistory.push(...attempts.filter((_, index) => nextRound === 1 || answers[index] !== gradedAnswers[index]));
+            if (typeof saveQuizResult === 'function') saveQuizResult(
+                sessionId, 'math', item.level, questions.length, score, initialScore,
+                window.MathFormulaTime?.getQuizSessionSeconds() || 0, score === questions.length,
+                {source: 'math-formula', formulaNumber, formulaTitle: item.title, levelId: 'formula',
+                    semesterId: item.level, unitId: `formula-${formulaNumber}`, attempts,
+                    attemptHistory: [...attemptHistory], submittedAt, status: 'submitted', round: nextRound}
+            );
+            if (typeof WrongNote !== 'undefined') attempts.forEach((attempt, index) => {
+                if (nextRound > 1 && answers[index] === gradedAnswers[index]) return;
+                const q = questions[index];
+                WrongNote.save('math', {
+                    levelId: 'formula', semesterId: item.level, unitId: `formula-${formulaNumber}`,
+                    type: q.noteType || `question-${index}`, questionId: attempt.questionId,
+                    question: q.prompt, answer: q.answer, correctAnswer: q.answer,
+                    selectedAnswer: attempt.selectedAnswer, choices: q.choices,
+                    explanation: q.solution, hintUsed: attempt.hintUsed
+                }, attempt.correct ? 'correct' : 'wrong', sessionId, nextRound);
+            });
+            round = nextRound;
+            gradedAnswers = { ...answers };
             submitted = true;
             renderQuiz();
         });
@@ -547,6 +622,7 @@ const MathFormulaApp = (() => {
         const params = new URLSearchParams(location.search);
         formulaNumber = Math.min(MATH_FORMULAS.length, Math.max(1, Number(params.get('formula')) || 1));
         mode = params.get('mode') === 'quiz' ? 'quiz' : 'study';
+        reviewMode = mode === 'quiz' && params.get('review') === '1';
         const savedLevels = SmartStudy.LocalRepository.getPreference(SmartStudy.StorageKeys.formulaLevels, []);
         const validLevels = savedLevels.filter(level => allLevels.includes(level));
         if (validLevels.length) selectedLevels = new Set(validLevels);

@@ -348,7 +348,7 @@ const LearningPolicy = {
     },
     evaluate(reports, subject, context) {
         const rows = (reports || []).filter(r => r.subject === subject && r.metadata?.contentVersion === this.version
-            && !r.metadata.review && r.metadata.context === context).sort((a,b) => a.date-b.date);
+            && !r.metadata.review && !r.metadata.assessment && r.metadata.context === context).sort((a,b) => a.date-b.date);
         const seen = new Map();
         const sessions = rows.map(r => {
             const eligible = (r.metadata.initialAttempts || []).filter(a => {
@@ -636,7 +636,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     if (metadata) data.find(r=>r.sessionId===sessionId).metadata.adaptiveBand = LearningPolicy.evaluate(data, subject, LearningPolicy.context(subject,metadata));
     LocalRepository.saveReports(userId, data);
 
-    if (isCompleted && isNewSession) {
+    if (isCompleted && isNewSession && metadata?.source !== 'math-formula') {
         const previous = data
             .filter(report => report.sessionId !== sessionId && report.subject === subject && report.level === level && report.isCompleted)
             .sort((a, b) => Number(b.date || b.createdAt || 0) - Number(a.date || a.createdAt || 0))
@@ -665,7 +665,7 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
 
     // 경험치 및 통계 업데이트
     const user = UserSession.getUserData();
-    if (user) {
+    if (user && metadata?.source !== 'math-formula') {
         // 모든 과목의 timeSpentSeconds는 자리비움을 제외한 실제 퀴즈 시간이다.
         // 학습 시간은 StudyTimer가 별도로 합산하므로 여기서는 퀴즈 시간만 더한다.
         const safeDelta = (timeDelta >= 0 && timeDelta <= 3600) ? timeDelta : 0;

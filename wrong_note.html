@@ -205,7 +205,7 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260917-storage2"></script>
+    <script src="report.js?v=20260919-learning1"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-syncfix"></script><script src="firebase-sync.js?v=20260917-syncfix"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script>
@@ -279,7 +279,7 @@
                         metaText = item.level;
                         explanation = `훈음: ${item.eum} / 뜻: ${item.meaning}`;
                     } else if (currentSubject === 'math') {
-                        mainText = Utils.renderMath(item.type || '알 수 없는 유형');
+                        mainText = item.levelId === 'formula' ? `수학 공식 ${item.unitId?.replace('formula-', '') || ''}` : Utils.renderMath(item.type || '알 수 없는 유형');
                         const qStr = (item.question || '문제 내용이 없습니다.').toString();
                         subText = Utils.renderMath(qStr.substring(0, 80)) + (qStr.length > 80 ? '...' : '');
                         metaText = `${item.levelId || '?'} ${item.semesterId || '?'}학기`;
@@ -330,6 +330,17 @@
                         </div>
                     `;
                     container.appendChild(card);
+                    if (currentSubject === 'math' && item.levelId === 'formula' && item.question && item.choices?.length) {
+                        const retry = document.createElement('button');
+                        retry.type = 'button';
+                        retry.className = 'solution-btn';
+                        retry.textContent = '🔁 저장된 문제 다시 풀기';
+                        retry.addEventListener('click', () => {
+                            const number = Number(String(item.unitId).replace('formula-', ''));
+                            if (Number.isInteger(number) && number > 0) location.href = `math_formula.html?formula=${number}&mode=quiz&review=1`;
+                        });
+                        card.appendChild(retry);
+                    }
                 });
             }
 
@@ -351,7 +362,9 @@
                     const all = WrongNote.getAll();
                     const target = all.math.find(m => m.type === identifier);
                     if (target) {
-                        targetUrl = `math_quiz.html?level=${target.levelId}&semester=${target.semesterId}&unit=${target.unitId}&mode=review`;
+                        targetUrl = target.levelId === 'formula'
+                            ? `math_formula.html?formula=${Number(String(target.unitId).replace('formula-', ''))}&mode=quiz&review=1`
+                            : `math_quiz.html?level=${target.levelId}&semester=${target.semesterId}&unit=${target.unitId}&mode=review`;
                     }
                 }
                 else if (subject === 'reading') targetUrl = 'reading.html?mode=review';
@@ -381,7 +394,9 @@
                     const activeMath = all.math.filter(m => !m.isMastered);
                     const first = activeMath[0] || all.math[0];
                     if (first) {
-                        targetUrl = `math_quiz.html?level=${first.levelId}&semester=${first.semesterId}&unit=${first.unitId}&mode=review`;
+                        targetUrl = first.levelId === 'formula'
+                            ? `math_formula.html?formula=${Number(String(first.unitId).replace('formula-', ''))}&mode=quiz&review=1`
+                            : `math_quiz.html?level=${first.levelId}&semester=${first.semesterId}&unit=${first.unitId}&mode=review`;
                     }
                 }
                 else if (currentSubject === 'reading') targetUrl = 'reading.html?mode=review';

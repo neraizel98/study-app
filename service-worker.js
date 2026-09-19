@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v67-syncfix';
+const CACHE_NAME = 'smart-study-v68-learning-upgrade';
 
 try {
     importScripts('./firebase-config.js');
@@ -108,6 +108,11 @@ const STATIC_ASSETS = [
     './MathFormulaQuizVolume2.js',
     './MathFormulaApp.js',
     './MathFormulaTime.js',
+    './learning-plan.js',
+    './learning-session.js',
+    './weekly-assessment.js',
+    './today.html',
+    './weekly_assessment.html',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',

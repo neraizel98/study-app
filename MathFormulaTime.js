@@ -6,6 +6,7 @@ const MathFormulaTime = (() => {
     let lastTickAt = Date.now();
     let pendingStudy = 0;
     let pendingQuiz = 0;
+    let sessionQuizSeconds = 0;
     let timerId = null;
 
     const currentMode = () =>
@@ -19,7 +20,10 @@ const MathFormulaTime = (() => {
 
     function record(mode, seconds) {
         const safeSeconds = Math.max(0, Number(seconds) || 0);
-        if (mode === 'quiz') pendingQuiz += safeSeconds;
+        if (mode === 'quiz') {
+            pendingQuiz += safeSeconds;
+            sessionQuizSeconds += safeSeconds;
+        }
         else pendingStudy += safeSeconds;
     }
 
@@ -70,7 +74,11 @@ const MathFormulaTime = (() => {
         setInterval(flush, SAVE_INTERVAL_MS);
     }
 
-    return { init, flush, record, currentMode };
+    return {
+        init, flush, record, currentMode,
+        startQuizSession() { sessionQuizSeconds = 0; },
+        getQuizSessionSeconds() { return Math.floor(sessionQuizSeconds); }
+    };
 })();
 
 window.MathFormulaTime = MathFormulaTime;

@@ -964,6 +964,11 @@ window.AppEngine = {
         speakWordBtn = $('speakWordBtn'); speakWordUkBtn = $('speakWordUkBtn'); speakDefBtn = $('speakDefBtn'); speakDefUkBtn = $('speakDefUkBtn'); speakExBtn = $('speakExBtn'); speakExUkBtn = $('speakExUkBtn');
         prevBtn = $('prevBtn'); nextBtn = $('nextBtn');
         levelBtns = document.querySelectorAll('.level-btn');
+        const requestedLevel = new URLSearchParams(window.location.search).get('level');
+        if (requestedLevel && window.vocabData?.[requestedLevel]) {
+            currentLevel = requestedLevel;
+            levelBtns.forEach(button => button.classList.toggle('active', button.dataset.level === currentLevel));
+        }
         studyModeBtn = $('studyModeBtn'); quizModeBtn = $('quizModeBtn');
         studyView = $('studyView'); studyControls = $('studyControls'); quizView = $('quizView');
         quizQNumEl = $('quizQNum'); phaseBadgeEl = $('phaseBadge'); quizScoreEl = $('quizScoreEl');

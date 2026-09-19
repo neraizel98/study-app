@@ -285,7 +285,7 @@
 
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260917-storage2"></script>
+    <script src="report.js?v=20260919-learning1"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-syncfix"></script><script src="firebase-sync.js?v=20260917-syncfix"></script><script src="notification-client.js?v=20260810"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
@@ -311,9 +311,12 @@
             const quizModeBtn = document.getElementById('quizModeBtn');
             const modeBtns = [studyModeBtn, quizModeBtn];
             
-            let currentLevel = 'elementary-6';
-            let currentSemester = '1';
+            const requested = new URLSearchParams(location.search);
+            let currentLevel = MathData[requested.get('level')] ? requested.get('level') : 'elementary-6';
+            let currentSemester = MathData[currentLevel]?.semesters?.[requested.get('semester')] ? requested.get('semester') : '1';
             let currentMode = 'study';
+            levelBtns.forEach(button => button.classList.toggle('active', button.dataset.level === currentLevel));
+            semesterBtns.forEach(button => button.classList.toggle('active', button.dataset.semester === currentSemester));
 
             function renderTOC() {
                 const levelData = MathData[currentLevel];

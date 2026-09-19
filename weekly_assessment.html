@@ -1,0 +1,146 @@
+<!doctype html><html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>주간 학습 확인 · Smart Study</title><link rel="stylesheet" href="styles.css"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css"><script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script><style>
+body{background:#0d1117;color:#edf5ff;font-family:Arial,sans-serif;margin:0}.wrap{max-width:850px;margin:auto;padding:22px 15px 80px}
+a{color:#8bd1ff}.panel{background:#172238;border:1px solid #394b65;border-radius:16px;padding:20px;margin:16px 0}
+h1{font-size:1.7rem}h2{font-size:1.15rem}.muted{color:#afc0d7;line-height:1.6}.counts{display:flex;gap:8px;flex-wrap:wrap}.counts span{background:#25374e;border-radius:8px;padding:8px}
+button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px;padding:11px 17px;font-weight:700;cursor:pointer;margin:7px 6px 7px 0}button:disabled{opacity:.5;cursor:default}
+.choice{display:block;width:100%;text-align:left;background:#24374f;color:white;border:1px solid #46617e}.choice.selected{border-color:#74d8ff;background:#204c70}.passage{white-space:pre-line;background:#0d192c;padding:15px;border-radius:10px;line-height:1.75}
+.result{border-left:4px solid #67c5ff;padding:8px 14px;background:#11243a;line-height:1.6}
+@media(max-width:600px){.wrap{padding:15px 10px 60px}.panel{padding:15px}}
+</style></head><body><main class="wrap"><a id="back" href="index.html">← 대시보드</a><h1 id="title">주간 학습 확인</h1>
+<p class="muted" id="intro">최근 실제로 학습한 범위만 확인합니다. 제출 전에는 정답과 해설을 표시하지 않습니다.</p>
+<div id="counts" class="counts"></div><div id="empty" class="panel" hidden></div>
+<section id="work" class="panel" hidden><p id="position" class="muted"></p><h2 id="question"></h2><div id="passage"></div><div id="choices"></div><div id="result" class="result" hidden></div><div><button id="prev">이전</button><button id="next">다음</button><button id="submit">답안 제출</button></div><p id="saved" class="muted"></p></section>
+</main>
+<script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script><script src="report.js"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260917-syncfix"></script><script src="firebase-sync.js?v=20260917-syncfix"></script>
+<script src="learning-plan.js"></script><script src="learning-session.js"></script><script src="weekly-assessment.js"></script>
+<script>
+(async function(){
+    await SmartStudy.LocalRepository.ready;
+    const user=SmartStudy.LocalRepository.getActiveUser();if(!user){location.href='index.html';return;}
+    const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);
+    const practice=params.get('mode')==='practice',taskId=params.get('task');
+    const session=SmartStudy.LearningSession,planApi=SmartStudy.LearningPlan,assessment=SmartStudy.WeeklyAssessment;
+    const names={reading:'국어 독해',english:'영어',math:'수학'};
+    const weekStart=()=>{const d=new Date(),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});};
+    const plan=practice?planApi.getPlan(user):null,task=plan?.tasks.find(item=>item.id===taskId);
+    if(practice&&!task){$('empty').hidden=false;$('empty').textContent='오늘 학습 과제를 찾지 못했습니다.';return;}
+    const sessionId=practice?`practice:${plan.id}:${taskId}:${params.get('run')||'first'}`:`assessment:${user}:${weekStart()}`;
+    $('back').href=practice?'today.html':'index.html';
+    $('title').textContent=practice?`${names[task.subject]} 문항 연습`:'주간 학습 확인';
+    $('intro').textContent=practice?'선택한 단원의 문항으로 연습합니다. 답안은 이 기기에 저장되어 이어 풀 수 있습니다.':'최근 실제 학습 범위의 문항만 출제합니다. 영어 예문은 기존 예문 재확인이며 새 상황의 실력평가로 보지 않습니다.';
+    let draft=session.get(user,sessionId),groups;
+    if(!draft){
+        if(practice){
+            const scope={context:task.context,seenKeys:new Set(),learnedWords:new Set()};
+            if(task.subject==='english')for(const word of window.vocabData?.[task.context?.unitId]||[])scope.learnedWords.add(word.word.toLowerCase());
+            const band=LearningPolicy.evaluate(SmartStudy.LocalRepository.listReports(user),task.subject,LearningPolicy.context(task.subject,task.context)).name;
+            groups={[task.subject]:assessment.buildAssessmentItems({subject:task.subject,scope,count:5,mode:'practice',band})};
+            groups[task.subject].adaptiveBandSnapshot=band;
+        }else groups=assessment.buildWeekly(user,5);
+        const questions=Object.values(groups).flatMap(group=>group.items||[]);
+        const candidate={userId:user,sessionId,planId:plan?.id||null,taskId:task?.id||null,
+            mode:practice?'practice':'assessment',subject:task?.subject||'mixed',context:task?.context||null,
+            questions,responses:{},cursor:0,activeSeconds:0,subjectSeconds:{reading:0,english:0,math:0},
+            requestedCounts:Object.fromEntries(Object.entries(groups).map(([subject,group])=>[subject,group.requestedCount])),
+            adaptiveBandSnapshot:practice?groups[task.subject].adaptiveBandSnapshot:'standard',
+            submittedAt:null};
+        draft=questions.length?session.save(user,candidate):candidate;
+    }
+    const requested=draft.requestedCounts||{},actual={};for(const question of draft.questions)actual[question.subject]=(actual[question.subject]||0)+1;
+    for(const subject of practice?[task.subject]:assessment.subjects){
+        const label=document.createElement('span');label.textContent=`${names[subject]} ${actual[subject]||0}/${requested[subject]||5}문항`;$('counts').append(label);
+    }
+    if(!draft.questions.length){$('empty').hidden=false;$('empty').textContent='최근 학습 범위에서 낼 수 있는 검증 문항이 없습니다. 학습 후 다시 확인해 주세요.';return;}
+    const ownsSession=()=>SmartStudy.LocalRepository.getActiveUser()===draft.userId;
+    const accountGuard=()=>{if(ownsSession())return true;$('work').hidden=true;$('empty').hidden=false;$('empty').textContent='계정이 바뀌었습니다. 원래 학습자 계정으로 돌아가 주세요.';return false;};
+    window.addEventListener('storage',accountGuard);
+    window.addEventListener('focus',accountGuard);
+    if(!accountGuard())return;
+    if(Object.entries(requested).some(([subject,count])=>(actual[subject]||0)<count)){
+        const label=document.createElement('p');label.className='muted';label.textContent='일부 과목은 실제 학습 범위의 문항이 부족합니다. 학습하지 않은 단원은 추가하지 않았습니다.';$('counts').after(label);
+    }
+    let activeDelta=0,submitting=false;
+    const clock=session.createClock(seconds=>{
+        if(draft.submittedAt)return;
+        draft.activeSeconds+=seconds;const subject=draft.questions[draft.cursor]?.subject;
+        if(subject)draft.subjectSeconds[subject]=(draft.subjectSeconds[subject]||0)+seconds;
+        activeDelta+=seconds;
+    });
+    function persist(){if(draft.submittedAt||activeDelta<=0||!accountGuard())return;draft=session.save(user,draft);activeDelta=0;}
+    const timer=setInterval(()=>{clock.tick();persist();},1000);
+    ['click','keydown','touchstart','scroll'].forEach(name=>window.addEventListener(name,clock.mark,{passive:true}));
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')clock.start();else{clock.stop();persist();}});
+    window.addEventListener('pagehide',()=>{clock.stop();persist();clearInterval(timer);});
+    if(!draft.submittedAt)clock.start();
+    function render(){
+        const q=draft.questions[draft.cursor];$('work').hidden=false;
+        $('position').textContent=`${names[q.subject]} · ${draft.cursor+1}/${draft.questions.length} · ${q.sourceType||'학습 문항'}`;
+        if(q.subject==='math')$('question').innerHTML=Utils.renderMath(q.question);
+        else $('question').textContent=q.question;
+        $('passage').replaceChildren();
+        if(q.passageLines?.length){const box=document.createElement('div');box.className='passage';box.textContent=`${q.passageTitle||''}\n${q.passageLines.join('\n')}`;$('passage').append(box);}
+        $('choices').replaceChildren();
+        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(q.subject==='math')button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot)return;draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
+        $('result').hidden=!draft.submittedAt;
+        if(draft.submittedAt){const selected=draft.responses[q.id]||'(미응답)';$('result').textContent=`${selected===q.answer?'정답':'오답'} · 내 답: ${selected} · 정답: ${q.answer}\n${q.explanation||''}`;}
+        $('prev').disabled=draft.cursor===0;$('next').disabled=draft.cursor===draft.questions.length-1;
+        $('submit').hidden=Boolean(draft.submittedAt);
+        $('saved').textContent=draft.submittedAt?'제출 완료 · 답안과 해설을 확인하세요.':`이 기기에 답안 저장됨 · 실제 활동 ${Math.floor(draft.activeSeconds/60)}분`;
+    }
+    $('prev').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor--;if(!draft.submittedAt)draft=session.save(user,draft);render();};
+    $('next').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor++;if(!draft.submittedAt)draft=session.save(user,draft);render();};
+    $('submit').onclick=async()=>{
+        if(draft.submittedAt||submitting||!accountGuard())return;
+        submitting=true;
+        clock.stop();persist();
+        $('submit').disabled=true;
+        try{
+            if(!draft.submissionSnapshot){
+                draft.submissionSnapshot={responses:{...draft.responses},subjectSeconds:{...draft.subjectSeconds},submittedAt:Date.now()};
+                draft=session.save(user,draft);
+            }
+            const snapshot=draft.submissionSnapshot,submittedAt=snapshot.submittedAt;
+            const selectedSubjects=practice?[task.subject]:assessment.subjects;
+            for(const subject of selectedSubjects){
+                if(!accountGuard())throw new Error('계정이 바뀌었습니다.');
+                const questions=draft.questions.filter(q=>q.subject===subject);if(!questions.length)continue;
+                const attempts=questions.map(q=>({questionId:q.id,question:q.question,word:q.subject==='english'?q.answer:undefined,selectedAnswer:snapshot.responses[q.id]||'',
+                    correctAnswer:q.answer,correct:snapshot.responses[q.id]===q.answer,context:q.context,
+                    explanation:q.explanation,choices:q.choices,passageText:q.passageLines||[],assisted:false}));
+                const score=attempts.filter(a=>a.correct).length;
+                const context=questions[0].context;
+                const reportId=practice?sessionId:`${sessionId}:${subject}`;
+                const existing=SmartStudy.LocalRepository.listReports(user).find(r=>r.sessionId===reportId&&r.metadata?.submittedAt);
+                if(practice&&typeof WrongNote!=='undefined')attempts.forEach((attempt,index)=>{
+                    const q=questions[index],c=q.context||{};
+                    const data={...c,questionId:q.id,question:q.question,choices:q.choices,answer:q.answer,
+                        correctAnswer:q.answer,selectedAnswer:attempt.selectedAnswer,explanation:q.explanation,
+                        passageId:q.passageId,passageText:q.passageLines||[],passageTitle:q.passageTitle,
+                        type:q.subject==='math'?(q.generator||q.id):q.id,
+                        word:q.subject==='english'?q.answer:undefined,
+                        level:q.subject==='english'?c.unitId:undefined};
+                    WrongNote.save(subject,data,attempt.correct?'correct':'wrong',reportId,1);
+                });
+                if(existing)continue;
+                saveQuizResult(reportId,subject,
+                    practice?`${names[subject]} 오늘 연습`:`${names[subject]} 주간 확인`,questions.length,score,score,
+                    Math.floor(snapshot.subjectSeconds[subject]||0),score===questions.length,
+                    {...context,assessment:!practice,practice,assessmentId:practice?null:sessionId,
+                        planId:plan?.id||null,taskId:task?.id||null,
+                        adaptiveBandSnapshot:draft.adaptiveBandSnapshot,
+                        submittedAt,status:'submitted',attempts,requestedCount:requested[subject],actualCount:questions.length});
+            }
+            await SmartStudy.LocalRepository.flush?.();
+            if(!accountGuard())throw new Error('계정이 바뀌었습니다.');
+            draft=session.submit(user,sessionId);
+            if(practice)planApi.refreshEvidence(user);
+            render();
+        }catch(error){console.error(error);$('saved').textContent='기록을 저장하지 못했습니다. 기기 기록을 확인한 뒤 다시 제출해 주세요.';}
+        finally{submitting=false;$('submit').disabled=false;render();}
+    };
+    render();
+})().catch(error=>{console.error(error);document.getElementById('empty').hidden=false;document.getElementById('empty').textContent='학습을 열지 못했습니다. 새로고침해 주세요.';});
+</script></body></html>

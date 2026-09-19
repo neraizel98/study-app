@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>오늘 학습 · Smart Study</title><link rel="stylesheet" href="styles.css">
+<style>
+body{background:#0d1117;color:#ecf4ff;font-family:Arial,sans-serif;margin:0}.wrap{max-width:920px;margin:auto;padding:24px 16px 70px}
+a{color:#83caff}.panel,.task{background:#162033;border:1px solid #34445e;border-radius:16px;padding:20px;margin:16px 0}
+h1{font-size:1.7rem;margin:16px 0 4px}h2{font-size:1.14rem;margin:0 0 10px}.muted{color:#a8b8ce;line-height:1.6}
+label{display:block;margin:12px 0 5px}select,input,button{font:inherit}select,input{max-width:100%;background:#0e1726;color:#fff;border:1px solid #50617a;border-radius:9px;padding:9px}
+button,.go{background:#4facfe;color:#092038;border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none;margin-top:9px}
+button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-columns:1fr auto;gap:8px 16px}.task p{margin:5px 0}.task .actions{align-self:center}
+.tag{display:inline-block;border-radius:20px;background:#263956;padding:4px 10px;font-size:.8rem}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary span{background:#25334a;border-radius:10px;padding:10px}
+@media(max-width:620px){.task{display:block}.wrap{padding:15px 12px 55px}}
+</style></head><body><main class="wrap">
+<a href="index.html">← 대시보드</a><h1>오늘 학습</h1><p class="muted">국어 독해 → 영어 → 수학 순서로 학습해요. 시간은 목표를 세우는 데 쓰며, 다 채우지 못해도 학습이 잠기지 않습니다.</p>
+<section id="setup" class="panel" hidden><h2>학습 설정</h2><p class="muted">학년과 학기를 확인해 주세요. 출판사는 알 때만 입력하면 됩니다.</p>
+<label for="grade">학년</label><select id="grade"><option value="6">초등 6학년</option><option value="5">초등 5학년</option><option value="7">중학교 1학년</option><option value="8">중학교 2학년</option><option value="9">중학교 3학년</option></select>
+<label for="semester">학기</label><select id="semester"><option value="2">2학기</option><option value="1">1학기</option></select>
+<label for="publisher">출판사 (선택)</label><input id="publisher" maxlength="80" placeholder="모르면 비워두세요"><br><button id="saveProfile">설정 저장</button></section>
+<section id="planPanel" hidden><div class="panel"><h2>오늘의 시간 계획</h2><button id="editProfile" type="button">학년·학기 변경</button><label for="budget">총 목표 시간</label><select id="budget"><option value="30">30분 · 국어 8 / 영어 10 / 수학 12</option><option value="45" selected>45분 · 국어 12 / 영어 15 / 수학 18</option><option value="60">60분 · 국어 15 / 영어 20 / 수학 25</option></select><button id="createPlan">오늘 계획 만들기</button><button id="saveBudget" hidden>시간 계획 변경</button><div id="overview" class="summary"></div></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
+</main>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script><script src="report.js"></script>
+<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script>
+<script src="learning-plan.js"></script><script src="learning-session.js"></script>
+<script>
+(async function(){
+    await SmartStudy.LocalRepository.ready;
+    const user=SmartStudy.LocalRepository.getActiveUser();
+    if(!user){location.href='index.html';return;}
+    const api=SmartStudy.LearningPlan,$=id=>document.getElementById(id);
+    const names={reading:'국어 독해',english:'영어',math:'수학'};
+    const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    function options(subject,profile){
+        if(subject==='reading')return Object.values(ReadingData.levels).flatMap((level)=>level.units.map(unit=>({label:`${level.title} · ${unit.title} (직접 선택)`,context:{levelId:'level1',unitId:unit.id,title:unit.title}})));
+        if(subject==='english')return Object.keys(vocabData).map((unitId,index)=>({label:`영어 레벨 ${index+1}`,context:{unitId,title:`레벨 ${index+1}`}}));
+        const levelId=profile.grade===6?'elementary-6':profile.grade===7?'middle-1':null;
+        const data=levelId&&MathData[levelId];if(!data)return [];
+        return (data.semesters?.[profile.semester]?.units||data.units||[]).map(unit=>({label:unit.title,context:{levelId,semesterId:String(profile.semester),unitId:unit.id,title:unit.title}}));
+    }
+    function render(){
+        const profile=api.getProfile(user),plan=api.refreshEvidence(user);
+        $('setup').hidden=Boolean(profile);$('planPanel').hidden=!profile;
+        if(!profile)return;
+        $('grade').value=String(profile.grade);$('semester').value=String(profile.semester);$('publisher').value=profile.publisher||'';
+        if(!plan){$('createPlan').hidden=false;$('saveBudget').hidden=true;$('tasks').replaceChildren();$('overview').textContent='';return;}
+        $('createPlan').hidden=true;$('saveBudget').hidden=false;$('budget').value=String(plan.budget);
+        const completed=plan.tasks.filter(task=>task.status==='completed').length;
+        const userData=SmartStudy.LocalRepository.getUser(user)||{},daily=userData.dailyStats?.date===plan.date?userData.dailyStats:{};
+        const formula=userData.formulaStudyTime||{};
+        const formulaToday=formula.date===plan.date?Math.max(0,Number(formula.studySeconds||0)+Number(formula.quizSeconds||0)):0;
+        const actualFor=subject=>Math.max(0,Number(daily.learningTime?.[subject]||0)+Number(daily.quizTime?.[subject]||0))+(subject==='math'?formulaToday:0);
+        const totalActual=plan.tasks.reduce((sum,task)=>sum+actualFor(task.subject),0);
+        $('overview').innerHTML=`<span>${escape(plan.date)} · ${plan.budget}분 목표</span><span>실제 활동 ${Math.floor(totalActual/60)}분</span><span>제출 확인 ${completed}/3과목</span>`;
+        const container=$('tasks');container.replaceChildren();
+        for(const task of plan.tasks){
+            const card=document.createElement('section');card.className='task';
+            const done=task.status==='completed';
+            const spent=actualFor(task.subject),remaining=Math.max(0,task.minutes*60-spent);
+            card.innerHTML=`<div><h2>${escape(names[task.subject])} <span class="tag">${task.minutes}분 계획</span></h2><p>${escape(task.context?.title||'단원을 선택해 주세요')}</p><p class="muted">${escape(task.reasonText)}</p><p class="muted">실제 활동 ${Math.floor(spent/60)}분 · 계획까지 ${Math.ceil(remaining/60)}분 남음</p><p class="muted">${done?'제출한 퀴즈 기록 확인됨':task.status==='in_progress'?'학습 중 · 돌아오면 제출 기록을 확인해요':'준비 중'}</p></div><div class="actions"></div>`;
+            const actions=card.querySelector('.actions');
+            if(!task.context&&!done){
+                const select=document.createElement('select');select.setAttribute('aria-label',`${names[task.subject]} 단원`);
+                select.innerHTML='<option value="">단원 직접 선택</option>';
+                const choices=options(task.subject,profile);
+                choices.forEach((choice,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=choice.label;select.appendChild(option);});
+                const choose=document.createElement('button');choose.textContent='단원 선택';choose.onclick=()=>{const value=Number(select.value);if(!select.value||!choices[value])return;api.selectContext(plan.id,user,task.id,choices[value].context);render();};
+                actions.append(select,choose);
+                if(!choices.length){const note=document.createElement('p');note.className='muted';note.textContent='선택한 학년의 이 과목 자료는 아직 없습니다.';actions.append(note);}
+            }else{
+                const go=document.createElement('a');go.className='go';go.href=task.targetUrl;go.textContent=done?'내용 계속 학습':'내용 학습';go.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(go);
+                const practice=document.createElement('a');practice.className='go';
+                const run=done?`&run=${Date.now()}`:'';
+                practice.href=`weekly_assessment.html?mode=practice&task=${encodeURIComponent(task.id)}${run}`;
+                practice.textContent=done?'새 문항 연습':'문항 연습 · 이어풀기';practice.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(practice);
+                if(!done){
+                    const select=document.createElement('select');select.setAttribute('aria-label',`${names[task.subject]} 단원 변경`);
+                    const choices=options(task.subject,profile);
+                    const current=document.createElement('option');current.value='';current.textContent='단원 변경';select.append(current);
+                    choices.forEach((choice,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=choice.label;select.append(option);});
+                    const change=document.createElement('button');change.textContent='선택한 단원으로 변경';
+                    change.onclick=()=>{if(!select.value||!choices[Number(select.value)])return;api.selectContext(plan.id,user,task.id,choices[Number(select.value)].context);render();};
+                    actions.append(select,change);
+                }
+            }
+            container.append(card);
+        }
+        $('timeNote').textContent=`국어·영어·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
+    }
+    $('saveProfile').onclick=()=>{api.saveProfile(user,{grade:$('grade').value,semester:$('semester').value,publisher:$('publisher').value});render();};
+    $('editProfile').onclick=()=>{ $('setup').hidden=false; $('setup').scrollIntoView({behavior:'smooth'}); };
+    $('createPlan').onclick=()=>{api.createPlan(user,Number($('budget').value));render();};
+    $('saveBudget').onclick=()=>{api.updateBudget(user,Number($('budget').value));render();};
+    window.addEventListener('focus',render);
+    render();
+})().catch(error=>{console.error(error);document.getElementById('planPanel').hidden=false;document.getElementById('tasks').textContent='오늘 학습을 여는 중 오류가 발생했습니다. 새로고침해 주세요.';});
+</script></body></html>
