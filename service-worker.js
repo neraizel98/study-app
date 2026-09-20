@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-v68-learning-upgrade';
+const CACHE_NAME = 'smart-study-20260920-syncstatus';
 
 try {
     importScripts('./firebase-config.js');

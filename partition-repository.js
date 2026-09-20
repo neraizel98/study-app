@@ -9,7 +9,10 @@
     });
     const hash=async text=>Array.from(new Uint8Array(await root.crypto.subtle.digest('SHA-256',new TextEncoder().encode(text))),b=>b.toString(16).padStart(2,'0')).join('');
     const base=async user=>(await R.getDB()).collection('users').doc(user);
-    const emitProgress=(user,kind,count,total)=>root.dispatchEvent?.(new CustomEvent('smartstudy:sync-progress',{detail:{user,kind,count,total}}));
+    const responseSource=snapshot=>snapshot?.metadata?.fromCache===true?'cache':snapshot?.metadata?.fromCache===false?'server':'unknown';
+    const emitProgress=(user,kind,count,total,extra={})=>root.dispatchEvent?.(new CustomEvent('smartstudy:sync-progress',{detail:{
+        user,userId:user,kind,count,total,...extra,completed:Number.isFinite(extra.completed)?extra.completed:count
+    }}));
     const identifier=(subject,item)=>subject==='math'?[item.levelId,item.semesterId,item.unitId,item.type].join(':')
         :item.wrongNoteId||item.questionId||item.word||item.hanja||item.type;
     async function pack(value){
@@ -82,56 +85,108 @@
         const run=previous.catch(()=>{}).then(action);locks.set(key,run);
         try{return await run;}finally{if(locks.get(key)===run)locks.delete(key);}
     }
-    R.putReports=async(user,reports)=>serial(`reports:${user}`,async()=>{
+    R.putReports=async(user,reports,options={})=>serial(`reports:${user}`,async()=>{
         await D.flush();
-        if(!reports.length)emitProgress(user,'reports',0,0);
+        if(!reports.length)emitProgress(user,'reports',0,0,{...options,lane:'upload',operation:'reports',status:'completed',source:'unknown'});
         for(let i=0;i<reports.length;i+=4){
             await Promise.all(reports.slice(i,i+4).map(report=>writeRecord(user,'quizRecords',String(report.sessionId),clean(report))));
-            emitProgress(user,'reports',Math.min(i+4,reports.length),reports.length);
+            emitProgress(user,'reports',Math.min(i+4,reports.length),reports.length,{...options,lane:'upload',operation:'reports',status:'progress',source:'unknown'});
         }
     });
-    R.putWrongAnswers=async(user,subjects)=>serial(`wrong:${user}`,async()=>{
+    R.putWrongAnswers=async(user,subjects,options={})=>serial(`wrong:${user}`,async()=>{
         await D.flush();
         const entries=Object.entries(subjects).flatMap(([subject,items])=>items.map(item=>({subject,item})));
-        if(!entries.length)emitProgress(user,'wrong',0,0);
+        if(!entries.length)emitProgress(user,'wrong',0,0,{...options,lane:'upload',operation:'wrong',status:'completed',source:'unknown'});
         for(let i=0;i<entries.length;i+=4){
             await Promise.all(entries.slice(i,i+4).map(({subject,item})=>
                 writeRecord(user,'wrongRecords',JSON.stringify([subject,identifier(subject,item)]),clean({subject,item}))));
-            emitProgress(user,'wrong',Math.min(i+4,entries.length),entries.length);
+            emitProgress(user,'wrong',Math.min(i+4,entries.length),entries.length,{...options,lane:'upload',operation:'wrong',status:'progress',source:'unknown'});
         }
     });
-    async function changes(user,collection){
+    async function changes(user,collection,{runId=null,kind=collection}={}){
         const ref=await base(user), cursorKey=`cursor:${user}:${collection}`, cursor=D.getMeta(cursorKey)||0;
         let query=ref.collection(collection).orderBy('syncAt').where('syncAt','>=',new Date(cursor)).limit(100), last=null;
-        const values=[];
+        const values=[],records=[];let pages=0;
         while(true){
-            const page=await query.get();
-            for(const snap of page.docs){values.push(await readBody(ref,snap.data().body));last=snap;}
+            let page;
+            try{page=await query.get();}catch(error){
+                emitProgress(user,kind,records.length,null,{runId,lane:'download',operation:`${kind}-list`,status:'failed',source:'unknown',pages,error});
+                throw error;
+            }
+            pages++;records.push(...page.docs);last=page.docs.at(-1)||last;
+            emitProgress(user,kind,records.length,page.size<100?records.length:null,{runId,lane:'download',operation:`${kind}-list`,status:page.size<100?'completed':'progress',source:responseSource(page),pages});
             if(page.size<100)break;
             query=ref.collection(collection).orderBy('syncAt').where('syncAt','>=',new Date(cursor)).startAfter(last).limit(100);
+        }
+        for(let i=0;i<records.length;i++){
+            emitProgress(user,kind,i,records.length,{runId,lane:'download',operation:`${kind}-body`,status:'waiting',source:'unknown'});
+            try{values.push(await readBody(ref,records[i].data().body));}catch(error){
+                emitProgress(user,kind,i,records.length,{runId,lane:'download',operation:`${kind}-body`,status:'failed',source:'unknown',error});
+                throw error;
+            }
+            emitProgress(user,kind,i+1,records.length,{runId,lane:'download',operation:`${kind}-body`,status:i+1===records.length?'completed':'progress',source:'unknown'});
         }
         // Caller commits received records locally before advancing this checkpoint.
         return {values,checkpoint:last?last.data().syncAt.toMillis():cursor,cursorKey};
     }
-    R.getUserBundle=async user=>{
+    R.getUserBundle=async(user,{runId=null}={})=>{
         await D.ready;
-        const ref=await base(user), marker=await ref.collection('data').doc('storageV2').get();
+        emitProgress(user,'storage',0,null,{runId,lane:'download',operation:'durable',status:'completed',source:'local'});
+        const ref=await base(user);
+        emitProgress(user,'storage',0,null,{runId,lane:'download',operation:'marker',status:'waiting',source:'unknown'});
+        let marker;
+        try{marker=await ref.collection('data').doc('storageV2').get();}catch(error){
+            emitProgress(user,'storage',0,1,{runId,lane:'download',operation:'marker',status:'failed',source:'unknown',error});
+            throw error;
+        }
+        emitProgress(user,'storage',1,1,{runId,lane:'download',operation:'marker',status:'completed',source:responseSource(marker)});
         let legacy={};
-        if(!marker.exists)legacy=await legacyGet(user);
-        const [profile,reports,wrong]=await Promise.all([ref.get(),changes(user,'quizRecords'),changes(user,'wrongRecords')]);
+        if(!marker.exists){
+            emitProgress(user,'storage',0,null,{runId,lane:'download',operation:'legacy',status:'waiting',source:'unknown'});
+            try{legacy=await legacyGet(user);}catch(error){
+                emitProgress(user,'storage',0,1,{runId,lane:'download',operation:'legacy',status:'failed',source:'unknown',error});
+                throw error;
+            }
+            emitProgress(user,'storage',1,1,{runId,lane:'download',operation:'legacy',status:'completed',source:'unknown'});
+        }
+        const profilePromise=(async()=>{
+            emitProgress(user,'profile',0,1,{runId,lane:'download',operation:'profile',status:'waiting',source:'unknown'});
+            let value;
+            try{value=await ref.get();}catch(error){
+                emitProgress(user,'profile',0,1,{runId,lane:'download',operation:'profile',status:'failed',source:'unknown',error});
+                throw error;
+            }
+            emitProgress(user,'profile',1,1,{runId,lane:'download',operation:'profile',status:'completed',source:responseSource(value)});
+            return value;
+        })();
+        const [profile,reports,wrong]=await Promise.all([profilePromise,changes(user,'quizRecords',{runId,kind:'reports'}),changes(user,'wrongRecords',{runId,kind:'wrong'})]);
         const subjects={...(legacy.wrongAnswers||{})};
         for(const value of wrong.values)(subjects[value.subject]||=[]).push(value.item);
         return {user:profile.exists?profile.data():null,reports:[...(legacy.reports||[]),...reports.values],wrongAnswers:subjects,
             checkpoints:[reports,wrong].map(({cursorKey,checkpoint})=>({cursorKey,checkpoint})),migrationRequired:!marker.exists};
     };
-    R.confirmBundle=async(user,bundle,{uploaded=false}={})=>{
+    R.confirmBundle=async(user,bundle,{uploaded=false,runId=null}={})=>{
         await D.flush();
         if(bundle.migrationRequired){
             // The caller confirms every upload before publishing the migration marker.
             if(!uploaded)throw new Error('이전 기록 업로드 확인이 필요합니다.');
-            await (await base(user)).collection('data').doc('storageV2').set({version:2,completedAt:root.firebase.firestore.FieldValue.serverTimestamp()});
+            emitProgress(user,'storage',0,1,{runId,lane:'upload',operation:'markerUpload',status:'waiting',source:'unknown'});
+            try{await (await base(user)).collection('data').doc('storageV2').set({version:2,completedAt:root.firebase.firestore.FieldValue.serverTimestamp()});}catch(error){
+                emitProgress(user,'storage',0,1,{runId,lane:'upload',operation:'markerUpload',status:'failed',source:'unknown',error});
+                throw error;
+            }
+            emitProgress(user,'storage',1,1,{runId,lane:'upload',operation:'markerUpload',status:'completed',source:'unknown'});
         }
-        for(const c of bundle.checkpoints||[])await D.setMeta(c.cursorKey,c.checkpoint);
+        const checkpoints=bundle.checkpoints||[];
+        emitProgress(user,'storage',0,checkpoints.length,{runId,lane:'local',operation:'checkpoints',status:'waiting',source:'local'});
+        for(let i=0;i<checkpoints.length;i++){
+            try{await D.setMeta(checkpoints[i].cursorKey,checkpoints[i].checkpoint);}catch(error){
+                emitProgress(user,'storage',i,checkpoints.length,{runId,lane:'local',operation:'checkpoints',status:'failed',source:'local',error});
+                throw error;
+            }
+            emitProgress(user,'storage',i+1,checkpoints.length,{runId,lane:'local',operation:'checkpoints',status:i+1===checkpoints.length?'completed':'progress',source:'local'});
+        }
+        if(!checkpoints.length)emitProgress(user,'storage',0,0,{runId,lane:'local',operation:'checkpoints',status:'completed',source:'local'});
     };
     R.getReportsPage=async(user,{before=null,start=null,end=null,limit=20}={})=>{
         let query=(await base(user)).collection('quizRecords').orderBy('date','desc');

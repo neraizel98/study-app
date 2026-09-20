@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260919-learning1';
+    const APP_VERSION = '20260920-syncstatus';
 
     (async function () {
         try {

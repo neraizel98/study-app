@@ -27,6 +27,64 @@ const _watchdogs = new Map();
 const _initialSucceeded = new Set();
 const _retryTimers = new Map();
 const _retryDelays = new Map();
+const _syncRuns = new Map();
+let _runSequence = 0;
+let _lastInitError = null;
+let _lastInitOperation = null;
+const _operationLabels = {
+    durable: '기기 저장소 준비', sdk: '클라우드 연결 준비', auth: '계정 인증', marker: '저장 형식 확인', legacy: '이전 기록 확인',
+    profile: '사용자 정보 받기', 'reports-list': '퀴즈 목록 받기', 'wrong-list': '오답 목록 받기',
+    'reports-body': '퀴즈 본문 검증', 'wrong-body': '오답 본문 검증', config: '학습 설정 받기', merge: '기기 기록과 합치기',
+    flush: '기기 저장 확정', 'profile-upload': '사용자 정보 확인', 'daily-upload': '오늘 학습 확인', reports: '퀴즈 기록 확인',
+    wrong: '오답 기록 확인', markerUpload: '저장 형식 확정', checkpoints: '다음 동기화 위치 저장', final: '최종 저장 확인'
+};
+function _classifySyncError(error, lane = '') {
+    const raw = String(error?.code || error?.name || '').toLowerCase();
+    const text = String(error?.message || '').toLowerCase();
+    const match = (...values) => values.some(value => raw.includes(value) || text.includes(value));
+    if (match('permission-denied', 'permission_denied')) return { code: 'permission', action: '클라우드 접근 권한을 확인해 주세요.' };
+    if (match('unauthenticated', 'auth/', '인증')) return { code: 'unauthenticated', action: '클라우드 계정을 다시 연결해 주세요.' };
+    if (lane === 'local' || match('quotaexceedederror', 'indexeddb', 'storage')) return { code: 'storage', action: '현재 화면을 유지하고 가능한 경우 기록을 백업해 주세요.' };
+    if (match('resource-exhausted')) return { code: 'quota', action: '클라우드 사용량을 확인하고 잠시 뒤 다시 시도해 주세요.' };
+    if (match('checksum', '검증에 실패')) return { code: 'checksum', action: '기록은 기기에 유지됩니다. 다시 동기화해 주세요.' };
+    if (match('missing', '일부를 받지 못')) return { code: 'missing', action: '일부 기록을 받지 못했습니다. 다시 시도해 주세요.' };
+    if (window.navigator?.onLine === false || match('network-request-failed', 'offline')) return { code: 'offline', action: '인터넷 연결 뒤 자동으로 다시 시도합니다.' };
+    if (match('unavailable', 'deadline-exceeded')) return { code: 'unavailable', action: '서버가 응답하면 자동으로 다시 시도합니다.' };
+    return { code: raw.replace(/[^a-z0-9_/-]/g, '').slice(0, 48) || 'unknown', action: '기록은 기기에 유지됩니다. 잠시 뒤 다시 시도해 주세요.' };
+}
+function _beginSyncRun(userId) {
+    const run = { userId, runId: `sync-${Date.now()}-${++_runSequence}`, startedAt: Date.now(), lastCompletedAt: null, stalled: false, lanes: new Map(), state: 'running' };
+    _syncRuns.set(userId, run);
+    if (window.setInterval) run._ticker = window.setInterval(() => { if (run.state === 'running') _renderSyncStatus(run); }, 1000);
+    return run;
+}
+function _recordSyncStep(userId, runId, lane, operation, status, options = {}) {
+    const run = _syncRuns.get(userId);
+    if (!run || run.runId !== runId || run.state !== 'running') return;
+    const key = `${lane}:${operation}`;
+    const prior = run.lanes.get(key) || {};
+    const completed = Number.isFinite(options.completed) ? options.completed : (prior.completed || 0);
+    const total = Number.isFinite(options.total) ? options.total : null;
+    const now = Date.now();
+    const next = { ...prior, lane, operation, status, completed, total, pages: options.pages || prior.pages || null, source: options.source || 'unknown', updatedAt: now };
+    if (status === 'progress' || status === 'completed') {
+        next.lastCompletedAt = now;
+        run.lastCompletedAt = now;
+        run.stalled = false;
+    }
+    if (options.error) { next.error = _classifySyncError(options.error, lane); next._errorRef = options.error; }
+    run.lanes.set(key, next);
+    _renderSyncStatus(run);
+    if (status === 'waiting' || status === 'progress' || status === 'completed') _touchSync(userId);
+}
+function _failActiveSyncStep(run, error) {
+    if (!run) return;
+    if ([...run.lanes.values()].some(step => step.status === 'failed' && step._errorRef === error)) return;
+    const active = [...run.lanes.values()].reverse().find(step => step.status === 'waiting' || step.status === 'progress');
+    _recordSyncStep(run.userId, run.runId, active?.lane || 'final', active?.operation || 'final', 'failed', {
+        completed: active?.completed || 0, total: active?.total, pages: active?.pages, source: active?.source, error
+    });
+}
 function _retryLogin(userId) {
     if (_retryTimers.has(userId) || window.navigator?.onLine === false) return;
     const delay = Math.min(60000, (_retryDelays.get(userId) || 1000) * 2);
@@ -38,7 +96,15 @@ function _retryLogin(userId) {
 }
 function _touchSync(userId) {
     clearTimeout(_watchdogs.get(userId));
-    _watchdogs.set(userId, setTimeout(() => _showSyncBadge('☁️ 서버 응답 대기 중 · 학습 기록은 기기에 보관됩니다', '#f0c674', true, userId), 30000));
+    _watchdogs.set(userId, setTimeout(() => {
+        const run = _syncRuns.get(userId);
+        if (run?.state === 'running') {
+            run.stalled = true;
+            _renderSyncStatus(run);
+        } else {
+            _showSyncBadge('☁️ 현재 단계에서 새 완료 신호가 없습니다 · 기록은 기기에 보관됩니다', '#f0c674', true, userId);
+        }
+    }, 30000));
 }
 
 function _dirtyKey(userId, kind) { return `${userId}:${kind}`; }
@@ -59,20 +125,27 @@ async function _drainUpload(userId, kind) {
     const key = _dirtyKey(userId, kind), state = _dirty.get(key);
     if (!state || state.running || _syncingUsers.has(userId) || !_syncReady) return;
     state.running = true;
+    const run = _syncRuns.get(userId);
     try {
         while (state.confirmed < state.generation && !_syncingUsers.has(userId)) {
             const generation = state.generation;
-            await ({user: _uploadUserData, reports: _uploadReports, wrong: _uploadWrong})[kind](userId);
+            await ({user: _uploadUserData, reports: _uploadReports, wrong: _uploadWrong})[kind](userId, run?.state === 'running' ? run : null);
             state.confirmed = generation;
         }
         if (_initialSucceeded.has(userId) && !_hasPendingUploads(userId) && !_syncingUsers.has(userId)) {
-            _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364', false, userId);
+            if (run?.state === 'running') {
+                const failed = [...run.lanes.values()].some(step => step.status === 'failed');
+                if (!failed) _recordSyncStep(userId, run.runId, 'final', 'final', 'completed', { completed: 1, total: 1, source: 'local' });
+                _finishSyncRun(run, failed ? 'failed' : 'completed');
+            } else _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364', false, userId);
             window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
         }
         state.delay = 2000;
     } catch (error) {
         state.delay = Math.min(60000, (state.delay || 2000) * 2);
-        _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
+        if (run?.state === 'running') {
+            _finishSyncRun(run, 'failed', error);
+        } else _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
         _scheduleUpload(userId, kind, state.delay);
     } finally {
         state.running = false;
@@ -96,15 +169,28 @@ function _hasPendingUploads(userId) {
 //  Firebase SDK 동적 로드
 // ─────────────────────────────────────────────
 async function _initDB() {
-    if (window.navigator?.onLine === false) return null;
+    if (window.navigator?.onLine === false) {
+        _lastInitError = Object.assign(new Error('offline'), { code: 'offline' });
+        _lastInitOperation = 'sdk';
+        return null;
+    }
     if (_db) return _db;
     try {
         const authUser = await window.SmartStudy.FirebaseClient.getCurrentUser();
-        if (!authUser) throw new Error('클라우드 인증이 필요합니다. 로컬 모드로 계속합니다.');
-        _db = await _remoteRepository.getDB();
+        if (!authUser) throw Object.assign(new Error('클라우드 인증이 필요합니다.'), { code: 'unauthenticated' });
+        try {
+            _db = await _remoteRepository.getDB();
+        } catch (error) {
+            error._syncOperation = 'sdk';
+            throw error;
+        }
         _syncReady = true;
+        _lastInitError = null;
+        _lastInitOperation = null;
         return _db;
     } catch (e) {
+        _lastInitError = e;
+        _lastInitOperation = e._syncOperation || 'auth';
         console.warn('[FireSync] 초기화 실패 (오프라인 모드):', e.message);
         return null;
     }
@@ -121,22 +207,31 @@ function _debounce(key, fn, ms = 2000) {
     }), ms);
 }
 
-async function _uploadUserData(userId) {
+async function _uploadUserData(userId, run = null) {
     if (!_syncReady) return;
     try {
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'flush', 'waiting');
         await _localRepository.flush?.();
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'flush', 'completed', { completed: 1, total: 1, source: 'local' });
         const data = _localRepository.getUser(userId);
         if (!data) return;
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'profile-upload', 'waiting');
         await _remoteRepository.putUser(userId, data);
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'profile-upload', 'completed', { completed: 1, total: 1, source: 'unknown' });
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'daily-upload', 'waiting');
         await _remoteRepository.putDaily?.(userId);
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'daily-upload', 'completed', { completed: 1, total: 1, source: 'unknown' });
     } catch (e) { _showSyncBadge('⚠️ 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
-async function _uploadReports(userId) {
+async function _uploadReports(userId, run = null) {
     if (!_syncReady) return;
     try {
         await _localRepository.flush?.();
-        await _remoteRepository.putReports(userId, _localRepository.listReports(userId));
+        const reports = _localRepository.listReports(userId);
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'reports', 'waiting', { completed: 0, total: reports.length });
+        await _remoteRepository.putReports(userId, reports, run ? { runId: run.runId } : {});
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'reports', 'completed', { completed: reports.length, total: reports.length, source: 'unknown' });
     } catch (e) { _showSyncBadge('⚠️ 퀴즈 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
@@ -149,21 +244,25 @@ async function _uploadStudyConfig(cfg) {
 }
 
 async function _downloadStudyConfig() {
-    if (!_syncReady) return;
+    if (!_syncReady) return null;
     try {
         const config = await _remoteRepository.getStudyTimeConfig();
         if (config) _localRepository.saveTimerConfig(config);
-    } catch (e) { console.warn('[FireSync] studyConfig 다운로드 실패:', e.message); }
+        return null;
+    } catch (e) { console.warn('[FireSync] studyConfig 다운로드 실패:', e.message); return e; }
 }
 
-async function _uploadWrong(userId) {
+async function _uploadWrong(userId, run = null) {
     if (!_syncReady) return;
     try {
         await _localRepository.flush?.();
         const raw = window.SmartStudy.DurableStore?.read(`SmartStudy_WrongAnswers_${userId}`);
         const wrongAnswers = raw ? JSON.parse(raw).subjects : _localRepository.getWrongAnswers(userId);
         const trimmed = wrongAnswers; // V2 preserves every historical attempt.
-        await _remoteRepository.putWrongAnswers(userId, trimmed);
+        const total = Object.values(trimmed).reduce((sum, items) => sum + (items?.length || 0), 0);
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'wrong', 'waiting', { completed: 0, total });
+        await _remoteRepository.putWrongAnswers(userId, trimmed, run ? { runId: run.runId } : {});
+        if (run) _recordSyncStep(userId, run.runId, 'upload', 'wrong', 'completed', { completed: total, total, source: 'unknown' });
     } catch (e) { _showSyncBadge('⚠️ 오답 저장 재시도 필요', '#ff5f6d', true); throw e; }
 }
 
@@ -181,16 +280,21 @@ function _trimWrongHistory(wrongAnswers) {
 // ─────────────────────────────────────────────
 //  다운로드 & 병합 (Firestore → localStorage)
 // ─────────────────────────────────────────────
-async function _downloadAndMerge(userId) {
+async function _downloadAndMerge(userId, run) {
     if (!_syncReady) return;
     try {
+        _recordSyncStep(userId, run.runId, 'local', 'durable', 'waiting');
         await _localRepository.ready;
-        const bundle = await _remoteRepository.getUserBundle(userId);
+        _recordSyncStep(userId, run.runId, 'local', 'durable', 'completed', { completed: 1, total: 1, source: 'local' });
+        const bundle = await _remoteRepository.getUserBundle(userId, { runId: run.runId });
 
         // 전역 학습 시간 설정 항상 최신으로 받아옴 (관리자가 공유한 설정)
-        await _downloadStudyConfig();
+        _recordSyncStep(userId, run.runId, 'download', 'config', 'waiting');
+        const configError = await _downloadStudyConfig();
+        _recordSyncStep(userId, run.runId, 'download', 'config', configError ? 'failed' : 'completed', { completed: configError ? 0 : 1, total: 1, source: 'unknown', error: configError });
 
         let needsUpload = false;
+        _recordSyncStep(userId, run.runId, 'merge', 'merge', 'waiting');
 
         // 1. userData 병합
         if (bundle.user) {
@@ -203,7 +307,6 @@ async function _downloadAndMerge(userId) {
         } else {
             needsUpload = true;
         }
-
         // 2. reports 병합
         if (Array.isArray(bundle.reports)) {
             const cloudReports = bundle.reports;
@@ -215,7 +318,6 @@ async function _downloadAndMerge(userId) {
         } else {
             needsUpload = true;
         }
-
         // 3. wrongAnswers 병합
         if (bundle.wrongAnswers) {
             const cloudWrong = bundle.wrongAnswers;
@@ -225,21 +327,22 @@ async function _downloadAndMerge(userId) {
         } else {
             needsUpload = true;
         }
+        _recordSyncStep(userId, run.runId, 'merge', 'merge', 'completed', { completed: 1, total: 1, source: 'local' });
 
         // A migration must confirm each category before publishing its marker.
         if (needsUpload || bundle.migrationRequired || _remoteRepository.confirmBundle) {
             let generation = _dirty.get(_dirtyKey(userId, 'user'))?.generation || 0;
-            await _uploadUserData(userId);
+            await _uploadUserData(userId, run);
             const userState = _dirty.get(_dirtyKey(userId, 'user'));
             if (userState) userState.confirmed = Math.max(userState.confirmed, generation);
             _touchSync(userId);
             _showSyncBadge('☁️ 학습 기록 1/1', '#4facfe', true, userId);
             generation = _dirty.get(_dirtyKey(userId, 'reports'))?.generation || 0;
-            await _uploadReports(userId);
+            await _uploadReports(userId, run);
             const reportsState = _dirty.get(_dirtyKey(userId, 'reports'));
             if (reportsState) reportsState.confirmed = Math.max(reportsState.confirmed, generation);
             generation = _dirty.get(_dirtyKey(userId, 'wrong'))?.generation || 0;
-            await _uploadWrong(userId);
+            await _uploadWrong(userId, run);
             const wrongState = _dirty.get(_dirtyKey(userId, 'wrong'));
             if (wrongState) wrongState.confirmed = Math.max(wrongState.confirmed, generation);
             console.log('[FireSync] 로컬→클라우드 업로드 완료');
@@ -247,12 +350,15 @@ async function _downloadAndMerge(userId) {
 
         _touchSync(userId);
         _showSyncBadge('☁️ 최종 저장 확인 중', '#4facfe', true, userId);
-        await _remoteRepository.confirmBundle?.(userId, bundle, { uploaded: true });
+        await _remoteRepository.confirmBundle?.(userId, bundle, { uploaded: true, runId: run.runId });
+        _recordSyncStep(userId, run.runId, 'final', 'flush', 'waiting');
         await _localRepository.flush?.();
+        _recordSyncStep(userId, run.runId, 'final', 'flush', 'completed', { completed: 1, total: 1, source: 'local' });
         console.log('[FireSync] 동기화 완료');
         window.dispatchEvent(new CustomEvent('firemerged', { detail: { userId } }));
         return true;
     } catch (e) {
+        _failActiveSyncStep(run, e);
         console.warn('[FireSync] 동기화 실패:', e.message);
         window.dispatchEvent(new CustomEvent('firesyncerror', { detail: { userId, message: e.message } }));
         return false;
@@ -504,6 +610,71 @@ _storageEvents.subscribe('config:saved', () => {
 // ─────────────────────────────────────────────
 //  동기화 상태 UI (작은 뱃지)
 // ─────────────────────────────────────────────
+function _formatAge(time) {
+    if (!time) return '아직 완료 신호 없음';
+    const seconds = Math.max(0, Math.floor((Date.now() - time) / 1000));
+    return seconds < 2 ? '방금 전' : `${seconds}초 전`;
+}
+function _stepDescription(step) {
+    const label = _operationLabels[step.operation] || '동기화 처리';
+    if (step.status === 'failed') return `${label} · 실패 (${step.error?.code || 'unknown'})`;
+    if (step.operation.endsWith('-list')) return step.total === null
+        ? `${label} · 목록 ${step.pages || 0}페이지, ${step.completed}건 확인 · 전체 수 확인 중`
+        : `${label} · 목록 ${step.pages || 0}페이지, ${step.completed}건 확인`;
+    if (step.total !== null) return `${label} · ${step.completed}/${step.total} 확인 완료`;
+    return `${label} · ${step.status === 'waiting' ? '응답 기다리는 중' : `${step.completed}건 확인 완료`}`;
+}
+function _renderSyncStatus(run) {
+    if (!run || run.userId !== _localRepository.getActiveUser()) return;
+    const steps = [...run.lanes.values()];
+    const active = [...steps].reverse().find(step => step.status === 'waiting' || step.status === 'progress') || steps.at(-1);
+    const failed = [...steps].reverse().find(step => step.status === 'failed');
+    const summary = run.state === 'completed' ? '✅ 동기화 완료'
+        : failed ? `⚠️ ${_operationLabels[failed.operation] || '동기화'} 실패`
+        : run.stalled ? `☁️ ${_operationLabels[active?.operation] || '현재 단계'} · 새 완료 신호 없음`
+        : `☁️ ${active ? _stepDescription(active) : '동기화 준비 중'}`;
+    _showSyncBadge(summary, failed ? '#ff5f6d' : run.stalled ? '#f0c674' : run.state === 'completed' ? '#56d364' : '#4facfe', run.state !== 'completed', run.userId);
+    let panel = document.getElementById('_firesync_panel');
+    if (!panel) {
+        panel = document.createElement('section');
+        panel.id = '_firesync_panel';
+        panel.hidden = true;
+        panel.style.cssText = `position:fixed;right:12px;bottom:58px;z-index:9999;width:min(390px,calc(100vw - 24px));max-height:min(70vh,520px);overflow:auto;background:#161b22;border:1px solid #30363d;border-radius:14px;padding:14px;color:#f0f6fc;font:0.82rem/1.45 'Outfit',sans-serif;box-shadow:0 12px 32px #0008;`;
+        const title = document.createElement('strong'); title.textContent = '동기화 상세'; panel.appendChild(title);
+        const timing = document.createElement('p'); timing.style.margin = '6px 0 10px'; panel.appendChild(timing);
+        const notice = document.createElement('p'); notice.style.cssText = 'color:#f0c674;margin:0 0 10px'; panel.appendChild(notice);
+        const list = document.createElement('div'); panel.appendChild(list);
+        const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '진단 정보 복사'; copy.style.cssText = 'margin-top:10px;padding:7px 10px;border:1px solid #4facfe;border-radius:8px;background:#0d1117;color:#f0f6fc';
+        copy.addEventListener('click', () => {
+            if (!navigator.clipboard?.writeText) { copy.textContent = '복사 실패'; return; }
+            navigator.clipboard.writeText(JSON.stringify(panel._diagnostic, null, 2)).then(() => { copy.textContent = '복사됨'; }).catch(() => { copy.textContent = '복사 실패'; });
+        });
+        panel.appendChild(copy);
+        panel._syncNodes = { timing, notice, list, copy };
+        document.body.appendChild(panel);
+    }
+    const diagnostic = { runId: run.runId, state: run.state, stalled: run.stalled, lastCompletedSecondsAgo: run.lastCompletedAt ? Math.floor((Date.now() - run.lastCompletedAt) / 1000) : null,
+        steps: steps.map(({lane,operation,status,source,completed,total,pages,error}) => ({lane,operation,status,source,completed,total,pages,errorCode:error?.code || null})) };
+    panel._diagnostic = diagnostic;
+    const { timing, notice, list, copy } = panel._syncNodes;
+    timing.textContent = `최근 완료: ${_formatAge(run.lastCompletedAt)} · 실행 ${Math.floor((Date.now() - run.startedAt) / 1000)}초`;
+    notice.hidden = !run.stalled;
+    notice.textContent = run.stalled ? '현재 단계에서 30초 동안 새 완료 신호가 없습니다. 원인은 아직 확정할 수 없으며 학습 기록은 기기에 보관됩니다.' : '';
+    list.replaceChildren();
+    for (const step of steps) { const row=document.createElement('div'); row.style.cssText='padding:7px 0;border-top:1px solid #30363d'; row.textContent=_stepDescription(step); if(step.source==='cache')row.textContent+=' · 기기 캐시'; else if(step.source==='server')row.textContent+=' · 서버 응답'; if(step.error){const action=document.createElement('div');action.style.color='#ff9b9b';action.textContent=step.error.action;row.appendChild(action);} list.appendChild(row); }
+    if (copy.textContent !== '복사됨' && copy.textContent !== '복사 실패') copy.textContent = '진단 정보 복사';
+}
+function _finishSyncRun(run, state, error = null) {
+    if (!run || run.state !== 'running') return;
+    if (error) _failActiveSyncStep(run, error);
+    run.state = state;
+    run.stalled = false;
+    if (run._ticker) window.clearInterval(run._ticker);
+    run._ticker = null;
+    clearTimeout(_watchdogs.get(run.userId));
+    _watchdogs.delete(run.userId);
+    _renderSyncStatus(run);
+}
 function _showSyncBadge(text, color = '#4facfe', persistent = false, userId = null) {
     if (userId && userId !== _localRepository.getActiveUser()) return;
     let badge = document.getElementById('_firesync_badge');
@@ -514,9 +685,14 @@ function _showSyncBadge(text, color = '#4facfe', persistent = false, userId = nu
             position:fixed; bottom:16px; right:16px; z-index:9999;
             background:#161b22; border:1px solid rgba(255,255,255,0.1);
             color:#f0f6fc; font-size:0.75rem; font-family:'Outfit',sans-serif;
-            padding:6px 12px; border-radius:20px; pointer-events:none;
+            padding:6px 12px; border-radius:20px; pointer-events:auto; cursor:pointer;
             transition:opacity 0.4s; opacity:0;
         `;
+        badge.setAttribute('role', 'button');
+        badge.setAttribute('tabindex', '0');
+        const toggle=()=>{const panel=document.getElementById('_firesync_panel');if(panel)panel.hidden=!panel.hidden;};
+        badge.addEventListener('click',toggle);
+        badge.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();toggle();}});
         document.body.appendChild(badge);
     }
     badge.style.borderColor = color + '55';
@@ -549,15 +725,24 @@ window.FireSync = {
         if (!userId) return false;
         if (_loginPromises[userId]) return _loginPromises[userId];
         _loginPromises[userId] = (async () => {
+            const run = _beginSyncRun(userId);
             _syncingUsers.add(userId);
             _badgeOwner = userId;
-            _showSyncBadge('☁️ 동기화 중...', '#4facfe', true, userId);
+            _recordSyncStep(userId, run.runId, 'connect', 'sdk', 'waiting');
             _touchSync(userId);
             try {
                 await _localRepository.ready;
+                _recordSyncStep(userId, run.runId, 'connect', 'auth', 'waiting');
                 const db = await _initDB();
-                if (!db) { _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true, userId); return false; }
-                const synced = await _downloadAndMerge(userId);
+                if (!db) {
+                    if (_lastInitOperation === 'sdk') _recordSyncStep(userId, run.runId, 'connect', 'auth', 'completed', { completed: 1, total: 1, source: 'unknown' });
+                    _recordSyncStep(userId, run.runId, 'connect', _lastInitOperation || 'auth', 'failed', { error: _lastInitError || new Error('unavailable') });
+                    _finishSyncRun(run, 'failed');
+                    return false;
+                }
+                _recordSyncStep(userId, run.runId, 'connect', 'auth', 'completed', { completed: 1, total: 1, source: 'unknown' });
+                _recordSyncStep(userId, run.runId, 'connect', 'sdk', 'completed', { completed: 1, total: 1, source: 'unknown' });
+                const synced = await _downloadAndMerge(userId, run);
                 if (synced) {
                     _initialSucceeded.add(userId);
                     _retryDelays.delete(userId);
@@ -565,16 +750,18 @@ window.FireSync = {
                     _retryTimers.delete(userId);
                 } else { _initialSucceeded.delete(userId); _retryLogin(userId); }
                 if (synced && !_hasPendingUploads(userId)) {
-                    _showSyncBadge('✅ 동기화 완료', '#56d364', false, userId);
+                    const failed = [...run.lanes.values()].some(step => step.status === 'failed');
+                    if (!failed) _recordSyncStep(userId, run.runId, 'final', 'final', 'completed', { completed: 1, total: 1, source: 'local' });
+                    _finishSyncRun(run, failed ? 'failed' : 'completed');
                     window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
                 }
-                else if (synced) _showSyncBadge('☁️ 추가 변경 기록 전송 중', '#4facfe', true, userId);
-                else _showSyncBadge('⚠️ 기기에 보관 중 · 연결되면 재시도', '#ff5f6d', true, userId);
+                else if (synced) _recordSyncStep(userId, run.runId, 'upload', 'reports', 'waiting');
+                else _finishSyncRun(run, 'failed');
                 return synced;
             } catch (error) {
                 _initialSucceeded.delete(userId);
                 _retryLogin(userId);
-                _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
+                _finishSyncRun(run, 'failed', error);
                 console.warn('[FireSync] 동기화 오류:', error);
                 return false;
             } finally {
@@ -639,10 +826,14 @@ window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장
 window.addEventListener?.('smartstudy:storage-error', () => _showSyncBadge('⚠️ 기기 저장 실패 · 앱을 닫지 말고 백업해 주세요', '#ff5f6d', true));
 window.addEventListener?.('smartstudy:sync-state', event => { if (!_badgeOwner) _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true); });
 window.addEventListener?.('smartstudy:sync-progress', event => {
-    const {user, kind, count, total} = event.detail || {};
-    if (!user || !['reports', 'wrong'].includes(kind) || !Number.isFinite(count) || !Number.isFinite(total)) return;
-    if (_syncingUsers.has(user)) _touchSync(user);
-    _showSyncBadge(`☁️ ${kind === 'reports' ? '퀴즈' : '오답'} 기록 ${count}/${total}`, '#4facfe', true, user);
+    const detail = event.detail || {};
+    const user = detail.userId || detail.user;
+    if (!user || !detail.runId || !detail.lane || !detail.operation || !detail.status) return;
+    const run = _syncRuns.get(user);
+    if (!run || run.runId !== detail.runId) return;
+    _recordSyncStep(user, detail.runId, detail.lane, detail.operation, detail.status, {
+        completed: detail.completed, total: detail.total, pages: detail.pages, source: detail.source, error: detail.error
+    });
 });
 
 window.addEventListener?.('pagehide', () => { const uid = _localRepository.getActiveUser(); if (_syncReady && uid) _uploadUserData(uid).catch(()=>{}); });

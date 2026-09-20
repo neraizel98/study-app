@@ -6,14 +6,14 @@ const {IDBFactory}=require('fake-indexeddb');
 
 function storage(){const map=new Map();return {map,get length(){return map.size;},key:i=>[...map.keys()][i],getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)};}
 async function create(indexedDB,localStorage){
-    const ctx={console,indexedDB,localStorage,crypto:webcrypto,CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},dispatchEvent(){},addEventListener(){},TextEncoder,TextDecoder,Blob,Response,CompressionStream,DecompressionStream,btoa,atob,setTimeout,clearTimeout};
+    const ctx={console,indexedDB,localStorage,crypto:webcrypto,events:[],CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},dispatchEvent(event){this.events.push(event);},addEventListener(){},TextEncoder,TextDecoder,Blob,Response,CompressionStream,DecompressionStream,btoa,atob,setTimeout,clearTimeout};
     ctx.window=ctx;vm.createContext(ctx);
     for(const file of ['storage-keys.js','storage-events.js','schema-migrations.js','durable-store.js','local-repository.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
     await ctx.SmartStudy.LocalRepository.ready;return ctx;
 }
 function mockFirestore(){
-    const docs=new Map();let writes=0,reads=0,fail=false,tick=1000;
-    const snapshot=(path)=>({id:path.split('/').at(-1),path,exists:docs.has(path),data:()=>docs.get(path)});
+    const docs=new Map();let writes=0,reads=0,fail=false,tick=1000,fromCache=false;
+    const snapshot=(path)=>({id:path.split('/').at(-1),path,exists:docs.has(path),data:()=>docs.get(path),metadata:{get fromCache(){return fromCache;}}});
     function collection(path,filter=[],order=null,cursor=null,limit=Infinity){
         return {doc:id=>document(`${path}/${id}`),
             where:(field,op,value)=>collection(path,[...filter,[field,op,value]],order,cursor,limit),
@@ -24,12 +24,12 @@ function mockFirestore(){
                 rows=rows.filter(r=>filter.every(([f,op,v])=>op==='>='?val(r.data()[f])>=val(v):val(r.data()[f])<=val(v)));
                 if(order)rows.sort((a,b)=>((val(a.data()[order[0]])-val(b.data()[order[0]]))||a.path.localeCompare(b.path))*(order[1]==='desc'?-1:1));
                 if(cursor){const i=rows.findIndex(r=>r.path===cursor.path);if(i>=0)rows=rows.slice(i+1);}
-                rows=rows.slice(0,limit);return {docs:rows,size:rows.length};}
+                rows=rows.slice(0,limit);return {docs:rows,size:rows.length,metadata:{get fromCache(){return fromCache;}}};}
         };
     }
     function document(path){return {path,collection:name=>collection(path+'/'+name),async get(){reads++;return snapshot(path);},async set(value,options){if(fail)throw new Error('offline');writes++;docs.set(path,options?.merge?{...docs.get(path),...value}:value);}};}
     const db={collection:name=>collection(name),async runTransaction(action){const ops=[];const result=await action({get:async ref=>ref.get(),set:(ref,value,options)=>ops.push([ref,value,options])});if(fail)throw new Error('offline');for(const [ref,value,options]of ops)await ref.set(value,options);return result;}};
-    return {db,docs,get writes(){return writes;},get reads(){return reads;},set fail(value){fail=value;},timestamp:()=>{const n=++tick;return {toMillis:()=>n};}};
+    return {db,docs,get writes(){return writes;},get reads(){return reads;},set fail(value){fail=value;},set fromCache(value){fromCache=value;},timestamp:()=>{const n=++tick;return {toMillis:()=>n};}};
 }
 
 (async()=>{
@@ -77,7 +77,13 @@ function mockFirestore(){
     assert.equal(page.reports[0].metadata.attempts,undefined,'summaries exclude full answers');
     const detail=await R.getReportDetail('test',page.reports[0]);assert.equal(detail.metadata.attempts.length,1);
     const older=await R.getReportsPage('test',{before:page.cursor});assert.equal(older.reports.length,5);
-    const bundle=await R.getUserBundle('test');assert.equal(bundle.reports.length,25);
+    remote.fromCache=true;
+    const bundle=await R.getUserBundle('test',{runId:'test-run'});assert.equal(bundle.reports.length,25);
+    const progress=ctx.events.filter(event=>event.type==='smartstudy:sync-progress'&&event.detail.runId==='test-run').map(event=>event.detail);
+    assert(progress.some(event=>event.operation==='reports-list'&&event.completed===25&&event.total===25),'download list reports a known final total');
+    assert(progress.some(event=>event.operation==='reports-body'&&event.completed===25&&event.total===25),'body verification reports every completed record');
+    assert(progress.filter(event=>['marker','profile','reports-list','wrong-list'].includes(event.operation)).every(event=>event.source!=='server'),'cache snapshots are never presented as server responses');
+    remote.fromCache=false;
     const markerPath='users/test/data/storageV2';
     await assert.rejects(R.confirmBundle('test',bundle),/업로드 확인/);
     assert.equal(remote.docs.has(markerPath),false,'migration marker requires confirmed uploads');
@@ -90,6 +96,12 @@ function mockFirestore(){
     assert.equal([...remote.docs.keys()].filter(k=>k.includes('/quizRecords/')).length,25,'failed upload never acknowledges or publishes an incomplete record');
     remote.fail=false;await R.putReports('test',[{sessionId:'failed',date:3000,subject:'math'}]);
     assert.equal([...remote.docs.keys()].filter(k=>k.includes('/quizRecords/')).length,26);
+    const pageRecords=Array.from({length:105},(_,i)=>({sessionId:`page-${i}`,date:i,subject:'math'}));
+    await R.putReports('pages',pageRecords);ctx.events.length=0;
+    const paged=await R.getUserBundle('pages',{runId:'page-run'});assert.equal(paged.reports.length,105);
+    const pageProgress=ctx.events.filter(event=>event.detail?.runId==='page-run'&&event.detail.operation==='reports-list').map(event=>event.detail);
+    assert.equal(pageProgress[0].pages,1);assert.equal(pageProgress[0].completed,100);assert.equal(pageProgress[0].total,null,'full first page keeps total unknown');
+    assert.equal(pageProgress.at(-1).pages,2);assert.equal(pageProgress.at(-1).total,105,'last page publishes the confirmed total');
     await R.putWrongAnswers('test',L.getWrongAnswers('test'));
     const packed=await ctx.SmartStudy.PartitionStorage.pack({text:'한글 원문 '.repeat(10000)});
     assert.equal((await ctx.SmartStudy.PartitionStorage.unpack(packed)).text.length,60000);
