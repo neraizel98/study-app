@@ -382,7 +382,7 @@
     <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script>
     <script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260921-parentplan"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
     <script src="firebase-sync.js?v=20260920-syncstatus"></script>
     <script src="notification-client.js?v=20260810"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
@@ -414,9 +414,7 @@
                         bindCloudButtons();
                         refreshCloudButtonState();
 
-                        // 관리자 배너 표시 여부
-                        const adminBanner = document.getElementById('adminBanner');
-                        if (adminBanner) adminBanner.style.display = ['우준아빠'].includes(activeUser) ? 'block' : 'none';
+                        refreshAdminBanner(activeUser);
                         
                         // 대시보드 데이터 채우기
                         const user = UserSession.getUserData(activeUser);
@@ -541,6 +539,18 @@
                 } finally {
                     buttons.forEach(button => { button.disabled = false; });
                 }
+            }
+            async function refreshAdminBanner(activeUser) {
+                const banner = document.getElementById('adminBanner');
+                if (!banner) return;
+                banner.style.display = 'none';
+                if (activeUser !== '우준아빠' || !window.SmartStudy?.FirebaseClient) return;
+                try {
+                    const authUser = await SmartStudy.FirebaseClient.getCurrentUser();
+                    if (!authUser || UserSession.getActiveUser() !== '우준아빠') return;
+                    const access = await SmartStudy.FirestoreRepository.getAccess(authUser.uid);
+                    if (access?.role === 'admin' && UserSession.getActiveUser() === '우준아빠') banner.style.display = 'block';
+                } catch (error) { console.warn('[Admin Access]', error); }
             }
             async function watchCloudAuthState() {
                 if (!window.SmartStudy?.FirebaseClient) return;

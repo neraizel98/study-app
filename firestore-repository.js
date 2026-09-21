@@ -21,6 +21,31 @@
     };
 
     const Repository = {
+        async getLearnerPlanSettings(userId) {
+            const db = await client.getDB();
+            const snap = await db.collection('learnerPlanSettings').doc(userId).get();
+            return snap.exists ? snap.data() : null;
+        },
+        async saveLearnerPlanSettings(userId, settings) {
+            const authUser = await client.getCurrentUser();
+            if (!authUser) throw Object.assign(new Error('Google 로그인이 필요합니다.'), { code: 'auth/login-required' });
+            const access = await this.getAccess(authUser.uid);
+            if (access?.role !== 'admin') throw Object.assign(new Error('관리자 권한이 필요합니다.'), { code: 'permission-denied' });
+            const budgetMinutes = Number(settings?.budgetMinutes);
+            const grade = Number(settings?.grade);
+            const semester = Number(settings?.semester);
+            const publisher = String(settings?.publisher || '').trim();
+            if (![30, 45, 60].includes(budgetMinutes) || !Number.isInteger(grade) || grade < 1 || grade > 12
+                || ![1, 2].includes(semester) || publisher.length > 80) {
+                throw new Error('학습 계획 설정값이 올바르지 않습니다.');
+            }
+            const db = await client.getDB();
+            return db.collection('learnerPlanSettings').doc(userId).set({
+                budgetMinutes, grade, semester, publisher,
+                updatedAt: root.firebase.firestore.FieldValue.serverTimestamp(),
+                updatedBy: authUser.uid
+            });
+        },
         async getUserBundle(userId) {
             const r = await refs(userId);
             const [user, reports, wrongAnswers] = await Promise.all([

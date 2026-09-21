@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260920-syncstatus';
+const CACHE_NAME = 'smart-study-20260921-parentplan';
 
 try {
     importScripts('./firebase-config.js');

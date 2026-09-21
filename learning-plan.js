@@ -5,8 +5,19 @@
     const subjects=['reading','english','math'];
     const urls={reading:'reading.html',english:'english.html',math:'math.html'};
     const key=(user,date)=>`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`;
-    const profileKey=user=>`SmartStudy_SchoolProfile_${encodeURIComponent(user)}`;
+    const settingsKey=user=>`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`;
     const today=()=>root.StudyPeriods?.daily?.()||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
+    const defaults=user=>({budgetMinutes:45,grade:6,semester:2,publisher:'',source:user==='우준'?'default':'fallback'});
+    const normalizeSettings=(user,value)=>{
+        const fallback=defaults(user), budgetMinutes=Number(value?.budgetMinutes), grade=Number(value?.grade), semester=Number(value?.semester);
+        return {
+            budgetMinutes:minutesByBudget[budgetMinutes]?budgetMinutes:fallback.budgetMinutes,
+            grade:Number.isInteger(grade)&&grade>=1&&grade<=12?grade:fallback.grade,
+            semester:[1,2].includes(semester)?semester:fallback.semester,
+            publisher:String(value?.publisher||'').trim().slice(0,80),
+            source:value?.source||fallback.source
+        };
+    };
     const contextOf=(subject,item)=>{
         const m=item?.metadata||item||{};
         if(subject==='math')return m.levelId&&m.semesterId&&m.unitId?{levelId:m.levelId,semesterId:String(m.semesterId),unitId:m.unitId,title:m.unitTitle||''}:null;
@@ -17,9 +28,12 @@
     const contextKey=(subject,context)=>`${subject}:${context?.levelId||''}:${context?.semesterId||''}:${context?.unitId||''}`;
     function allowed(profile,subject,context){
         if(!context)return false;
-        if(subject==='math' && context.levelId==='formula')return false;
-        if(profile.grade===6 && subject==='math' && context.levelId!=='elementary-6')return false;
-        if(profile.grade===6 && subject==='math' && String(context.semesterId)!==String(profile.semester))return false;
+        if(subject==='math'){
+            if(context.levelId==='formula')return false;
+            const expectedLevel=profile.grade===6?'elementary-6':profile.grade===7?'middle-1':null;
+            if(!expectedLevel||context.levelId!==expectedLevel)return false;
+            if(String(context.semesterId)!==String(profile.semester))return false;
+        }
         return true;
     }
     function target(subject,context){
@@ -66,21 +80,37 @@
     }
     const api={
         budgets:minutesByBudget,subjects,contextOf,contextKey,target,today,
+        getSettings(user){return normalizeSettings(user,local.getPreference(settingsKey(user),null));},
+        applyParentSettings(user,settings){
+            const value=normalizeSettings(user,{...settings,source:'parent'});
+            local.setPreference(settingsKey(user),value);
+            this.getPlan(user);
+            return value;
+        },
         getProfile(user){
-            return local.getPreference(profileKey(user),null)||(user==='우준'?{grade:6,semester:2,publisher:''}:null);
+            const settings=this.getSettings(user);
+            return {grade:settings.grade,semester:settings.semester,publisher:settings.publisher};
         },
-        saveProfile(user,profile){
-            const grade=Math.max(1,Math.min(12,Math.floor(Number(profile.grade)||6)));
-            const semester=Number(profile.semester)===1?1:2;
-            const value={grade,semester,publisher:String(profile.publisher||'').trim().slice(0,80)};
-            local.setPreference(profileKey(user),value);return value;
+        getPlan(user,date=today()){
+            const plan=local.getPreference(key(user,date),null);
+            if(!plan||date!==today())return plan;
+            const settings=this.getSettings(user), minutes=minutesByBudget[settings.budgetMinutes];
+            const profile={grade:settings.grade,semester:settings.semester,publisher:settings.publisher};
+            const needsUpdate=plan.budget!==settings.budgetMinutes
+                || plan.profile?.grade!==profile.grade || plan.profile?.semester!==profile.semester || plan.profile?.publisher!==profile.publisher
+                || plan.tasks.some((task,index)=>task.minutes!==minutes[index]);
+            if(needsUpdate){
+                plan.budget=settings.budgetMinutes;plan.profile=profile;
+                plan.tasks.forEach((task,index)=>{task.minutes=minutes[index];});
+                local.setPreference(key(user,date),plan);
+            }
+            return plan;
         },
-        getPlan(user,date=today()){return local.getPreference(key(user,date),null);},
         savePlan(plan){local.setPreference(key(plan.userId,plan.date),plan);return plan;},
-        createPlan(user,budget=45){
-            const profile=this.getProfile(user);if(!profile)throw new Error('학년과 학기를 먼저 설정해 주세요.');
+        createPlan(user){
+            const settings=this.getSettings(user),profile=this.getProfile(user);
             const existing=this.getPlan(user);if(existing)return existing;
-            const safeBudget=minutesByBudget[budget]?budget:45;
+            const safeBudget=settings.budgetMinutes;
             const date=today();
             const tasks=subjects.map((subject,index)=>{
                 const {context,reasonText}=recommend(user,profile,subject);
@@ -88,13 +118,6 @@
                     targetUrl:target(subject,context),status:'ready',sessionId:null,startedAt:null,completedAt:null,submittedAt:null};
             });
             return this.savePlan({id:`${date}-${user}`,userId:user,date,budget:safeBudget,profile,tasks,createdAt:Date.now()});
-        },
-        updateBudget(user,budget){
-            const plan=this.getPlan(user),minutes=minutesByBudget[budget];
-            if(!plan||!minutes)return plan;
-            plan.budget=Number(budget);
-            plan.tasks.forEach((task,index)=>{task.minutes=minutes[index];});
-            return this.savePlan(plan);
         },
         selectContext(planId,user,taskId,context){
             const plan=this.getPlan(user);if(!plan||plan.id!==planId)throw new Error('오늘 계획을 찾지 못했습니다.');

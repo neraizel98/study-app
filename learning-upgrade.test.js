@@ -24,20 +24,50 @@ assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[30])),[8,10,12]);
 assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[45])),[12,15,18]);
 assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[60])),[15,20,25]);
 assert.equal(plan.getProfile('우준').grade,6);
-assert.equal(plan.getProfile('다른학생'),null,'another learner must set their own profile');
-plan.saveProfile('다른학생',{grade:7,semester:1});
+assert.equal(plan.getSettings('우준').budgetMinutes,45,'the offline default must be 45 minutes');
+plan.applyParentSettings('다른학생',{budgetMinutes:45,grade:7,semester:1,publisher:''});
 assert.equal(plan.getProfile('다른학생').grade,7);
+plan.savePlan({id:'legacy-2026-09-18',userId:'기존학생',date:'2026-09-18',budget:30,profile:{grade:5,semester:1,publisher:''},tasks:[
+    {minutes:8,status:'completed',context:{unitId:'kept'},sessionId:'kept-session',startedAt:10,completedAt:20},
+    {minutes:10,status:'ready',context:null,sessionId:null,startedAt:null,completedAt:null},
+    {minutes:12,status:'in_progress',context:{unitId:'math'},sessionId:'draft',startedAt:30,completedAt:null}
+]});
+const migratedDefault=plan.getPlan('기존학생');
+assert.equal(migratedDefault.budget,45,'a legacy learner-selected budget must migrate to the parent default');
+assert.deepEqual(migratedDefault.tasks.map(task=>task.minutes),[12,15,18]);
+assert.equal(migratedDefault.tasks[0].status,'completed');
+assert.equal(migratedDefault.tasks[0].sessionId,'kept-session');
+assert.equal(migratedDefault.tasks[0].context.unitId,'kept');
+plan.savePlan({id:'past',userId:'기존학생',date:'2026-09-17',budget:30,profile:{grade:5,semester:1,publisher:''},tasks:[
+    {minutes:8,status:'completed'},{minutes:10,status:'completed'},{minutes:12,status:'completed'}
+]});
+assert.equal(plan.getPlan('기존학생','2026-09-17').budget,30,'past plan goals must remain historical evidence');
+assert.deepEqual(plan.getPlan('기존학생','2026-09-17').tasks.map(task=>task.minutes),[8,10,12]);
 
 const now=Date.now();
 reports.push({sessionId:'math-recent',subject:'math',date:now,createdAt:now,totalQuestions:2,
     metadata:{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u1',unitTitle:'현재 단원',initialAttempts:[{question:'1',correct:false},{question:'2',correct:true}]}});
 reports.push({sessionId:'math-old',subject:'math',date:now-40*86400000,createdAt:now-40*86400000,totalQuestions:1,
     metadata:{levelId:'elementary-6',semesterId:'1',unitId:'e6-1-u1',initialAttempts:[{question:'옛 문항',correct:false}]}});
-const daily=plan.createPlan('우준',30);
+plan.applyParentSettings('우준',{budgetMinutes:30,grade:6,semester:2,publisher:''});
+const daily=plan.createPlan('우준');
 assert.equal(daily.tasks[2].context.unitId,'e6-2-u1','recent current-semester weakness should win');
 assert.equal(daily.tasks[0].context,null,'middle-school reading must not be assigned without prior learning');
 assert.equal(daily.tasks[2].minutes,12);
 plan.startTask('우준',daily.tasks[2].id);
+const beforeSettingsChange=plan.getPlan('우준');
+beforeSettingsChange.tasks[0].context={levelId:'level1',unitId:'saved',title:'저장된 단원'};
+beforeSettingsChange.tasks[0].sessionId='draft-session';
+beforeSettingsChange.tasks[0].startedAt=1234;
+plan.savePlan(beforeSettingsChange);
+plan.applyParentSettings('우준',{budgetMinutes:60,grade:6,semester:2,publisher:'미확인'});
+const migrated=plan.getPlan('우준');
+assert.equal(migrated.budget,60);
+assert.deepEqual(migrated.tasks.map(task=>task.minutes),[15,20,25]);
+assert.equal(migrated.tasks[0].context.unitId,'saved','a settings change must preserve the selected unit');
+assert.equal(migrated.tasks[0].sessionId,'draft-session','a settings change must preserve the draft session');
+assert.equal(migrated.tasks[0].startedAt,1234,'a settings change must preserve start evidence');
+assert.equal(migrated.tasks[2].status,'in_progress','a settings change must preserve task status');
 assert.equal(plan.refreshEvidence('우준').tasks[2].status,'in_progress','old report cannot finish a new task');
 reports.push({sessionId:'partial',subject:'math',date:Date.now()+10,createdAt:Date.now()+10,totalQuestions:3,
     metadata:{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u1',initialAttempts:[{question:'1',correct:true}]}});

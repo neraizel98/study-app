@@ -12,15 +12,13 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
 @media(max-width:620px){.task{display:block}.wrap{padding:15px 12px 55px}}
 </style></head><body><main class="wrap">
 <a href="index.html">← 대시보드</a><h1>오늘 학습</h1><p class="muted">국어 독해 → 영어 → 수학 순서로 학습해요. 시간은 목표를 세우는 데 쓰며, 다 채우지 못해도 학습이 잠기지 않습니다.</p>
-<section id="setup" class="panel" hidden><h2>학습 설정</h2><p class="muted">학년과 학기를 확인해 주세요. 출판사는 알 때만 입력하면 됩니다.</p>
-<label for="grade">학년</label><select id="grade"><option value="6">초등 6학년</option><option value="5">초등 5학년</option><option value="7">중학교 1학년</option><option value="8">중학교 2학년</option><option value="9">중학교 3학년</option></select>
-<label for="semester">학기</label><select id="semester"><option value="2">2학기</option><option value="1">1학기</option></select>
-<label for="publisher">출판사 (선택)</label><input id="publisher" maxlength="80" placeholder="모르면 비워두세요"><br><button id="saveProfile">설정 저장</button></section>
-<section id="planPanel" hidden><div class="panel"><h2>오늘의 시간 계획</h2><button id="editProfile" type="button">학년·학기 변경</button><label for="budget">총 목표 시간</label><select id="budget"><option value="30">30분 · 국어 8 / 영어 10 / 수학 12</option><option value="45" selected>45분 · 국어 12 / 영어 15 / 수학 18</option><option value="60">60분 · 국어 15 / 영어 20 / 수학 25</option></select><button id="createPlan">오늘 계획 만들기</button><button id="saveBudget" hidden>시간 계획 변경</button><div id="overview" class="summary"></div></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
+<section id="setup" class="panel"><h2>보호자 설정</h2><p id="settingsSummary" class="muted"></p><p id="settingsStatus" class="muted">저장된 설정을 먼저 표시하고 보호자 설정을 확인하는 중입니다.</p></section>
+<section id="planPanel"><div class="panel"><h2>오늘의 시간 계획</h2><p id="budgetSummary" class="muted"></p><button id="createPlan">오늘 계획 만들기</button><div id="overview" class="summary"></div></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
 </main>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script><script src="report.js"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260921-parentplan"></script>
 <script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script>
-<script src="learning-plan.js"></script><script src="learning-session.js"></script>
+<script src="learning-plan.js?v=20260921-parentplan"></script><script src="learning-session.js"></script>
 <script>
 (async function(){
     await SmartStudy.LocalRepository.ready;
@@ -37,12 +35,12 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
         return (data.semesters?.[profile.semester]?.units||data.units||[]).map(unit=>({label:unit.title,context:{levelId,semesterId:String(profile.semester),unitId:unit.id,title:unit.title}}));
     }
     function render(){
-        const profile=api.getProfile(user),plan=api.refreshEvidence(user);
-        $('setup').hidden=Boolean(profile);$('planPanel').hidden=!profile;
-        if(!profile)return;
-        $('grade').value=String(profile.grade);$('semester').value=String(profile.semester);$('publisher').value=profile.publisher||'';
-        if(!plan){$('createPlan').hidden=false;$('saveBudget').hidden=true;$('tasks').replaceChildren();$('overview').textContent='';return;}
-        $('createPlan').hidden=true;$('saveBudget').hidden=false;$('budget').value=String(plan.budget);
+        const settings=api.getSettings(user),profile=api.getProfile(user),plan=api.refreshEvidence(user);
+        const gradeLabel=profile.grade<=6?`초등 ${profile.grade}학년`:profile.grade<=9?`중학교 ${profile.grade-6}학년`:`고등학교 ${profile.grade-9}학년`;
+        $('settingsSummary').textContent=`${gradeLabel} · ${profile.semester}학기${profile.publisher?' · '+profile.publisher:''}`;
+        $('budgetSummary').textContent=`보호자가 정한 하루 목표: ${settings.budgetMinutes}분`;
+        if(!plan){$('createPlan').hidden=false;$('tasks').replaceChildren();$('overview').textContent='';return;}
+        $('createPlan').hidden=true;
         const completed=plan.tasks.filter(task=>task.status==='completed').length;
         const userData=SmartStudy.LocalRepository.getUser(user)||{},daily=userData.dailyStats?.date===plan.date?userData.dailyStats:{};
         const formula=userData.formulaStudyTime||{};
@@ -85,11 +83,28 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
         }
         $('timeNote').textContent=`국어·영어·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
     }
-    $('saveProfile').onclick=()=>{api.saveProfile(user,{grade:$('grade').value,semester:$('semester').value,publisher:$('publisher').value});render();};
-    $('editProfile').onclick=()=>{ $('setup').hidden=false; $('setup').scrollIntoView({behavior:'smooth'}); };
-    $('createPlan').onclick=()=>{api.createPlan(user,Number($('budget').value));render();};
-    $('saveBudget').onclick=()=>{api.updateBudget(user,Number($('budget').value));render();};
-    window.addEventListener('focus',render);
+    $('createPlan').onclick=()=>{api.createPlan(user);render();};
+    async function refreshParentSettings(){
+        if(SmartStudy.LocalRepository.getActiveUser()!==user)return;
+        try{
+            const remote=await Promise.race([
+                SmartStudy.FirestoreRepository.getLearnerPlanSettings(user),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error('설정 확인 시간이 초과되었습니다.')),8000))
+            ]);
+            if(SmartStudy.LocalRepository.getActiveUser()!==user)return;
+            api.applyParentSettings(user,remote||{budgetMinutes:45,grade:6,semester:2,publisher:''});
+            $('settingsStatus').textContent=remote?'보호자 설정을 확인했습니다.':'보호자 설정이 없어 기본 하루 목표 45분을 적용합니다.';
+            render();
+        }catch(error){
+            if(SmartStudy.LocalRepository.getActiveUser()!==user)return;
+            $('settingsStatus').textContent='보호자 설정을 받지 못해 이전에 저장된 설정을 사용합니다.';
+        }
+    }
+    window.addEventListener('focus',()=>{
+        if(SmartStudy.LocalRepository.getActiveUser()!==user){location.reload();return;}
+        render();refreshParentSettings();
+    });
     render();
+    refreshParentSettings();
 })().catch(error=>{console.error(error);document.getElementById('planPanel').hidden=false;document.getElementById('tasks').textContent='오늘 학습을 여는 중 오류가 발생했습니다. 새로고침해 주세요.';});
 </script></body></html>

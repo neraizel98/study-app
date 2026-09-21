@@ -130,7 +130,8 @@
         </div>
 
         <!-- ── 학습 시간 설정 ── -->
-        <div id="userListView">
+        <div id="adminGate" class="chart-card"><div class="loading">🔐 관리자 계정을 확인하는 중...</div></div>
+        <div id="userListView" style="display:none;">
         <div class="chart-card" id="studyTimeConfig" style="margin-bottom:20px;">
             <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px;" id="studyTimeInputs"></div>
@@ -139,6 +140,12 @@
                 <span id="stcSavedMsg" style="font-size:0.8rem;color:#56d364;display:none;">✅ 저장됨</span>
             </div>
             <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">레벨별 기준시간과 최근 퀴즈 3회 평균에 따른 시간 중 더 긴 시간을 적용합니다. 평균 90점 이상은 면제되며, 0분은 점수 기록이 없을 때 바로 퀴즈가 가능합니다.</div>
+        </div>
+
+        <div class="chart-card" id="parentPlanSettings" style="margin-bottom:20px;">
+            <div class="chart-title" style="margin-bottom:8px;">🗓️ 학습자별 하루 계획 설정</div>
+            <div style="font-size:.75rem;color:var(--text-sub);margin-bottom:12px;">하루 목표 시간과 학년·학기는 보호자가 관리합니다. 기존 오늘 계획은 진행 상태와 선택 단원을 유지한 채 시간 배분만 갱신됩니다.</div>
+            <div id="parentPlanSettingsList" style="display:grid;gap:12px;"></div>
         </div>
 
         <!-- ── 유저 목록 ── -->
@@ -157,7 +164,7 @@
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260921-parentplan"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
     <script src="notification-client.js?v=20260810"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
@@ -185,6 +192,13 @@
             error.code = 'auth/login-required';
             throw error;
         }
+        const access = await SmartStudy.FirestoreRepository.getAccess(user.uid);
+        if (access?.role !== 'admin') {
+            const error = new Error('이 Google 계정에는 관리자 권한이 없습니다.');
+            error.code = 'permission-denied';
+            throw error;
+        }
+        return { user, access };
     }
 
     async function connectAdminCloud(button) {
@@ -349,6 +363,65 @@
         // Store data on window for tab switching
         window._adminData = { userId, ud, reports, wrongAnswers };
         renderAssessmentSummary(userId, reports);
+    }
+
+    const escapeAdmin = value => String(value ?? '').replace(/[&<>"']/g, char => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+    async function renderParentPlanSettings(users) {
+        const container = document.getElementById('parentPlanSettingsList');
+        const learners = users.filter(user => !ADMIN_IDS.includes(user.userId));
+        const rows = await Promise.all(learners.map(async learner => ({
+            learner,
+            result: await Promise.race([
+                SmartStudy.FirestoreRepository.getLearnerPlanSettings(learner.userId),
+                new Promise((_,reject)=>setTimeout(()=>reject(new Error('설정 확인 시간이 초과되었습니다.')),8000))
+            ])
+                .then(settings => ({settings})).catch(error => ({error}))
+        })));
+        container.replaceChildren();
+        rows.forEach(({ learner, result }) => {
+            if (result.error) {
+                const failed = document.createElement('section');
+                failed.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
+                failed.innerHTML = `<div style="font-weight:800;">${escapeAdmin(learner.id || learner.userId)}</div><p style="color:#ff7b72;font-size:.78rem;">설정을 불러오지 못했습니다. 기존 서버 값을 보호하기 위해 저장할 수 없습니다.</p><button type="button" class="detail-back" style="margin:0;">다시 시도</button>`;
+                failed.querySelector('button').addEventListener('click',()=>renderParentPlanSettings(users));
+                container.append(failed); return;
+            }
+            const settings=result.settings;
+            const value = settings || { budgetMinutes:45, grade:learner.userId === '우준' ? 6 : 6, semester:2, publisher:'' };
+            const card = document.createElement('section');
+            card.dataset.learnerId = learner.userId;
+            card.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
+            card.innerHTML = `<div style="font-weight:800;margin-bottom:10px;">${escapeAdmin(learner.id || learner.userId)}</div>
+                <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;">
+                    <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
+                    <label style="font-size:.75rem;color:var(--text-sub);">학년<select data-plan="grade" style="display:block;margin-top:4px;">${[1,2,3,4,5,6,7,8,9,10,11,12].map(grade=>`<option value="${grade}">${grade<=6?'초등 '+grade+'학년':grade<=9?'중학교 '+(grade-6)+'학년':'고등학교 '+(grade-9)+'학년'}</option>`).join('')}</select></label>
+                    <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
+                    <label style="font-size:.75rem;color:var(--text-sub);flex:1;min-width:160px;">출판사 (선택)<input data-plan="publisher" maxlength="80" style="display:block;width:100%;box-sizing:border-box;margin-top:4px;" placeholder="미확인"></label>
+                    <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
+                    <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
+                </div>`;
+            card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
+            card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
+            card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
+            card.querySelector('[data-plan="publisher"]').value = value.publisher || '';
+            card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
+                const button = event.currentTarget, message = card.querySelector('[data-plan="message"]');
+                button.disabled = true; message.textContent = '저장 중...';
+                try {
+                    await SmartStudy.FirestoreRepository.saveLearnerPlanSettings(learner.userId, {
+                        budgetMinutes:Number(card.querySelector('[data-plan="budget"]').value),
+                        grade:Number(card.querySelector('[data-plan="grade"]').value),
+                        semester:Number(card.querySelector('[data-plan="semester"]').value),
+                        publisher:card.querySelector('[data-plan="publisher"]').value
+                    });
+                    message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';
+                } catch (error) {
+                    message.style.color = '#ff7b72'; message.textContent = `저장 실패: ${error.message}`;
+                } finally { button.disabled = false; }
+            });
+            container.append(card);
+        });
+        if (!rows.length) container.innerHTML = '<div class="empty-msg">등록된 학습자가 없습니다.</div>';
     }
 
     async function renderAssessmentSummary(userId, reports) {
@@ -1247,12 +1320,15 @@
         try {
             await initFirebase();
             const users = await loadAllUsers();
+            document.getElementById('adminGate').style.display = 'none';
+            document.getElementById('userListView').style.display = 'block';
             renderUserList(users);
+            renderParentPlanSettings(users);
         } catch(e) {
             const loginRequired = e?.code === 'auth/login-required' || e?.code === 'permission-denied';
-            document.getElementById('userList').innerHTML = loginRequired
+            document.getElementById('adminGate').innerHTML = loginRequired
                 ? `<div class="error-msg" style="display:flex; flex-direction:column; align-items:center; gap:12px;">
-                    <span>🔐 관리자 데이터를 보려면 허용된 Google 계정으로 연결해야 합니다.</span>
+                    <span>🔐 관리자 이름과 허용된 Google 관리자 계정이 모두 필요합니다.</span>
                     <button type="button" class="detail-back" onclick="connectAdminCloud(this)" style="margin:0;">Google로 관리자 연결</button>
                   </div>`
                 : `<div class="error-msg">⚠️ Firebase 연결 실패: ${e.message}</div>`;
