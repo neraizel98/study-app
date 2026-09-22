@@ -7,9 +7,9 @@ a{color:#83caff}.panel,.task{background:#162033;border:1px solid #34445e;border-
 h1{font-size:1.7rem;margin:16px 0 4px}h2{font-size:1.14rem;margin:0 0 10px}.muted{color:#a8b8ce;line-height:1.6}
 label{display:block;margin:12px 0 5px}select,input,button{font:inherit}select,input{max-width:100%;background:#0e1726;color:#fff;border:1px solid #50617a;border-radius:9px;padding:9px}
 button,.go{background:#4facfe;color:#092038;border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none;margin-top:9px}
-button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-columns:1fr auto;gap:8px 16px}.task p{margin:5px 0}.task .actions{align-self:center}
-.tag{display:inline-block;border-radius:20px;background:#263956;padding:4px 10px;font-size:.8rem}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary span{background:#25334a;border-radius:10px;padding:10px}
-@media(max-width:620px){.task{display:block}.wrap{padding:15px 12px 55px}}
+button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.task>div{min-width:0}.task p{margin:5px 0;overflow-wrap:anywhere}.task .actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;min-width:0}.task .actions>*{min-width:0;max-width:100%}.task .actions select{flex:1 1 260px;width:min(100%,420px)}.task .actions button,.task .actions .go{margin-top:0}
+.tag{display:inline-block;white-space:nowrap;border-radius:20px;background:#263956;padding:4px 10px;font-size:.8rem}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary span{background:#25334a;border-radius:10px;padding:10px}
+@media(max-width:620px){.wrap{padding:15px 12px 55px}}
 </style></head><body><main class="wrap">
 <a href="index.html">← 대시보드</a><h1>오늘 학습</h1><p class="muted">국어 독해 → 영어 → 수학 순서로 학습해요. 시간은 목표를 세우는 데 쓰며, 다 채우지 못해도 학습이 잠기지 않습니다.</p>
 <section id="setup" class="panel"><h2>보호자 설정</h2><p id="settingsSummary" class="muted"></p><p id="settingsStatus" class="muted">저장된 설정을 먼저 표시하고 보호자 설정을 확인하는 중입니다.</p></section>
