@@ -33,9 +33,11 @@
     function updateButtons() {
         const role = getPreference(ROLE_KEY);
         document.querySelectorAll('.notification-settings-btn').forEach(button => {
-            button.textContent = Notification.permission === 'granted' && role
-                ? `📲 ${roleLabel(role)} 푸시 켜짐`
-                : '📲 푸시 알림 별도 설정';
+            const enabled = root.Notification?.permission === 'granted' && role;
+            button.textContent = '🔔 알림';
+            button.setAttribute('aria-label', enabled
+                ? `${roleLabel(role)} 푸시 알림 설정됨. 알림 설정 열기`
+                : '별도 푸시 알림 설정 열기');
         });
     }
 

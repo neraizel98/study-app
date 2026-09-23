@@ -409,7 +409,7 @@
                         // UI 초기화 (AppUI는 ui-core.js에서 전역 노출됨)
                         if (window.AppUI) AppUI.init({
                             title: '오늘의 학습 대시보드',
-                            headerActionHtml: '<button type="button" class="notification-settings-btn" onclick="SmartStudy.NotificationClient.showSetup()">📲 푸시 알림 별도 설정</button><button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="계정 연결">🔐 <span class="cloud-label">계정 연결</span></button>'
+                            headerActionHtml: '<button type="button" class="notification-settings-btn" aria-label="별도 푸시 알림 설정 열기" onclick="SmartStudy.NotificationClient.showSetup()">🔔 알림</button><button type="button" class="cloud-connect-btn header-cloud-connect" aria-label="계정 연결">🔐 <span class="cloud-label">계정 연결</span></button>'
                         });
                         bindCloudButtons();
                         refreshCloudButtonState();
