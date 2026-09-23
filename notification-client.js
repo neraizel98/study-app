@@ -4,7 +4,6 @@
     const SmartStudy = root.SmartStudy = root.SmartStudy || {};
     const ROLE_KEY = 'SmartStudy_NotificationRole';
     const TOKEN_KEY = 'SmartStudy_NotificationToken';
-    const LAST_START_KEY = 'SmartStudy_LastStartNotification';
     const client = SmartStudy.FirebaseClient;
     const repository = SmartStudy.FirestoreRepository;
     let foregroundBound = false;
@@ -35,8 +34,8 @@
         const role = getPreference(ROLE_KEY);
         document.querySelectorAll('.notification-settings-btn').forEach(button => {
             button.textContent = Notification.permission === 'granted' && role
-                ? `🔔 ${roleLabel(role)} 켜짐`
-                : '🔔 알림 설정';
+                ? `📲 ${roleLabel(role)} 푸시 켜짐`
+                : '📲 푸시 알림 별도 설정';
         });
     }
 
@@ -145,7 +144,7 @@
             modal.id = 'notificationSetupModal';
             modal.innerHTML = `
                 <div class="notification-setup-card" role="dialog" aria-modal="true" aria-labelledby="notificationSetupTitle">
-                    <h3 id="notificationSetupTitle">🔔 이 기기의 알림 용도</h3>
+                    <h3 id="notificationSetupTitle">📲 별도 푸시 알림 설정</h3>
                     <p>이 기기에서 받을 알림을 선택하세요.</p>
                     <button type="button" data-notification-role="learner">👦 우준이 기기<br><small>오후 9시 학습 알림 받기</small></button>
                     <button type="button" data-notification-role="guardian">👨‍👩‍👦 관리자 기기<br><small>학습 시작·퀴즈 완료 보고 받기</small></button>
@@ -199,14 +198,6 @@
         updateButtons();
     }
 
-    SmartStudy.StorageEvents?.subscribe('study:active-start', payload => {
-        if (getPreference(ROLE_KEY) !== 'learner') return;
-        const lastStart = Number(getPreference(LAST_START_KEY, 0)) || 0;
-        if (Date.now() - lastStart < 15 * 60 * 1000) return;
-        setPreference(LAST_START_KEY, Date.now());
-        const eventId = `study-${deviceId()}-${payload.startedAt || Date.now()}`;
-        createEvent('study_started', { ...payload, learnerId: activeLearner() }, eventId);
-    });
     SmartStudy.StorageEvents?.subscribe('quiz:completed', payload => {
         if (getPreference(ROLE_KEY) !== 'learner') return;
         createEvent('quiz_completed', payload, `quiz-${payload.learnerId}-${payload.sessionId}`);

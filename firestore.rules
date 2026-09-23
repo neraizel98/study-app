@@ -8,8 +8,8 @@ service cloud.firestore {
       return signedIn() && (isAdmin() || userId in accessDoc().data.learnerIds);
     }
     function validLearnerPlanSettings() {
-      return request.resource.data.keys().hasAll(['budgetMinutes', 'grade', 'semester', 'updatedAt', 'updatedBy'])
-        && request.resource.data.keys().hasOnly(['budgetMinutes', 'grade', 'semester', 'publisher', 'updatedAt', 'updatedBy'])
+      return request.resource.data.keys().hasAll(['budgetMinutes', 'grade', 'semester', 'scopes', 'updatedAt', 'updatedBy'])
+        && request.resource.data.keys().hasOnly(['budgetMinutes', 'grade', 'semester', 'scopes', 'publisher', 'updatedAt', 'updatedBy'])
         && request.resource.data.budgetMinutes in [30, 45, 60]
         && request.resource.data.grade is int
         && request.resource.data.grade >= 1
@@ -17,8 +17,46 @@ service cloud.firestore {
         && request.resource.data.semester in [1, 2]
         && (!request.resource.data.keys().hasAny(['publisher'])
           || (request.resource.data.publisher is string && request.resource.data.publisher.size() <= 80))
+        && request.resource.data.scopes is map
+        && request.resource.data.scopes.keys().hasAll(['reading', 'english', 'math'])
+        && request.resource.data.scopes.keys().hasOnly(['reading', 'english', 'math'])
+        && validScope(request.resource.data.scopes.reading, 'reading')
+        && validScope(request.resource.data.scopes.english, 'english')
+        && validScope(request.resource.data.scopes.math, 'math')
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.uid;
+    }
+    function validId(value) {
+      return value is string && value.size() > 0 && value.size() <= 80 && value.matches('^[A-Za-z0-9_-]+$');
+    }
+    function validScope(scope, subject) {
+      return scope is map
+        && scope.keys().hasAll(['mode'])
+        && scope.keys().hasOnly(['mode', 'levelId', 'semesterId', 'unitId'])
+        && scope.mode in ['auto', 'assigned']
+        && ((scope.mode == 'auto' && scope.keys().hasOnly(['mode']))
+          || (scope.mode == 'assigned'
+            && validId(scope.unitId)
+            && ((subject == 'reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && validId(scope.levelId))
+              || (subject == 'english' && scope.keys().hasAll(['mode', 'unitId']) && scope.keys().hasOnly(['mode', 'unitId']))
+              || (subject == 'math' && scope.keys().hasAll(['mode', 'levelId', 'semesterId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId) && scope.semesterId in ['1', '2']))));
+    }
+    function validStudyRequest(userId) {
+      return request.resource.data.keys().hasAll(['learnerId', 'requestId', 'requestedAt', 'requestedBy', 'status'])
+        && request.resource.data.keys().hasOnly(['learnerId', 'requestId', 'requestedAt', 'requestedBy', 'status', 'startedAt', 'startedBy'])
+        && request.resource.data.learnerId == userId
+        && validId(request.resource.data.requestId)
+        && request.resource.data.requestedBy == request.auth.uid;
+    }
+    function validActivity(userId) {
+      return request.resource.data.keys().hasAll(['learnerId', 'activityId', 'source', 'occurredAt', 'startedAt', 'startedBy'])
+        && request.resource.data.keys().hasOnly(['learnerId', 'activityId', 'source', 'subject', 'occurredAt', 'startedAt', 'startedBy'])
+        && request.resource.data.learnerId == userId
+        && validId(request.resource.data.activityId)
+        && request.resource.data.source is string && request.resource.data.source.size() > 0 && request.resource.data.source.size() <= 40
+        && (!request.resource.data.keys().hasAny(['subject']) || (request.resource.data.subject is string && request.resource.data.subject.size() <= 40))
+        && request.resource.data.occurredAt is timestamp && request.resource.data.occurredAt <= request.time + duration.value(5, 'm')
+        && request.resource.data.startedAt == request.time && request.resource.data.startedBy == request.auth.uid;
     }
 
     match /access/{uid} {
@@ -30,6 +68,27 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create, update: if isAdmin() && validLearnerPlanSettings();
       allow delete: if false;
+    }
+    match /learnerStudyRequests/{userId} {
+      allow get: if canUse(userId);
+      allow list, delete: if false;
+      allow create: if isAdmin() && validStudyRequest(userId)
+        && request.resource.data.status == 'pending' && request.resource.data.requestedAt == request.time
+        && !request.resource.data.keys().hasAny(['startedAt', 'startedBy']);
+      allow update: if (isAdmin() && validStudyRequest(userId)
+          && request.resource.data.status == 'pending' && request.resource.data.requestedAt == request.time
+          && request.resource.data.requestId != resource.data.requestId
+          && request.time >= resource.data.requestedAt + duration.value(60, 's')
+          && !request.resource.data.keys().hasAny(['startedAt', 'startedBy']))
+        || (canUse(userId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'startedAt', 'startedBy'])
+          && resource.data.status == 'pending' && request.resource.data.status == 'started'
+          && request.resource.data.startedAt == request.time && request.resource.data.startedBy == request.auth.uid);
+    }
+    match /learnerActivity/{userId} {
+      allow get: if canUse(userId);
+      allow list, delete: if false;
+      allow create, update: if canUse(userId) && validActivity(userId);
     }
     match /notificationDevices/{deviceId} {
       allow create: if signedIn()

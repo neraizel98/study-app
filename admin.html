@@ -164,8 +164,9 @@
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260921-parentplan"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
-    <script src="notification-client.js?v=20260810"></script>
+    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="learning-plan.js"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260923-parent-free"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
+    <script src="notification-client.js?v=20260810"></script><script src="in-app-study-request.js?v=20260923-parent-free"></script>
     <script src="study-timer.js?v=20260729-level-config"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -283,9 +284,34 @@
                         </div>
                     </div>
                     <div class="user-last">마지막 활동: ${lastStr}</div>
+                    <div class="study-request" data-study-learner="${escapeAdmin(u.userId)}" onclick="event.stopPropagation()" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--card-border);">
+                        <button type="button" data-study-request style="padding:7px 11px;border:0;border-radius:8px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">📣 공부 요청</button>
+                        <div data-study-request-status style="font-size:.7rem;color:var(--text-sub);margin-top:6px;line-height:1.5;">무료 앱 안 알림 상태 확인 중…</div>
+                    </div>
                 </div>`;
         }).join('');
+        bindStudyRequestCards();
     }
+
+    const studyRequestWatchers=[];let studyWatchGeneration=0;
+    const stopStudyRequestWatchers=()=>{studyWatchGeneration++;while(studyRequestWatchers.length){try{studyRequestWatchers.pop()?.();}catch(_){}}};
+    const requestTime=value=>value?.toDate?.().toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'})||'-';
+    function bindStudyRequestCards(){
+        stopStudyRequestWatchers();
+        if(document.visibilityState==='hidden')return;
+        const generation=studyWatchGeneration;
+        document.querySelectorAll('[data-study-learner]').forEach(card=>{
+            const learnerId=card.dataset.studyLearner,status=card.querySelector('[data-study-request-status]'),button=card.querySelector('[data-study-request]');
+            let request=null,activity=null;
+            const render=()=>{const requested=requestTime(request?.requestedAt),started=requestTime(request?.startedAt),latest=requestTime(activity?.occurredAt||activity?.startedAt);status.textContent=request?`요청 ${requested} · ${request.status==='started'?`서버 확인 ${started}`:'시작 대기 중'} · 실제 학습 시작(기기 기준) ${latest}`:`요청 없음 · 실제 학습 시작(기기 기준) ${latest}`;};
+            const failed=()=>{if(generation===studyWatchGeneration)status.textContent='상태를 확인하지 못했습니다. 계정 연결과 네트워크를 확인해 주세요.';};
+            SmartStudy.FirestoreRepository.watchStudyRequest(learnerId,value=>{if(generation===studyWatchGeneration){request=value;render();}},failed).then(stop=>{if(generation===studyWatchGeneration&&document.visibilityState==='visible')studyRequestWatchers.push(stop);else stop?.();}).catch(failed);
+            SmartStudy.FirestoreRepository.watchLearnerActivity(learnerId,value=>{if(generation===studyWatchGeneration){activity=value;render();}},failed).then(stop=>{if(generation===studyWatchGeneration&&document.visibilityState==='visible')studyRequestWatchers.push(stop);else stop?.();}).catch(failed);
+            button.onclick=async()=>{button.disabled=true;status.textContent='서버에 요청을 저장하는 중…';try{await SmartStudy.FirestoreRepository.createStudyRequest(learnerId);status.textContent='공부 요청을 저장했습니다. 앱을 열어 둔 학습자는 바로 보고, 닫혀 있으면 다음 실행 때 봅니다.';}catch(error){status.textContent=String(error.code||'').includes('permission-denied')?'요청은 60초에 한 번만 보낼 수 있으며 관리자 계정 연결이 필요합니다.':`요청 실패: ${error.message}`;}finally{button.disabled=false;}};
+        });
+    }
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')bindStudyRequestCards();else stopStudyRequestWatchers();});
+    window.addEventListener('pagehide',stopStudyRequestWatchers);
 
     // ─────────────────────────────────────────────
     //  유저 상세 렌더링
@@ -387,7 +413,7 @@
                 container.append(failed); return;
             }
             const settings=result.settings;
-            const value = settings || { budgetMinutes:45, grade:learner.userId === '우준' ? 6 : 6, semester:2, publisher:'' };
+            const value = settings || { budgetMinutes:45, grade:6, semester:2, scopes:{reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}} };
             const card = document.createElement('section');
             card.dataset.learnerId = learner.userId;
             card.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
@@ -396,14 +422,35 @@
                     <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학년<select data-plan="grade" style="display:block;margin-top:4px;">${[1,2,3,4,5,6,7,8,9,10,11,12].map(grade=>`<option value="${grade}">${grade<=6?'초등 '+grade+'학년':grade<=9?'중학교 '+(grade-6)+'학년':'고등학교 '+(grade-9)+'학년'}</option>`).join('')}</select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
-                    <label style="font-size:.75rem;color:var(--text-sub);flex:1;min-width:160px;">출판사 (선택)<input data-plan="publisher" maxlength="80" style="display:block;width:100%;box-sizing:border-box;margin-top:4px;" placeholder="미확인"></label>
+                    <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">국어는 현재 중1 독해, 영어는 영어 단어, 수학은 지원 학년·학기 단원입니다. 영어 문법과 수학 공식은 이 설정 범위가 아닙니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
-            card.querySelector('[data-plan="publisher"]').value = value.publisher || '';
+            const scopeState=Object.fromEntries(['reading','english','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
+            const subjectNames={reading:'국어 독해',english:'영어 단어',math:'수학'};
+            function drawScopes(){
+                const profile={grade:Number(card.querySelector('[data-plan="grade"]').value),semester:Number(card.querySelector('[data-plan="semester"]').value)};
+                const host=card.querySelector('[data-plan="scopes"]');host.replaceChildren();
+                ['reading','english','math'].forEach(subject=>{
+                    const choices=SmartStudy.LearningPlan.catalog(subject,profile),row=document.createElement('div');
+                    row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
+                    row.innerHTML=`<strong style="min-width:75px;font-size:.78rem;">${subjectNames[subject]}</strong><label style="font-size:.72rem;color:var(--text-sub);">범위 방식<select data-mode style="display:block;margin-top:3px;"><option value="auto">자동 추천</option><option value="assigned">부모 지정</option></select></label><label style="flex:1;min-width:180px;font-size:.72rem;color:var(--text-sub);">지정 단원<select data-unit style="display:block;width:100%;min-width:0;margin-top:3px;"></select></label><span data-note style="font-size:.72rem;color:var(--text-sub);"></span>`;
+                    const mode=row.querySelector('[data-mode]'),unit=row.querySelector('[data-unit]'),note=row.querySelector('[data-note]');
+                    if(!choices.length&&scopeState[subject].mode==='assigned')scopeState[subject]={mode:'auto'};
+                    mode.querySelector('option[value="assigned"]').disabled=!choices.length;mode.value=scopeState[subject].mode;
+                    choices.forEach((choice,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=choice.label;unit.append(option);});
+                    const selected=choices.findIndex(choice=>SmartStudy.LearningPlan.contextKey(subject,choice.context)===SmartStudy.LearningPlan.contextKey(subject,scopeState[subject]));
+                    if(selected>=0)unit.value=String(selected);
+                    const sync=()=>{unit.disabled=mode.value!=='assigned'||!choices.length;note.textContent=!choices.length?'현재 학년·학기에 지원 단원이 없습니다.':mode.value==='auto'?'오답과 최근 학습을 우선 추천합니다.':'완료 전에는 학습자가 단원을 바꿀 수 없습니다.';const context=choices[Number(unit.value)]?.context;scopeState[subject]=mode.value==='assigned'&&context?{mode:'assigned',unitId:context.unitId,...(subject!=='english'?{levelId:context.levelId}:{}),...(subject==='math'?{semesterId:String(context.semesterId)}:{})}:{mode:'auto'};};
+                    mode.onchange=sync;unit.onchange=sync;sync();host.append(row);
+                });
+            }
+            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningPlan.budgets[budget];card.querySelector('[data-plan="allocation"]').textContent=`국어 ${minutes[0]}분 · 영어 ${minutes[1]}분 · 수학 ${minutes[2]}분`;};
+            card.querySelector('[data-plan="budget"]').onchange=allocation;
+            card.querySelector('[data-plan="grade"]').onchange=drawScopes;card.querySelector('[data-plan="semester"]').onchange=drawScopes;allocation();drawScopes();
             card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
                 const button = event.currentTarget, message = card.querySelector('[data-plan="message"]');
                 button.disabled = true; message.textContent = '저장 중...';
@@ -412,7 +459,7 @@
                         budgetMinutes:Number(card.querySelector('[data-plan="budget"]').value),
                         grade:Number(card.querySelector('[data-plan="grade"]').value),
                         semester:Number(card.querySelector('[data-plan="semester"]').value),
-                        publisher:card.querySelector('[data-plan="publisher"]').value
+                        scopes:scopeState
                     });
                     message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';
                 } catch (error) {

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260921-parentplan';
+const CACHE_NAME = 'smart-study-20260923-parent-free';
 
 try {
     importScripts('./firebase-config.js');
@@ -80,6 +80,8 @@ const STATIC_ASSETS = [
     './report.js',
     './firebase-sync.js',
     './notification-client.js',
+    './parent-scope-guard.js',
+    './in-app-study-request.js',
     './study-timer.js',
     './kakao-share.js',
     './VocabEng.js',

@@ -51,7 +51,7 @@ assert(source.includes('_syncingUsers.has(userId)'), 'Default local records must
 assert(source.includes('if (_loginPromises[userId]) return _loginPromises[userId]'), 'Concurrent login sync must be deduplicated');
 assert(source.includes('if (db && activeUser) this.onLogin(activeUser)'), 'Account connection must start syncing the active learner');
 
-const index = fs.readFileSync('index.html', 'utf8');
+const index = fs.readFileSync('index.html', 'utf8').replace(/\r\n/g, '\n');
 assert(index.includes("window.addEventListener('firesynced'"), 'Dashboard must refresh after cloud synchronization');
 assert(index.indexOf('updateUI();\n            if (activeUser && window.FireSync)') > 0, 'Initial dashboard must render before cloud synchronization');
 

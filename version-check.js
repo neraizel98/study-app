@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260921-parentplan';
+    const APP_VERSION = '20260923-parent-free';
 
     (async function () {
         try {

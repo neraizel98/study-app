@@ -14,7 +14,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
 </main>
 <script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js"></script><script src="app-bootstrap.js"></script><script src="report.js"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260920-syncstatus"></script><script src="firebase-sync.js?v=20260920-syncstatus"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260920-syncstatus"></script><script src="firebase-sync.js?v=20260920-syncstatus"></script><script src="in-app-study-request.js?v=20260923-parent-free"></script>
 <script src="learning-plan.js"></script><script src="learning-session.js"></script><script src="weekly-assessment.js"></script>
 <script>
 (async function(){
@@ -62,7 +62,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     if(Object.entries(requested).some(([subject,count])=>(actual[subject]||0)<count)){
         const label=document.createElement('p');label.className='muted';label.textContent='일부 과목은 실제 학습 범위의 문항이 부족합니다. 학습하지 않은 단원은 추가하지 않았습니다.';$('counts').after(label);
     }
-    let activeDelta=0,submitting=false;
+    let activeDelta=0,submitting=false,firstAnswerRecorded=Boolean(Object.keys(draft.responses||{}).length);
     const clock=session.createClock(seconds=>{
         if(draft.submittedAt)return;
         draft.activeSeconds+=seconds;const subject=draft.questions[draft.cursor]?.subject;
@@ -83,7 +83,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
         $('passage').replaceChildren();
         if(q.passageLines?.length){const box=document.createElement('div');box.className='passage';box.textContent=`${q.passageTitle||''}\n${q.passageLines.join('\n')}`;$('passage').append(box);}
         $('choices').replaceChildren();
-        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(q.subject==='math')button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot)return;draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
+        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(q.subject==='math')button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot)return;if(!firstAnswerRecorded){firstAnswerRecorded=true;SmartStudy.InAppStudyRequest?.recordActualStart({source:'weekly-answer',subject:q.subject,startedAt:Date.now()}).catch(error=>console.warn('[Study activity]',error.message));}draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
         $('result').hidden=!draft.submittedAt;
         if(draft.submittedAt){const selected=draft.responses[q.id]||'(미응답)';$('result').textContent=`${selected===q.answer?'정답':'오답'} · 내 답: ${selected} · 정답: ${q.answer}\n${q.explanation||''}`;}
         $('prev').disabled=draft.cursor===0;$('next').disabled=draft.cursor===draft.questions.length-1;

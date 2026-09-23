@@ -34,17 +34,34 @@
             const budgetMinutes = Number(settings?.budgetMinutes);
             const grade = Number(settings?.grade);
             const semester = Number(settings?.semester);
-            const publisher = String(settings?.publisher || '').trim();
+            const scopes = settings?.scopes;
+            const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value);
+            const sameKeys = (value, expected) => Object.keys(value || {}).sort().join('|') === expected.slice().sort().join('|');
+            const validScope = (subject, scope) => scope && (scope.mode === 'auto'
+                ? sameKeys(scope, ['mode'])
+                : scope.mode === 'assigned' && validId(scope.unitId)
+                    && (subject === 'english' ? sameKeys(scope, ['mode', 'unitId'])
+                        : subject === 'reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && validId(scope.levelId)
+                            : sameKeys(scope, ['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId)
+                                && ['1', '2'].includes(String(scope.semesterId))));
             if (![30, 45, 60].includes(budgetMinutes) || !Number.isInteger(grade) || grade < 1 || grade > 12
-                || ![1, 2].includes(semester) || publisher.length > 80) {
+                || ![1, 2].includes(semester) || !scopes || !['reading','english','math'].every(subject => validScope(subject, scopes[subject]))) {
                 throw new Error('학습 계획 설정값이 올바르지 않습니다.');
             }
             const db = await client.getDB();
             return db.collection('learnerPlanSettings').doc(userId).set({
-                budgetMinutes, grade, semester, publisher,
+                budgetMinutes, grade, semester,
+                scopes: Object.fromEntries(['reading','english','math'].map(subject => [subject, {
+                    mode: scopes[subject].mode,
+                    ...(scopes[subject].mode === 'assigned' ? {
+                        unitId: scopes[subject].unitId,
+                        ...(scopes[subject].levelId ? { levelId: scopes[subject].levelId } : {}),
+                        ...(scopes[subject].semesterId ? { semesterId: String(scopes[subject].semesterId) } : {})
+                    } : {})
+                }])),
                 updatedAt: root.firebase.firestore.FieldValue.serverTimestamp(),
                 updatedBy: authUser.uid
-            });
+            }, { mergeFields: ['budgetMinutes', 'grade', 'semester', 'scopes', 'updatedAt', 'updatedBy'] });
         },
         async getUserBundle(userId) {
             const r = await refs(userId);
@@ -93,6 +110,49 @@
             const db = await client.getDB();
             const snap = await db.collection('access').doc(uid).get();
             return snap.exists ? snap.data() : null;
+        },
+        async createStudyRequest(learnerId) {
+            const authUser = await client.getCurrentUser();
+            if (!authUser) throw new Error('Google 로그인이 필요합니다.');
+            const access = await this.getAccess(authUser.uid);
+            if (access?.role !== 'admin') throw Object.assign(new Error('관리자 권한이 필요합니다.'), { code: 'permission-denied' });
+            const db = await client.getDB(), ref = db.collection('learnerStudyRequests').doc(learnerId);
+            const requestId = `request-${Date.now()}-${Math.random().toString(36).slice(2, 9)}`;
+            await ref.set({ learnerId, requestId, requestedAt: root.firebase.firestore.FieldValue.serverTimestamp(), requestedBy: authUser.uid, status: 'pending' });
+            return requestId;
+        },
+        watchStudyRequest(learnerId, next, error) {
+            return client.getDB().then(db => db.collection('learnerStudyRequests').doc(learnerId)
+                .onSnapshot(snap => next(snap.exists ? snap.data() : null), error));
+        },
+        watchLearnerActivity(learnerId, next, error) {
+            return client.getDB().then(db => db.collection('learnerActivity').doc(learnerId)
+                .onSnapshot(snap => next(snap.exists ? snap.data() : null), error));
+        },
+        async recordActualStudyStart(learnerId, event) {
+            const authUser = await client.getCurrentUser();
+            if (!authUser || !learnerId) return { recorded: false };
+            const db = await client.getDB(), activityRef = db.collection('learnerActivity').doc(learnerId);
+            const requestRef = db.collection('learnerStudyRequests').doc(learnerId);
+            const eventStartedAt = Number(event?.startedAt || Date.now());
+            const activityId = String(event?.activityId || `${event?.source || 'study'}-${eventStartedAt}`);
+            return db.runTransaction(async transaction => {
+                const [activitySnap, requestSnap] = await Promise.all([transaction.get(activityRef), transaction.get(requestRef)]);
+                if (activitySnap.exists && activitySnap.data().activityId === activityId) return { recorded: false, duplicate: true };
+                const request = requestSnap.exists ? requestSnap.data() : null;
+                const requestMillis = request?.requestedAt?.toMillis?.() || 0;
+                const acknowledge = request?.status === 'pending' && eventStartedAt >= requestMillis;
+                transaction.set(activityRef, {
+                    learnerId, activityId, source: String(event?.source || 'study').slice(0, 40),
+                    ...(event?.subject ? { subject: String(event.subject).slice(0, 40) } : {}),
+                    occurredAt: root.firebase.firestore.Timestamp.fromMillis(eventStartedAt),
+                    startedAt: root.firebase.firestore.FieldValue.serverTimestamp(), startedBy: authUser.uid
+                });
+                if (acknowledge) transaction.update(requestRef, {
+                    status: 'started', startedAt: root.firebase.firestore.FieldValue.serverTimestamp(), startedBy: authUser.uid
+                });
+                return { recorded: true, acknowledged: acknowledge, requestId: acknowledge ? request.requestId : null };
+            });
         },
         async saveNotificationDevice(deviceId, data) {
             const db = await client.getDB();
