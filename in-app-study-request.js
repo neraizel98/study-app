@@ -4,7 +4,11 @@
     const activeLearner=()=>root.UserSession?.getActiveUser?.()||app.LocalRepository?.getActiveUser?.()||'';
     const pendingKey=learnerId=>`SmartStudy_PendingStudyActivity_${encodeURIComponent(learnerId)}`;
     const lastKey=learnerId=>`SmartStudy_LastStudyActivity_${encodeURIComponent(learnerId)}`;
-    let latestRequest=null;
+    let latestRequest=null,status={state:'checking',learnerId:'',message:'연결 확인 중'};
+    function setStatus(state,learnerId='',message=''){
+        status={state,learnerId,message};
+        root.dispatchEvent?.(new CustomEvent('smartstudy:in-app-notification-status',{detail:{...status}}));
+    }
     async function recordActualStart(detail={}){
         await app.LocalRepository?.ready;
         if(document.visibilityState==='hidden')return {recorded:false};
@@ -48,10 +52,14 @@
     async function watchLearnerRequest(){
         await app.LocalRepository?.ready;const currentGeneration=++generation;
         stop?.();stop=null;latestRequest=null;showLearnerBanner(null);const learnerId=activeLearner();
-        if(!learnerId||learnerId==='우준아빠'||!repository?.watchStudyRequest||document.visibilityState==='hidden')return;
+        if(!learnerId){setStatus('off','','계정 연결 필요');return;}
+        if(learnerId==='우준아빠'){setStatus('off',learnerId,'관리자 화면에서 상태 확인');return;}
+        if(!repository?.watchStudyRequest){setStatus('error',learnerId,'연결 모듈 없음');return;}
+        if(document.visibilityState==='hidden'){setStatus('off',learnerId,'화면이 숨겨져 구독 중지');return;}
+        setStatus('checking',learnerId,'연결 확인 중');
         const current=()=>currentGeneration===generation&&activeLearner()===learnerId&&document.visibilityState!=='hidden';
-        try{const unsubscribe=await repository.watchStudyRequest(learnerId,value=>{if(current()){latestRequest=value;showLearnerBanner(value);}},error=>{if(current()){console.warn('[Study request]',error.message);showLearnerError();}});if(current())stop=unsubscribe;else unsubscribe?.();}
-        catch(error){if(current()){console.warn('[Study request]',error.message);showLearnerError();}}
+        try{const unsubscribe=await repository.watchStudyRequest(learnerId,value=>{if(current()){latestRequest=value;showLearnerBanner(value);setStatus('on',learnerId,'앱 안 알림 연결됨');}},error=>{if(current()){console.warn('[Study request]',error.message);showLearnerError();setStatus('error',learnerId,'연결 확인 필요');}});if(current())stop=unsubscribe;else unsubscribe?.();}
+        catch(error){if(current()){console.warn('[Study request]',error.message);showLearnerError();setStatus('error',learnerId,'연결 확인 필요');}}
     }
     app.StorageEvents?.subscribe('study:active-start',payload=>recordActualStart({...payload,source:'active-study'}).catch(error=>console.warn('[Study activity]',error.message)));
     document.addEventListener('visibilitychange',()=>{watchLearnerRequest();retryPending();});
@@ -59,5 +67,5 @@
     root.addEventListener('firesynced',()=>{watchLearnerRequest();retryPending();});
     root.addEventListener('smartstudy:ready',()=>{watchLearnerRequest();retryPending();});
     document.addEventListener('DOMContentLoaded',()=>{watchLearnerRequest();retryPending();});
-    app.InAppStudyRequest={recordActualStart,watchLearnerRequest};
+    app.InAppStudyRequest={recordActualStart,watchLearnerRequest,getStatus:()=>({...status}),setStatus};
 })(window);

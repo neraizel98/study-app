@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260923-parent-free';
+const CACHE_NAME = 'smart-study-20260923-notification-role';
 
 try {
     importScripts('./firebase-config.js');

@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260923-parent-free';
+    const APP_VERSION = '20260923-notification-role';
 
     (async function () {
         try {

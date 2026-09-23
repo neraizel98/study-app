@@ -34,6 +34,10 @@ body {
     background: rgba(255,255,255,.06); color: var(--text); font: inherit; cursor: pointer;
     white-space: nowrap; flex-shrink: 0;
 }
+.notification-settings-btn::before { content:'●'; margin-right:5px; color:#8b949e; font-size:.72em; }
+.notification-settings-btn[data-notification-state="on"]::before { color:#56d364; }
+.notification-settings-btn[data-notification-state="error"]::before { color:#f85149; }
+.notification-settings-btn[data-notification-state="checking"]::before { color:#d29922; }
 #notificationSetupModal {
     display: none; position: fixed; inset: 0; z-index: 10000; padding: 20px;
     align-items: center; justify-content: center; background: rgba(3,8,18,.78); backdrop-filter: blur(8px);
@@ -45,6 +49,8 @@ body {
 }
 .notification-setup-card h3 { margin: 0 0 8px; }
 .notification-setup-card p { margin: 0 0 18px; color: var(--text-sub); }
+.notification-setup-card [data-in-app-status][data-state="on"] { color:#56d364; }
+.notification-setup-card [data-in-app-status][data-state="error"] { color:#f9826c; }
 .notification-setup-card button {
     display: block; width: 100%; margin: 9px 0; padding: 13px; border: 1px solid rgba(255,255,255,.13);
     border-radius: 13px; background: rgba(255,255,255,.06); color: var(--text); font: inherit; cursor: pointer;
