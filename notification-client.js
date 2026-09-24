@@ -10,6 +10,8 @@
     let foregroundBound = false;
     let fallbackDeviceId = '';
     let setupGeneration = 0;
+    let delegatedClickBound = false;
+    let buttonObserver = null;
 
     function getPreference(key, fallback = null) {
         return SmartStudy.LocalRepository?.getPreference?.(key, fallback) ?? fallback;
@@ -243,12 +245,25 @@
             header.appendChild(button);
             buttons = [button];
         }
-        buttons.forEach(button => {
-            if (button.dataset.notificationBound === 'true') return;
-            button.dataset.notificationBound = 'true';
-            button.addEventListener('click', showSetup);
-        });
         updateButtons();
+    }
+
+    function bindDelegatedClick() {
+        if (delegatedClickBound) return;
+        delegatedClickBound = true;
+        document.addEventListener('click', event => {
+            const button = event.target.closest?.('.notification-settings-btn');
+            if (!button) return;
+            event.preventDefault();
+            showSetup();
+        });
+        if (root.MutationObserver && !buttonObserver) {
+            buttonObserver = new MutationObserver(records => {
+                if (records.some(record => [...record.addedNodes].some(node =>
+                    node.nodeType === 1 && (node.matches?.('.notification-settings-btn') || node.querySelector?.('.notification-settings-btn'))))) updateButtons();
+            });
+            buttonObserver.observe(document.body, { childList:true, subtree:true });
+        }
     }
 
     SmartStudy.StorageEvents?.subscribe('quiz:completed', payload => {
@@ -257,6 +272,7 @@
     });
 
     document.addEventListener('DOMContentLoaded', () => {
+        bindDelegatedClick();
         injectButton();
         restore();
         root.addEventListener('smartstudy:ready', injectButton);
