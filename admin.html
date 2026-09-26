@@ -78,6 +78,12 @@
         /* chart card */
         .chart-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:22px 24px; margin-bottom:16px; }
         .chart-title { font-size:1rem; font-weight:700; margin-bottom:16px; }
+        .settings-fold > summary { list-style:none; display:flex; align-items:center; justify-content:space-between; gap:12px; cursor:pointer; margin-bottom:0; }
+        .settings-fold > summary::-webkit-details-marker { display:none; }
+        .settings-fold > summary::after { content:'열기 ▾'; color:var(--accent); font-size:.78rem; font-weight:700; white-space:nowrap; }
+        .settings-fold[open] > summary::after { content:'닫기 ▴'; }
+        .settings-fold > summary:focus-visible { outline:2px solid var(--accent); outline-offset:5px; border-radius:8px; }
+        .settings-fold-content { padding-top:16px; }
 
         /* quiz records */
         .quiz-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
@@ -113,6 +119,7 @@
         @media (max-width:600px) {
             .detail-summary { grid-template-columns:repeat(2,1fr); }
             .user-grid { grid-template-columns:1fr; }
+            .settings-fold { padding:18px 16px; }
         }
     </style>
 </head>
@@ -132,21 +139,25 @@
         <!-- ── 학습 시간 설정 ── -->
         <div id="adminGate" class="chart-card"><div class="loading">🔐 관리자 계정을 확인하는 중...</div></div>
         <div id="userListView" style="display:none;">
-        <div class="chart-card" id="studyTimeConfig" style="margin-bottom:20px;">
-            <div class="chart-title" style="margin-bottom:14px;">⏱️ 과목별 최소 학습 시간 설정</div>
+        <details class="chart-card settings-fold" id="studyTimeConfig" style="margin-bottom:20px;">
+            <summary class="chart-title">⏱️ 과목별 최소 학습 시간 설정</summary>
+            <div class="settings-fold-content">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px;" id="studyTimeInputs"></div>
             <div style="display:flex;align-items:center;gap:10px;">
                 <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d1117;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
                 <span id="stcSavedMsg" style="font-size:0.8rem;color:#56d364;display:none;">✅ 저장됨</span>
             </div>
             <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">레벨별 기준시간과 최근 퀴즈 3회 평균에 따른 시간 중 더 긴 시간을 적용합니다. 평균 90점 이상은 면제되며, 0분은 점수 기록이 없을 때 바로 퀴즈가 가능합니다.</div>
-        </div>
+            </div>
+        </details>
 
-        <div class="chart-card" id="parentPlanSettings" style="margin-bottom:20px;">
-            <div class="chart-title" style="margin-bottom:8px;">🗓️ 학습자별 하루 계획 설정</div>
+        <details class="chart-card settings-fold" id="parentPlanSettings" style="margin-bottom:20px;">
+            <summary class="chart-title">🗓️ 학습자별 하루 계획 설정</summary>
+            <div class="settings-fold-content">
             <div style="font-size:.75rem;color:var(--text-sub);margin-bottom:12px;">하루 목표 시간과 학년·학기는 보호자가 관리합니다. 기존 오늘 계획은 진행 상태와 선택 단원을 유지한 채 시간 배분만 갱신됩니다.</div>
             <div id="parentPlanSettingsList" style="display:grid;gap:12px;"></div>
-        </div>
+            </div>
+        </details>
 
         <!-- ── 유저 목록 ── -->
             <div class="section-title">등록된 학습자</div>

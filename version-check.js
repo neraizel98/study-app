@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260924-notification-click';
+    const APP_VERSION = '20260926-admin-fold';
 
     (async function () {
         try {
