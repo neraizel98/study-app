@@ -117,7 +117,7 @@ assert.match(shareSource, /new URLSearchParams\(\{ learner: activeUser, date: da
 assert.doesNotMatch(shareSource, /report\.html\?daily=/, 'Daily Kakao card must not embed oversized report data in its URL');
 assert.match(sharedReportSource, /decodeSharedPayload\(dailyData, 'daily-report'\)/, 'Report page must decode the shared daily snapshot');
 assert.match(sharedReportSource, /Array\.isArray\(window\.__sharedReports\) \? window\.__sharedReports : getQuizReports\(\)/, 'Shared daily report must not be replaced with the recipient device history');
-assert.match(sharedReportSource, /FirestoreRepository\.getUserBundle\(sharedLearnerId\)/, 'Shared report must load the requested learner directly from Firestore');
+assert.match(sharedReportSource, /SharedReportLoader\.load\(\{[\s\S]*learnerId: sharedLearnerId/, 'Shared report must load the requested learner through the bounded Firestore loader');
 assert.match(sharedReportSource, /d\.hist\[0\]\?\.status === 'wrong'/, 'Retry count must include only questions that were initially wrong');
 assert.match(sharedReportSource, /firstOkCount === totalCount/, 'Perfect first-attempt message must depend on the recorded initial score');
 assert.match(sharedReportSource, /Math\.min\(totalQuestions, Math\.max\(0, Math\.floor\(Number\(log\.finalScore\)/, 'Report rendering must clamp legacy invalid scores');

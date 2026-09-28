@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260926-admin-fold';
+const CACHE_NAME = 'smart-study-20260928-record-reliability';
 
 try {
     importScripts('./firebase-config.js');
@@ -61,6 +61,7 @@ const STATIC_ASSETS = [
     './hanja.html',
     './wrong_note.html',
     './report.html',
+    './shared-report-loader.js',
     './styles.css',
     './main.js',
     './english-speech.js',

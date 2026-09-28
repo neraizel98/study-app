@@ -87,5 +87,40 @@ vm.runInContext(`for(const timer of _watchdogs.values())clearTimeout(timer);_wat
     assert.equal(drain.failureStatus, 'failed');
     assert.equal(drain.failureCode, 'unavailable');
     assert.equal(drain.runState, 'failed', 'a failed pending upload terminates its visible run');
+
+    const bounded = vm.runInContext(`(()=>{
+        const originalSchedule=_scheduleUpload;let scheduled=null;
+        _scheduleUpload=(user,kind,delay)=>{scheduled=delay;};
+        _syncReady=true;_dirty.delete('learner:user');
+        _queueUpload('learner','user',15000);
+        _dirty.get('learner:user').firstQueuedAt=Date.now()-USER_UPLOAD_MAX_WAIT;
+        _queueUpload('learner','user',15000);
+        _scheduleUpload=originalSchedule;
+        return scheduled;
+    })()`, context);
+    assert.equal(bounded, 0, 'continuous saves cannot postpone a user/daily upload beyond the maximum wait');
+
+    const pendingLogin = vm.runInContext(`(()=>{
+        let resolveLogin,uploads=0;
+        _syncReady=true;
+        _loginPromises.learner=new Promise(resolve=>{resolveLogin=resolve;});
+        _uploadUserData=async()=>{uploads++;};_uploadReports=async()=>{uploads++;};_uploadWrong=async()=>{uploads++;};
+        const promise=window.FireSync.forceUpload({userId:'learner'});
+        return {promise,resolveLogin,getUploads:()=>uploads};
+    })()`, context);
+    await Promise.resolve();
+    assert.equal(pendingLogin.getUploads(), 0, 'force upload waits for an in-flight download/merge');
+    pendingLogin.resolveLogin(true);
+    await pendingLogin.promise;
+    assert.equal(pendingLogin.getUploads(), 3);
+    vm.runInContext(`delete _loginPromises.learner`, context);
+
+    vm.runInContext(`_syncReady=true;_uploadUserData=async()=>{throw Object.assign(new Error('daily failed'),{code:'unavailable'});};_uploadReports=async()=>{};_uploadWrong=async()=>{};`, context);
+    await assert.rejects(context.window.FireSync.forceUpload({userId:'learner'}), /daily failed/, 'a partial upload never reports confirmation');
+    vm.runInContext(`_syncReady=false;window.FireSync.onLogin=async()=>false;`, context);
+    await assert.rejects(context.window.FireSync.forceUpload({userId:'learner'}), /연결을 확인하지 못/, 'not-ready sync is an explicit failure');
+    const foregroundRetries = vm.runInContext(`(()=>{let calls=0;window.FireSync.onLogin=async()=>{calls++;return false;};_retryForegroundSync();return ()=>calls;})()`, context);
+    await Promise.resolve();
+    assert.equal(foregroundRetries(), 1, 'foreground recovery retries a failed initial connection');
     console.log('Sync status: pending/progress/failure/final rendering, drain completion/failure, stale-run isolation, cache labeling and safe error classification verified.');
 })().catch(error => { console.error(error); process.exitCode = 1; });

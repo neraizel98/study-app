@@ -55,11 +55,12 @@ const index = fs.readFileSync('index.html', 'utf8').replace(/\r\n/g, '\n');
 assert(index.includes("window.addEventListener('firesynced'"), 'Dashboard must refresh after cloud synchronization');
 assert(index.indexOf('updateUI();\n            if (activeUser && window.FireSync)') > 0, 'Initial dashboard must render before cloud synchronization');
 
+const deployedVersion = JSON.parse(fs.readFileSync('version.json', 'utf8')).v;
 for (const file of fs.readdirSync('.').filter(name => name.endsWith('.html'))) {
     const html = fs.readFileSync(file, 'utf8');
     if (!html.includes('firebase-sync.js')) continue;
     assert(
-        html.includes('firebase-sync.js?v=20260920-syncstatus'),
+        html.includes(`firebase-sync.js?v=${deployedVersion}`),
         `${file} must load the protected progress-sync build instead of a cached older build`
     );
 }

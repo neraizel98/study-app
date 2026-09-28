@@ -188,12 +188,17 @@
         }
         if(!checkpoints.length)emitProgress(user,'storage',0,0,{runId,lane:'local',operation:'checkpoints',status:'completed',source:'local'});
     };
-    R.getReportsPage=async(user,{before=null,start=null,end=null,limit=20}={})=>{
+    R.getReportStorageMode=async user=>{
+        const marker=await (await base(user)).collection('data').doc('storageV2').get({source:'server'});
+        return marker.exists?'partition':'legacy';
+    };
+    R.getReportsPage=async(user,{before=null,start=null,end=null,limit=20,source=null}={})=>{
         let query=(await base(user)).collection('quizRecords').orderBy('date','desc');
         if(start!==null)query=query.where('date','>=',start);
         if(end!==null)query=query.where('date','<=',end);
         if(before)query=query.startAfter(before);
-        const page=await query.limit(limit).get();
+        const limited=query.limit(limit);
+        const page=source==='server'?await limited.get({source:'server'}):await limited.get();
         return {reports:page.docs.map(s=>({...s.data().summary,_body:s.data().body})),cursor:page.docs.at(-1)||null,hasMore:page.size===limit};
     };
     R.getReportDetail=async(user,summary)=>summary._body?readBody(await base(user),summary._body):summary;
@@ -202,21 +207,49 @@
         return page.docs.map(s=>s.data().summary);
     };
     const ledgerKey=(user,date)=>`daily:${user}:${date}`;
+    const pendingDaily=new Map();
+    function addDaily(row,type,subject,value){
+        const item=row.subjects[subject]||{learningTime:0,quizTime:0,quizCount:0};
+        if(type==='quiz')item.quizCount++;
+        else item[type==='quiz_time'?'quizTime':'learningTime']+=value;
+        row.subjects[subject]=item;
+        return row;
+    }
+    async function flushPendingDaily(){
+        await D.ready;
+        for(const [key,pending] of [...pendingDaily]){
+            pendingDaily.delete(key);
+            const row=D.getMeta(key)||{date:pending.date,subjects:{}};
+            for(const [subject,item] of Object.entries(pending.subjects||{})){
+                if(item.learningTime)addDaily(row,'study_time',subject,item.learningTime);
+                if(item.quizTime)addDaily(row,'quiz_time',subject,item.quizTime);
+                for(let i=0;i<(item.quizCount||0);i++)addDaily(row,'quiz',subject,1);
+            }
+            await D.setMeta(key,row);
+        }
+    }
+    D.ready.then(flushPendingDaily).catch(()=>{});
     app.DailyLedger={
         record(user,type,subject,value){
-            if(!D.isReady || !['study_time','quiz_time','time','quiz'].includes(type) || value<0)return;
+            if(!user||!subject||!['study_time','quiz_time','time','quiz'].includes(type)||value<0)return;
+            // Capture the event date now. A store that finishes opening after midnight
+            // must not move the learning time to the following day.
             const date=new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
-            const key=ledgerKey(user,date), row=D.getMeta(key)||{date,subjects:{}};
-            const item=row.subjects[subject]||{learningTime:0,quizTime:0,quizCount:0};
-            if(type==='quiz')item.quizCount++;
-            else item[type==='quiz_time'?'quizTime':'learningTime']+=value;
-            row.subjects[subject]=item;
+            const key=ledgerKey(user,date);
+            if(!D.isReady){
+                const row=pendingDaily.get(key)||{date,subjects:{}};
+                pendingDaily.set(key,addDaily(row,type,subject,value));
+                return;
+            }
+            const row=D.getMeta(key)||{date,subjects:{}};
+            addDaily(row,type,subject,value);
             // Update the in-memory ledger synchronously; its commit joins the durable write queue.
             D.setMeta(key,row).catch(()=>{});
-        }
+        },
+        flush:flushPendingDaily
     };
     R.putDaily=async user=>{
-        await D.flush();const ref=await base(user),device=app.LocalRepository.getDeviceId();
+        await app.DailyLedger.flush();await D.flush();const ref=await base(user),device=app.LocalRepository.getDeviceId();
         for(const key of D.metaKeys().filter(k=>k.startsWith(`daily:${user}:`)||k.startsWith(`legacyDay:${user}:`))){
             const row=D.getMeta(key), fingerprint=canonical(row), ack=`ack:${key}`;
             if(D.getMeta(ack)===fingerprint)continue;
@@ -249,8 +282,9 @@
             await D.setMeta(ack,fingerprint);
         }
     };
-    R.getDaily=async(user,start,end)=>{
-        const snap=await (await base(user)).collection('dailyRecords').where('date','>=',start).where('date','<=',end).orderBy('date').get();
+    R.getDaily=async(user,start,end,{source=null}={})=>{
+        const query=(await base(user)).collection('dailyRecords').where('date','>=',start).where('date','<=',end).orderBy('date');
+        const snap=source==='server'?await query.get({source:'server'}):await query.get();
         return snap.docs.map(s=>s.data());
     };
     R.putUser=async(user,data)=>{

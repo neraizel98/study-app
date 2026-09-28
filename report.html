@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -284,6 +284,10 @@
         }
         .shared-meta-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; }
         .shared-meta-value { font-size: 1.2rem; font-weight: 700; }
+        .shared-report-unavailable #reportSubjectTabs,
+        .shared-report-unavailable .stats-grid,
+        .shared-report-unavailable .report-grid-container { display: none; }
+        .shared-retry-btn { margin-top: 12px; border: 0; border-radius: 10px; padding: 9px 15px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
         @media (max-width: 600px) {
             .shared-meta-grid { grid-template-columns: 1fr 1fr; }
             .shared-score-main { font-size: 3.5rem; }
@@ -346,11 +350,11 @@
     </div>
 
     <script src="utils.js?v=20260911-adaptive"></script>
-    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script><script src="app-bootstrap.js"></script>
+    <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260920-syncstatus"></script><script src="firebase-sync.js?v=20260920-syncstatus"></script>
-    <script src="ui-core.js?v=20260917-storage2"></script>
-    <script src="kakao-share.js?v=20260814-short-report-link"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260928-record-reliability"></script>
+    <script src="shared-report-loader.js?v=20260928-record-reliability"></script><script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
@@ -549,27 +553,35 @@
             const sharedDate = params.get('date');
             const escapeText = value => String(value ?? '').replace(/[&<>'"]/g, char => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', "'":'&#39;', '"':'&quot;' }[char]));
             let allReports = Array.isArray(window.__sharedReports) ? window.__sharedReports : getQuizReports();
+            let sharedReportResult = null;
             if (sharedLearnerId) {
+                const normalView = document.getElementById('normalView');
                 const notice = document.getElementById('dailySharedNotice');
+                normalView.classList.add('shared-report-unavailable');
                 notice.style.display = 'block';
-                notice.innerHTML = `⏳ ${escapeText(sharedLearnerId)}의 최신 성적표를 불러오는 중입니다.`;
+                notice.innerHTML = `⏳ ${escapeText(sharedLearnerId)}의 ${escapeText(sharedDate || '최신')} 서버 성적표를 불러오는 중입니다.`;
                 try {
-                    const authUser = await SmartStudy.FirebaseClient.getCurrentUser();
+                    const authUser = await SmartStudy.SharedReportLoader.withTimeout(
+                        () => SmartStudy.FirebaseClient.getCurrentUser(), 12000
+                    );
                     if (!authUser) throw new Error('부모 Google 계정 연결이 필요합니다. 홈에서 계정을 연결한 뒤 다시 열어주세요.');
-                    const bundle = await SmartStudy.FirestoreRepository.getUserBundle(sharedLearnerId);
-                    const cloudReports = Array.isArray(bundle.reports) ? bundle.reports : [];
-                    allReports = sharedDate
-                        ? cloudReports.filter(report => StudyPeriods.dateKey(new Date(Number(report.date || report.createdAt || 0))) === sharedDate)
-                        : cloudReports;
+                    sharedReportResult = await SmartStudy.SharedReportLoader.load({
+                        repository: SmartStudy.FirestoreRepository,
+                        learnerId: sharedLearnerId,
+                        date: sharedDate,
+                        dateKey: StudyPeriods.dateKey
+                    });
+                    allReports = sharedReportResult.reports;
                     window.__sharedReports = allReports;
 
-                    const daily = bundle.user?.dailyStats || {};
-                    const canShowTimes = !sharedDate || daily.date === sharedDate;
-                    const subjectIds = canShowTimes ? [...new Set([
-                        ...(daily.subjectsStudied || []),
-                        ...Object.keys(daily.learningTime || {}),
-                        ...Object.keys(daily.quizTime || {})
-                    ])] : [];
+                    const daily = sharedReportResult.daily;
+                    const partitionSubjects = daily?.subjects || {};
+                    const subjectIds = [...new Set([
+                        ...(daily?.subjectsStudied || []),
+                        ...Object.keys(daily?.learningTime || {}),
+                        ...Object.keys(daily?.quizTime || {}),
+                        ...Object.keys(partitionSubjects)
+                    ])];
                     const formatSec = seconds => {
                         const value = Math.max(0, Math.round(Number(seconds) || 0));
                         const minutes = Math.floor(value / 60), remain = value % 60;
@@ -577,25 +589,30 @@
                     };
                     const lines = subjectIds.map(subject => {
                         const info = SubjectRegistry.get(subject);
-                        const learning = Math.max(0, Number(daily.learningTime?.[subject]) || 0);
-                        const quiz = Math.max(0, Number(daily.quizTime?.[subject]) || 0);
-                        const total = Math.max(Number(daily.studyTime?.[subject]) || 0, learning + quiz);
-                        return `<span style="display:inline-block;margin:4px 14px 4px 0;">${info.icon} ${info.name} <b>${formatSec(total)}</b> <small style="color:var(--text-sub);">(학습 ${formatSec(learning)} + 퀴즈 ${formatSec(quiz)})</small></span>`;
+                        const learning = Math.max(0, Number(partitionSubjects[subject]?.learningTime ?? daily?.learningTime?.[subject]) || 0);
+                        const quiz = Math.max(0, Number(partitionSubjects[subject]?.quizTime ?? daily?.quizTime?.[subject]) || 0);
+                        const total = Math.max(Number(daily?.studyTime?.[subject]) || 0, learning + quiz);
+                        return total > 0 ? `<span style="display:inline-block;margin:4px 14px 4px 0;">${info.icon} ${escapeText(info.name)} <b>${formatSec(total)}</b> <small style="color:var(--text-sub);">(학습 ${formatSec(learning)} + 퀴즈 ${formatSec(quiz)})</small></span>` : '';
                     }).join('');
-                    notice.innerHTML = `<b>💬 ${escapeText(sharedLearnerId)}의 ${escapeText(sharedDate || '전체')} 학습 성적표</b><br>${lines || `퀴즈 기록 ${allReports.length}건`}<br><small style="color:var(--text-sub);">Firestore에서 불러온 최신 기록입니다.</small>`;
+                    const hasServerRecord = Boolean(lines) || allReports.length > 0;
+                    notice.innerHTML = hasServerRecord
+                        ? `<b>💬 ${escapeText(sharedLearnerId)}의 ${escapeText(sharedDate || '전체')} 학습 성적표</b><br>${lines || (sharedDate ? '학습 시간 기록 없음' : '')}<br><small style="color:var(--text-sub);">서버에서 불러온 기록 · 퀴즈 ${allReports.length}건</small>`
+                        : `<b>📭 ${escapeText(sharedDate || '전체')} 서버 기록이 없습니다.</b><br><small style="color:var(--text-sub);">학습하지 않았다는 뜻이 아니라, 서버에 저장된 기록을 찾지 못했다는 뜻입니다.</small>`;
+                    if (allReports.length > 0) normalView.classList.remove('shared-report-unavailable');
                 } catch (error) {
                     console.error('[Shared learner report]', error);
-                    allReports = [];
-                    window.__sharedReports = allReports;
-                    notice.innerHTML = `⚠️ 성적표를 불러오지 못했습니다.<br><small>${escapeText(error.message)}</small>`;
+                    notice.innerHTML = `⚠️ 성적표를 불러오지 못했습니다.<br><small>${escapeText(error.message)}</small><br><button type="button" class="shared-retry-btn" id="sharedReportRetry">다시 시도</button>`;
+                    document.getElementById('sharedReportRetry').addEventListener('click', () => window.location.reload());
+                    return;
                 }
             }
             const subjects = SubjectRegistry.list({ reports: allReports, wrongAnswers: WrongNote.getAll() });
             const tabsContainer = document.getElementById('reportSubjectTabs');
             const shareButton = document.getElementById('shareHistoryBtn');
             if (Array.isArray(window.__sharedReports) || sharedLearnerId) shareButton.style.display = 'none';
-            tabsContainer.insertAdjacentHTML('afterbegin', subjects.map((subject, index) => `
-                <div class="subject-tab ${index === 0 ? 'active' : ''}" data-subject="${subject.id}">
+            const initialSubject = sharedLearnerId && allReports[0]?.subject ? allReports[0].subject : subjects[0]?.id;
+            tabsContainer.insertAdjacentHTML('afterbegin', subjects.map(subject => `
+                <div class="subject-tab ${subject.id === initialSubject ? 'active' : ''}" data-subject="${subject.id}">
                     ${subject.icon} ${subject.name}
                 </div>
             `).join(''));
@@ -656,12 +673,23 @@
                 tbody.innerHTML = '';
 
                 if (attempts === 0) {
-                    tbody.innerHTML = `<div class="empty-state"><h3>기록이 없습니다.</h3><p>학습을 시작하여 퀴즈에 도전해보세요!</p></div>`;
+                    tbody.innerHTML = sharedLearnerId
+                        ? `<div class="empty-state"><h3>퀴즈 기록이 없습니다.</h3><p>서버의 해당 날짜에 저장된 퀴즈 기록이 없습니다.</p></div>`
+                        : `<div class="empty-state"><h3>기록이 없습니다.</h3><p>학습을 시작하여 퀴즈에 도전해보세요!</p></div>`;
                     return;
                 }
 
                 // WrongNote에서 특정 세션의 문항별 기록 조회
-                function getSessionDetails(subject, sessionId) {
+                function getSessionDetails(subject, sessionId, log) {
+                    if (sharedLearnerId) {
+                        return (log.wrongItems || []).map(item => ({
+                            item: { type: escapeText(item.display || item.id || '문제') },
+                            hist: (item.rounds || []).map(round => ({
+                                round: round.r,
+                                status: round.s === 'c' ? 'correct' : 'wrong'
+                            }))
+                        })).filter(item => item.hist.length > 0);
+                    }
                     const list = WrongNote.getAll()[subject] || [];
                     const result = [];
                     list.forEach(item => {
@@ -675,7 +703,7 @@
 
                 // 상세 패널 HTML 생성
                 function buildDetailHTML(log, subject) {
-                    const details = getSessionDetails(subject, log.sessionId);
+                    const details = getSessionDetails(subject, log.sessionId, log);
                     const subjectName = SubjectRegistry.get(subject).name;
                     const totalCount = Math.max(0, Math.floor(Number(log.totalQuestions) || 0));
                     const firstOkCount = Math.min(totalCount, Math.max(0, Math.floor(Number(log.initialScore) || 0)));
@@ -760,7 +788,7 @@
                     row.innerHTML = `
                         <div><i class="row-toggle-icon">▶</i>${nth}회차</div>
                         <div style="color:var(--text-sub); font-size:0.85rem;">${formatDate(log.date)}</div>
-                        <div>${log.level}</div>
+                        <div>${escapeText(log.level || '기본')}</div>
                         <div>${QRatio}</div>
                         <div>
                             <span class="score-badge ${initCls}">${vInit}점 <small>(${initialScore}/${totalQuestions})</small></span>
@@ -772,36 +800,60 @@
 
                     const panel = document.createElement('div');
                     panel.className = 'detail-panel';
+                    panel._detailLoadGeneration = 0;
 
                     wrapper.appendChild(row);
                     wrapper.appendChild(panel);
 
+                    async function loadDetailPanel(icon) {
+                        const loadGeneration = ++panel._detailLoadGeneration;
+                        panel.innerHTML = '<div class="detail-inner">상세 기록을 불러오는 중입니다.</div>';
+                        try {
+                            const detailLog = sharedLearnerId && sharedReportResult
+                                ? await SmartStudy.SharedReportLoader.withTimeout(() => sharedReportResult.getDetail(log), 12000)
+                                : log;
+                            const activeSubject = document.querySelector('.subject-tab.active')?.dataset.subject;
+                            if (loadGeneration !== panel._detailLoadGeneration || !panel.isConnected
+                                || activeDetailRow !== panel || activeSubject !== subject) return;
+                            panel.innerHTML = `<div class="detail-inner">${buildDetailHTML(detailLog, subject)}</div>`;
+                        } catch (error) {
+                            const activeSubject = document.querySelector('.subject-tab.active')?.dataset.subject;
+                            if (loadGeneration !== panel._detailLoadGeneration || !panel.isConnected
+                                || activeDetailRow !== panel || activeSubject !== subject) return;
+                            panel.innerHTML = `<div class="detail-inner">상세 기록을 불러오지 못했습니다.<br><small>${escapeText(error.message)}</small><br><button type="button" class="shared-retry-btn">다시 시도</button></div>`;
+                            panel.querySelector('.shared-retry-btn').addEventListener('click', event => {
+                                event.stopPropagation();
+                                loadDetailPanel(icon);
+                            });
+                        }
+                    }
+
                     // 클릭 시 토글
-                    row.addEventListener('click', () => {
+                    row.addEventListener('click', async () => {
                         const icon = row.querySelector('.row-toggle-icon');
                         const isOpen = panel.classList.contains('open');
 
                         // 이전에 열린 패널 닫기
                         if (activeDetailRow && activeDetailRow !== panel) {
+                            activeDetailRow._detailLoadGeneration += 1;
                             activeDetailRow.classList.remove('open');
                             activeDetailRow.innerHTML = '';
                             if (activeIcon) activeIcon.classList.remove('open');
                         }
 
                         if (isOpen) {
+                            panel._detailLoadGeneration += 1;
                             panel.classList.remove('open');
                             panel.innerHTML = '';
                             icon.classList.remove('open');
                             activeDetailRow = null;
                             activeIcon = null;
                         } else {
-                            if (!panel.innerHTML) {
-                                panel.innerHTML = `<div class="detail-inner">${buildDetailHTML(log, subject)}</div>`;
-                            }
                             panel.classList.add('open');
                             icon.classList.add('open');
                             activeDetailRow = panel;
                             activeIcon = icon;
+                            if (!panel.innerHTML) await loadDetailPanel(icon);
                         }
                     });
 
@@ -819,7 +871,7 @@
             });
 
             // 초기 렌더링
-            renderReports(subjects[0]?.id || 'english');
+            renderReports(initialSubject || 'english');
         });
     </script>
 

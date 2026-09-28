@@ -31,6 +31,7 @@ const _syncRuns = new Map();
 let _runSequence = 0;
 let _lastInitError = null;
 let _lastInitOperation = null;
+const USER_UPLOAD_MAX_WAIT = 15000;
 const _operationLabels = {
     durable: '기기 저장소 준비', sdk: '클라우드 연결 준비', auth: '계정 인증', marker: '저장 형식 확인', legacy: '이전 기록 확인',
     profile: '사용자 정보 받기', 'reports-list': '퀴즈 목록 받기', 'wrong-list': '오답 목록 받기',
@@ -48,6 +49,7 @@ function _classifySyncError(error, lane = '') {
     if (match('resource-exhausted')) return { code: 'quota', action: '클라우드 사용량을 확인하고 잠시 뒤 다시 시도해 주세요.' };
     if (match('checksum', '검증에 실패')) return { code: 'checksum', action: '기록은 기기에 유지됩니다. 다시 동기화해 주세요.' };
     if (match('missing', '일부를 받지 못')) return { code: 'missing', action: '일부 기록을 받지 못했습니다. 다시 시도해 주세요.' };
+    if (match('sync/not-ready', '아직 준비')) return { code: 'not-ready', action: '클라우드 연결을 확인한 뒤 자동으로 다시 시도합니다.' };
     if (window.navigator?.onLine === false || match('network-request-failed', 'offline')) return { code: 'offline', action: '인터넷 연결 뒤 자동으로 다시 시도합니다.' };
     if (match('unavailable', 'deadline-exceeded')) return { code: 'unavailable', action: '서버가 응답하면 자동으로 다시 시도합니다.' };
     return { code: raw.replace(/[^a-z0-9_/-]/g, '').slice(0, 48) || 'unknown', action: '기록은 기기에 유지됩니다. 잠시 뒤 다시 시도해 주세요.' };
@@ -113,8 +115,14 @@ function _queueUpload(userId, kind, delay) {
     const key = _dirtyKey(userId, kind);
     const state = _dirty.get(key) || { generation: 0, confirmed: 0, running: false, delay };
     state.generation++;
+    state.firstQueuedAt ||= Date.now();
     _dirty.set(key, state);
-    if (_syncReady && !_syncingUsers.has(userId)) _scheduleUpload(userId, kind, delay);
+    if (_syncReady && !_syncingUsers.has(userId)) {
+        const boundedDelay = kind === 'user'
+            ? Math.min(delay, Math.max(0, state.firstQueuedAt + USER_UPLOAD_MAX_WAIT - Date.now()))
+            : delay;
+        _scheduleUpload(userId, kind, boundedDelay);
+    }
 }
 function _scheduleUpload(userId, kind, delay = 2000) {
     const key = _dirtyKey(userId, kind);
@@ -132,6 +140,7 @@ async function _drainUpload(userId, kind) {
             await ({user: _uploadUserData, reports: _uploadReports, wrong: _uploadWrong})[kind](userId, run?.state === 'running' ? run : null);
             state.confirmed = generation;
         }
+        if (state.confirmed >= state.generation) state.firstQueuedAt = null;
         if (_initialSucceeded.has(userId) && !_hasPendingUploads(userId) && !_syncingUsers.has(userId)) {
             if (run?.state === 'running') {
                 const failed = [...run.lanes.values()].some(step => step.status === 'failed');
@@ -208,7 +217,7 @@ function _debounce(key, fn, ms = 2000) {
 }
 
 async function _uploadUserData(userId, run = null) {
-    if (!_syncReady) return;
+    if (!_syncReady) throw Object.assign(new Error('클라우드 연결이 아직 준비되지 않았습니다.'), { code: 'sync/not-ready' });
     try {
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'flush', 'waiting');
         await _localRepository.flush?.();
@@ -225,7 +234,7 @@ async function _uploadUserData(userId, run = null) {
 }
 
 async function _uploadReports(userId, run = null) {
-    if (!_syncReady) return;
+    if (!_syncReady) throw Object.assign(new Error('클라우드 연결이 아직 준비되지 않았습니다.'), { code: 'sync/not-ready' });
     try {
         await _localRepository.flush?.();
         const reports = _localRepository.listReports(userId);
@@ -236,11 +245,11 @@ async function _uploadReports(userId, run = null) {
 }
 
 async function _uploadStudyConfig(cfg) {
-    if (!_syncReady) return;
+    if (!_syncReady) throw Object.assign(new Error('클라우드 연결이 아직 준비되지 않았습니다.'), { code: 'sync/not-ready' });
     try {
         // 관리자(우준아빠) 문서에 studyTimeConfig 필드로 저장 (기존 경로 재사용)
         await _remoteRepository.saveStudyTimeConfig(cfg);
-    } catch (e) { console.warn('[FireSync] studyConfig 업로드 실패:', e.message); }
+    } catch (e) { console.warn('[FireSync] studyConfig 업로드 실패:', e.message); throw e; }
 }
 
 async function _downloadStudyConfig() {
@@ -253,7 +262,7 @@ async function _downloadStudyConfig() {
 }
 
 async function _uploadWrong(userId, run = null) {
-    if (!_syncReady) return;
+    if (!_syncReady) throw Object.assign(new Error('클라우드 연결이 아직 준비되지 않았습니다.'), { code: 'sync/not-ready' });
     try {
         await _localRepository.flush?.();
         const raw = window.SmartStudy.DurableStore?.read(`SmartStudy_WrongAnswers_${userId}`);
@@ -738,6 +747,8 @@ window.FireSync = {
                     if (_lastInitOperation === 'sdk') _recordSyncStep(userId, run.runId, 'connect', 'auth', 'completed', { completed: 1, total: 1, source: 'unknown' });
                     _recordSyncStep(userId, run.runId, 'connect', _lastInitOperation || 'auth', 'failed', { error: _lastInitError || new Error('unavailable') });
                     _finishSyncRun(run, 'failed');
+                    _initialSucceeded.delete(userId);
+                    _retryLogin(userId);
                     return false;
                 }
                 _recordSyncStep(userId, run.runId, 'connect', 'auth', 'completed', { completed: 1, total: 1, source: 'unknown' });
@@ -796,18 +807,29 @@ window.FireSync = {
     /**
      * 강제 전체 업로드 (데이터 가져오기 후 사용)
      */
-    forceUpload: async function() {
+    forceUpload: async function({ userId: expectedUserId } = {}) {
         await _localRepository.ready;
         await _localRepository.flush?.();
         const uid = UserSession.getActiveUser();
-        if (!uid || !_syncReady) return;
+        if (!uid) throw Object.assign(new Error('학습자를 먼저 선택해 주세요.'), { code: 'sync/no-user' });
+        if (expectedUserId && uid !== expectedUserId) throw Object.assign(new Error('학습자가 바뀌어 저장을 중단했습니다.'), { code: 'sync/user-changed' });
+        if (_loginPromises[uid]) {
+            const connected = await _loginPromises[uid];
+            if (!connected) throw Object.assign(new Error('클라우드 연결을 확인하지 못했습니다.'), { code: 'sync/not-ready' });
+        } else if (!_syncReady) {
+            const connected = await this.onLogin(uid);
+            if (!connected || !_syncReady) throw Object.assign(new Error('클라우드 연결을 확인하지 못했습니다.'), { code: 'sync/not-ready' });
+        }
+        if (UserSession.getActiveUser() !== uid) throw Object.assign(new Error('학습자가 바뀌어 저장을 중단했습니다.'), { code: 'sync/user-changed' });
         _showSyncBadge('☁️ 업로드 중...');
         await Promise.all([
             _uploadUserData(uid),
             _uploadReports(uid),
             _uploadWrong(uid)
         ]);
+        if (UserSession.getActiveUser() !== uid) throw Object.assign(new Error('학습자가 바뀌어 저장 확인을 완료하지 못했습니다.'), { code: 'sync/user-changed' });
         _showSyncBadge('✅ 업로드 완료', '#56d364');
+        return { userId: uid, confirmed: true };
     }
 };
 
@@ -821,9 +843,19 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 });
 
-window.addEventListener?.('online', () => { const uid = _localRepository.getActiveUser(); if (uid) window.FireSync.onLogin(uid); });
+function _retryForegroundSync() {
+    const uid = _localRepository.getActiveUser();
+    if (!uid || window.navigator?.onLine === false) return;
+    if (!_syncReady || !_initialSucceeded.has(uid)) window.FireSync.onLogin(uid);
+    else _resumeUploads(uid);
+}
+window.addEventListener?.('online', _retryForegroundSync);
+window.addEventListener?.('focus', _retryForegroundSync);
+document.addEventListener?.('visibilitychange', () => {
+    if (document.visibilityState === 'visible') _retryForegroundSync();
+});
 window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true));
-window.addEventListener?.('smartstudy:storage-error', () => _showSyncBadge('⚠️ 기기 저장 실패 · 앱을 닫지 말고 백업해 주세요', '#ff5f6d', true));
+window.addEventListener?.('smartstudy:storage-error', event => _showSyncBadge(`⚠️ ${event.detail?.message || '기기 저장 실패 · 앱을 닫지 말고 백업해 주세요'}`, '#ff5f6d', true));
 window.addEventListener?.('smartstudy:sync-state', event => { if (!_badgeOwner) _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true); });
 window.addEventListener?.('smartstudy:sync-progress', event => {
     const detail = event.detail || {};

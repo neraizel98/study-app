@@ -8,6 +8,22 @@
 window.KakaoShare = {
     isInitialized: false,
     SHARE_TTL_MS: 7 * 24 * 60 * 60 * 1000,
+    _dailyShareReady: null,
+    _dailyShareSyncing: null,
+    _dailyShareAttempt: 0,
+    DAILY_SHARE_SYNC_TIMEOUT_MS: 20000,
+
+    _setDailyShareStatus: function(message, state = 'idle') {
+        const button = document.getElementById?.('dailyShareButton');
+        const status = document.getElementById?.('dailyShareStatus');
+        if (button) {
+            button.disabled = state === 'syncing';
+            button.textContent = state === 'syncing' ? '☁️ 서버 저장 확인 중…'
+                : state === 'ready' ? '💬 저장됨 · 공유 열기'
+                : '아빠에게 오늘 결과 보내기 🚀';
+        }
+        if (status) status.textContent = message || '';
+    },
 
     _encodeSharePayload: function(kind, data) {
         const now = Date.now();
@@ -300,15 +316,50 @@ window.KakaoShare = {
         const params = new URLSearchParams({ learner: activeUser, date: dateKey });
         const url = `${window.location.origin}${window.location.pathname.split('/').slice(0, -1).join('/')}/report.html?${params}`;
 
-        // Start an immediate cloud upload before Kakao opens. Do not await it:
-        // keeping sendDefault in the original click gesture prevents mobile
-        // browsers from treating the Kakao picker as a blocked popup.
-        window.FireSync?.forceUpload?.().catch(error => console.warn('[KakaoShare] pre-share sync failed:', error));
-
-        this._sendFeed({
+        const payload = {
             title, description: desc,
             imageUrl: 'https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=400&auto=format&fit=crop',
             url, buttonTitle: '성적표 보기 📈'
+        };
+        const signature = JSON.stringify({ userId: activeUser, date: dateKey, daily });
+        if (this._dailyShareReady?.signature === signature && this._dailyShareReady.expiresAt > Date.now()) {
+            this._dailyShareReady = null;
+            this._setDailyShareStatus('', 'idle');
+            this._sendFeed(payload);
+            return;
+        }
+        if (this._dailyShareSyncing === signature) {
+            alert('학습 기록을 서버에 저장하고 있습니다. 완료 안내가 나온 뒤 이 버튼을 다시 눌러 주세요.');
+            return;
+        }
+        if (!window.FireSync?.forceUpload) {
+            this._setDailyShareStatus('서버 저장 기능을 불러오지 못했습니다. 이 화면을 유지하고 연결 후 다시 시도해 주세요.', 'error');
+            return;
+        }
+
+        // The mobile picker must be opened by a user gesture. Confirm the upload
+        // first, then open Kakao on a deliberate second tap.
+        this._dailyShareSyncing = signature;
+        const attempt = ++this._dailyShareAttempt;
+        this._setDailyShareStatus(`${activeUser}의 학습·퀴즈 기록을 서버에 저장하고 있습니다.`, 'syncing');
+        let timeoutId;
+        const timeout = new Promise((_, reject) => { timeoutId = setTimeout(() => reject(Object.assign(new Error('저장 확인 시간 초과'), { code: 'sync/timeout' })), this.DAILY_SHARE_SYNC_TIMEOUT_MS); });
+        Promise.race([window.FireSync.forceUpload({ userId: activeUser }), timeout]).then(result => {
+            if (attempt !== this._dailyShareAttempt) return;
+            const currentUser = typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null;
+            if (!result?.confirmed || result.userId !== activeUser || currentUser !== activeUser) {
+                throw Object.assign(new Error('학습자 확인이 바뀌었습니다.'), { code: 'sync/user-changed' });
+            }
+            this._dailyShareReady = { signature, expiresAt: Date.now() + 2 * 60 * 1000 };
+            this._setDailyShareStatus(`${activeUser}의 서버 저장을 확인했습니다. 버튼을 다시 눌러 카카오톡을 여세요.`, 'ready');
+        }).catch(error => {
+            if (attempt !== this._dailyShareAttempt) return;
+            console.warn('[KakaoShare] pre-share sync failed:', error);
+            this._dailyShareReady = null;
+            this._setDailyShareStatus('서버 저장을 확인하지 못해 공유를 열지 않았습니다. 이 화면을 유지하고 연결 후 다시 시도해 주세요.', 'error');
+        }).finally(() => {
+            clearTimeout(timeoutId);
+            if (attempt === this._dailyShareAttempt && this._dailyShareSyncing === signature) this._dailyShareSyncing = null;
         });
     },
 

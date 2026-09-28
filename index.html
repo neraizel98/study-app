@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -272,9 +272,10 @@
                         <span id="dailyStreakBadge" style="font-size:0.8rem; background:rgba(255,152,0,0.15); color:#ff9800; padding:4px 10px; border-radius:8px; font-weight:700;"></span>
                     </div>
                     <div id="dailySubjectSummary" style="font-size:0.9rem; color:var(--text-sub); line-height:1.8; margin-bottom:16px;"></div>
-                    <button onclick="KakaoShare.sendDailySummary()" style="width:100%; background:#FEE500; color:#3A1D1D; border:none; padding:12px; border-radius:14px; font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:-0.3px;">
+                    <button id="dailyShareButton" onclick="KakaoShare.sendDailySummary()" style="width:100%; background:#FEE500; color:#3A1D1D; border:none; padding:12px; border-radius:14px; font-size:1rem; font-weight:800; cursor:pointer; letter-spacing:-0.3px;">
                         아빠에게 오늘 결과 보내기 🚀
                     </button>
+                    <div id="dailyShareStatus" role="status" aria-live="polite" style="margin-top:8px;font-size:.78rem;color:var(--text-sub);"></div>
                 </div>
 
                 <!-- 오답노트 카드 (클릭 시 오답노트 이동) -->
@@ -375,15 +376,15 @@
         &copy; 2026 Smart Study - Advanced Learning System
     </div>
 
-    <script src="kakao-share.js?v=20260814-short-report-link"></script>
+    <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script src="storage-keys.js"></script>
     <script src="storage-events.js"></script>
     <script src="schema-migrations.js"></script>
-    <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260917-storage2"></script>
+    <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script>
     <script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260923-parent-free"></script><script src="partition-repository.js?v=20260920-syncstatus"></script>
-    <script src="firebase-sync.js?v=20260920-syncstatus"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260923-parent-free"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
+    <script src="firebase-sync.js?v=20260928-record-reliability"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
     <script src="ui-core.js?v=20260917-storage2"></script><script src="parent-scope-guard.js"></script>
     <script src="missions.js?v=20260729-mission-periods"></script>

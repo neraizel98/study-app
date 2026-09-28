@@ -87,6 +87,11 @@
         // can continue and Firebase synchronization can still read/upload it.
         overflowMemory.set(key, serialize(value));
         console.warn(`[LocalRepository] Storage quota still exceeded at ${key}; keeping this session in memory for cloud sync.`);
+        root.dispatchEvent?.(new CustomEvent('smartstudy:storage-error', { detail: {
+            message: '기기 저장 공간이 부족해 현재 기록을 임시 보관 중입니다. 앱을 닫기 전에 클라우드 저장을 확인해 주세요.',
+            memoryOnly: true,
+            key
+        } }));
         return true;
     }
 

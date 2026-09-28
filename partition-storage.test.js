@@ -5,11 +5,11 @@ const {webcrypto}=require('node:crypto');
 const {IDBFactory}=require('fake-indexeddb');
 
 function storage(){const map=new Map();return {map,get length(){return map.size;},key:i=>[...map.keys()][i],getItem:k=>map.get(k)??null,setItem:(k,v)=>map.set(k,String(v)),removeItem:k=>map.delete(k)};}
-async function create(indexedDB,localStorage){
+async function create(indexedDB,localStorage,waitForReady=true){
     const ctx={console,indexedDB,localStorage,crypto:webcrypto,events:[],CustomEvent:class{constructor(type,options){this.type=type;this.detail=options?.detail;}},dispatchEvent(event){this.events.push(event);},addEventListener(){},TextEncoder,TextDecoder,Blob,Response,CompressionStream,DecompressionStream,btoa,atob,setTimeout,clearTimeout};
     ctx.window=ctx;vm.createContext(ctx);
     for(const file of ['storage-keys.js','storage-events.js','schema-migrations.js','durable-store.js','local-repository.js'])vm.runInContext(fs.readFileSync(file,'utf8'),ctx);
-    await ctx.SmartStudy.LocalRepository.ready;return ctx;
+    if(waitForReady)await ctx.SmartStudy.LocalRepository.ready;return ctx;
 }
 function mockFirestore(){
     const docs=new Map();let writes=0,reads=0,fail=false,tick=1000,fromCache=false;
@@ -34,6 +34,17 @@ function mockFirestore(){
 
 (async()=>{
     const local=storage(),idb=new IDBFactory();
+    const early=await create(new IDBFactory(),storage(),false);
+    early.firebase={firestore:{FieldValue:{serverTimestamp:()=>0}}};
+    early.SmartStudy.FirestoreRepository={getUserBundle:async()=>({}),getDB:async()=>({})};
+    vm.runInContext(fs.readFileSync('partition-repository.js','utf8'),early);
+    early.SmartStudy.DailyLedger.record('early','study_time','reading',7);
+    early.SmartStudy.DailyLedger.record('early','quiz_time','reading',3);
+    await early.SmartStudy.DailyLedger.flush();
+    const earlyRows=early.SmartStudy.DurableStore.metaKeys().filter(key=>key.startsWith('daily:early:'));
+    assert.equal(earlyRows.length,1,'learning before IndexedDB opens is queued by its captured date');
+    assert.equal(early.SmartStudy.DurableStore.getMeta(earlyRows[0]).subjects.reading.learningTime,7);
+    assert.equal(early.SmartStudy.DurableStore.getMeta(earlyRows[0]).subjects.reading.quizTime,3);
     const reports=Array.from({length:1100},(_,i)=>({sessionId:`session-${i}`,subject:'english',date:i+1,initialScore:1,finalScore:2,totalQuestions:2,metadata:{attempts:[{question:'기록 보존 '.repeat(50)+i,correct:true}],initialAttempts:[{question:'first '+i,correct:false}]}}));
     const key='SmartVocab_Reports_test',original=JSON.stringify({schemaVersion:4,items:reports});local.setItem(key,original);
     local.setItem('SmartStudy_WrongAnswers_test',JSON.stringify({schemaVersion:3,subjects:{english:[{word:'keep',date:1,history:Array.from({length:200},(_,i)=>({eventId:String(i),date:i,status:'wrong'}))}]}}));
