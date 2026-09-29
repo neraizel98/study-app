@@ -54,3 +54,18 @@ timer.recordResult('math', 'middle-1:semester1:u1', 9, 10, 'math1');
 assert.equal(timer.getRequiredSeconds('math', 'middle-1:semester1:u1'), 0, '90 or higher remains exempt');
 
 console.log('Level-based study timer verified.');
+// English reading shares one daily counter per grade, retaining old unit records.
+sandbox.SmartStudy.LocalRepository.keys = () => [...store.keys()];
+const day = new Date().toLocaleDateString('sv-SE');
+const timerKey = context => sandbox.SmartStudy.StorageKeys.timerTime('guest',context,day);
+store.set(timerKey('english_reading:english_reading:grade6:er1'),'60');
+store.set(timerKey('english_reading:english_reading:grade6:er2'),'120');
+store.set(timerKey('english_reading:grade6'),'30');
+store.set(timerKey('english_reading:english_reading:middle1:er1'),'90');
+assert.equal(timer.getAccumulated('english_reading','english_reading:grade6:er1'),210);
+assert.equal(timer.getAccumulated('english_reading','english_reading:grade6:er4'),210);
+assert.equal(timer.getAccumulated('english_reading','english_reading:grade6'),210,'repeated reads never duplicate legacy time');
+assert.equal(timer.getAccumulated('english_reading','english_reading:middle1'),90,'grades remain isolated');
+timer.recordResult('english_reading','english_reading:grade6',4,5,'reading-grade-test');
+assert.equal(timer.getAccumulated('english_reading','english_reading:grade6'),210,'quiz completion retains daily grade time');
+assert.equal(timer.LEVELS.english_reading.length,4);

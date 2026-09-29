@@ -25,7 +25,10 @@ const StudyTimer = (() => {
             { key: 'level4', label: 'Lv. 4' }
         ],
         english_reading: [
-            { key: 'grade6', label: '초등 6학년 독해' }
+            { key: 'grade6', label: '초등 6학년 독해' },
+            { key: 'middle1', label: '중1 독해' },
+            { key: 'middle2', label: '중2 독해' },
+            { key: 'middle3', label: '중3 독해' }
         ],
         grammar: [
             { key: 'elementary', label: 'Lv. 1 · 초등 문법' },
@@ -93,6 +96,7 @@ const StudyTimer = (() => {
     }
 
     function contextKey(subject, context) {
+        if (subject === 'english_reading') return `${subject}:${getLevelKey(subject, context)}`;
         return `${subject}:${context || 'default'}`;
     }
 
@@ -102,13 +106,20 @@ const StudyTimer = (() => {
     }
 
     function getAccumulated(subject, context = 'default') {
-        return repository.getNumber(timeKey(subject, context));
+        const current = repository.getNumber(timeKey(subject, context));
+        if (subject !== 'english_reading') return current;
+        // Preserve legacy unit counters as separate contributions; never copy them
+        // into the new counter, which would double-count on subsequent reads/sync.
+        const today = typeof StudyPeriods !== 'undefined' ? StudyPeriods.daily() : new Date().toLocaleDateString('sv-SE');
+        const prefix = storageKeys.timerTime(getUserId(), `english_reading:english_reading:${getLevelKey(subject, context)}:`, '').slice(0, -1);
+        return current + (repository.keys?.() || []).filter(key => key.startsWith(prefix) && key.endsWith(`_${today}`))
+            .reduce((sum, key) => sum + Math.max(0, repository.getNumber(key)), 0);
     }
 
     function addSeconds(subject, context, seconds) {
         const safeSeconds = Math.max(0, Math.min(2, Number(seconds) || 0));
         if (!safeSeconds) return;
-        repository.setNumber(timeKey(subject, context), getAccumulated(subject, context) + safeSeconds);
+        repository.setNumber(timeKey(subject, context), repository.getNumber(timeKey(subject, context)) + safeSeconds);
 
         // 학습 잠금에 사용한 실제 학습 시간도 홈·미션·관리자 통계에 함께 기록한다.
         if (typeof UserSession !== 'undefined') {
@@ -221,7 +232,7 @@ const StudyTimer = (() => {
             history: history.sort((a, b) => (b.date || 0) - (a.date || 0)).slice(0, 3)
         };
         repository.saveTimerScores(getUserId(), store);
-        resetAccumulated(subject, context);
+        if (subject !== 'english_reading') resetAccumulated(subject, context);
     }
 
     function getStatus(subject, context = 'default', aliases = []) {

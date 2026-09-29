@@ -23,8 +23,8 @@
     const preferenceKey = suffix => `SmartStudy_EnglishReading_${encodeURIComponent(userId())}_${suffix}`;
     const getPreference = (key, fallback) => window.SmartStudy?.LocalRepository?.getPreference?.(preferenceKey(key), fallback) ?? fallback;
     const setPreference = (key, value) => window.SmartStudy?.LocalRepository?.setPreference?.(preferenceKey(key), value);
-    const context = () => `english_reading:${LEVEL_ID}:${unitId}`;
-    const aliases = () => ['영어 독해', level()?.title, `영어 독해 ${level()?.title}`].filter(Boolean);
+    const context = () => `english_reading:${LEVEL_ID}`;
+    const aliases = () => [level()?.title, `영어 독해 ${level()?.title}`].filter(Boolean);
     const allPassages = () => data().units.flatMap(item => item.passages || []);
 
     function validateContent() {

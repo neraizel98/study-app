@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260929-reading-audio';
+    const APP_VERSION = '20260929-reading-grade-time';
 
     (async function () {
         try {
