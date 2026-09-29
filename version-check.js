@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260929-english-reading';
+    const APP_VERSION = '20260929-reading-mobile';
 
     (async function () {
         try {

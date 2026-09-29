@@ -32,7 +32,7 @@
     function cachedSettings(user){return app.LocalRepository.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`,null);}
     async function settingsWhenMissing(user){
         const cached=cachedSettings(user);if(cached)return cached;
-        try{return await Promise.race([app.FirestoreRepository?.getLearnerPlanSettings?.(user),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),2000))]);}
+        try{return await Promise.race([(async()=>{await app.FirebaseClient?.getCurrentUser?.();const settings=await app.FirestoreRepository?.getLearnerPlanSettings?.(user);if(settings)app.LocalRepository.setPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`,settings);return settings;})(),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),12000))]);}
         catch(error){return null;}
     }
     async function apply(){
@@ -46,7 +46,8 @@
             const scope=inactiveEnglish?null:settings?.scopes?.[subject];
             if(scope?.mode==='assigned'){location.replace('today.html');return;}
             if(!settings){
-                const box=document.createElement('aside');box.id='parentScopeGuard';box.textContent='보호자 필수 범위를 확인하지 못했습니다. 온라인 상태에서 오늘 학습을 먼저 열어 주세요.';
+                const box=document.createElement('aside');box.id='parentScopeGuard';box.textContent='이 기기에서 보호자 설정을 아직 확인하지 못했습니다. ';
+                const link=document.createElement('a');link.href='today.html';link.textContent='오늘 학습에서 설정 다시 확인';link.style.color='#8bd1ff';box.append(link);
                 box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #8b949e;border-radius:12px;background:#242b36;color:#d7e0ea;';(document.querySelector('main,.wrap')||document.body).prepend(box);
             }
             return;
