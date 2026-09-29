@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260929-reading-words';
+const CACHE_NAME = 'smart-study-20260929-reading-audio';
 
 try {
     importScripts('./firebase-config.js');

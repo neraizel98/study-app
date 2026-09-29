@@ -75,11 +75,12 @@
     }
     function renderStudy() {
         const item = passage(); if (!item) return;
+        stopSpeech();
         mode = 'study'; session = null; clearSavedSession(); quizTimer?.destroy?.(); quizTimer = null;
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
         $('passageMeta').textContent = `${level().title} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
         $('passageTitle').textContent = item.title; $('studyPassage').innerHTML = renderPassageLines(item, true);
-        $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls"><a href="english.html?word=${encodeURIComponent(entry.word)}"><b>${escapeHTML(entry.word)}</b></a><button type="button" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" data-pronounce="${index}" aria-label="${escapeHTML(entry.word)} 발음 듣기">🔊 발음</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
+        $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls">${Object.values(window.vocabData || {}).some(words => words.some(word => word.word.toLowerCase() === entry.word.toLowerCase())) ? `<a href="english.html?word=${encodeURIComponent(entry.word)}"><b>${escapeHTML(entry.word)}</b></a>` : `<b class="reading-word">${escapeHTML(entry.word)}</b>`}<button type="button" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" class="audio-icon" data-pronounce="${index}" aria-pressed="false" title="발음 듣기 · 다시 누르면 정지" aria-label="${escapeHTML(entry.word)} 발음 듣기">${soundIcon}</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
         $('grammarNotes').innerHTML = item.grammarNotes.map(note => `<p><b>${escapeHTML(note.title)}</b><br>${escapeHTML(note.text)}</p>`).join('');
         const grammarUnits = window.EnglishGrammarData?.elementary?.units || [];
         const grammarRefs = item.grammarRefs?.length ? item.grammarRefs : item.grammarTags.map(unitId => ({ stageId: 'elementary', unitId, lessonIndex: 0 }));
@@ -127,6 +128,7 @@
         enterQuiz(); saveSession();
     }
     function enterQuiz() {
+        stopSpeech();
         mode = 'quiz'; $('studyPanel').hidden = true; $('quizPanel').hidden = false; $('resultModal').hidden = true;
         timerController?.stopTimer?.(); quizTimer?.destroy?.(); quizTimerBase = Number(session.activeSeconds || 0); quizTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         setUrl(session.review ? 'review' : 'quiz'); renderQuestion();
@@ -255,7 +257,31 @@
         for (const candidateUnit of data().units) { const index = candidateUnit.passages.findIndex(item => item.id === id); if (index >= 0) { unitId = candidateUnit.id; passageIndex = index; return true; } }
         return false;
     }
+    let speechButton = null;
+    const soundIcon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M11 5 6 9H3v6h3l5 4z"/><path d="M15 8a6 6 0 0 1 0 8M18 5a10 10 0 0 1 0 14"/></svg>';
+    function stopSpeech() {
+        window.speechSynthesis?.cancel();
+        if (speechButton) { speechButton.classList.remove('playing'); speechButton.setAttribute('aria-pressed','false'); }
+        speechButton = null;
+    }
+    function playSpeech(text, button) {
+        const wasPlaying = speechButton === button;
+        stopSpeech(); if (wasPlaying) return;
+        if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { alert('이 브라우저에서는 음성 재생을 지원하지 않습니다.'); return; }
+        const utterance = new window.SpeechSynthesisUtterance(text);
+        utterance.lang = 'en-US'; utterance.rate = 0.85;
+        const voice = window.speechSynthesis.getVoices().find(v => /^en[-_]US$/i.test(v.lang));
+        if (voice) utterance.voice = voice;
+        speechButton = button; button.classList.add('playing'); button.setAttribute('aria-pressed','true');
+        const finish = () => { if (speechButton === button) { button.classList.remove('playing'); button.setAttribute('aria-pressed','false'); speechButton = null; } };
+        utterance.onend = finish;
+        utterance.onerror = event => { finish(); if (!['interrupted','canceled'].includes(event.error)) alert('음성을 재생하지 못했습니다. 기기의 음성 설정을 확인해 주세요.'); };
+        window.speechSynthesis.speak(utterance);
+    }
     function bind() {
+        $('listenPassage').innerHTML = soundIcon;
+        $('listenPassage').addEventListener('click', () => playSpeech(passage().sentences.join(' '), $('listenPassage')));
+        window.addEventListener('pagehide', stopSpeech);
         $('vocabulary').addEventListener('click', event => {
             const meaningButton = event.target.closest('[data-meaning]');
             if (meaningButton) {
@@ -267,18 +293,8 @@
             }
             const soundButton = event.target.closest('[data-pronounce]');
             if (!soundButton) return;
-            if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
-                alert('이 브라우저에서는 발음 재생을 지원하지 않습니다.'); return;
-            }
             const entry = passage().vocabulary[Number(soundButton.dataset.pronounce)];
-            if (!entry) return;
-            window.speechSynthesis.cancel();
-            const utterance = new window.SpeechSynthesisUtterance(entry.word);
-            utterance.lang = 'en-US'; utterance.rate = 0.85;
-            const voice = window.speechSynthesis.getVoices().find(candidate => /^en[-_]US$/i.test(candidate.lang));
-            if (voice) utterance.voice = voice;
-            utterance.onerror = event => { if (!['interrupted', 'canceled'].includes(event.error)) alert('발음을 재생하지 못했습니다. 기기의 음성 설정을 확인한 뒤 다시 눌러주세요.'); };
-            window.speechSynthesis.speak(utterance);
+            if (entry) playSpeech(entry.word, soundButton);
         });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button) return; unitId = button.dataset.unit; passageIndex = 0; renderSelectors(); renderStudy(); });
         $('toggleTranslation').addEventListener('click', () => { translationVisible = !translationVisible; if (translationVisible) expose(passage().id, 'translation'); renderStudy(); });

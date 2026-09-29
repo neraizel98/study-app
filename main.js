@@ -1033,6 +1033,16 @@ window.AppEngine = {
         }
 
         const mode = isReviewMode ? 'quiz' : 'study';
+        const requestedWord = new URLSearchParams(window.location.search).get('word')?.trim().toLowerCase();
+        if (requestedWord && !isReviewMode) {
+            const match = Object.entries(window.vocabData).map(([level, words]) => ({ level, index: words.findIndex(entry => entry.word.toLowerCase() === requestedWord) })).find(entry => entry.index >= 0);
+            if (match) {
+                currentLevel = match.level;
+                levelBtns.forEach(button => button.classList.toggle('active', button.dataset.level === currentLevel));
+                shuffledStudyIndices = [match.index, ...vocabData[currentLevel].map((_, index) => index).filter(index => index !== match.index)];
+                currentIndex = 0;
+            }
+        }
 
         console.log(`[AppEngine] Starting in ${mode} mode`);
         setMode(mode);

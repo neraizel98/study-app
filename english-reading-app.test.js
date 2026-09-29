@@ -54,7 +54,7 @@ class Element {
     get textContent() { return this._textContent || ''; }
 }
 function makeBrowser(sharedPreferences, sharedReports, options = {}) {
-    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','toggleTranslation','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
+    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','toggleTranslation','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
     const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
     const documentListeners = {};
     const document = { getElementById: id => elements[id], querySelector: () => new Element(), addEventListener: (name, callback) => { documentListeners[name] = callback; } };
