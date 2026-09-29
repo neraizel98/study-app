@@ -20,7 +20,7 @@
             min-height: 100vh;
             padding-bottom: 60px;
         }
-        .blob { pointer-events: none; }
+        .blob { display: none; }
         .stats-wrap {
             width: 100%;
             max-width: 900px;
@@ -138,8 +138,9 @@
         }
 
         /* ── Subject tabs (level chart) ── */
-        .subj-tabs { display: flex; gap: 8px; margin-bottom: 16px; }
+        .subj-tabs { display: flex; flex-wrap:wrap; gap: 8px; margin:12px 0 16px; }
         .subj-tab {
+            white-space:nowrap; flex:0 0 auto; min-height:40px;
             padding: 5px 16px;
             border-radius: 20px;
             border: 1px solid var(--card-border);
@@ -206,6 +207,29 @@
         }
 
         @media (max-width: 600px) {
+            .stats-wrap { padding:16px; min-width:0; }
+            .page-header { margin-bottom:20px; padding-top:0; }
+            .week-nav { gap:8px; padding:12px 0; }
+            .week-label { min-width:0; flex:1; font-size:.88rem; }
+            .week-btn { flex-shrink:0; width:40px; height:40px; }
+            .page-tabs { padding:4px; background:#151d28; border-radius:14px; gap:4px; }
+            .page-tab { flex:1; padding:10px 8px; border-radius:11px; font-size:.86rem; }
+            .chart-card { padding:18px 14px; border-radius:18px; background:#151c25; }
+            .chart-title { font-size:1rem; }
+            .subj-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
+            .subj-tab { padding:9px 4px; font-size:.75rem; border-radius:11px; min-height:42px; }
+            .quiz-unit-tabs { flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }
+            .quiz-unit-btn { flex:0 0 auto; max-width:85%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:36px; }
+            .quiz-session-card { background:#151c25; }
+            .quiz-session-head { display:grid; grid-template-columns:12px 32px minmax(0,1fr) auto; gap:8px; padding:14px 12px; }
+            .quiz-session-head .session-badge { width:32px; height:32px; }
+            .quiz-session-head .session-info { grid-column:3 / 5; }
+            .quiz-session-head .session-name,.quiz-session-head .session-level { display:block; }
+            .quiz-session-head .session-level { white-space:normal; overflow-wrap:anywhere; line-height:1.5; margin-top:4px; }
+            .quiz-session-head .session-result { grid-column:3; text-align:left!important; }
+            .quiz-session-head > .session-date { grid-column:4; align-self:end; }
+            .session-row { flex-wrap:wrap; }
+            .session-row .session-info { flex-basis:55%; }
             .summary-grid { grid-template-columns: repeat(2, 1fr); }
             .chart-wrap   { height: 180px; }
             .page-title   { font-size: 1.2rem; }
@@ -300,8 +324,8 @@
     </div><!-- .stats-wrap -->
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260929-reading-grade-time"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-reading-grade-time"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260929-reading-grade-time"></script>
+    <script src="report.js?v=20260929-stats-mobile"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-stats-mobile"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260929-stats-mobile"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -572,7 +596,9 @@
         const ctx = document.getElementById('levelChart').getContext('2d');
         if (isEmpty) { charts.level = null; ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height); return; }
 
-        const isHorizontal = subject === 'math';  // horizontal bars look better with long unit names
+        const mobileChart = window.matchMedia('(max-width: 600px)').matches;
+        const isHorizontal = subject === 'math' || mobileChart;
+        ctx.canvas.parentElement.style.height = isHorizontal ? `${Math.max(220, entries.length * 52 + 40)}px` : '220px';
         const c = SUBJ_COLOR[subject];
         charts.level = new Chart(ctx, {
             type: 'bar',
@@ -593,7 +619,7 @@
                 indexAxis: isHorizontal ? 'y' : 'x',
                 scales: {
                     x: { ...AXIS_BASE, ...(isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) },
-                    y: { ...AXIS_BASE, ...(!isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) }
+                    y: { ...AXIS_BASE, ...(!isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}), ...(mobileChart ? { ticks:{color:'#b7c5d8',font:{size:11},autoSkip:false,callback:function(value){const label=this.getLabelForValue(value);return label.length>16?label.slice(0,15)+'…':label;}}, afterFit:axis=>{axis.width=Math.min(140,ctx.canvas.parentElement.clientWidth*.48);} } : {}) }
                 },
                 plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } }
             },
@@ -762,7 +788,7 @@
                             <span class="session-name">${escapeHTML(subjectInfo.name)}${roundBadge}</span>
                             <span class="session-level">${escapeHTML(level)}</span>
                         </span>
-                        <span style="text-align:right;flex-shrink:0;">
+                        <span class="session-result" style="text-align:right;flex-shrink:0;">
                             <span class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions} <small>${p}%</small></span>
                             ${timeStr ? `<span class="session-date" style="display:block">${timeStr}</span>` : ''}
                         </span>
