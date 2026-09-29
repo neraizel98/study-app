@@ -15,10 +15,10 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
 <section id="setup" class="panel"><h2>보호자 설정</h2><p id="settingsSummary" class="muted"></p><p id="settingsStatus" class="muted">저장된 설정을 먼저 표시하고 보호자 설정을 확인하는 중입니다.</p></section>
 <section id="planPanel"><div class="panel"><h2>오늘의 시간 계획</h2><p id="budgetSummary" class="muted"></p><div id="overview" class="summary"></div></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
 </main>
-<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="report.js?v=20260929-reading-retry-translation"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-reading-retry-translation"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260929-reading-retry-translation"></script>
-<script src="learning-plan.js?v=20260929-reading-retry-translation"></script><script src="learning-session.js"></script>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="report.js?v=20260929-english-course"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-english-course"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260929-english-course"></script>
+<script src="learning-plan.js?v=20260929-english-course"></script><script src="learning-session.js"></script>
 <script>
 (async function(){
     await SmartStudy.LocalRepository.ready;
@@ -40,7 +40,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
         const userData=SmartStudy.LocalRepository.getUser(user)||{},daily=userData.dailyStats?.date===plan.date?userData.dailyStats:{};
         const formula=userData.formulaStudyTime||{};
         const formulaToday=formula.date===plan.date?Math.max(0,Number(formula.studySeconds||0)+Number(formula.quizSeconds||0)):0;
-        const actualFor=subject=>Math.max(0,Number(daily.learningTime?.[subject]||0)+Number(daily.quizTime?.[subject]||0))+(subject==='math'?formulaToday:0);
+        const actualFor=subject=>(['english','english_reading'].includes(subject)?['english','grammar','english_reading']: [subject]).reduce((sum,id)=>sum+Math.max(0,Number(daily.learningTime?.[id]||0)+Number(daily.quizTime?.[id]||0)),0)+(subject==='math'?formulaToday:0);
         const totalActual=plan.tasks.reduce((sum,task)=>sum+actualFor(task.subject),0);
         $('overview').innerHTML=`<span>${escape(plan.date)} · ${plan.budget}분 목표</span><span>실제 활동 ${Math.floor(totalActual/60)}분</span><span>제출 확인 ${completed}/3과목</span>`;
         const container=$('tasks');container.replaceChildren();
@@ -50,6 +50,10 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
             const spent=actualFor(task.subject),remaining=Math.max(0,task.minutes*60-spent);
             card.innerHTML=`<div><h2>${escape(names[task.subject])} <span class="tag">${task.minutes}분 계획</span>${task.required?' <span class="tag">보호자 필수</span>':''}</h2><p>${escape(task.context?.title||'현재 설정에서 지원 단원 없음')}</p><p class="muted">${escape(task.reasonText)}</p><p class="muted">실제 활동 ${Math.floor(spent/60)}분 · 계획까지 ${Math.ceil(remaining/60)}분 남음</p><p class="muted">${done?(task.required?'같은 단원의 제출 퀴즈 확인 · 필수 과제 완료':'같은 단원의 제출 퀴즈 확인됨'):task.status==='in_progress'?'학습 중 · 같은 단원의 퀴즈 제출을 확인해요':'준비 중'}</p></div><div class="actions"></div>`;
             const actions=card.querySelector('.actions');
+            if(['english','english_reading'].includes(task.subject)){
+                const course=document.createElement('a');course.className='go';course.href='english_course.html';course.textContent='영어 통합 학습 · 단어 → 문법 → 독해';actions.append(course);
+                const note=document.createElement('p');note.className='muted';note.textContent='영어 시간은 단어·문법·독해를 합산합니다. 아래 제출 확인은 오늘 지정된 과제 기준이며 통합 진도와 별도로 표시됩니다.';card.append(note);
+            }
             if(!task.context&&!done){
                 const note=document.createElement('p');note.className='muted';note.textContent='현재 설정에 맞는 단원이 없어 이 과목 과제를 시작할 수 없습니다. 보호자 설정을 확인해 주세요.';actions.append(note);
             }else{
@@ -79,7 +83,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
             }
             container.append(card);
         }
-        $('timeNote').textContent=`국어·선택한 영어 활동·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
+        $('timeNote').textContent=`국어·영어(단어·문법·독해)·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
     }
     async function refreshParentSettings(){
         if(SmartStudy.LocalRepository.getActiveUser()!==user)return;

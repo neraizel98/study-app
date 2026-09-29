@@ -1,0 +1,15 @@
+﻿const assert=require('node:assert/strict');const {build}=require('./EnglishCourse');
+const data={units:[{id:'er1',passages:[{id:'p1',band:0,vocabulary:[{word:'moon'}],grammarRefs:[{stageId:'elementary',unitId:'e3'}]},{id:'p2',band:1,vocabulary:[{word:'moon'}],grammarRefs:[{stageId:'elementary',unitId:'e3'}]}]}]};
+const now=2000000000,vocab={level1:[{word:'moon'}]};
+const report=(subject,meta,score=4)=>({subject,date:now-1000,initialScore:score,finalScore:5,totalQuestions:5,metadata:{...meta,attempts:Array(5).fill({correct:true})}});
+assert.equal(build(data,vocab,[],{},now).next.id,'words');
+const words=report('english',{unitId:'level1'}),grammar=report('grammar',{stageId:'elementary',unitId:'e3'});
+assert.equal(build(data,vocab,[words],{},now).next.id,'grammar');
+assert.equal(build(data,vocab,[words,grammar],{},now).next.id,'reading');
+const low=report('english_reading',{passageId:'p1'},2);
+assert.equal(build(data,vocab,[words,grammar,low],{},now).passage.id,'p1','retry final score cannot advance first-score mastery');
+assert.equal(build(data,vocab,[words,grammar,report('english_reading',{passageId:'p1'})],{},now).passage.id,'p2');
+assert.equal(build(data,vocab,[{...words,date:now-8*86400000}],{},now).next.id,'words','spaced prerequisite refresh');
+assert.equal(build(data,vocab,[],{english:[{dueAt:now+1},{dueAt:now-1},{deleted:true}]},now).due.length,1);
+assert.equal(build(data,vocab,[{...words,metadata:{...words.metadata,review:true}}],{},now).next.id,'words');
+console.log('English course sequence, first-score progression, and spaced review verified.');

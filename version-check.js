@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260929-reading-retry-translation';
+    const APP_VERSION = '20260929-english-course';
 
     (async function () {
         try {

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260929-reading-retry-translation';
+const CACHE_NAME = 'smart-study-20260929-english-course';
 
 try {
     importScripts('./firebase-config.js');
@@ -59,6 +59,9 @@ const STATIC_ASSETS = [
     './math_quiz.html',
     './english.html',
     './english_reading.html',
+    './english_course.html',
+    './EnglishCourse.js',
+    './english-course-ui.js',
     './EnglishReadingData.js',
     './EnglishReadingPolicy.js',
     './EnglishReadingApp.js',
