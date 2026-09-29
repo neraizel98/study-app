@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260929-stats-mobile';
+const CACHE_NAME = 'smart-study-20260929-reading-expanded';
 
 try {
     importScripts('./firebase-config.js');

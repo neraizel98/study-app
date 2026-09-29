@@ -14,7 +14,7 @@
     });
 
     window.EnglishReadingData = {
-        version: '20260928-er1',
+        version: '20260929-er-expanded',
         levels: [
             { id: 'grade6', title: '초6 · 기초 독해', available: true },
             { id: 'middle1', title: '중1 · 기본 독해', available: false },
@@ -116,4 +116,47 @@
             }
         ]
     };
+    const additions = [
+        p('er1-p3', 'A Better Place to Watch', '달 관찰 장소 고르기', 2,
+            ['Jin and his sister want to draw the moon after dinner.', 'They first stand beside a bright shop, but a tall building blocks their view.', 'Jin suggests a nearby park because it has an open area.', 'Before they leave, their father checks that the park is open and goes with them.', 'At the park, they can see the moon clearly above the trees.', 'His sister draws its shape while Jin writes the date and time.', 'They decide to use the same place for their next observation.'],
+            ['진과 누나는 저녁 식사 후 달을 그리고 싶어 합니다.', '그들은 처음에 밝은 가게 옆에 서지만, 높은 건물이 시야를 가립니다.', '진은 탁 트인 공간이 있는 근처 공원을 제안합니다.', '출발하기 전에 아버지는 공원이 열려 있는지 확인하고 함께 갑니다.', '공원에서는 나무 위로 달을 선명하게 볼 수 있습니다.', '누나가 달의 모양을 그리는 동안 진은 날짜와 시간을 적습니다.', '그들은 다음 관찰에서도 같은 장소를 이용하기로 합니다.'],
+            [{word:'moon',meaning:'달'},{word:'park',meaning:'공원'},{word:'shape',meaning:'모양'},{word:'block',meaning:'가리다, 막다'},{word:'suggest',meaning:'제안하다'},{word:'observation',meaning:'관찰'}],
+            ['e3','e6'],[{title:'because와 while',text:'because는 공원을 제안한 이유를, while은 두 사람이 동시에 하는 일을 연결합니다.'}],
+            [q('er1-p3-q1','fact','Why does Jin suggest the park?',['It has an open area.','It has a taller shop.','It is inside their house.','It is closed at night.'],0,'세 번째 문장에서 탁 트인 공간이 공원을 제안한 이유라고 설명합니다.',[2]),
+             q('er1-p3-q2','main','What is the story mainly about?',['Choosing a suitable place to observe the moon.','Learning how to plant tall trees.','Buying a notebook at a bright shop.','Finding a new way to cook dinner.'],0,'건물에 가린 장소 대신 달을 잘 볼 수 있는 공원을 고르는 과정입니다.',[1,2,4,6]),
+             q('er1-p3-q3','vocabulary','What does “blocks” mean in sentence 2?',['prevents them from seeing','helps them draw','makes the moon brighter','shows them the time'],0,'건물이 시야를 가려 달을 볼 수 없게 한다는 의미입니다.',[1]),
+             q('er1-p3-q4','reference','What does “its” refer to in sentence 6?',['the moon','the shop','the park','the notebook'],0,'다섯 번째 문장에서 본 달의 모양을 누나가 그립니다.',[4,5]),
+             q('er1-p3-q5','evidence','Which sentence shows that they plan to return to the park?',['Sentence 1','Sentence 3','Sentence 5','Sentence 7'],3,'일곱 번째 문장에서 다음 관찰도 같은 장소에서 하겠다고 정합니다.',[6])]),
+        p('er2-p3', 'A Recipe Across the Sea', '가족과 함께 만드는 요리', 2,
+            ['Sora wants to make her grandmother’s soup, but her grandmother lives far away.', 'On Saturday, they talk by video while Sora’s father helps in the kitchen.', 'Her grandmother explains each step slowly so Sora can write it down.', 'First, her father cuts the vegetables, and Sora puts them in a bowl.', 'Then he adds them to a pot of hot water.', 'When the soup is ready, Sora tastes it and smiles at the screen.', 'The family cannot share one table today, but cooking together helps them feel close.'],
+            ['소라는 할머니의 수프를 만들고 싶지만, 할머니는 멀리 사십니다.', '토요일에 소라의 아버지가 부엌에서 돕는 동안 그들은 영상으로 이야기합니다.', '할머니는 소라가 적을 수 있도록 각 단계를 천천히 설명합니다.', '먼저 아버지가 채소를 썰고, 소라는 그것을 그릇에 담습니다.', '그런 다음 아버지는 채소를 뜨거운 물이 담긴 냄비에 넣습니다.', '수프가 완성되자 소라는 맛을 보고 화면을 향해 미소 짓습니다.', '가족은 오늘 한 식탁에 함께 앉을 수 없지만, 함께 요리하는 일은 그들이 가깝게 느끼도록 도와줍니다.'],
+            [{word:'family',meaning:'가족'},{word:'kitchen',meaning:'부엌'},{word:'water',meaning:'물'},{word:'recipe',meaning:'요리법'},{word:'step',meaning:'단계'},{word:'pot',meaning:'냄비'}],
+            ['e3','e6'],[{title:'First, Then, When',text:'First와 Then은 일의 순서를 나타냅니다. When the soup is ready는 ‘수프가 완성되면’이라는 시간 조건입니다.'}],
+            [q('er2-p3-q1','fact','Who cuts the vegetables?',['Sora’s father','Sora’s grandmother','Sora’s teacher','Sora’s sister'],0,'네 번째 문장에 아버지가 채소를 썬다고 나옵니다.',[3]),
+             q('er2-p3-q2','main','What is the main message?',['A shared activity can connect family members who live apart.','Every family must eat at the same table.','Writing a recipe makes food cook faster.','Video calls are only useful at school.'],0,'멀리 떨어진 가족이 영상으로 함께 요리하며 가까움을 느끼는 이야기입니다.',[0,1,6]),
+             q('er2-p3-q3','vocabulary','What does “step” mean in sentence 3?',['one part of a process','a place to sit','a kind of vegetable','the sound of a call'],0,'요리법을 설명하는 문맥에서 step은 과정의 한 단계를 뜻합니다.',[2,3,4]),
+             q('er2-p3-q4','reference','What does “them” refer to in sentence 5?',['the vegetables','the video calls','the family members','the written steps'],0,'그릇에 담은 채소를 아버지가 냄비에 넣습니다.',[3,4]),
+             q('er2-p3-q5','evidence','Which sentence explains why the grandmother speaks slowly?',['Sentence 1','Sentence 2','Sentence 3','Sentence 6'],2,'세 번째 문장의 so Sora can write it down이 천천히 설명하는 이유입니다.',[2])]),
+        p('er3-p3', 'The Lunch Box Plan', '음식 낭비 줄이기', 2,
+            ['Every Friday, Leo notices fruit in the classroom’s food waste bin.', 'He asks his classmates why they throw it away.', 'Some say they bring more food than they can finish during lunch.', 'Leo suggests bringing a smaller amount first and packing extra fruit separately.', 'His classmates try the plan for one week.', 'On Friday, they compare the food waste with the amount from the week before.', 'There is less fruit in the bin, so they decide to continue the plan.', 'Leo learns that a small change in a daily habit can make a difference.'],
+            ['매주 금요일 레오는 교실의 음식물 쓰레기통에서 과일을 발견합니다.', '그는 반 친구들에게 왜 과일을 버리는지 묻습니다.', '몇몇은 점심시간에 다 먹을 수 있는 양보다 많은 음식을 가져온다고 말합니다.', '레오는 우선 더 적은 양을 가져오고 여분의 과일은 따로 싸 두자고 제안합니다.', '반 친구들은 일주일 동안 그 계획을 시도합니다.', '금요일에 그들은 음식물 쓰레기를 그 전주에 나온 양과 비교합니다.', '쓰레기통에 과일이 더 적어서 그들은 계획을 계속하기로 합니다.', '레오는 일상 습관의 작은 변화가 차이를 만들 수 있다는 것을 배웁니다.'],
+            [{word:'fruit',meaning:'과일'},{word:'food',meaning:'음식'},{word:'change',meaning:'변화'},{word:'waste',meaning:'쓰레기, 낭비'},{word:'amount',meaning:'양'},{word:'separately',meaning:'따로'}],
+            ['e3','e6'],[{title:'비교 표현과 so',text:'more food than they can finish는 ‘다 먹을 수 있는 것보다 많은 음식’입니다. so는 관찰한 결과와 그에 따른 결정을 연결합니다.'}],
+            [q('er3-p3-q1','fact','Why do some classmates throw fruit away?',['They bring more food than they can finish.','They are not allowed to eat fruit.','Leo asks them to fill the bin.','The classroom has no lunch break.'],0,'세 번째 문장에서 점심에 다 먹지 못할 만큼 많이 가져온다고 설명합니다.',[2]),
+             q('er3-p3-q2','main','What is the passage mainly about?',['Testing a small change to reduce food waste.','Growing fruit in a classroom.','Buying a larger waste bin.','Making lunch breaks shorter.'],0,'먹을 양을 조절하는 계획을 실행하고 쓰레기가 줄었는지 비교하는 글입니다.',[3,4,5,6]),
+             q('er3-p3-q3','vocabulary','What does “continue” mean in sentence 7?',['keep doing','stop immediately','forget about','hide from others'],0,'쓰레기가 줄어드는 효과를 보았으므로 계획을 계속한다는 뜻입니다.',[6]),
+             q('er3-p3-q4','reference','What does “it” refer to in sentence 2?',['fruit','the classroom','the bin','the plan'],0,'첫 문장에서 발견한 과일을 왜 버리는지 묻습니다.',[0,1]),
+             q('er3-p3-q5','evidence','Which sentence gives the clearest evidence that the plan works?',['Sentence 2','Sentence 4','Sentence 5','Sentence 7'],3,'일곱 번째 문장의 과일 쓰레기가 줄었다는 관찰이 계획의 효과를 보여 줍니다.',[6])]),
+        p('er4-p3', 'Two Places for an Ice Cube', '조건을 맞춘 비교 실험', 2,
+            ['Nina wants to find out where an ice cube melts faster on a sunny day.', 'She puts two ice cubes of the same size on two identical plates.', 'She leaves one plate in sunlight and the other in the shade.', 'Both plates sit on the same table, and she checks them every two minutes.', 'After ten minutes, the ice in sunlight has become a small pool of water.', 'The other plate still has a piece of ice on it.', 'Nina records the result instead of changing the cubes during the test.', 'She plans to repeat the test to see whether she gets a similar result.'],
+            ['니나는 맑은 날 얼음이 어디에서 더 빨리 녹는지 알아보고 싶어 합니다.', '그녀는 크기가 같은 얼음 두 개를 똑같은 접시 두 개에 하나씩 놓습니다.', '그녀는 접시 하나를 햇빛 아래에, 다른 하나를 그늘에 둡니다.', '두 접시는 같은 탁자 위에 놓여 있고, 그녀는 2분마다 확인합니다.', '10분 후 햇빛 아래의 얼음은 녹아 작은 물웅덩이가 되었습니다.', '다른 접시에는 아직 얼음 조각이 남아 있습니다.', '니나는 실험 도중 얼음을 바꾸는 대신 결과를 기록합니다.', '그녀는 비슷한 결과가 나오는지 알아보기 위해 실험을 반복할 계획입니다.'],
+            [{word:'water',meaning:'물'},{word:'table',meaning:'탁자'},{word:'sun',meaning:'태양'},{word:'melt',meaning:'녹다'},{word:'shade',meaning:'그늘'},{word:'identical',meaning:'똑같은'},{word:'repeat',meaning:'반복하다'}],
+            ['e3','e6'],[{title:'one … the other와 비교급',text:'one … the other는 둘 중 ‘하나 … 나머지 하나’를 가리킵니다. faster는 fast의 비교급으로 ‘더 빨리’라는 뜻입니다.'}],
+            [q('er4-p3-q1','fact','What is different about the two plates during the test?',['One is in sunlight and the other is in shade.','They hold ice cubes of different sizes.','They are checked on different days.','One is on a table and the other is on the floor.'],0,'세 번째 문장에 햇빛과 그늘이라는 위치 조건의 차이가 나옵니다.',[2]),
+             q('er4-p3-q2','main','What is the passage mainly about?',['Comparing how ice melts in two different places.','Learning to make plates from ice.','Finding the best time to eat lunch.','Showing that ice never melts in shade.'],0,'같은 크기 얼음을 햇빛과 그늘에 놓고 녹는 모습을 비교하는 실험입니다.',[0,1,2,4,5]),
+             q('er4-p3-q3','vocabulary','What does “identical” mean in sentence 2?',['exactly the same','very expensive','full of water','easy to break'],0,'비교 조건을 맞추기 위해 똑같은 접시를 사용한다는 뜻입니다.',[1]),
+             q('er4-p3-q4','reference','What does “them” refer to in sentence 4?',['the two plates with ice','the sunny days','the tables in the room','the results in her notebook'],0,'니나는 얼음이 놓인 두 접시의 상태를 2분마다 확인합니다.',[1,2,3]),
+             q('er4-p3-q5','evidence','Which pair of sentences shows that the ice in sunlight melts faster in this test?',['Sentences 1 and 2','Sentences 2 and 3','Sentences 5 and 6','Sentences 7 and 8'],2,'같은 시점에 햇빛 쪽은 물이 되었고 그늘 쪽은 얼음이 남아 있다고 비교합니다.',[4,5])])
+    ];
+    additions.forEach((passage, index) => window.EnglishReadingData.units[index].passages.push(passage));
 })();

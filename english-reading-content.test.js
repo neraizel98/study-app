@@ -8,7 +8,7 @@ vm.runInContext(fs.readFileSync('EnglishReadingData.js', 'utf8'), sandbox, { fil
 const data = sandbox.window.EnglishReadingData;
 const grammarUnitIds = new Set(['e1', 'e2', 'e3', 'e4', 'e5', 'e6']);
 
-assert.equal(data.version, '20260928-er1');
+assert.equal(data.version, '20260929-er-expanded');
 assert.deepEqual(Array.from(data.levels, level => level.id), ['grade6', 'middle1', 'middle2', 'middle3']);
 assert.equal(data.levels.filter(level => level.available).length, 1);
 assert.equal(data.levels.find(level => level.available).id, 'grade6');
@@ -23,8 +23,8 @@ for (const unit of data.units) {
     assert.ok(!unitIds.has(unit.id), `duplicate unit id: ${unit.id}`);
     unitIds.add(unit.id);
     assert.ok(unit.title && unit.goal);
-    assert.equal(unit.passages.length, 3, `${unit.id}: exactly three passages`);
-    assert.deepEqual(Array.from(unit.passages, passage => passage.band), [0, 1, 2], `${unit.id}: supported/base/stretch bands`);
+    assert.equal(unit.passages.length, 4, `${unit.id}: four passages including one extension`);
+    assert.deepEqual(Array.from(unit.passages, passage => passage.band), [0, 1, 2, 2], `${unit.id}: supported/base/stretch bands`);
     for (const passage of unit.passages) {
         assert.ok(!passageIds.has(passage.id), `duplicate passage id: ${passage.id}`);
         passageIds.add(passage.id);
@@ -64,7 +64,7 @@ for (const unit of data.units) {
         }
     }
 }
-assert.equal(passageIds.size, 12);
-assert.equal(questionIds.size, 60);
+assert.equal(passageIds.size, 16);
+assert.equal(questionIds.size, 80);
 assert.deepEqual([...answerPositions].sort(), [0, 1, 2, 3], 'answer positions are distributed');
-console.log('English reading content verified: 4 units, 12 passages, 60 questions.');
+console.log('English reading content verified: 4 units, 16 passages, 80 questions.');
