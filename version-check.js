@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260929-reading-expanded';
+    const APP_VERSION = '20260929-reading-retry-translation';
 
     (async function () {
         try {

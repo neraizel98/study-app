@@ -142,6 +142,11 @@
         $('quizPassageTitle').textContent = item.title; $('quizPassage').innerHTML = renderPassageLines(item, false);
         $('quizProgress').textContent = `${session.questionIndex + 1} / ${session.roundQuestionIds.length}${session.round > 1 ? ` · 재도전 ${session.round - 1}` : ''}`;
         $('quizScore').textContent = `${correctCount}개 정답`; $('quizQuestion').textContent = question.prompt;
+        $('toggleQuizTranslation').hidden = !(session.round > 1 || session.review);
+        $('toggleQuizTranslation').textContent = '번역 보기';
+        $('toggleQuizTranslation').setAttribute('aria-expanded', 'false');
+        $('quizTranslation').hidden = true;
+        $('quizTranslation').innerHTML = '';
         $('quizChoices').innerHTML = question.choices.map((choice, index) => `<button class="choice" data-choice="${index}"><b>${index + 1}</b> ${escapeHTML(choice)}</button>`).join('');
         $('quizFeedback').hidden = !answer; $('nextQuestion').hidden = !answer; $('showHint').disabled = Boolean(answer);
         if (answer) showAnswer(answer, false); else $('quizFeedback').innerHTML = '';
@@ -159,7 +164,7 @@
             passageId: session.passageId, passageTitle: quizPassage().title, passageText: [...quizPassage().sentences], band: session.band,
             questionId: question.id, question: question.prompt, choices: [...question.choices], selectedAnswer: question.choices[index],
             correctAnswer: question.choices[question.answerIndex], answer: question.choices[question.answerIndex], explanation: question.explanation,
-            evidence: [...question.evidence], correct, hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed), round: session.round
+            evidence: [...question.evidence], correct, translationUsed: Boolean(session.translationReadRound === session.round), hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed || session.translationReadRound === session.round), round: session.round
         };
         session.answers.push({ round: session.round, questionId: question.id, selectedIndex: index, correct, hintUsed: detail.hintUsed });
         session.attempts.push(detail); if (session.round === 1) session.initialAttempts.push({ ...detail });
@@ -279,6 +284,21 @@
         window.speechSynthesis.speak(utterance);
     }
     function bind() {
+        $('toggleQuizTranslation').addEventListener('click', () => {
+            if (!session || !(session.round > 1 || session.review)) return;
+            const panel = $('quizTranslation');
+            panel.hidden = !panel.hidden;
+            $('toggleQuizTranslation').textContent = panel.hidden ? '번역 보기' : '번역 숨기기';
+            $('toggleQuizTranslation').setAttribute('aria-expanded', String(!panel.hidden));
+            if (panel.hidden) return;
+            const item = quizPassage(), question = currentQuestion();
+            const canonical = item.questions.find(entry => entry.id === question.id);
+            panel.innerHTML = `<strong>지문 번역</strong>${item.translations.map((line, index) => `<p>${index + 1}. ${escapeHTML(line)}</p>`).join('')}<strong>질문 번역</strong><p>${escapeHTML(canonical?.promptKo || question.promptKo || '질문 번역을 준비 중입니다.')}</p>`;
+            session.translationReadRound = session.round;
+            session.translationQuestions = [...new Set([...(session.translationQuestions || []), `${session.round}:${question.id}`])];
+            session.currentHintUsed = true; session.hintUsed = true;
+            saveSession();
+        });
         $('listenPassage').innerHTML = soundIcon;
         $('listenPassage').addEventListener('click', () => playSpeech(passage().sentences.join(' '), $('listenPassage')));
         window.addEventListener('pagehide', stopSpeech);

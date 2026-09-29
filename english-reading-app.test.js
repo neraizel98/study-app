@@ -47,6 +47,7 @@ assert.match(Policy.recommendation(passages, {}, []).reason, /데이터가 아�
 
 class Element {
     constructor() { this.hidden = false; this.disabled = false; this.children = []; this.dataset = {}; this.classList = { add() {}, remove() {} }; }
+    setAttribute(name, value) { this[name] = value; }
     addEventListener() {} closest() { return null; }
     set innerHTML(value) { this._innerHTML = value; this.children = []; }
     get innerHTML() { return this._innerHTML || ''; }
@@ -54,7 +55,7 @@ class Element {
     get textContent() { return this._textContent || ''; }
 }
 function makeBrowser(sharedPreferences, sharedReports, options = {}) {
-    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','toggleTranslation','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
+    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','toggleTranslation','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
     const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
     const documentListeners = {};
     const document = { getElementById: id => elements[id], querySelector: () => new Element(), addEventListener: (name, callback) => { documentListeners[name] = callback; } };

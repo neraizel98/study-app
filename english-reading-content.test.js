@@ -50,6 +50,7 @@ for (const unit of data.units) {
         assert.equal(passage.questions.length, 5, `${passage.id}: five questions`);
         assert.deepEqual(Array.from(passage.questions, question => question.type).sort(), ['evidence','fact','main','reference','vocabulary']);
         for (const question of passage.questions) {
+            assert.ok(typeof question.promptKo === 'string' && /[가-힣]/.test(question.promptKo), `${question.id}: reviewed Korean prompt required`);
             assert.ok(!questionIds.has(question.id), `duplicate question id: ${question.id}`);
             questionIds.add(question.id);
             assert.equal(question.choices.length, 4, `${question.id}: four choices`);
