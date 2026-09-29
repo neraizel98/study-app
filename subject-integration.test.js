@@ -2,7 +2,7 @@ const fs = require('fs');
 const assert = require('assert');
 
 const read = file => fs.readFileSync(file, 'utf8');
-const subjects = ['reading', 'english', 'grammar', 'hanja', 'math'];
+const subjects = ['reading', 'english', 'english_reading', 'grammar', 'hanja', 'math'];
 
 const report = read('report.js');
 const stats = read('stats.html');
@@ -21,12 +21,14 @@ subjects.forEach(subject => {
 
 assert(report.indexOf('reading: { name:') < report.indexOf('english: { name:'), 'Reading must precede English in the common subject registry');
 assert(home.indexOf('<!-- Korean Reading -->') < home.indexOf('<!-- English Vocabulary -->'), 'Reading card must precede English vocabulary');
+assert(home.indexOf('<!-- English Vocabulary -->') < home.indexOf('<!-- English Reading -->'), 'English reading card must follow the existing vocabulary card');
 assert(home.includes("KakaoShare.sendRequest('grammar')"), 'Grammar sharing must use the grammar subject key');
 
 assert(stats.includes('const d = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven study-time series is missing');
 assert(stats.includes('const series = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven score series is missing');
 assert(stats.includes('datasets: SUBJECT_IDS.map'), 'Charts must include every registered subject');
 assert(stats.includes('data-subj="reading"'), 'Reading level/unit statistics tab is missing');
+assert(stats.includes('data-subj="english_reading"'), 'English reading level/unit statistics tab is missing');
 
 assert(admin.includes('StudyTimer.LEVELS[subject]'), 'Admin study-time settings must be generated from the shared level registry');
 assert(admin.includes('data-study-subject="${subject}"'), 'Admin level setting is missing the subject key');
@@ -44,6 +46,7 @@ assert(report.includes('StudyPeriods.weekly()'), 'Monday-based weekly period is 
 assert(admin.includes("label:'월간 목표'"), 'Admin monthly reward management is missing');
 assert(wrongNote.includes("currentSubject === 'grammar'"), 'Grammar wrong-note handling is missing');
 assert(wrongNote.includes("currentSubject === 'reading'"), 'Reading wrong-note handling is missing');
+assert(wrongNote.includes("currentSubject === 'english_reading'"), 'English reading wrong-note handling is missing');
 assert(timer.includes("UserSession.updateDailyStat('study_time', subject, safeSeconds)"), 'Active study time must update the learning-time statistics bucket');
 assert(readingPage.includes('class="mode-toggle"'), 'Reading timer must be anchored inside the reading shell');
 assert(!readingPage.includes('class="mode-row"'), 'Reading must not use the obsolete external timer anchor');

@@ -15,23 +15,23 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
 <section id="setup" class="panel"><h2>보호자 설정</h2><p id="settingsSummary" class="muted"></p><p id="settingsStatus" class="muted">저장된 설정을 먼저 표시하고 보호자 설정을 확인하는 중입니다.</p></section>
 <section id="planPanel"><div class="panel"><h2>오늘의 시간 계획</h2><p id="budgetSummary" class="muted"></p><div id="overview" class="summary"></div></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
 </main>
-<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="report.js"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260923-parent-free"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script>
-<script src="learning-plan.js?v=20260923-parent-free"></script><script src="learning-session.js"></script>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="report.js?v=20260929-english-reading"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-english-reading"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260929-english-reading"></script>
+<script src="learning-plan.js?v=20260929-english-reading"></script><script src="learning-session.js"></script>
 <script>
 (async function(){
     await SmartStudy.LocalRepository.ready;
     const user=SmartStudy.LocalRepository.getActiveUser();
     if(!user){location.href='index.html';return;}
     const api=SmartStudy.LearningPlan,$=id=>document.getElementById(id);
-    const names={reading:'국어 독해',english:'영어',math:'수학'};
+    const names={reading:'국어 독해',english:'영어 단어',english_reading:'영어 독해',math:'수학'};
     const escape=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
     const options=(subject,profile)=>api.catalog(subject,profile);
     function render(){
         const settings=api.getSettings(user),profile=api.getProfile(user);let plan=api.refreshEvidence(user);if(!plan)plan=api.createPlan(user);
         const gradeLabel=profile.grade<=6?`초등 ${profile.grade}학년`:profile.grade<=9?`중학교 ${profile.grade-6}학년`:`고등학교 ${profile.grade-9}학년`;
-        $('settingsSummary').textContent=`${gradeLabel} · ${profile.semester}학기 · 과목별 자동 추천/보호자 지정`;
+        $('settingsSummary').textContent=`${gradeLabel} · ${profile.semester}학기 · 영어 ${settings.englishActivity==='reading'?'독해':'단어'} · 과목별 자동 추천/보호자 지정`;
         const deferred=plan.settingsSnapshot!==api.settingsSignature(settings)&&plan.tasks.some(task=>task.status!=='ready'||task.startedAt||task.completedAt);
         const planProfile=plan.profile||profile;
         $('budgetSummary').textContent=deferred?`오늘 적용 목표: ${plan.budget}분 · 새 설정 ${settings.budgetMinutes}분은 다음 계획부터 적용`:`보호자가 정한 하루 목표: ${plan.budget}분`;
@@ -54,10 +54,12 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
                 const note=document.createElement('p');note.className='muted';note.textContent='현재 설정에 맞는 단원이 없어 이 과목 과제를 시작할 수 없습니다. 보호자 설정을 확인해 주세요.';actions.append(note);
             }else{
                 const go=document.createElement('a');go.className='go';go.href=task.targetUrl;go.textContent=done?'내용 계속 학습':'내용 학습';go.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(go);
-                const practice=document.createElement('a');practice.className='go';
-                const run=done?`&run=${Date.now()}`:'';
-                practice.href=`weekly_assessment.html?mode=practice&task=${encodeURIComponent(task.id)}${run}`;
-                practice.textContent=done?'새 문항 연습':'문항 연습 · 이어풀기';practice.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(practice);
+                if(task.subject!=='english_reading'){
+                    const practice=document.createElement('a');practice.className='go';
+                    const run=done?`&run=${Date.now()}`:'';
+                    practice.href=`weekly_assessment.html?mode=practice&task=${encodeURIComponent(task.id)}${run}`;
+                    practice.textContent=done?'새 문항 연습':'문항 연습 · 이어풀기';practice.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(practice);
+                }
                 if(!done&&!task.required&&task.status==='ready'){
                     const select=document.createElement('select');select.setAttribute('aria-label',`${names[task.subject]} 단원 변경`);
                     const choices=options(task.subject,planProfile);
@@ -77,7 +79,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
             }
             container.append(card);
         }
-        $('timeNote').textContent=`국어·영어·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
+        $('timeNote').textContent=`국어·선택한 영어 활동·수학의 오늘 실제 학습·퀴즈 시간과 수학 공식 시간은 한 번씩만 합산합니다. 목표까지 ${Math.ceil(Math.max(0,plan.budget*60-totalActual)/60)}분 남았습니다. 시간은 안내이며 학습은 계속할 수 있습니다.`;
     }
     async function refreshParentSettings(){
         if(SmartStudy.LocalRepository.getActiveUser()!==user)return;
@@ -87,7 +89,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
                 new Promise((_,reject)=>setTimeout(()=>reject(new Error('설정 확인 시간이 초과되었습니다.')),8000))
             ]);
             if(SmartStudy.LocalRepository.getActiveUser()!==user)return;
-            api.applyParentSettings(user,remote||{budgetMinutes:45,grade:6,semester:2,scopes:{reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}}});
+            api.applyParentSettings(user,remote||{budgetMinutes:45,grade:6,semester:2,englishActivity:'vocabulary',scopes:{reading:{mode:'auto'},english:{mode:'auto'},english_reading:{mode:'auto'},math:{mode:'auto'}}});
             $('settingsStatus').textContent=remote?'보호자 설정을 확인했습니다.':'보호자 설정이 없어 기본 하루 목표 45분을 적용합니다.';
             render();
         }catch(error){

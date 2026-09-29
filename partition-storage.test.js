@@ -123,6 +123,13 @@ function mockFirestore(){
     const day=[...remote.docs].find(([k])=>k.includes('/dailyRecords/'))[1];
     assert.equal(day.subjects.english.learningTime,20,'rapid time updates do not overwrite each other');
     const dailyWrites=remote.writes;await R.putDaily('test');assert.equal(remote.writes,dailyWrites);
+    const readingStorage=storage(),readingIdb=new IDBFactory(),readingContext=await create(readingIdb,readingStorage);
+    readingContext.SmartStudy.LocalRepository.saveReports('reader',[{sessionId:'er-session',subject:'english_reading',date:4000,metadata:{levelId:'grade6',unitId:'er1',passageId:'er1-p0'}}]);
+    readingContext.SmartStudy.LocalRepository.saveWrongAnswers('reader',{english_reading:[{wrongNoteId:'er1-p0:q1',levelId:'grade6',unitId:'er1',question:'Why?',date:4000,history:[]}]});
+    await readingContext.SmartStudy.LocalRepository.flush();
+    const readingRestart=await create(readingIdb,readingStorage);
+    assert.equal(readingRestart.SmartStudy.LocalRepository.listReports('reader')[0].subject,'english_reading','English-reading reports survive durable restart/backup storage');
+    assert.equal(readingRestart.SmartStudy.LocalRepository.getWrongAnswers('reader').english_reading[0].unitId,'er1','English-reading wrong answers survive durable restart/backup storage');
     // Real backup can be validated locally without checking private learner data into git.
     if(process.env.SMARTSTUDY_BACKUP_PATH){
         const backup=JSON.parse(fs.readFileSync(process.env.SMARTSTUDY_BACKUP_PATH,'utf8')),store=storage();

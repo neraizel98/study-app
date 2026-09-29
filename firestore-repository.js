@@ -34,24 +34,29 @@
             const budgetMinutes = Number(settings?.budgetMinutes);
             const grade = Number(settings?.grade);
             const semester = Number(settings?.semester);
-            const scopes = settings?.scopes;
+            const rawEnglishActivity = settings?.englishActivity;
+            if (rawEnglishActivity != null && !['vocabulary', 'reading'].includes(rawEnglishActivity)) throw new Error('학습 계획 설정값이 올바르지 않습니다.');
+            const englishActivity = rawEnglishActivity || 'vocabulary';
+            const scopes = { ...(settings?.scopes || {}), english_reading: settings?.scopes?.english_reading || { mode:'auto' } };
             const validId = value => typeof value === 'string' && /^[A-Za-z0-9_-]{1,80}$/.test(value);
             const sameKeys = (value, expected) => Object.keys(value || {}).sort().join('|') === expected.slice().sort().join('|');
             const validScope = (subject, scope) => scope && (scope.mode === 'auto'
                 ? sameKeys(scope, ['mode'])
                 : scope.mode === 'assigned' && validId(scope.unitId)
                     && (subject === 'english' ? sameKeys(scope, ['mode', 'unitId'])
+                        : subject === 'english_reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && scope.levelId === 'grade6' && ['er1','er2','er3','er4'].includes(scope.unitId)
                         : subject === 'reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && validId(scope.levelId)
                             : sameKeys(scope, ['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId)
                                 && ['1', '2'].includes(String(scope.semesterId))));
             if (![30, 45, 60].includes(budgetMinutes) || !Number.isInteger(grade) || grade < 1 || grade > 12
-                || ![1, 2].includes(semester) || !scopes || !['reading','english','math'].every(subject => validScope(subject, scopes[subject]))) {
+                || ![1, 2].includes(semester) || !scopes || !['reading','english','english_reading','math'].every(subject => validScope(subject, scopes[subject]))
+                || Object.keys(scopes).some(subject => !['reading','english','english_reading','math'].includes(subject))) {
                 throw new Error('학습 계획 설정값이 올바르지 않습니다.');
             }
             const db = await client.getDB();
             return db.collection('learnerPlanSettings').doc(userId).set({
-                budgetMinutes, grade, semester,
-                scopes: Object.fromEntries(['reading','english','math'].map(subject => [subject, {
+                budgetMinutes, grade, semester, englishActivity,
+                scopes: Object.fromEntries(['reading','english','english_reading','math'].map(subject => [subject, {
                     mode: scopes[subject].mode,
                     ...(scopes[subject].mode === 'assigned' ? {
                         unitId: scopes[subject].unitId,
@@ -61,7 +66,7 @@
                 }])),
                 updatedAt: root.firebase.firestore.FieldValue.serverTimestamp(),
                 updatedBy: authUser.uid
-            }, { mergeFields: ['budgetMinutes', 'grade', 'semester', 'scopes', 'updatedAt', 'updatedBy'] });
+            }, { mergeFields: ['budgetMinutes', 'grade', 'semester', 'englishActivity', 'scopes', 'updatedAt', 'updatedBy'] });
         },
         async getUserBundle(userId) {
             const r = await refs(userId);

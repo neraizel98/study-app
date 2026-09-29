@@ -205,8 +205,8 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260928-record-reliability"></script>
+    <script src="report.js?v=20260929-english-reading"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-english-reading"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260929-english-reading"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -289,6 +289,11 @@
                         subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
                         metaText = `${item.passageTitle || ''} · ${item.skill || '독해'}`;
                         explanation = item.explanation || '지문 근거 해설이 없습니다.';
+                    } else if (currentSubject === 'english_reading') {
+                        mainText = item.question || '영어 독해 문제';
+                        subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
+                        metaText = `${item.passageTitle || ''} · ${item.unitTitle || '영어 독해'}`;
+                        explanation = item.explanation || '지문 근거 해설이 없습니다.';
                     } else {
                         mainText = item.question || item.title || item.type || '학습 문제';
                         subText = item.meaning || item.selectedAnswer || item.answer || '';
@@ -368,6 +373,10 @@
                     }
                 }
                 else if (subject === 'reading') targetUrl = 'reading.html?mode=review';
+                else if (subject === 'english_reading') {
+                    const target = (WrongNote.getAll().english_reading || []).find(item => item.wrongNoteId === identifier || item.type === identifier);
+                    if (target) targetUrl = `english_reading.html?level=${encodeURIComponent(target.levelId || 'grade6')}&unit=${encodeURIComponent(target.unitId || 'er1')}&passage=${encodeURIComponent(target.passageId || '')}&mode=review`;
+                }
                 if (targetUrl) window.location.href = targetUrl;
             };
 
@@ -400,6 +409,10 @@
                     }
                 }
                 else if (currentSubject === 'reading') targetUrl = 'reading.html?mode=review';
+                else if (currentSubject === 'english_reading') {
+                    const all = WrongNote.getAll(), first = (all.english_reading || []).find(item => !item.isMastered) || (all.english_reading || [])[0];
+                    if (first) targetUrl = `english_reading.html?level=${encodeURIComponent(first.levelId || 'grade6')}&unit=${encodeURIComponent(first.unitId || 'er1')}&passage=${encodeURIComponent(first.passageId || '')}&mode=review`;
+                }
                 
                 if (targetUrl) window.location.href = targetUrl;
             });

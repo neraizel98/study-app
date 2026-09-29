@@ -270,6 +270,7 @@
             <div class="subj-tabs" id="subjTabs">
                 <button class="subj-tab active" data-subj="reading">📖 국어 독해력</button>
                 <button class="subj-tab"        data-subj="english">🇬🇧 영어</button>
+                <button class="subj-tab"        data-subj="english_reading">📗 영어 독해</button>
                 <button class="subj-tab"        data-subj="grammar">📘 영문법</button>
                 <button class="subj-tab"        data-subj="hanja">🏮 한자</button>
                 <button class="subj-tab"        data-subj="math">📐 수학</button>
@@ -299,8 +300,8 @@
     </div><!-- .stats-wrap -->
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260919-learning1"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260928-record-reliability"></script>
+    <script src="report.js?v=20260929-english-reading"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-english-reading"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260929-english-reading"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -312,6 +313,7 @@
     const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
     const SUBJ_COLOR  = {
         english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
+        english_reading: { bg: 'rgba(34,198,165,0.6)', bd: '#22c6a5' },
         grammar: { bg: 'rgba(167,139,250,0.6)', bd: '#a78bfa' },
         hanja:   { bg: 'rgba(249,130,108,0.6)', bd: '#f9826c' },
         math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' },

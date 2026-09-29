@@ -7,14 +7,16 @@
         const name=location.pathname.split('/').pop();
         if(name==='reading.html')return'reading';
         if(name==='english.html')return'english';
+        if(name==='english_reading.html')return'english_reading';
         if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';
         return null;
     };
-    function subjectForUrl(url){const name=url.pathname.split('/').pop();if(name==='reading.html')return'reading';if(name==='english.html')return'english';if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';return null;}
+    function subjectForUrl(url){const name=url.pathname.split('/').pop();if(name==='reading.html')return'reading';if(name==='english.html')return'english';if(name==='english_reading.html')return'english_reading';if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';return null;}
     function matchesUrl(task,url){
         const params=url.searchParams,context=task.context||{};
         if(task.subject==='reading')return params.get('unit')===String(context.unitId||'');
         if(task.subject==='english')return params.get('level')===String(context.unitId||'');
+        if(task.subject==='english_reading')return params.get('level')===String(context.levelId||'')&&params.get('unit')===String(context.unitId||'');
         if(task.subject==='math')return params.get('level')===String(context.levelId||'')
             &&params.get('semester')===String(context.semesterId||'')&&params.get('unit')===String(context.unitId||'');
         return false;
@@ -39,7 +41,9 @@
         const key=planKey(user,today()),plan=app.LocalRepository.getPreference(key,null),subject=subjectFromPath();
         if(!plan){
             if(!subject)return;
-            const settings=await settingsWhenMissing(user),scope=settings?.scopes?.[subject];
+            const settings=await settingsWhenMissing(user);
+            const inactiveEnglish=(subject==='english'&&settings?.englishActivity==='reading')||(subject==='english_reading'&&settings?.englishActivity!=='reading');
+            const scope=inactiveEnglish?null:settings?.scopes?.[subject];
             if(scope?.mode==='assigned'){location.replace('today.html');return;}
             if(!settings){
                 const box=document.createElement('aside');box.id='parentScopeGuard';box.textContent='보호자 필수 범위를 확인하지 못했습니다. 온라인 상태에서 오늘 학습을 먼저 열어 주세요.';

@@ -68,7 +68,7 @@ assert.strictEqual(user.weeklyStats.studyTime, 0);
 assert.strictEqual(user.monthlyStats.studyTime, 0);
 
 const subjects = MissionManager.registeredSubjects(user);
-assert.deepStrictEqual(Array.from(subjects), ['reading', 'english', 'grammar', 'hanja', 'math']);
+assert.deepStrictEqual(Array.from(subjects), ['reading', 'english', 'english_reading', 'grammar', 'hanja', 'math']);
 user.dailyStats.studyTime = Object.fromEntries(subjects.map(id => [id, 900]));
 user.dailyStats.subjectsStudied = subjects.slice(0, 2);
 user.dailyStats.quizScores = { reading: [80] };

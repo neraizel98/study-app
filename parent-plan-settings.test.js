@@ -40,12 +40,22 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     assert.equal(admin.writes.length,1);
     assert.equal(admin.writes[0].path,'learnerPlanSettings/우준');
     assert.equal(admin.writes[0].value.updatedBy,'google-user');
+    assert.equal(admin.writes[0].value.englishActivity,'vocabulary','legacy three-scope saves default to the existing vocabulary activity');
+    assert.deepEqual(JSON.parse(JSON.stringify(admin.writes[0].value.scopes.english_reading)),{mode:'auto'},'legacy settings gain a safe automatic English-reading scope');
     assert(!('publisher' in admin.writes[0].value),'new saves must not overwrite the preserved legacy publisher field');
-    assert.deepEqual(JSON.parse(JSON.stringify(admin.writes[0].options.mergeFields)),['budgetMinutes','grade','semester','scopes','updatedAt','updatedBy'],
+    assert.deepEqual(JSON.parse(JSON.stringify(admin.writes[0].options.mergeFields)),['budgetMinutes','grade','semester','englishActivity','scopes','updatedAt','updatedBy'],
         'the scopes map must replace atomically so assigned fields cannot remain after switching to auto');
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:20,grade:6,semester:2,scopes}));
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,
         scopes:{...scopes,reading:{mode:'auto',unitId:'stale'}}}));
+    await admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
+        scopes:{...scopes,english_reading:{mode:'assigned',levelId:'grade6',unitId:'er4'}}});
+    assert.equal(admin.writes.at(-1).value.scopes.english_reading.unitId,'er4');
+    await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
+        scopes:{...scopes,english_reading:{mode:'assigned',levelId:'middle1',unitId:'er1'}}}),/올바르지/);
+    await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
+        scopes:{...scopes,english_reading:{mode:'assigned',levelId:'grade6',unitId:'unknown'}}}),/올바르지/);
+    await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'grammar',scopes}),/올바르지/);
 
     const rules=fs.readFileSync('firestore.rules','utf8');
     assert.match(rules,/match \/learnerPlanSettings\/\{userId\}/);
@@ -55,6 +65,7 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     assert.match(rules,/request\.resource\.data\.updatedAt == request\.time/);
     assert.match(rules,/allow delete: if false/);
     assert.match(rules,/scope\.keys\(\)\.hasOnly\(\['mode'\]\)/,'auto scopes must reject stale assigned fields');
+    assert.match(rules,/subject == 'english_reading'[\s\S]*scope\.levelId == 'grade6'[\s\S]*'er4'/,'English-reading assignments must be limited to the approved grade and units');
 
     const today=fs.readFileSync('today.html','utf8');
     assert(!today.includes('id="budget"'),'learners must not receive a budget selector');

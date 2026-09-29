@@ -13,7 +13,7 @@ const StudyTimer = (() => {
     const TIME_PREFIX = 'SmartStudy_UnitTime_';
     const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
     const REPORT_PREFIX = 'SmartVocab_Reports_';
-    const DEFAULTS = { english: 5, grammar: 5, hanja: 5, math: 5, reading: 5 };
+    const DEFAULTS = { english: 5, english_reading: 5, grammar: 5, hanja: 5, math: 5, reading: 5 };
     const LEVELS = {
         reading: [
             { key: 'level1', label: 'Lv. 1 · 중1 독해' }
@@ -23,6 +23,9 @@ const StudyTimer = (() => {
             { key: 'level2', label: 'Lv. 2' },
             { key: 'level3', label: 'Lv. 3' },
             { key: 'level4', label: 'Lv. 4' }
+        ],
+        english_reading: [
+            { key: 'grade6', label: '초등 6학년 독해' }
         ],
         grammar: [
             { key: 'elementary', label: 'Lv. 1 · 초등 문법' },
@@ -60,6 +63,7 @@ const StudyTimer = (() => {
         const value = String(context || 'default');
         if (subject === 'grammar') return value.replace(/^grammar:/, '');
         if (subject === 'reading') return value.replace(/^reading:/, '');
+        if (subject === 'english_reading') return value.replace(/^english_reading:/, '').split(':')[0];
         if (subject === 'math') return value.split(':')[0];
         return value;
     }

@@ -9,19 +9,21 @@ service cloud.firestore {
     }
     function validLearnerPlanSettings() {
       return request.resource.data.keys().hasAll(['budgetMinutes', 'grade', 'semester', 'scopes', 'updatedAt', 'updatedBy'])
-        && request.resource.data.keys().hasOnly(['budgetMinutes', 'grade', 'semester', 'scopes', 'publisher', 'updatedAt', 'updatedBy'])
+        && request.resource.data.keys().hasOnly(['budgetMinutes', 'grade', 'semester', 'englishActivity', 'scopes', 'publisher', 'updatedAt', 'updatedBy'])
         && request.resource.data.budgetMinutes in [30, 45, 60]
         && request.resource.data.grade is int
         && request.resource.data.grade >= 1
         && request.resource.data.grade <= 12
         && request.resource.data.semester in [1, 2]
+        && (!request.resource.data.keys().hasAny(['englishActivity']) || request.resource.data.englishActivity in ['vocabulary', 'reading'])
         && (!request.resource.data.keys().hasAny(['publisher'])
           || (request.resource.data.publisher is string && request.resource.data.publisher.size() <= 80))
         && request.resource.data.scopes is map
         && request.resource.data.scopes.keys().hasAll(['reading', 'english', 'math'])
-        && request.resource.data.scopes.keys().hasOnly(['reading', 'english', 'math'])
+        && request.resource.data.scopes.keys().hasOnly(['reading', 'english', 'english_reading', 'math'])
         && validScope(request.resource.data.scopes.reading, 'reading')
         && validScope(request.resource.data.scopes.english, 'english')
+        && (!request.resource.data.scopes.keys().hasAny(['english_reading']) || validScope(request.resource.data.scopes.english_reading, 'english_reading'))
         && validScope(request.resource.data.scopes.math, 'math')
         && request.resource.data.updatedAt == request.time
         && request.resource.data.updatedBy == request.auth.uid;
@@ -39,6 +41,7 @@ service cloud.firestore {
             && validId(scope.unitId)
             && ((subject == 'reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && validId(scope.levelId))
               || (subject == 'english' && scope.keys().hasAll(['mode', 'unitId']) && scope.keys().hasOnly(['mode', 'unitId']))
+              || (subject == 'english_reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && scope.levelId == 'grade6' && scope.unitId in ['er1', 'er2', 'er3', 'er4'])
               || (subject == 'math' && scope.keys().hasAll(['mode', 'levelId', 'semesterId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId) && scope.semesterId in ['1', '2']))));
     }
     function validStudyRequest(userId) {

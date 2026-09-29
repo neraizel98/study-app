@@ -174,11 +174,11 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260919-learning1"></script>
-    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="learning-plan.js"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260923-parent-free"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
+    <script src="report.js?v=20260929-english-reading"></script>
+    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260929-english-reading"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="learning-plan.js?v=20260929-english-reading"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260929-english-reading"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-    <script src="study-timer.js?v=20260729-level-config"></script>
+    <script src="study-timer.js?v=20260929-english-reading"></script>
     <script>
     // ─────────────────────────────────────────────
     //  Admin 설정
@@ -188,7 +188,7 @@
     const SUBJECT_IDS = SUBJECTS.map(subject => subject.id);
     const SUBJ_NAMES = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.name]));
     const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
-    const SUBJ_COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
+    const SUBJ_COLORS = { english:'#4facfe', english_reading:'#22c6a5', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
     SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLORS[subject]) SUBJ_COLORS[subject] = '#8b949e'; });
 
     let db = null;
@@ -425,7 +425,7 @@
                 container.append(failed); return;
             }
             const settings=result.settings;
-            const value = settings || { budgetMinutes:45, grade:6, semester:2, scopes:{reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}} };
+            const value = settings || { budgetMinutes:45, grade:6, semester:2, englishActivity:'vocabulary', scopes:{reading:{mode:'auto'},english:{mode:'auto'},english_reading:{mode:'auto'},math:{mode:'auto'}} };
             const card = document.createElement('section');
             card.dataset.learnerId = learner.userId;
             card.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
@@ -434,35 +434,38 @@
                     <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학년<select data-plan="grade" style="display:block;margin-top:4px;">${[1,2,3,4,5,6,7,8,9,10,11,12].map(grade=>`<option value="${grade}">${grade<=6?'초등 '+grade+'학년':grade<=9?'중학교 '+(grade-6)+'학년':'고등학교 '+(grade-9)+'학년'}</option>`).join('')}</select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
+                    <label style="font-size:.75rem;color:var(--text-sub);">영어 활동<select data-plan="english-activity" style="display:block;margin-top:4px;"><option value="vocabulary">영어 단어</option><option value="reading">영어 독해 (초6)</option></select></label>
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">국어는 현재 중1 독해, 영어는 영어 단어, 수학은 지원 학년·학기 단원입니다. 영어 문법과 수학 공식은 이 설정 범위가 아닙니다.</p>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">영어 시간은 영어 단어 또는 영어 독해 중 하나에만 배정됩니다. 영어 독해는 현재 초등 6학년만 지원합니다. 영어 문법과 수학 공식은 이 설정 범위가 아닙니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
-            const scopeState=Object.fromEntries(['reading','english','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
-            const subjectNames={reading:'국어 독해',english:'영어 단어',math:'수학'};
+            card.querySelector('[data-plan="english-activity"]').value = value.englishActivity==='reading'?'reading':'vocabulary';
+            const scopeState=Object.fromEntries(['reading','english','english_reading','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
+            const subjectNames={reading:'국어 독해',english:'영어 단어',english_reading:'영어 독해',math:'수학'};
             function drawScopes(){
                 const profile={grade:Number(card.querySelector('[data-plan="grade"]').value),semester:Number(card.querySelector('[data-plan="semester"]').value)};
                 const host=card.querySelector('[data-plan="scopes"]');host.replaceChildren();
-                ['reading','english','math'].forEach(subject=>{
+                const englishSubject=card.querySelector('[data-plan="english-activity"]').value==='reading'?'english_reading':'english';
+                ['reading',englishSubject,'math'].forEach(subject=>{
                     const choices=SmartStudy.LearningPlan.catalog(subject,profile),row=document.createElement('div');
                     row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
                     row.innerHTML=`<strong style="min-width:75px;font-size:.78rem;">${subjectNames[subject]}</strong><label style="font-size:.72rem;color:var(--text-sub);">범위 방식<select data-mode style="display:block;margin-top:3px;"><option value="auto">자동 추천</option><option value="assigned">부모 지정</option></select></label><label style="flex:1;min-width:180px;font-size:.72rem;color:var(--text-sub);">지정 단원<select data-unit style="display:block;width:100%;min-width:0;margin-top:3px;"></select></label><span data-note style="font-size:.72rem;color:var(--text-sub);"></span>`;
                     const mode=row.querySelector('[data-mode]'),unit=row.querySelector('[data-unit]'),note=row.querySelector('[data-note]');
-                    if(!choices.length&&scopeState[subject].mode==='assigned')scopeState[subject]={mode:'auto'};
                     mode.querySelector('option[value="assigned"]').disabled=!choices.length;mode.value=scopeState[subject].mode;
                     choices.forEach((choice,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=choice.label;unit.append(option);});
                     const selected=choices.findIndex(choice=>SmartStudy.LearningPlan.contextKey(subject,choice.context)===SmartStudy.LearningPlan.contextKey(subject,scopeState[subject]));
                     if(selected>=0)unit.value=String(selected);
-                    const sync=()=>{unit.disabled=mode.value!=='assigned'||!choices.length;note.textContent=!choices.length?'현재 학년·학기에 지원 단원이 없습니다.':mode.value==='auto'?'오답과 최근 학습을 우선 추천합니다.':'완료 전에는 학습자가 단원을 바꿀 수 없습니다.';const context=choices[Number(unit.value)]?.context;scopeState[subject]=mode.value==='assigned'&&context?{mode:'assigned',unitId:context.unitId,...(subject!=='english'?{levelId:context.levelId}:{}),...(subject==='math'?{semesterId:String(context.semesterId)}:{})}:{mode:'auto'};};
+                    const sync=()=>{unit.disabled=mode.value!=='assigned'||!choices.length;note.textContent=!choices.length?'현재 학년·학기에 지원 단원이 없습니다.':mode.value==='auto'?'오답과 최근 학습을 우선 추천합니다.':'완료 전에는 학습자가 단원을 바꿀 수 없습니다.';if(!choices.length)return;const context=choices[Number(unit.value)]?.context;scopeState[subject]=mode.value==='assigned'&&context?{mode:'assigned',unitId:context.unitId,...(subject!=='english'?{levelId:context.levelId}:{}),...(subject==='math'?{semesterId:String(context.semesterId)}:{})}:{mode:'auto'};};
                     mode.onchange=sync;unit.onchange=sync;sync();host.append(row);
                 });
             }
             const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningPlan.budgets[budget];card.querySelector('[data-plan="allocation"]').textContent=`국어 ${minutes[0]}분 · 영어 ${minutes[1]}분 · 수학 ${minutes[2]}분`;};
             card.querySelector('[data-plan="budget"]').onchange=allocation;
-            card.querySelector('[data-plan="grade"]').onchange=drawScopes;card.querySelector('[data-plan="semester"]').onchange=drawScopes;allocation();drawScopes();
+            const refreshEnglishAvailability=()=>{const activity=card.querySelector('[data-plan="english-activity"]'),reading=activity.querySelector('option[value="reading"]'),unsupported=Number(card.querySelector('[data-plan="grade"]').value)!==6;reading.disabled=unsupported;const invalid=unsupported&&activity.value==='reading',message=card.querySelector('[data-plan="message"]');card.querySelector('[data-plan="save"]').disabled=invalid;if(invalid)message.textContent='영어 독해는 현재 초등 6학년만 선택할 수 있습니다.';else if(message.textContent.includes('초등 6학년만'))message.textContent='';drawScopes();};
+            card.querySelector('[data-plan="grade"]').onchange=refreshEnglishAvailability;card.querySelector('[data-plan="semester"]').onchange=drawScopes;card.querySelector('[data-plan="english-activity"]').onchange=refreshEnglishAvailability;allocation();refreshEnglishAvailability();
             card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
                 const button = event.currentTarget, message = card.querySelector('[data-plan="message"]');
                 button.disabled = true; message.textContent = '저장 중...';
@@ -471,6 +474,7 @@
                         budgetMinutes:Number(card.querySelector('[data-plan="budget"]').value),
                         grade:Number(card.querySelector('[data-plan="grade"]').value),
                         semester:Number(card.querySelector('[data-plan="semester"]').value),
+                        englishActivity:card.querySelector('[data-plan="english-activity"]').value,
                         scopes:scopeState
                     });
                     message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';
@@ -732,8 +736,8 @@
             // 문제별 정답/오답 상세
             let detailBtn = '';
             let detailDiv = '';
-            if ((r.subject === 'english' || r.subject === 'hanja' || r.subject === 'grammar' || r.subject === 'reading') && r.sessionId) {
-                const items = (r.subject === 'grammar' || r.subject === 'reading')
+            if ((r.subject === 'english' || r.subject === 'hanja' || r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading') && r.sessionId) {
+                const items = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading')
                     ? (r.metadata?.attempts || [])
                     : (wa[r.subject] || []).filter(item =>
                         (item.history || []).some(h => h.sessionId === r.sessionId && (h.round||1) === round)
@@ -741,13 +745,13 @@
                 if (items.length) {
                     const detailId = `qd_${idx}`;
                     const chips = items.map(item => {
-                        const h = (r.subject === 'grammar' || r.subject === 'reading') ? null : item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
-                        const ok = (r.subject === 'grammar' || r.subject === 'reading') ? item.correct : h?.status === 'correct';
+                        const h = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading') ? null : item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
+                        const ok = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading') ? item.correct : h?.status === 'correct';
                         const label = r.subject === 'hanja'
                             ? `${item.hanja}(${item.eum||''}) ${item.meaning||''}`
                             : r.subject === 'grammar'
                                 ? `${item.unitTitle || ''} · ${item.question || '?'}`
-                                : r.subject === 'reading'
+                                : (r.subject === 'reading' || r.subject === 'english_reading')
                                     ? `${item.skill || '독해'} · ${item.question || '?'}`
                                 : (item.word || item.identifier || '?');
                         return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 8px;border-radius:10px;margin:2px;background:${ok?'rgba(86,211,100,0.12)':'rgba(255,95,109,0.12)'};color:${ok?'#56d364':'#ff5f6d'};">${ok?'✅':'❌'} ${label}</span>`;
@@ -1049,10 +1053,10 @@
                         </span>
                     </div>
                     ${items.slice(0,20).map(item => {
-                        const id = (s === 'grammar' || s === 'reading') ? (item.question || '학습 문제') : (item.word || item.hanja || item.type || '?');
+                        const id = (s === 'grammar' || s === 'reading' || s === 'english_reading') ? (item.question || '학습 문제') : (item.word || item.hanja || item.type || '?');
                         const meaning = s === 'grammar'
                             ? ` · ${item.unitTitle || ''} · 내 답 ${item.selectedAnswer || '-'} / 정답 ${item.correctAnswer || item.answer || '-'}`
-                            : s === 'reading'
+                            : (s === 'reading' || s === 'english_reading')
                                 ? ` · ${item.passageTitle || ''} · ${item.skill || '독해'} · 내 답 ${item.selectedAnswer || '-'} / 정답 ${item.correctAnswer || item.answer || '-'}`
                             : (item.meaning ? ` (${item.meaning})` : '');
                         return `
@@ -1153,9 +1157,9 @@
         window._adminWeekCharts = {};
 
         const SUBJ   = SUBJECT_IDS;
-        const NAMES  = { english:'영어 단어', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
-        const COLORS = { english:'#4facfe', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
-        const FILL   = { english:'rgba(79,172,254,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)', reading:'rgba(251,113,133,0.75)' };
+        const NAMES  = { english:'영어 단어', english_reading:'영어 독해', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
+        const COLORS = { english:'#4facfe', english_reading:'#22c6a5', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
+        const FILL   = { english:'rgba(79,172,254,0.75)', english_reading:'rgba(34,198,165,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)', reading:'rgba(251,113,133,0.75)' };
         const gridColor = 'rgba(255,255,255,0.06)';
         const tickColor = '#8b949e';
         const fontCfg   = { family:'Outfit', size:11 };

@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20260928-record-reliability';
+    const APP_VERSION = '20260929-english-reading';
 
     (async function () {
         try {

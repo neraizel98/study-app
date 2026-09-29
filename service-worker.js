@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260928-record-reliability';
+const CACHE_NAME = 'smart-study-20260929-english-reading';
 
 try {
     importScripts('./firebase-config.js');
@@ -58,6 +58,10 @@ const STATIC_ASSETS = [
     './math_viewer.html',
     './math_quiz.html',
     './english.html',
+    './english_reading.html',
+    './EnglishReadingData.js',
+    './EnglishReadingPolicy.js',
+    './EnglishReadingApp.js',
     './hanja.html',
     './wrong_note.html',
     './report.html',

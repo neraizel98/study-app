@@ -2,7 +2,7 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-const values = new Map(), reports = [], wrong = {reading:[],english:[],math:[]};
+const values = new Map(), reports = [], wrong = {reading:[],english:[],english_reading:[],math:[]};
 const local = {
     getPreference:(key,fallback)=>values.has(key)?JSON.parse(JSON.stringify(values.get(key))):fallback,
     setPreference:(key,value)=>values.set(key,JSON.parse(JSON.stringify(value))),
@@ -16,7 +16,7 @@ context.SmartStudy={LocalRepository:local};
 context.StudyPeriods={daily:()=> '2026-09-18'};
 context.LearningPolicy={isDue:item=>Boolean(item.dueAt && item.dueAt<=Date.now())};
 vm.createContext(context);
-for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
+for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','EnglishReadingData.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
     vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 const plan=context.SmartStudy.LearningPlan,session=context.SmartStudy.LearningSession,assessment=context.SmartStudy.WeeklyAssessment;
 const autoScopes={reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}};
@@ -111,6 +111,26 @@ plan.applyParentSettings('미지원학생',{budgetMinutes:45,grade:8,semester:1,
 const unsupported=plan.createPlan('미지원학생');
 assert.equal(unsupported.tasks[2].context,null,'unsupported grades must not invent a math range');
 assert.match(unsupported.tasks[2].reasonText,/사용할 수 있는 단원/);
+
+const readingScopes={...autoScopes,english_reading:{mode:'assigned',levelId:'grade6',unitId:'er2'}};
+plan.applyParentSettings('영어독해학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:readingScopes});
+const englishReadingPlan=plan.createPlan('영어독해학생');
+assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.subject))),['reading','english_reading','math'],'the single English slot switches from vocabulary to reading');
+assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.minutes))),[12,15,18]);
+assert.equal(englishReadingPlan.tasks.reduce((sum,task)=>sum+task.minutes,0),45,'switching English activity must not duplicate the English minutes');
+assert.equal(englishReadingPlan.tasks[1].context.unitId,'er2');
+plan.startTask('영어독해학생',englishReadingPlan.tasks[1].id);
+const readingStart=plan.getPlan('영어독해학생').tasks[1].startedAt;
+reports.push({sessionId:'english-reading-submitted',subject:'english_reading',createdAt:readingStart+1,totalQuestions:1,
+    metadata:{levelId:'grade6',unitId:'er2',submittedAt:readingStart+1,initialAttempts:[{question:'evidence',correct:true}]}});
+assert.equal(plan.refreshEvidence('영어독해학생').tasks[1].status,'completed','the exact submitted English-reading unit completes its required task');
+
+plan.applyParentSettings('전환보존학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'vocabulary',scopes:autoScopes});
+const frozen=plan.createPlan('전환보존학생');plan.startTask('전환보존학생',frozen.tasks[1].id);
+plan.applyParentSettings('전환보존학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:readingScopes});
+assert.equal(plan.getPlan('전환보존학생').tasks[1].subject,'english','a started vocabulary task stays frozen when the next setting selects reading');
+plan.applyParentSettings('중등독해학생',{budgetMinutes:45,grade:7,semester:1,englishActivity:'reading',scopes:{...autoScopes,english_reading:{mode:'auto'}}});
+assert.equal(plan.createPlan('중등독해학생').tasks[1].context,null,'unsupported middle-school English reading must not invent content');
 
 const draft={userId:'우준',sessionId:'weekly-test',planId:null,taskId:null,mode:'assessment',subject:'mixed',context:null,
     questions:[{id:'q1'}],responses:{q1:'A'},cursor:0,activeSeconds:3,updatedAt:0,submittedAt:null};

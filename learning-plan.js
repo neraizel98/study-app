@@ -2,13 +2,13 @@
     'use strict';
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository;
     const minutesByBudget={30:[8,10,12],45:[12,15,18],60:[15,20,25]};
-    const subjects=['reading','english','math'];
-    const urls={reading:'reading.html',english:'english.html',math:'math.html'};
+    const subjects=['reading','english','english_reading','math'];
+    const urls={reading:'reading.html',english:'english.html',english_reading:'english_reading.html',math:'math.html'};
     const key=(user,date)=>`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`;
     const settingsKey=user=>`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`;
     const today=()=>root.StudyPeriods?.daily?.()||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const defaultScopes=()=>Object.fromEntries(subjects.map(subject=>[subject,{mode:'auto'}]));
-    const defaults=user=>({budgetMinutes:45,grade:6,semester:2,scopes:defaultScopes(),source:user==='우준'?'default':'fallback'});
+    const defaults=user=>({budgetMinutes:45,grade:6,semester:2,englishActivity:'vocabulary',scopes:defaultScopes(),source:user==='우준'?'default':'fallback'});
     const normalizeScope=(subject,scope)=>scope?.mode==='assigned'?{
         mode:'assigned',unitId:String(scope.unitId||''),
         ...(scope.levelId?{levelId:String(scope.levelId)}:{}),
@@ -20,6 +20,7 @@
             budgetMinutes:minutesByBudget[budgetMinutes]?budgetMinutes:fallback.budgetMinutes,
             grade:Number.isInteger(grade)&&grade>=1&&grade<=12?grade:fallback.grade,
             semester:[1,2].includes(semester)?semester:fallback.semester,
+            englishActivity:value?.englishActivity==='reading'?'reading':'vocabulary',
             scopes:Object.fromEntries(subjects.map(subject=>[subject,normalizeScope(subject,value?.scopes?.[subject])])),
             source:value?.source||fallback.source
         };
@@ -29,6 +30,7 @@
         if(subject==='math')return m.levelId&&m.semesterId&&m.unitId?{levelId:m.levelId,semesterId:String(m.semesterId),unitId:m.unitId,title:m.unitTitle||''}:null;
         if(subject==='reading')return m.unitId?{levelId:m.levelId||'level1',unitId:m.unitId,title:m.passageTitle||m.unitTitle||''}:null;
         if(subject==='english')return m.unitId||m.level?{unitId:m.unitId||m.level,title:m.unitTitle||''}:null;
+        if(subject==='english_reading')return m.levelId&&m.unitId?{levelId:m.levelId,unitId:m.unitId,title:m.unitTitle||m.passageTitle||''}:null;
         return null;
     };
     const contextKey=(subject,context)=>`${subject}:${context?.levelId||''}:${context?.semesterId||''}:${context?.unitId||''}`;
@@ -47,6 +49,12 @@
             label:`${level.title} · ${unit.title}`,context:{levelId,unitId:unit.id,title:unit.title}
         })));
         if(subject==='english')return Object.keys(root.vocabData||{}).map((unitId,index)=>({label:`영어 단어 레벨 ${index+1}`,context:{unitId,title:`영어 단어 레벨 ${index+1}`}}));
+        if(subject==='english_reading'){
+            if(profile.grade!==6)return [];
+            const level=(root.EnglishReadingData?.levels||[]).find(item=>item.id==='grade6'&&item.available!==false);
+            if(!level)return [];
+            return (root.EnglishReadingData?.units||[]).filter(unit=>/^er[1-4]$/.test(unit.id)).map(unit=>({label:`${level.title} · ${unit.title}`,context:{levelId:'grade6',unitId:unit.id,title:unit.title}}));
+        }
         const levelId=profile.grade===6?'elementary-6':profile.grade===7?'middle-1':null,data=levelId&&root.MathData?.[levelId];
         if(!data)return [];
         return (data.semesters?.[profile.semester]?.units||data.units||[]).map(unit=>({label:unit.title,context:{levelId,semesterId:String(profile.semester),unitId:unit.id,title:unit.title}}));
@@ -56,6 +64,7 @@
             return `math.html?level=${encodeURIComponent(context.levelId)}&semester=${encodeURIComponent(context.semesterId)}&unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='reading'&&context?.unitId)return `reading.html?unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='english'&&context?.unitId)return `english.html?level=${encodeURIComponent(context.unitId)}`;
+        if(subject==='english_reading'&&context?.levelId&&context?.unitId)return `english_reading.html?level=${encodeURIComponent(context.levelId)}&unit=${encodeURIComponent(context.unitId)}`;
         return urls[subject];
     }
     function recommend(user,profile,subject){
@@ -108,7 +117,8 @@
         return {id:`${date}-${subject}`,subject,context,minutes:minutesByBudget[settings.budgetMinutes][index],reasonText,
             targetUrl:target(subject,context),assignmentMode:scope.mode,required:scope.mode==='assigned',status:'ready',sessionId:null,startedAt:null,completedAt:null,submittedAt:null};
     }
-    const settingsSignature=settings=>JSON.stringify({budgetMinutes:settings.budgetMinutes,grade:settings.grade,semester:settings.semester,scopes:settings.scopes});
+    const taskSubjects=settings=>['reading',settings.englishActivity==='reading'?'english_reading':'english','math'];
+    const settingsSignature=settings=>JSON.stringify({budgetMinutes:settings.budgetMinutes,grade:settings.grade,semester:settings.semester,englishActivity:settings.englishActivity,scopes:settings.scopes});
     const api={
         budgets:minutesByBudget,subjects,contextOf,contextKey,target,today,catalog,settingsSignature,
         getSettings(user){return normalizeSettings(user,local.getPreference(settingsKey(user),null));},
@@ -133,7 +143,7 @@
                 || plan.tasks.some((task,index)=>task.minutes!==minutes[index]));
             if(needsUpdate){
                 plan.budget=settings.budgetMinutes;plan.profile=profile;plan.settingsSnapshot=signature;
-                plan.tasks=subjects.map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
+                plan.tasks=taskSubjects(settings).map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
                 local.setPreference(key(user,date),plan);
             }
             return plan;
@@ -144,7 +154,7 @@
             const existing=this.getPlan(user);if(existing)return existing;
             const safeBudget=settings.budgetMinutes;
             const date=today();
-            const tasks=subjects.map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
+            const tasks=taskSubjects(settings).map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
             return this.savePlan({id:`${date}-${user}`,userId:user,date,budget:safeBudget,profile,tasks,settingsSnapshot:settingsSignature(settings),createdAt:Date.now()});
         },
         selectContext(planId,user,taskId,context){
