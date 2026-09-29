@@ -79,7 +79,7 @@
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
         $('passageMeta').textContent = `${level().title} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
         $('passageTitle').textContent = item.title; $('studyPassage').innerHTML = renderPassageLines(item, true);
-        $('vocabulary').innerHTML = item.vocabulary.map(entry => `<li><a href="english.html?word=${encodeURIComponent(entry.word)}"><b>${escapeHTML(entry.word)}</b></a> — ${escapeHTML(entry.meaning)}</li>`).join('');
+        $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls"><a href="english.html?word=${encodeURIComponent(entry.word)}"><b>${escapeHTML(entry.word)}</b></a><button type="button" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" data-pronounce="${index}" aria-label="${escapeHTML(entry.word)} 발음 듣기">🔊 발음</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
         $('grammarNotes').innerHTML = item.grammarNotes.map(note => `<p><b>${escapeHTML(note.title)}</b><br>${escapeHTML(note.text)}</p>`).join('');
         const grammarUnits = window.EnglishGrammarData?.elementary?.units || [];
         const grammarRefs = item.grammarRefs?.length ? item.grammarRefs : item.grammarTags.map(unitId => ({ stageId: 'elementary', unitId, lessonIndex: 0 }));
@@ -256,6 +256,30 @@
         return false;
     }
     function bind() {
+        $('vocabulary').addEventListener('click', event => {
+            const meaningButton = event.target.closest('[data-meaning]');
+            if (meaningButton) {
+                const meaning = $(`word-meaning-${meaningButton.dataset.meaning}`);
+                meaning.hidden = !meaning.hidden;
+                meaningButton.setAttribute('aria-expanded', String(!meaning.hidden));
+                meaningButton.textContent = meaning.hidden ? '뜻 확인' : '뜻 숨기기';
+                return;
+            }
+            const soundButton = event.target.closest('[data-pronounce]');
+            if (!soundButton) return;
+            if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) {
+                alert('이 브라우저에서는 발음 재생을 지원하지 않습니다.'); return;
+            }
+            const entry = passage().vocabulary[Number(soundButton.dataset.pronounce)];
+            if (!entry) return;
+            window.speechSynthesis.cancel();
+            const utterance = new window.SpeechSynthesisUtterance(entry.word);
+            utterance.lang = 'en-US'; utterance.rate = 0.85;
+            const voice = window.speechSynthesis.getVoices().find(candidate => /^en[-_]US$/i.test(candidate.lang));
+            if (voice) utterance.voice = voice;
+            utterance.onerror = event => { if (!['interrupted', 'canceled'].includes(event.error)) alert('발음을 재생하지 못했습니다. 기기의 음성 설정을 확인한 뒤 다시 눌러주세요.'); };
+            window.speechSynthesis.speak(utterance);
+        });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button) return; unitId = button.dataset.unit; passageIndex = 0; renderSelectors(); renderStudy(); });
         $('toggleTranslation').addEventListener('click', () => { translationVisible = !translationVisible; if (translationVisible) expose(passage().id, 'translation'); renderStudy(); });
         $('prevPassage').addEventListener('click', () => { if (passageIndex > 0) { passageIndex--; renderStudy(); } });
