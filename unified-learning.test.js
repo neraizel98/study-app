@@ -35,3 +35,9 @@ assert.equal(choose([{id:'done',status:'completed',context:{}},{id:'missing',sta
 assert.equal(choose([{id:'first',status:'ready',context:{}},{id:'active',status:'in_progress',context:{}}]).id,'active');
 assert.equal(choose([{id:'active',status:'in_progress',context:{}},{id:'required',required:true,status:'ready',context:{}}]).id,'required');
 assert.equal(choose([{status:'completed',context:{}}]),null);
+const weakUser='weekly-weak',weakContext={unitId:'e3',levelId:'elementary'};
+reports.push({userId:weakUser,sessionId:'weekly',subject:'grammar',date:now-3*86400000,totalQuestions:1,metadata:{assessment:true,stageId:'elementary',unitId:'e3',attempts:[{context:weakContext,correct:false}]}});
+assert.equal(p.createPlan(weakUser).tasks.find(t=>t.subject==='grammar').context.unitId,'e3','weekly weak scope must feed daily recommendation');
+reports.push({userId:'weekly-corrected',sessionId:'weekly',subject:'grammar',date:now-3*86400000,totalQuestions:1,metadata:{assessment:true,stageId:'elementary',unitId:'e3',attempts:[{context:weakContext,correct:false}]}});
+reports.push({userId:'weekly-corrected',sessionId:'remedied',subject:'grammar',date:now-2*86400000,totalQuestions:3,metadata:{stageId:'elementary',unitId:'e3',attempts:[{correct:true},{correct:true},{correct:true}]}});
+assert.notEqual(p.createPlan('weekly-corrected').tasks.find(t=>t.subject==='grammar').reason,'주간 평가에서 확인된 약점을 먼저 보충해요.','successful later work clears weak recommendation');

@@ -46,6 +46,16 @@
         if(subject==='hanja')return `hanja.html?level=${encodeURIComponent(context?.unitId||'level8')}`;
         return previousTarget(subject,context);
     }
+    function mastery(user,subject,context){
+        if(!root.ConceptMastery||!root.LearningPolicy)return null;
+        const rawSubject=subject==='math_formula'?'math':subject;
+        const metadata={...context,stageId:context?.levelId};
+        if(subject==='math_formula'){
+            const f=(root.MATH_FORMULAS||[]).find(f=>`formula-${f.number}`===context?.unitId);
+            metadata.semesterId=f?.level;
+        }
+        return root.ConceptMastery.evaluate(local.listReports(user),rawSubject,root.LearningPolicy.context(rawSubject,metadata));
+    }
     function recommend(subject,profile,entries,user){
         const choices=catalog(subject,profile), same=(a,b)=>plan.contextKey(subject,a)===plan.contextKey(subject,b);
         const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)));
@@ -56,9 +66,22 @@
             const choice=choices.find(c=>same(c.context,contextOf(subject,item)));
             if(choice)return {...choice,reason:'복습할 오답이 있는 범위를 먼저 확인해요.'};
         }
+        const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
+        const assessed=new Set();
+        for(const report of assessments)for(const attempt of report.metadata.initialAttempts||report.metadata.attempts||[]){
+            const c=attempt.context||contextOf(subject,report),id=plan.contextKey(subject,c);
+            if(assessed.has(id))continue;
+            const sameAttempts=(report.metadata.initialAttempts||report.metadata.attempts||[]).filter(a=>plan.contextKey(subject,a.context||contextOf(subject,report))===id);
+            assessed.add(id);if(!sameAttempts.some(a=>a.correct===false))continue;
+            const corrected=entries.some(e=>e.subject===subject&&e.at>Number(report.metadata.submittedAt||report.date)&&same(e.context,c)&&!e.report.metadata?.review&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8);
+            const choice=choices.find(x=>same(x.context,c));
+            if(choice&&!corrected)return {...choice,reason:'주간 평가에서 확인된 약점을 먼저 보충해요.'};
+        }
+        const scheduled=choices.find(c=>mastery(user,subject,c.context)?.concepts.some(x=>x.reviewDue));
+        if(scheduled)return {...scheduled,reason:'시간을 두고 기억을 확인할 차례예요. 새 문제 실력과 복습 결과를 따로 기록해요.'};
         // Submission confirms today's activity; passing is only a provisional recommendation signal.
         const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)).sort((a,b)=>b.at-a.at)[0];
-        const secure=c=>{const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
+        const secure=c=>{const state=mastery(user,subject,c.context);if(state)return state.concepts.length>0&&state.concepts.every(x=>x.name!=='foundation');const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
         const choice=choices.find(c=>!secure(c))||[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
         return choice?{...choice,reason:'공통 학습 기록을 기준으로 다음 범위를 연결했어요. 숙달 확정은 아니에요.'}:null;
     }
@@ -118,5 +141,5 @@
         const pending=(tasks||[]).filter(t=>t.status!=='completed'&&t.context);
         return pending.find(t=>t.required)||pending.find(t=>t.status==='in_progress')||pending[0]||null;
     }
-    app.LearningProgress={nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
+    app.LearningProgress={mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
 })(window);

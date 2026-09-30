@@ -13,9 +13,9 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
 <section id="work" class="panel" hidden><p id="position" class="muted"></p><h2 id="question"></h2><div id="passage"></div><div id="choices"></div><div id="result" class="result" hidden></div><div><button id="prev">이전</button><button id="next">다음</button><button id="submit">답안 제출</button></div><p id="saved" class="muted"></p></section>
 </main>
 <script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
-<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="report.js?v=20260930-shared-subjects"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260930-clean-background"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-<script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script><script src="learning-session.js"></script><script src="weekly-assessment.js"></script>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20260930-mastery-weekly"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="EnglishReadingData.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script><script src="learning-session.js"></script><script src="EnglishGrammarQuiz.js"></script><script src="quiz-registry.js"></script><script src="MathFormulaQuiz.js"></script><script src="MathFormulaQuizExtra.js"></script><script src="MathFormulaQuizVolume2.js"></script><script src="MathFormulaQuizVolume3.js"></script><script src="weekly-assessment.js"></script><script src="weekly-assessment-expanded.js"></script>
 <script>
 (async function(){
     await SmartStudy.LocalRepository.ready;
@@ -23,14 +23,14 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     const $=id=>document.getElementById(id),params=new URLSearchParams(location.search);
     const practice=params.get('mode')==='practice',taskId=params.get('task');
     const session=SmartStudy.LearningSession,planApi=SmartStudy.LearningPlan,assessment=SmartStudy.WeeklyAssessment;
-    const names={reading:'국어 독해',english:'영어',math:'수학'};
-    const weekStart=()=>{const d=new Date(),day=(d.getDay()+6)%7;d.setDate(d.getDate()-day);return d.toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});};
+    const names={reading:'국어 독해',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+    const weekStart=()=>new Date(assessment.boundaries(Date.now()).start).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const plan=practice?planApi.getPlan(user):null,task=plan?.tasks.find(item=>item.id===taskId);
     if(practice&&!task){$('empty').hidden=false;$('empty').textContent='오늘 학습 과제를 찾지 못했습니다.';return;}
     const sessionId=practice?`practice:${plan.id}:${taskId}:${params.get('run')||'first'}`:`assessment:${user}:${weekStart()}`;
     $('back').href=practice?'today.html':'index.html';
     $('title').textContent=practice?`${names[task.subject]} 문항 연습`:'주간 학습 확인';
-    $('intro').textContent=practice?'선택한 단원의 문항으로 연습합니다. 답안은 이 기기에 저장되어 이어 풀 수 있습니다.':'최근 실제 학습 범위의 문항만 출제합니다. 영어 예문은 기존 예문 재확인이며 새 상황의 실력평가로 보지 않습니다.';
+    $('intro').textContent=practice?'선택한 단원의 문항으로 연습합니다. 답안은 이 기기에 저장되어 이어 풀 수 있습니다.':'7개 활동을 확인합니다. 활동별 최대 5문항 중 이번 주 3문항, 이전 4주 2문항입니다. 학습 범위가 부족하면 문항을 줄이며, 기존 지문·예문의 재확인을 새 상황 평가로 보지 않습니다.';
     let draft=session.get(user,sessionId),groups;
     if(!draft){
         if(practice){
@@ -49,6 +49,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
             submittedAt:null};
         draft=questions.length?session.save(user,candidate):candidate;
     }
+    if(!practice&&draft.questions.length&&!draft.questions.some(q=>q.period)){$('intro').textContent+=' 이전에 시작한 평가의 문항과 답안은 그대로 유지합니다.';}
     const requested=draft.requestedCounts||{},actual={};for(const question of draft.questions)actual[question.subject]=(actual[question.subject]||0)+1;
     for(const subject of practice?[task.subject]:assessment.subjects){
         const label=document.createElement('span');label.textContent=`${names[subject]} ${actual[subject]||0}/${requested[subject]||5}문항`;$('counts').append(label);
@@ -60,7 +61,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     window.addEventListener('focus',accountGuard);
     if(!accountGuard())return;
     if(Object.entries(requested).some(([subject,count])=>(actual[subject]||0)<count)){
-        const label=document.createElement('p');label.className='muted';label.textContent='일부 과목은 실제 학습 범위의 문항이 부족합니다. 학습하지 않은 단원은 추가하지 않았습니다.';$('counts').after(label);
+        const label=document.createElement('p');label.className='muted';label.textContent='이번 주 또는 이전 4주 기록이 부족한 활동은 문항 수를 줄였습니다. 미학습 범위로 채우지 않습니다.';$('counts').after(label);
     }
     let activeDelta=0,submitting=false,firstAnswerRecorded=Boolean(Object.keys(draft.responses||{}).length);
     const clock=session.createClock(seconds=>{
@@ -78,12 +79,12 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     function render(){
         const q=draft.questions[draft.cursor];$('work').hidden=false;
         $('position').textContent=`${names[q.subject]} · ${draft.cursor+1}/${draft.questions.length} · ${q.sourceType||'학습 문항'}`;
-        if(q.subject==='math')$('question').innerHTML=Utils.renderMath(q.question);
+        if(['math','math_formula'].includes(q.subject))$('question').innerHTML=Utils.renderMath(q.question);
         else $('question').textContent=q.question;
         $('passage').replaceChildren();
         if(q.passageLines?.length){const box=document.createElement('div');box.className='passage';box.textContent=`${q.passageTitle||''}\n${q.passageLines.join('\n')}`;$('passage').append(box);}
         $('choices').replaceChildren();
-        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(q.subject==='math')button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot)return;if(!firstAnswerRecorded){firstAnswerRecorded=true;SmartStudy.InAppStudyRequest?.recordActualStart({source:'weekly-answer',subject:q.subject,startedAt:Date.now()}).catch(error=>console.warn('[Study activity]',error.message));}draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
+        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(['math','math_formula'].includes(q.subject))button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot)return;if(!firstAnswerRecorded){firstAnswerRecorded=true;SmartStudy.InAppStudyRequest?.recordActualStart({source:'weekly-answer',subject:q.subject,startedAt:Date.now()}).catch(error=>console.warn('[Study activity]',error.message));}draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
         $('result').hidden=!draft.submittedAt;
         if(draft.submittedAt){const selected=draft.responses[q.id]||'(미응답)';$('result').textContent=`${selected===q.answer?'정답':'오답'} · 내 답: ${selected} · 정답: ${q.answer}\n${q.explanation||''}`;}
         $('prev').disabled=draft.cursor===0;$('next').disabled=draft.cursor===draft.questions.length-1;
@@ -103,13 +104,13 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
                 draft=session.save(user,draft);
             }
             const snapshot=draft.submissionSnapshot,submittedAt=snapshot.submittedAt;
-            const selectedSubjects=practice?[task.subject]:assessment.subjects;
+            const selectedSubjects=practice?[task.subject]:[...new Set(draft.questions.map(q=>q.subject))];
             for(const subject of selectedSubjects){
                 if(!accountGuard())throw new Error('계정이 바뀌었습니다.');
                 const questions=draft.questions.filter(q=>q.subject===subject);if(!questions.length)continue;
                 const attempts=questions.map(q=>({questionId:q.id,question:q.question,word:q.subject==='english'?q.answer:undefined,selectedAnswer:snapshot.responses[q.id]||'',
                     correctAnswer:q.answer,correct:snapshot.responses[q.id]===q.answer,context:q.context,
-                    explanation:q.explanation,choices:q.choices,passageText:q.passageLines||[],assisted:false}));
+                    explanation:q.explanation,choices:q.choices,passageText:q.passageLines||[],passageId:q.passageId,period:q.period,sourceType:q.sourceType,generator:q.generator,assisted:false}));
                 const score=attempts.filter(a=>a.correct).length;
                 const context=questions[0].context;
                 const reportId=practice?sessionId:`${sessionId}:${subject}`;
@@ -119,16 +120,16 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
                     const data={...c,questionId:q.id,question:q.question,choices:q.choices,answer:q.answer,
                         correctAnswer:q.answer,selectedAnswer:attempt.selectedAnswer,explanation:q.explanation,
                         passageId:q.passageId,passageText:q.passageLines||[],passageTitle:q.passageTitle,
-                        type:q.subject==='math'?(q.generator||q.id):q.id,
+                        type:['math','math_formula'].includes(q.subject)?(q.generator||q.id):q.id,
                         word:q.subject==='english'?q.answer:undefined,
                         level:q.subject==='english'?c.unitId:undefined};
                     WrongNote.save(subject,data,attempt.correct?'correct':'wrong',reportId,1);
                 });
                 if(existing)continue;
-                saveQuizResult(reportId,subject,
+                saveQuizResult(reportId,subject==='math_formula'?'math':subject,
                     practice?`${names[subject]} 오늘 연습`:`${names[subject]} 주간 확인`,questions.length,score,score,
                     Math.floor(snapshot.subjectSeconds[subject]||0),score===questions.length,
-                    {...context,assessment:!practice,practice,assessmentId:practice?null:sessionId,
+                    {...context,...(subject==='math_formula'?{source:'math-formula',assessmentSubject:'math_formula',formulaNumber:Number(context.unitId.replace('formula-',''))}:{}),assessment:!practice,practice,periodCounts:{current:questions.filter(q=>q.period==='current').length,previous:questions.filter(q=>q.period==='previous').length},assessmentId:practice?null:sessionId,
                         planId:plan?.id||null,taskId:task?.id||null,
                         adaptiveBandSnapshot:draft.adaptiveBandSnapshot,
                         submittedAt,status:'submitted',attempts,requestedCount:requested[subject],actualCount:questions.length});

@@ -8,7 +8,12 @@
         const items=(data.units||[]).flatMap(unit=>unit.passages.map(passage=>({unit,passage}))).sort((a,b)=>a.passage.band-b.passage.band);
         const readingReport=p=>latest('english_reading',r=>r.metadata?.passageId===p.id);
         const completed=items.filter(x=>passed(readingReport(x.passage)||{}));
-        const item=items.find(x=>!passed(readingReport(x.passage)||{}))||[...items].sort((a,b)=>Number(readingReport(a.passage)?.date||0)-Number(readingReport(b.passage)?.date||0))[0];
+        const eligibleItems=root.ConceptMastery?items.filter(x=>{
+            const context=`english_reading:grade6:${x.unit.id}`;
+            const state=root.ConceptMastery.evaluate(reports,'english_reading',context,now);
+            return Number(x.passage.band)<=({foundation:1,standard:2,challenge:3}[state.name]);
+        }):items;
+        const item=eligibleItems.find(x=>!passed(readingReport(x.passage)||{}))||[...eligibleItems].sort((a,b)=>Number(readingReport(a.passage)?.date||0)-Number(readingReport(b.passage)?.date||0))[0];
         if(!item)return null;
         const {passage,unit}=item;
         const linked=passage.vocabulary.map(word=>({ ...word,level:Object.keys(vocabulary).find(level=>vocabulary[level].some(v=>v.word.toLowerCase()===word.word.toLowerCase()))}));

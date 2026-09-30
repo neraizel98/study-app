@@ -174,7 +174,7 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="report.js?v=20260930-shared-subjects"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
     <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
@@ -500,18 +500,18 @@
             if (!panel.isConnected || window._adminData?.userId !== userId) return;
             panel.replaceChildren();
             const title = document.createElement('h3'); title.textContent = '최근 주간 평가 · 범위와 표본'; panel.append(title);
-            const labels = { reading: '국어 독해', english: '영어', math: '수학' };
+            const labels = { reading:'국어 독해',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자' };
             const supplements = [];
             details.forEach(report => {
                 const metadata = report.metadata || {};
                 const attempts = metadata.initialAttempts || metadata.attempts || [];
                 const line = document.createElement('p');
-                line.textContent = `${labels[report.subject] || report.subject}: ${report.initialScore}/${report.totalQuestions} 정답 · 실제 ${metadata.actualCount ?? report.totalQuestions}/${metadata.requestedCount ?? report.totalQuestions}문항 · ${attempts.length}개 답안 확인`;
+                line.textContent = `${labels[metadata.assessmentSubject || report.subject] || report.subject}: ${report.initialScore}/${report.totalQuestions} 정답 · 실제 ${metadata.actualCount ?? report.totalQuestions}/${metadata.requestedCount ?? report.totalQuestions}문항 · ${attempts.length}개 답안 확인${metadata.periodCounts?` · 이번 주 ${metadata.periodCounts.current} / 누적 ${metadata.periodCounts.previous}`:''}`;
                 panel.append(line);
                 attempts.filter(attempt => !attempt.correct).forEach(attempt => {
                     const context = attempt.context || metadata;
                     const scope = context.title || context.unitTitle || context.unitId || report.level;
-                    supplements.push(`${labels[report.subject] || report.subject} ${scope}`);
+                    supplements.push(`${labels[metadata.assessmentSubject || report.subject] || report.subject} ${scope}`);
                 });
             });
             const next = document.createElement('p');

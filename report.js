@@ -349,6 +349,7 @@ const LearningPolicy = {
         return m.unitId || 'default';
     },
     evaluate(reports, subject, context) {
+        if(window.ConceptMastery)return window.ConceptMastery.evaluate(reports,subject,context);
         const rows = (reports || []).filter(r => r.subject === subject && r.metadata?.contentVersion === this.version
             && !r.metadata.review && !r.metadata.assessment && r.metadata.context === context).sort((a,b) => a.date-b.date);
         const seen = new Map();
@@ -612,6 +613,9 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     let correctDelta = currentScore;  // 이번에 새로 맞힌 정답 수
     const existingIdx = data.findIndex(r => r.sessionId === sessionId);
     const isNewSession = existingIdx < 0;
+    if(metadata)metadata.adaptiveBandSnapshot = existingIdx>=0
+        ? data[existingIdx].metadata?.adaptiveBandSnapshot || 'foundation'
+        : metadata.adaptiveBandSnapshot || LearningPolicy.evaluate(data,subject,metadata.context).name;
     if (existingIdx >= 0) {
         // 기존 세션 업데이트 시, 이전 기록과의 차이만 계산
         const prevTime = data[existingIdx].timeSpentSeconds || 0;

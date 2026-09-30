@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260930-clean-background';
+const CACHE_NAME = 'smart-study-20260930-mastery-weekly';
 
 try {
     importScripts('./firebase-config.js');
@@ -87,6 +87,7 @@ const STATIC_ASSETS = [
     './firestore-repository.js',
     './quiz-registry.js',
     './report.js',
+    './concept-mastery.js',
     './firebase-sync.js',
     './notification-client.js',
     './parent-scope-guard.js',
@@ -126,6 +127,7 @@ const STATIC_ASSETS = [
     './study-focus.css',
     './learning-session.js',
     './weekly-assessment.js',
+    './weekly-assessment-expanded.js',
     './today.html',
     './weekly_assessment.html',
     './MathDataExtra.js',
