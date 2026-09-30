@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260930-shared-subjects';
+const CACHE_NAME = 'smart-study-20260930-formula90';
 
 try {
     importScripts('./firebase-config.js');
@@ -114,9 +114,11 @@ const STATIC_ASSETS = [
     './MathFormulaData.js',
     './MathFormulaDataExtra.js',
     './MathFormulaDataVolume2.js',
+    './MathFormulaDataVolume3.js',
     './MathFormulaQuiz.js',
     './MathFormulaQuizExtra.js',
     './MathFormulaQuizVolume2.js',
+    './MathFormulaQuizVolume3.js',
     './MathFormulaApp.js',
     './MathFormulaTime.js',
     './learning-plan.js',

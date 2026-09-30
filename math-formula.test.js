@@ -8,10 +8,12 @@ vm.createContext(context);
 vm.runInContext(fs.readFileSync('MathFormulaData.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataVolume2.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaDataVolume3.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('quiz-registry.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuiz.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizVolume2.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaQuizVolume3.js', 'utf8'), context);
 
 const formulas = Array.from(context.MATH_FORMULAS);
 const groups = Array.from(context.MATH_FORMULA_GROUPS);
@@ -24,11 +26,11 @@ const sync = fs.readFileSync('firebase-sync.js', 'utf8');
 const home = fs.readFileSync('index.html', 'utf8');
 const worker = fs.readFileSync('service-worker.js', 'utf8');
 
-assert.strictEqual(formulas.length, 60);
-assert.deepStrictEqual(formulas.map(item => item.number), Array.from({ length: 60 }, (_, index) => index + 1));
-assert.strictEqual(groups.length, 10);
-assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), Array.from({ length: 60 }, (_, index) => index + 1));
-assert.deepStrictEqual(formulas.slice(30).map(item => item.title), [
+assert.strictEqual(formulas.length, 90);
+assert.deepStrictEqual(formulas.map(item => item.number), Array.from({ length: 90 }, (_, index) => index + 1));
+assert.strictEqual(groups.length, 14);
+assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), Array.from({ length: 90 }, (_, index) => index + 1));
+assert.deepStrictEqual(formulas.slice(30,60).map(item => item.title), [
     '원의 넓이 공식','원의 둘레 공식','원의 방정식 공식','원주각과 중심각 공식','방멱의 정리','접현의 정리',
     '원주율 공식','원주율 구하는 공식','부채꼴의 중심각 공식','부채꼴의 넓이 공식','호의 길이 공식',
     '타원의 넓이 공식','타원의 이심률 공식','타원의 방정식 공식','구의 부피 공식','구의 겉넓이 공식',
@@ -127,9 +129,19 @@ assert(!timeTracker.includes('totalStudyTime'), 'Formula time must remain separa
 assert(sync.includes('formulaStudyTime: _mergeFormulaStudyTime'), 'Formula time needs cross-device merge support');
 assert(home.indexOf('math_formula.html') > home.indexOf('href="math.html"'), 'Formula encyclopedia must appear after the five subjects');
 assert(home.indexOf('math_formula.html') < home.indexOf('id="missionContainer"'), 'Formula encyclopedia must appear before missions');
-for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaDataExtra.js', 'MathFormulaDataVolume2.js', 'MathFormulaQuiz.js', 'MathFormulaQuizExtra.js', 'MathFormulaQuizVolume2.js', 'MathFormulaApp.js', 'MathFormulaTime.js']) {
+for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaDataExtra.js', 'MathFormulaDataVolume2.js', 'MathFormulaQuiz.js', 'MathFormulaQuizExtra.js', 'MathFormulaQuizVolume2.js', 'MathFormulaApp.js', 'MathFormulaTime.js', 'MathFormulaDataVolume3.js', 'MathFormulaQuizVolume3.js']) {
     assert(worker.includes(`'./${asset}'`), `Service worker missing ${asset}`);
 }
 
 assert(!home.includes('공식 001-010'), 'Home formula encyclopedia title must not show the old 001-010 badge');
-console.log('Math formula encyclopedia verified: formulas 1-60, level filters, quizzes, and isolation.');
+console.log('Math formula encyclopedia verified: formulas 1-90, level filters, quizzes, and isolation.');
+
+// Fixed draws cross-check numeric examples independently of the generators.
+const originalRandom = Math.random;
+try {
+ Math.random = () => 0;
+ const expected = [52,26,15,2,6,2,0,2.83,3,1,3,16,6,45,8,6,8,5,3,2,4,9,15,16,30,4,0,30,4,12];
+ expected.forEach((answer,i)=>assert.strictEqual(Number(quiz.create(61+i)[0].answer),answer,`Formula ${61+i} worked calculation`));
+} finally { Math.random = originalRandom; }
+for(const file of ['MathFormulaDataVolume3.js','MathFormulaQuizVolume3.js']) assert(page.includes(file));
+assert(page.indexOf('MathFormulaDataVolume3.js') < page.indexOf('MathFormulaApp.js'));

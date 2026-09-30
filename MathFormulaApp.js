@@ -50,6 +50,15 @@ const MathFormulaApp = (() => {
         const common = 'viewBox="0 0 520 270" role="img" aria-label="공식 원리 도형"';
         const label = (x, y, text, color = '#dce8ff') =>
             `<text x="${x}" y="${y}" fill="${color}" font-size="18" font-weight="700" text-anchor="middle">${text}</text>`;
+        if (type === 'v3-solid') {
+            return `<svg ${common}><path d="M120 210H340V95H120ZM120 95L190 45H410V160L340 210M340 95L410 45M190 45V160H410M120 210L190 160" fill="#4facfe18" stroke="#77d9ff" stroke-width="3"/>${label(220,240,'a')}${label(390,200,'b')}${label(95,150,'c')}${label(260,25,'면 6 · 모서리 12 · 꼭짓점 8')}</svg>`;
+        }
+        if (type === 'v3-algebra') {
+            return `<svg ${common}><rect x="100" y="45" width="200" height="200" fill="#4facfe30" stroke="#77d9ff" stroke-width="3"/><path d="M240 45V245M100 185H300" stroke="#ffd166" stroke-width="3"/>${label(170,120,'a²')}${label(270,120,'ab')}${label(170,225,'ab')}${label(270,225,'b²')}${label(170,32,'a')}${label(270,32,'b')}${label(402,110,'전개 ↔ 인수분해')}${label(402,155,'(a+b)²')}${label(402,190,'a²+2ab+b²')}</svg>`;
+        }
+        if (type === 'v3-sequence') {
+            return `<svg ${common}>${[2,4,6,8].map((v,i)=>`<rect x="${70+100*i}" y="${220-v*20}" width="55" height="${v*20}" fill="#4facfe50" stroke="#77d9ff"/>${label(97+100*i,245,`a${['₁','₂','₃','₄'][i]}`)}${label(97+100*i,210-v*20,String(v))}`).join('')}${label(260,25,'예: 2, 4, 6, 8 …  공차 +2')}</svg>`;
+        }
         if (type === 'right-triangle') {
             return `<svg ${common}><path d="M90 220 L410 220 L410 55 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
                 <path d="M390 220v-20h20" fill="none" stroke="#ffd166" stroke-width="3"/>
@@ -490,7 +499,7 @@ const MathFormulaApp = (() => {
             kind: 'choice',
             prompt: `${item.title}이 만들어지는 과정과 직접 연결되는 설명은?`,
             answer: principleAnswer,
-            choices: uniqueChoices(principleAnswer, related.map(entry =>
+            choices: uniqueChoices(principleAnswer, number >= 61 ? [] : related.map(entry =>
                 entry.steps[principleIndex % entry.steps.length])),
             solution: item.steps.map((step, index) => `${index + 1}. ${step}`).join(' ')
         };
