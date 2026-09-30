@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260930-mastery-weekly';
+const CACHE_NAME = 'smart-study-20261001-exam-training';
 
 try {
     importScripts('./firebase-config.js');
@@ -128,6 +128,7 @@ const STATIC_ASSETS = [
     './learning-session.js',
     './weekly-assessment.js',
     './weekly-assessment-expanded.js',
+    './exam-training.js',
     './today.html',
     './weekly_assessment.html',
     './MathDataExtra.js',
