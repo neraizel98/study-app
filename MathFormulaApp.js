@@ -50,6 +50,15 @@ const MathFormulaApp = (() => {
         const common = 'viewBox="0 0 520 270" role="img" aria-label="공식 원리 도형"';
         const label = (x, y, text, color = '#dce8ff') =>
             `<text x="${x}" y="${y}" fill="${color}" font-size="18" font-weight="700" text-anchor="middle">${text}</text>`;
+        if (type === 'v4-ratio') {
+            return `<svg ${common}><rect x="60" y="70" width="400" height="80" fill="#1e293b" stroke="#77d9ff"/><rect x="60" y="70" width="100" height="80" fill="#38bdf8"/>${label(260,45,'예: 전체 100 중 25')}${label(110,120,'25','#082f49')}${label(260,210,'25 ÷ 100 = 0.25 = 25%')}</svg>`;
+        }
+        if (type === 'v4-coordinate' || type === 'v4-vector') {
+            return `<svg ${common}><path d="M60 220H470M90 250V30" stroke="#70839f" stroke-width="2"/><path d="M90 220L330 70" stroke="#38bdf8" stroke-width="4"/><path d="M90 220H330V70" stroke="#fbbf24" stroke-dasharray="7 5" fill="none"/>${label(215,245,'가로 변화')}${label(399,150,'세로 변화')}${label(280,40,'좌표 성분과 길이')}</svg>`;
+        }
+        if (type === 'v4-sets') {
+            return `<svg ${common}><rect x="35" y="25" width="450" height="220" fill="none" stroke="#64748b"/><ellipse cx="215" cy="135" rx="105" ry="85" fill="#38bdf833" stroke="#38bdf8"/><ellipse cx="305" cy="135" rx="105" ry="85" fill="#a78bfa33" stroke="#a78bfa"/>${label(160,135,'A')}${label(360,135,'B')}${label(260,135,'공통')}${label(60,52,'U')}</svg>`;
+        }
         if (type === 'v3-solid') {
             return `<svg ${common}><path d="M120 210H340V95H120ZM120 95L190 45H410V160L340 210M340 95L410 45M190 45V160H410M120 210L190 160" fill="#4facfe18" stroke="#77d9ff" stroke-width="3"/>${label(220,240,'a')}${label(390,200,'b')}${label(95,150,'c')}${label(260,25,'면 6 · 모서리 12 · 꼭짓점 8')}</svg>`;
         }
@@ -399,11 +408,10 @@ const MathFormulaApp = (() => {
         if (!questions.length || questions[0].formulaNumber !== formulaNumber) {
             const savedWrong = reviewMode && typeof WrongNote !== 'undefined'
                 ? (WrongNote.getAll().math || []).filter(item => item.levelId === 'formula'
-                    && item.unitId === `formula-${formulaNumber}` && Array.isArray(item.choices)
-                    && item.choices.length && item.question && item.answer !== undefined)
+                    && item.unitId === `formula-${formulaNumber}` && (item.kind === 'written' || (Array.isArray(item.choices) && item.choices.length)) && item.question && item.answer !== undefined)
                 : [];
             questions = (savedWrong.length ? savedWrong.map(item => ({
-                kind: 'choice', prompt: item.question, choices: item.choices, answer: item.answer,
+                kind: item.kind || 'choice', strictNumeric:item.strictNumeric, tolerance:item.tolerance, prompt: item.question, choices: item.choices, answer: item.answer,
                 solution: item.explanation || '', noteType: item.type
             })) : createCalculationQuestions(formulaNumber)).map(q => ({ ...q, formulaNumber }));
             answers = {};
@@ -424,7 +432,7 @@ const MathFormulaApp = (() => {
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')} · RANDOM QUIZ</div>
                 <h2>${item.title} 퀴즈</h2>
-                <p class="lesson-summary">${reviewMode ? '기기에 보관된 공식 오답 원문을 다시 풀어봅니다.' : '공식을 직접 대입하고 계산하는 객관식 문제 3개가 매번 새로운 수치로 출제됩니다.'}</p>
+                <p class="lesson-summary">${reviewMode ? '기기에 보관된 공식 오답 원문을 다시 풀어봅니다.' : (formulaNumber>=91?'원리·조건 객관식 2개와 숫자 답을 직접 입력하는 계산 문제 1개를 풉니다.':'공식을 직접 대입하고 계산하는 객관식 문제 3개가 매번 새로운 수치로 출제됩니다.')}</p>
                 <div class="quiz-list">${questions.map((q, qi) => {
                     const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
@@ -432,7 +440,7 @@ const MathFormulaApp = (() => {
                         <h3>${q.prompt}</h3>
                         ${q.kind === 'choice'
                             ? `<div class="choice-grid">${q.choices.map(choice => `<button class="choice-btn ${String(answers[qi]) === choice ? 'selected' : ''}" data-question="${qi}" data-answer="${choice}" ${submitted && result ? 'disabled' : ''}>${choice}${q.unit ? ` ${q.unit}` : ''}</button>`).join('')}</div>`
-                            : `<textarea class="written-answer" data-written="${qi}" placeholder="풀이를 적고 마지막에 답을 숫자로 입력하세요." ${submitted && result ? 'disabled' : ''}>${answers[qi] || ''}</textarea>`}
+                            : `<textarea class="written-answer" data-written="${qi}" placeholder="${q.strictNumeric ? '답을 숫자로만 입력하세요. 단위는 쓰지 않습니다.' : '풀이를 적고 마지막에 답을 숫자로 입력하세요.'}" ${submitted && result ? 'disabled' : ''}>${answers[qi] ?? ''}</textarea>`}
                         ${!submitted || !result ? `<button type="button" class="secondary-btn" data-hint="${qi}">💡 힌트</button>` : ''}
                         ${hintUsed.has(qi) ? `<p class="formula-hint">${q.solution}</p>` : ''}
                         ${submitted ? `<div class="solution ${result ? 'ok' : 'no'}">
@@ -531,7 +539,7 @@ const MathFormulaApp = (() => {
                     }
                 });
         }
-        const calculationQuestion = calculationPool[Math.floor(Math.random() * calculationPool.length)];
+        const calculationQuestion = number >= 91 ? window.MathFormulaQuiz.create(number).find(q=>q.kind==='written') : calculationPool[Math.floor(Math.random() * calculationPool.length)];
         return [principleQuestion, symbolQuestion, calculationQuestion].filter(Boolean);
     }
 
@@ -542,7 +550,7 @@ const MathFormulaApp = (() => {
             renderQuiz();
         }));
         document.querySelectorAll('[data-written]').forEach(area => {
-            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; submitted = false; });
+            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; submitted = false; if ($('submitQuizBtn')) $('submitQuizBtn').disabled = false; });
         });
         document.querySelectorAll('[data-hint]').forEach(button => button.addEventListener('click', () => {
             hintUsed.add(Number(button.dataset.hint));
@@ -571,7 +579,7 @@ const MathFormulaApp = (() => {
             const attempts = questions.map((q, index) => ({
                 questionId: `formula-${formulaNumber}-${q.noteType || `question-${index}`}`,
                 question: q.prompt,
-                selectedAnswer: answers[index] ?? '',
+                selectedAnswer: answers[index] ?? '',kind:q.kind,strictNumeric:q.strictNumeric,tolerance:q.tolerance,
                 correctAnswer: q.answer,
                 correct: window.MathFormulaQuiz.isCorrect(q, answers[index]),
                 assisted: hintUsed.has(index),
@@ -595,7 +603,7 @@ const MathFormulaApp = (() => {
                     levelId: 'formula', semesterId: item.level, unitId: `formula-${formulaNumber}`,
                     type: q.noteType || `question-${index}`, questionId: attempt.questionId,
                     question: q.prompt, answer: q.answer, correctAnswer: q.answer,
-                    selectedAnswer: attempt.selectedAnswer, choices: q.choices,
+                    selectedAnswer: attempt.selectedAnswer, choices: q.choices,kind:q.kind,strictNumeric:q.strictNumeric,tolerance:q.tolerance,
                     explanation: q.solution, hintUsed: attempt.hintUsed
                 }, attempt.correct ? 'correct' : 'wrong', sessionId, nextRound);
             });

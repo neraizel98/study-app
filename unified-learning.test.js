@@ -3,7 +3,7 @@ const prefs=new Map(),reports=[], users={};
 const clone=x=>JSON.parse(JSON.stringify(x));
 const local={getPreference:(k,d)=>prefs.has(k)?clone(prefs.get(k)):d,setPreference:(k,v)=>prefs.set(k,clone(v)),listReports:u=>clone(reports.filter(r=>r.userId===u)),getWrongAnswers:()=>({}),getUser:u=>users[u]||{}};
 const ctx={console,Date,Math,Set,Map,URLSearchParams};ctx.window=ctx;ctx.SmartStudy={LocalRepository:local};vm.createContext(ctx);
-for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','EnglishCourse.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','EnglishCourse.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const p=ctx.SmartStudy.LearningPlan,progress=ctx.SmartStudy.LearningProgress;
 for(const budget of [30,45,60]){
  const u='budget'+budget;p.applyParentSettings(u,{budgetMinutes:budget,grade:6,semester:2});const plan=p.createPlan(u);
@@ -41,3 +41,6 @@ assert.equal(p.createPlan(weakUser).tasks.find(t=>t.subject==='grammar').context
 reports.push({userId:'weekly-corrected',sessionId:'weekly',subject:'grammar',date:now-3*86400000,totalQuestions:1,metadata:{assessment:true,stageId:'elementary',unitId:'e3',attempts:[{context:weakContext,correct:false}]}});
 reports.push({userId:'weekly-corrected',sessionId:'remedied',subject:'grammar',date:now-2*86400000,totalQuestions:3,metadata:{stageId:'elementary',unitId:'e3',attempts:[{correct:true},{correct:true},{correct:true}]}});
 assert.notEqual(p.createPlan('weekly-corrected').tasks.find(t=>t.subject==='grammar').reason,'주간 평가에서 확인된 약점을 먼저 보충해요.','successful later work clears weak recommendation');
+assert(p.catalog('math_formula',{grade:6,semester:2}).some(c=>c.context.unitId==='formula-120'),'percent belongs in grade6 catalog');
+assert(!p.catalog('math_formula',{grade:6,semester:2}).some(c=>['formula-91','formula-112','formula-115'].includes(c.context.unitId)),'advanced formulas excluded from elementary recommendations');
+assert(!p.catalog('math_formula',{grade:12,semester:2}).some(c=>c.context.unitId==='formula-112'),'enrichment remains voluntary');

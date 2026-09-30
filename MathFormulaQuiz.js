@@ -160,6 +160,10 @@ const MathFormulaQuiz = (() => {
 
     function isCorrect(question, response) {
         if (question.kind === 'choice') return String(response) === String(question.answer);
+        if (question.strictNumeric) {
+            const value = String(response ?? '').normalize('NFKC').trim();
+            return /^[+-]?(?:\d+(?:\.\d+)?|\.\d+)$/.test(value) && Math.abs(Number(value) - question.answer) <= question.tolerance;
+        }
         const match = String(response ?? '').replace(/,/g, '').match(/-?\d+(?:\.\d+)?/);
         if (!match) return false;
         return Math.abs(Number(match[0]) - question.answer) <= question.tolerance;

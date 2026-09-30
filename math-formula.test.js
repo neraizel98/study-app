@@ -9,11 +9,13 @@ vm.runInContext(fs.readFileSync('MathFormulaData.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataVolume2.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaDataVolume3.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaDataVolume4.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('quiz-registry.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuiz.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizExtra.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizVolume2.js', 'utf8'), context);
 vm.runInContext(fs.readFileSync('MathFormulaQuizVolume3.js', 'utf8'), context);
+vm.runInContext(fs.readFileSync('MathFormulaQuizVolume4.js', 'utf8'), context);
 
 const formulas = Array.from(context.MATH_FORMULAS);
 const groups = Array.from(context.MATH_FORMULA_GROUPS);
@@ -26,10 +28,10 @@ const sync = fs.readFileSync('firebase-sync.js', 'utf8');
 const home = fs.readFileSync('index.html', 'utf8');
 const worker = fs.readFileSync('service-worker.js', 'utf8');
 
-assert.strictEqual(formulas.length, 90);
-assert.deepStrictEqual(formulas.map(item => item.number), Array.from({ length: 90 }, (_, index) => index + 1));
-assert.strictEqual(groups.length, 14);
-assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), Array.from({ length: 90 }, (_, index) => index + 1));
+assert.strictEqual(formulas.length, 120);
+assert.deepStrictEqual(formulas.map(item => item.number), Array.from({ length: 120 }, (_, index) => index + 1));
+assert.strictEqual(groups.length, 19);
+assert.deepStrictEqual(groups.flatMap(group => Array.from(group.items)), Array.from({ length: 120 }, (_, index) => index + 1));
 assert.deepStrictEqual(formulas.slice(30,60).map(item => item.title), [
     '원의 넓이 공식','원의 둘레 공식','원의 방정식 공식','원주각과 중심각 공식','방멱의 정리','접현의 정리',
     '원주율 공식','원주율 구하는 공식','부채꼴의 중심각 공식','부채꼴의 넓이 공식','호의 길이 공식',
@@ -106,7 +108,8 @@ formulas.forEach(item => {
     assert(calculationQuestions[0].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a principle question`);
     assert(calculationQuestions[1].prompt.includes('기호가 나타내는 뜻'), `Formula ${item.number} needs a symbol question`);
     assert(!calculationQuestions[2].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a calculation application`);
-    calculationQuestions.forEach(question => {
+    calculationQuestions.forEach((question,index) => {
+        if(item.number>=91 && index===2){assert.equal(question.kind,"written");assert(question.strictNumeric);return;}
         assert.strictEqual(question.kind, 'choice', `Formula ${item.number} must not show written questions`);
         assert.strictEqual(question.level, '계산 연습', `Formula ${item.number} must not expose difficulty categories`);
         assert.strictEqual(new Set(Array.from(question.choices)).size, question.choices.length,
@@ -134,7 +137,7 @@ for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaData
 }
 
 assert(!home.includes('공식 001-010'), 'Home formula encyclopedia title must not show the old 001-010 badge');
-console.log('Math formula encyclopedia verified: formulas 1-90, level filters, quizzes, and isolation.');
+console.log('Math formula encyclopedia verified: formulas 1-120, level filters, quizzes, and isolation.');
 
 // Fixed draws cross-check numeric examples independently of the generators.
 const originalRandom = Math.random;
@@ -145,3 +148,11 @@ try {
 } finally { Math.random = originalRandom; }
 for(const file of ['MathFormulaDataVolume3.js','MathFormulaQuizVolume3.js']) assert(page.includes(file));
 assert(page.indexOf('MathFormulaDataVolume3.js') < page.indexOf('MathFormulaApp.js'));
+// New volume: exact original numbering, math calculation checks, strict written grading.
+const expectedVolume4Titles=['증가율 공식','원리합계 공식','기수불, 기말불 원리합계 공식','하노이탑 공식','부분분수 공식','약수의 개수 공식','직선의 기울기 공식','직선의 방정식 공식','두 점 사이의 거리 공식','점과 직선 사이의 거리 공식','평균변화율 공식','접선의 방정식 공식','스튜어트의 정리','내분점 공식','외분점 공식','벡터의 길이 공식','벡터 내적 공식','벡터 외적 공식','역행렬 공식','쌍곡선의 표준형 공식','쌍곡선의 이심률 공식','곡률 공식','집합 공식','드 모르간의 법칙','집합의 분할 공식','집합의 분배 법칙','순열 공식','조합 공식','중복조합 공식','퍼센트 구하는 공식'];
+assert.deepStrictEqual(formulas.slice(90).map(f=>f.title),expectedVolume4Titles);
+const expectedV4=[20,144,21,3,6,9,2,3,10,2,6,-4,8,2,4,14,14,4,2,10,1.67,.5,9,2,1,2,12,6,3,25];
+try{Math.random=()=>0;expectedV4.forEach((expected,i)=>{const qs=quiz.create(91+i);assert.equal(Number(qs[0].answer),expected,`formula ${91+i} independent calculation`);assert.equal(qs[2].kind,'written');assert(quiz.isCorrect(qs[2],String(expected)));assert(!quiz.isCorrect(qs[2],`${expected}/999`));assert(!quiz.isCorrect(qs[2],`wrong ${expected}`));assert(!quiz.isCorrect(qs[2],''));});}finally{Math.random=originalRandom;}
+for(let i=0;i<20;i++)for(let number=91;number<=120;number++){for(const q of quiz.create(number)){assert(Number.isFinite(Number(q.answer)));assert(quiz.isCorrect(q,q.answer));if(q.choices)assert.equal(new Set(q.choices).size,4);}}
+for(const asset of ['MathFormulaDataVolume4.js','MathFormulaQuizVolume4.js']){assert(page.includes(asset));assert(worker.includes(asset));}
+try{for(let n=2;n<=6;n++){Math.random=()=>(n-2+.1)/5;let compound=100,annuity=0;for(let k=0;k<2;k++)compound*=1+n/10;for(let k=0;k<n;k++)annuity=annuity*1.1+10;const expected=[n*10,Number(compound.toFixed(2)),Number(annuity.toFixed(2)),2**n-1,n*(n+1),3*(n+1),n,3,5*n,n,2*n+2,-n*n,4*n,n,2*n,7*n,3*n+8,2*n,n,5*n,1.67,Number((1/n).toFixed(2)),2*n+5,2,2**(n-1)-1,n,(n+2)*(n+1),(n+2)*(n+1)/2,n*(n+1)/2,n*12.5];expected.forEach((value,i)=>assert.equal(Number(quiz.create(91+i)[2].answer),value,`formula ${91+i}, n=${n}`));}}finally{Math.random=originalRandom;}

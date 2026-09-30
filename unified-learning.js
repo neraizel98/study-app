@@ -35,7 +35,7 @@
         if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.grade>6||id==='elementary').flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
             const grades={'초6':6,'중1':7,'중2':8,'중3':9,'고1':10,'고2':11,'고3':12};
-            return (root.MATH_FORMULAS||[]).filter(f=>grades[f.level]<=profile.grade).map(f=>({label:`${f.level} · ${f.number}. ${f.title}`,context:{levelId:'formula',unitId:`formula-${f.number}`,title:`${f.number}. ${f.title}`}}));
+            return (root.MATH_FORMULAS||[]).filter(f=>!f.enrichment&&grades[f.level]<=profile.grade).map(f=>({label:`${f.level} · ${f.number}. ${f.title}`,context:{levelId:'formula',unitId:`formula-${f.number}`,title:`${f.number}. ${f.title}`}}));
         }
         if(subject==='english_reading'&&profile.grade>6)return previousCatalog(subject,{...profile,grade:6});
         return previousCatalog(subject,profile);
