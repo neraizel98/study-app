@@ -1,0 +1,4 @@
+﻿const assert=require('node:assert/strict');const {summarize}=require('./report-subject-summary');
+const row=(subject,id,score,total=5)=>({subject,sessionId:id,date:1,totalQuestions:total,initialScore:score,finalScore:total,isCompleted:true});
+const data=[row('english','a',3),row('grammar','b',5),row('english_reading','c',4),{...row('english','a',4),updatedAt:2},row('english','bad',0,0),{...row('english','missing',1),initialScore:null}];
+assert.equal(summarize(data,'english').attempts,1);assert.equal(summarize(data,'english').avg,80);assert.equal(summarize(data,'english').invalid,2);assert.equal(summarize(data,'grammar').avg,100);assert.equal(summarize(data,'english_reading').avg,80);assert.equal(summarize(data,'math').avg,null);assert.equal(summarize(data,'math').attempts,0);console.log('Subject isolation, duplicate sessions, invalid scores and missing data verified.');

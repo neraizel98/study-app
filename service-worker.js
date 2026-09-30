@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260929-english-course';
+const CACHE_NAME = 'smart-study-20260930-shared-subjects';
 
 try {
     importScripts('./firebase-config.js');
@@ -68,6 +68,7 @@ const STATIC_ASSETS = [
     './hanja.html',
     './wrong_note.html',
     './report.html',
+    './report-subject-summary.js',
     './shared-report-loader.js',
     './styles.css',
     './main.js',
