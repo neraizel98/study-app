@@ -70,6 +70,7 @@ body {
 }
 
 .blob {
+    display: none !important; /* Decorative background circles are disabled app-wide. */
     position: absolute;
     border-radius: 50%;
     opacity: .35;

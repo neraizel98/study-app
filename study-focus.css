@@ -1,7 +1,7 @@
 /* Smart Study / Focus: shared navigation and learning surfaces */
 :root{--study-bg:#0b1220;--study-surface:#141f31;--study-border:#2b3b53;--study-text:#edf3fc;--study-muted:#a7b8cf;--study-primary:#74b6ff;--study-radius:18px}
 body.study-focus{background:var(--study-bg);color:var(--study-text);font-family:'Noto Sans KR',system-ui,sans-serif;display:block}
-.study-focus .bg-blobs,.study-focus .background-blobs{display:none}
+.study-focus .blob,.study-focus .bg-blobs,.study-focus .background-blobs{display:none}
 .study-focus .wrap,.study-focus .course{width:100%;max-width:960px;padding:28px 20px 64px}
 .study-focus h1{font-size:clamp(1.6rem,4vw,2rem);letter-spacing:-.04em;font-weight:800}
 .study-focus a{color:#a5cdff}

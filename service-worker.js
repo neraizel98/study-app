@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20260930-focus-path';
+const CACHE_NAME = 'smart-study-20260930-clean-background';
 
 try {
     importScripts('./firebase-config.js');
