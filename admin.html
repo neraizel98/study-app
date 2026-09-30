@@ -175,7 +175,7 @@
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="report.js?v=20260930-shared-subjects"></script>
-    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="learning-plan.js?v=20260930-shared-subjects"></script>
+    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
@@ -434,11 +434,11 @@
                     <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학년<select data-plan="grade" style="display:block;margin-top:4px;">${[1,2,3,4,5,6,7,8,9,10,11,12].map(grade=>`<option value="${grade}">${grade<=6?'초등 '+grade+'학년':grade<=9?'중학교 '+(grade-6)+'학년':'고등학교 '+(grade-9)+'학년'}</option>`).join('')}</select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
-                    <label style="font-size:.75rem;color:var(--text-sub);">영어 활동<select data-plan="english-activity" style="display:block;margin-top:4px;"><option value="vocabulary">영어 단어</option><option value="reading">영어 독해 (초6)</option></select></label>
+                    <label style="font-size:.75rem;color:var(--text-sub);">영어 필수 지정 대상<select data-plan="english-activity" style="display:block;margin-top:4px;"><option value="vocabulary">영어 단어</option><option value="reading">영어 독해 (초6)</option></select></label>
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">영어 시간은 영어 단어 또는 영어 독해 중 하나에만 배정됩니다. 영어 독해는 현재 초등 6학년만 지원합니다. 영어 문법과 수학 공식은 이 설정 범위가 아닙니다.</p>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">하루 목표 시간 안에 국어·영어 단어·문법·독해·수학·수학 공식·한자를 배분합니다. 아래 영어 선택은 보호자 지정 활동에 적용됩니다. 문법·한자·학년별 수학 공식은 자동 추천하며, 공식 선행학습은 자유롭게 가능합니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
@@ -462,7 +462,7 @@
                     mode.onchange=sync;unit.onchange=sync;sync();host.append(row);
                 });
             }
-            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningPlan.budgets[budget];card.querySelector('[data-plan="allocation"]').textContent=`국어 ${minutes[0]}분 · 영어 ${minutes[1]}분 · 수학 ${minutes[2]}분`;};
+            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningProgress.allocations[budget];card.querySelector('[data-plan="allocation"]').textContent=`국어 ${minutes[0]}분 · 영어 ${minutes[1]+minutes[2]+minutes[3]}분 · 수학(공식 포함) ${minutes[4]+minutes[5]}분 · 한자 ${minutes[6]}분`;};
             card.querySelector('[data-plan="budget"]').onchange=allocation;
             const refreshEnglishAvailability=()=>{const activity=card.querySelector('[data-plan="english-activity"]'),reading=activity.querySelector('option[value="reading"]'),unsupported=Number(card.querySelector('[data-plan="grade"]').value)!==6;reading.disabled=unsupported;const invalid=unsupported&&activity.value==='reading',message=card.querySelector('[data-plan="message"]');card.querySelector('[data-plan="save"]').disabled=invalid;if(invalid)message.textContent='영어 독해는 현재 초등 6학년만 선택할 수 있습니다.';else if(message.textContent.includes('초등 6학년만'))message.textContent='';drawScopes();};
             card.querySelector('[data-plan="grade"]').onchange=refreshEnglishAvailability;card.querySelector('[data-plan="semester"]').onchange=drawScopes;card.querySelector('[data-plan="english-activity"]').onchange=refreshEnglishAvailability;allocation();refreshEnglishAvailability();

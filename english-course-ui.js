@@ -9,7 +9,16 @@
         if(!state){document.getElementById('courseContent').textContent='학습 자료를 준비 중입니다.';return;}
         const date=window.StudyPeriods?.daily?.()||new Date().toLocaleDateString('sv-SE');
         const settings=local.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`,null);
-        const plan=local.getPreference(`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`,null);
+        const api=SmartStudy.LearningPlan;
+        let plan=api.getPlan(user)||api.createPlan(user);plan=api.refreshEvidence(user)||plan;
+        if(plan.curriculumVersion){
+            const tasks=plan.tasks.filter(t=>['english','grammar','english_reading'].includes(t.subject));
+            const names={english:'단어 익히기',grammar:'문법 연결하기',english_reading:'지문 읽고 풀기'};
+            const next=SmartStudy.LearningProgress.nextTask(tasks);
+            document.getElementById('courseContent').innerHTML=`<section class="focus-hero"><span class="focus-eyebrow">ENGLISH · CONNECT &amp; GROW</span><h2>${next?names[next.subject]:'오늘 영어 활동 제출 완료'}</h2><p>오늘 학습과 동일한 범위와 제출 기록입니다. 단어 → 문법 → 독해를 이어가세요.</p>${next?`<a id="continueEnglish" class="focus-primary" href="${escape(next.targetUrl)}">이어서 학습 →</a>`:'<a class="focus-primary" href="today.html">다음 과목으로 →</a>'}</section>`+tasks.map(t=>`<section class="panel"><h2>${names[t.subject]} · ${t.minutes}분</h2><p>${escape(t.context?.title||'지원 자료 없음')}</p><p>${t.status==='completed'?'오늘 제출 확인됨 · 숙달 판정과는 별개입니다.':escape(t.reasonText)}</p>${t.context?`<a class="go" href="${escape(t.targetUrl)}">${t.status==='completed'?'계속 학습':'학습 시작'}</a>`:''}</section>`).join('');
+            if(next)document.getElementById('continueEnglish').onclick=()=>api.startTask(user,next.id);
+            return;
+        }
         const required=plan?.tasks?.find(t=>['english','english_reading'].includes(t.subject)&&t.required&&t.status!=='completed');
         const budget=plan?.tasks?.find(t=>['english','english_reading'].includes(t.subject))?.minutes||({30:10,45:15,60:20}[settings?.budgetMinutes||45]);
         const daily=local.getUser(user)?.dailyStats;

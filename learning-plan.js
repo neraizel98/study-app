@@ -137,12 +137,14 @@
             if(!plan||date!==today())return plan;
             const settings=this.getSettings(user), minutes=minutesByBudget[settings.budgetMinutes];
             const profile={grade:settings.grade,semester:settings.semester},signature=settingsSignature(settings);
+            if(plan.curriculumVersion===1&&plan.settingsSnapshot===signature)return plan;
             const untouched=plan.tasks.every(task=>task.status==='ready'&&!task.startedAt&&!task.completedAt);
             const needsUpdate=untouched&&(plan.settingsSnapshot!==signature||plan.budget!==settings.budgetMinutes
                 || plan.profile?.grade!==profile.grade || plan.profile?.semester!==profile.semester
                 || plan.tasks.some((task,index)=>task.minutes!==minutes[index]));
             if(needsUpdate){
                 plan.budget=settings.budgetMinutes;plan.profile=profile;plan.settingsSnapshot=signature;
+                delete plan.curriculumVersion;
                 plan.tasks=taskSubjects(settings).map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
                 local.setPreference(key(user,date),plan);
             }

@@ -76,7 +76,7 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     const adminPage=fs.readFileSync('admin.html','utf8');
     assert(adminPage.includes("access?.role !== 'admin'"),'admin UI must verify the authenticated access document');
     assert(!adminPage.includes('data-plan="publisher"'),'publisher must not be exposed in the admin UI');
-    assert(adminPage.includes('영어 문법과 수학 공식은 이 설정 범위가 아닙니다.'),'the UI must state the supported subject boundaries');
+    assert(adminPage.includes('문법·한자·학년별 수학 공식은 자동 추천'),'the UI must state the supported subject boundaries');
     const index=fs.readFileSync('index.html','utf8');
     assert(index.includes("access?.role === 'admin'"),'the admin entry point must verify the authenticated access document');
     console.log('Parent plan settings authorization, validation, read-only learner UI, and server metadata verified.');

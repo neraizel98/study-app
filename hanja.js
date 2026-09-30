@@ -44,7 +44,8 @@ const studyStrokeBtn = $('studyStrokeBtn');
 const studyStrokeContainer = $('studyStrokeContainer');
 
 // 상태 변수
-let currentLevel = 'level8';
+const requestedLevel = new URLSearchParams(window.location.search).get('level');
+let currentLevel = Object.prototype.hasOwnProperty.call(vocabHanja, requestedLevel) ? requestedLevel : 'level8';
 const isReviewMode = new URLSearchParams(window.location.search).get('mode') === 'review';
 let currentMode = 'study';
 let currentIndex = 0;
@@ -646,6 +647,7 @@ window.HanjaEngine = {
             });
         }
 
+        levelBtns.forEach(btn => btn.classList.toggle('active', btn.dataset.level === currentLevel));
         const mode = isReviewMode ? 'quiz' : 'study';
         setMode(mode);
         return true;
