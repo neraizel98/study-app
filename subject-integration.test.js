@@ -40,7 +40,7 @@ assert(admin.includes('학습 ${formatTime(studySec)} · 퀴즈 ${formatTime(qui
 
 assert(missions.includes('SubjectRegistry.list()'), 'Missions must derive their subjects from the registry');
 assert(missions.includes("['daily', 'weekly', 'monthly']"), 'Mission completion and rewards must cover all three periods');
-assert(missions.includes("makeSection('🏆', '이번 달 장기 목표', 'monthly'"), 'Monthly mission section is missing');
+assert(read('goals.html').includes('data-period="monthly"'), 'Monthly goal navigation is missing');
 assert(report.includes('monthlyStats:'), 'Monthly mission statistics are missing');
 assert(report.includes('StudyPeriods.weekly()'), 'Monday-based weekly period is missing');
 assert(admin.includes("label:'월간 목표'"), 'Admin monthly reward management is missing');

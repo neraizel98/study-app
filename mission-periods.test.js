@@ -13,7 +13,7 @@ const context = {
     localStorage,
     window: {},
     document: { getElementById: () => null },
-    Date,
+    Date: class extends Date { constructor(...args) { super(...(args.length?args:[2026,8,27,21,0])); } static now(){return new Date(2026,8,27,21,0).getTime();} },
     Math,
     setTimeout,
     clearTimeout
@@ -67,37 +67,60 @@ assert.strictEqual(user.dailyStats.studyTime.english, 0);
 assert.strictEqual(user.weeklyStats.studyTime, 0);
 assert.strictEqual(user.monthlyStats.studyTime, 0);
 
+
 const subjects = MissionManager.registeredSubjects(user);
-assert.deepStrictEqual(Array.from(subjects), ['reading', 'english', 'english_reading', 'grammar', 'hanja', 'math']);
-user.dailyStats.studyTime = Object.fromEntries(subjects.map(id => [id, 900]));
-user.dailyStats.subjectsStudied = subjects.slice(0, 2);
-user.dailyStats.quizScores = { reading: [80] };
-user.weeklyStats = {
-    weekStart: StudyPeriods.weekly(),
-    studyTime: 10800,
-    attendanceDays: 5,
-    subjectsStudied: [...subjects],
-    quizCount: 5
-};
-user.monthlyStats = {
-    monthStart: StudyPeriods.monthly(),
-    studyTime: 43200,
-    attendanceDays: 20,
-    subjectsStudied: [...subjects],
-    quizCount: 20
-};
+assert.deepStrictEqual(Array.from(subjects), ['reading','english','english_reading','grammar','hanja','math']);
+// Login alone, even with legacy attendance counters, must not earn new goals.
+user.weeklyStats.attendanceDays=7;user.monthlyStats.attendanceDays=30;
 UserSession.saveUserData(user);
-
 MissionManager.checkMissions();
-user = UserSession.getUserData();
-for (const category of ['daily', 'weekly', 'monthly']) {
-    assert(MissionManager.DEFINITIONS[category].every(m => user.missionProgress[category][m.id].completed));
-    assert.strictEqual(user.missionProgress.rewards[category].period, StudyPeriods[category]());
+assert.equal(UserSession.getUserData().missionProgress.daily.d_checkin.completed,false);
+assert.equal(UserSession.getUserData().missionProgress.weekly.w_attendance_5.progress,0);
+const reports=[];
+for(let date=1;date<=27;date++)for(const subject of MissionManager.areas){
+    const at=new Date(2026,8,date,12).getTime();
+    reports.push({subject:subject==='math_formula'?'math':subject,sessionId:`${subject}-${date}`,date:at,createdAt:at,totalQuestions:1,
+      metadata:{unitId:'unit-1',source:subject==='math_formula'?'math-formula':undefined,submittedAt:at,initialAttempts:[{correct:false}]}});
 }
-
-const rewardsBefore = JSON.stringify(user.missionProgress.rewards);
+const repo=context.SmartStudy.LocalRepository;
+repo.saveReports('period-test',reports);
+user=UserSession.getUserData();
+user.dailyStats.studyTime={reading:600,english:600,math:600,hanja:300};
+user.formulaStudyTime={date:StudyPeriods.daily(),studySeconds:300,quizSeconds:300};
+UserSession.saveUserData(user);
+assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.daily[1]),2700,'Formula time counted once');
 MissionManager.checkMissions();
-user = UserSession.getUserData();
-assert.strictEqual(JSON.stringify(user.missionProgress.rewards), rewardsBefore, 'Each period must award exactly once');
-
-console.log('Daily, weekly, and monthly mission periods verified.');
+user=UserSession.getUserData();
+for(const category of ['daily','weekly','monthly']){
+    assert(MissionManager.DEFINITIONS[category].every(m=>user.missionProgress[category][m.id].completed),category);
+    assert.equal(user.missionProgress.rewards[category].period,StudyPeriods[category]());
+}
+const before=JSON.stringify({exp:user.exp,level:user.level,rewards:user.missionProgress.rewards});
+MissionManager.checkMissions();user=UserSession.getUserData();
+assert.equal(JSON.stringify({exp:user.exp,level:user.level,rewards:user.missionProgress.rewards}),before);
+// Existing earned goals/rewards survive changing criteria, without another EXP grant.
+user.missionProgress.daily.d_checkin={completed:true,progress:1};
+user.missionProgress.rewards.daily={period:StudyPeriods.daily(),title:'기존 간식',awardedAt:1};
+UserSession.saveUserData(user);MissionManager.checkMissions();
+assert.equal(UserSession.getUserData().missionProgress.rewards.daily.title,'기존 간식');
+assert.equal(UserSession.getUserData().exp,user.exp);
+// Budget follows parent's saved setting.
+repo.setPreference('SmartStudy_ParentPlanSettings_period-test',{budgetMinutes:60});
+assert.equal(MissionManager.targetOf(MissionManager.DEFINITIONS.daily[1],user),3600);
+// Incomplete/future/assessment/deleted reports do not count; repeated session IDs count once.
+const first=reports[0];
+repo.saveReports('period-test',[first,{...first,date:new Date(2026,8,2).getTime()},
+ {...first,sessionId:'draft',metadata:{...first.metadata,status:'draft'}},
+ {...first,sessionId:'assessment',metadata:{...first.metadata,assessment:true}},
+ {...first,sessionId:'future',metadata:{...first.metadata,submittedAt:new Date(2026,9,1).getTime()}},
+ {...first,sessionId:'partial',totalQuestions:2},
+ {...first,sessionId:'deleted',deleted:true}]);
+assert.equal(MissionManager.evidence(user).length,1);
+assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3]),0);
+// Same-day repeats do not count as spaced review. Next-day same scope does.
+const second={...first,sessionId:'second',metadata:{...first.metadata}};
+repo.saveReports('period-test',[first,second]);
+assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3]),0);
+second.metadata.submittedAt=new Date(2026,8,2,12).getTime();repo.saveReports('period-test',[first,second]);
+assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3]),1);
+console.log('Goal periods, evidence, parent budget, formula coverage, legacy rewards and repeat grants verified.');

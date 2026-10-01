@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-exam-paper-ui';
+const CACHE_NAME = 'smart-study-20261001-learning-goals';
 
 try {
     importScripts('./firebase-config.js');
@@ -54,6 +54,9 @@ self.addEventListener('activate', event => {
 const STATIC_ASSETS = [
     './',
     './index.html',
+    './goals.html',
+    './goals.css',
+    './goals-ui.js',
     './math.html',
     './math_viewer.html',
     './math_quiz.html',

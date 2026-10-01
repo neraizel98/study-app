@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261001-exam-paper-ui';
+    const APP_VERSION = '20261001-learning-goals';
 
     (async function () {
         try {

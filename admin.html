@@ -635,7 +635,7 @@
         const rewards = ud.missionProgress?.rewards;
         if (!rewards) return '';
         const entries = [];
-        if (rewards.daily) entries.push({ category:'daily', index:-1, label:'오늘 목표', reward:rewards.daily });
+        if (rewards.daily) entries.push({ category:'daily', index:-1, label:'일간 목표', reward:rewards.daily });
         if (rewards.weekly) entries.push({ category:'weekly', index:-1, label:'주간 목표', reward:rewards.weekly });
         if (rewards.monthly) entries.push({ category:'monthly', index:-1, label:'월간 목표', reward:rewards.monthly });
         if (!entries.length) return '';

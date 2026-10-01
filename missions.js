@@ -4,80 +4,82 @@
 const MissionManager = {
     DEFINITIONS: {
         daily: [
-            { id: 'd_checkin', icon: '🌅', title: '오늘의 시작', desc: '오늘 앱에 접속하기', target: 1, exp: 20 },
-            { id: 'd_study_15', icon: '⏱️', title: '집중 학습', desc: '한 과목을 15분 이상 학습하기', target: 900, exp: 50, type: 'time_any' },
-            { id: 'd_two_subjects', icon: '🌈', title: '두 과목 도전', desc: '서로 다른 과목 2개 학습하기', target: 2, exp: 70, type: 'subjects_today' },
-            { id: 'd_score_80', icon: '🎯', title: '오늘의 목표 점수', desc: '퀴즈에서 80점 이상 받기', target: 80, exp: 60, type: 'best_score_today' }
+            { id:'d_checkin', icon:'🌱', title:'학습에 시동 걸기', desc:'실제 학습·퀴즈 시간 5분 채우기', target:300, exp:20, type:'daily_time' },
+            { id:'d_study_15', icon:'⏱', title:'오늘의 시간 약속', desc:'보호자가 정한 하루 목표 시간 채우기', target:'budget', exp:40, type:'daily_time' },
+            { id:'d_two_subjects', icon:'📚', title:'국어·영어·수학 골고루', desc:'국어·영어·수학을 각각 2분 이상 공부하기. 영어 3영역과 수학 공식은 해당 과목에 합산해요.', target:3, exp:40, type:'daily_core' },
+            { id:'d_score_80', icon:'✍️', title:'배운 내용 확인하기', desc:'점수에 관계없이 퀴즈 1회 끝까지 제출하기', target:1, exp:20, type:'daily_quiz' }
         ],
         weekly: [
-            { id: 'w_attendance_5', icon: '📆', title: '성실한 일주일', desc: '이번 주 5일 이상 출석하기', target: 5, exp: 200, type: 'attendance_count' },
-            { id: 'w_total_time_3h', icon: '🕐', title: '주간 집중 3시간', desc: '이번 주 총 학습 시간 3시간 달성', target: 10800, exp: 300, type: 'total_time' },
-            { id: 'w_all_subjects', icon: '🧭', title: '전 과목 탐험', desc: '등록된 모든 과목을 한 번 이상 학습하기', target: 'subjects', exp: 250, type: 'subjects_week' },
-            { id: 'w_quiz_5', icon: '📝', title: '꾸준한 실전', desc: '이번 주 퀴즈 5회 완료하기', target: 5, exp: 200, type: 'quiz_count_week' }
+            { id:'w_attendance_5', icon:'📅', title:'일주일에 5일 꾸준히', desc:'퀴즈를 끝까지 제출한 날 5일 만들기', target:5, exp:150, type:'quiz_days', period:'weekly' },
+            { id:'w_total_time_3h', icon:'📚', title:'핵심 과목 반복하기', desc:'국어·영어·수학 각각 서로 다른 3일에 퀴즈 제출하기', target:3, exp:150, type:'core_days', period:'weekly' },
+            { id:'w_all_subjects', icon:'🧭', title:'7개 영역 빠짐없이', desc:'국어, 영어 단어·문법·독해, 수학, 수학 공식, 한자에서 각각 퀴즈 1회 제출하기', target:7, exp:100, type:'coverage', days:1, period:'weekly' },
+            { id:'w_quiz_5', icon:'🔁', title:'시간을 두고 다시 확인', desc:'전에 푼 학습 범위를 다른 날 다시 푼 날 2일 만들기', target:2, exp:100, type:'review_days', period:'weekly' }
         ],
         monthly: [
-            { id: 'm_attendance_20', icon: '🗓️', title: '월간 출석왕', desc: '이번 달 20일 이상 출석하기', target: 20, exp: 700, type: 'attendance_count_month' },
-            { id: 'm_total_time_12h', icon: '⏳', title: '월간 집중 12시간', desc: '이번 달 총 학습 시간 12시간 달성', target: 43200, exp: 900, type: 'total_time_month' },
-            { id: 'm_all_subjects', icon: '🏆', title: '전 과목 완주', desc: '이번 달 등록된 모든 과목을 한 번 이상 학습하기', target: 'subjects', exp: 800, type: 'subjects_month' },
-            { id: 'm_quiz_20', icon: '🧠', title: '월간 실전왕', desc: '이번 달 퀴즈 20회 완료하기', target: 20, exp: 700, type: 'quiz_count_month' }
+            { id:'m_attendance_20', icon:'🗓', title:'한 달 학습 습관', desc:'퀴즈를 끝까지 제출한 날 16일 만들기', target:16, exp:400, type:'quiz_days', period:'monthly' },
+            { id:'m_total_time_12h', icon:'📚', title:'핵심 과목 기본기 쌓기', desc:'국어·영어·수학 각각 서로 다른 12일에 퀴즈 제출하기', target:3, exp:400, type:'core_days', period:'monthly' },
+            { id:'m_all_subjects', icon:'🌳', title:'7개 영역 꾸준히', desc:'한자·수학 공식을 포함한 7개 영역에서 각각 서로 다른 4일에 퀴즈 제출하기', target:7, exp:300, type:'coverage', days:4, period:'monthly' },
+            { id:'m_quiz_20', icon:'🔁', title:'기억을 실력으로', desc:'전에 푼 학습 범위를 다른 날 다시 푼 날 8일 만들기', target:8, exp:400, type:'review_days', period:'monthly' }
         ]
     },
-
     REWARDS: {
-        daily: [
-            { icon: '🎮', title: '자유시간 30분' },
-            { icon: '🍪', title: '원하는 간식 선택' },
-            { icon: '🍽️', title: '저녁 메뉴 선택권' },
-            { icon: '🎬', title: '가족 놀이·영상 선택권 30분' }
-        ],
-        weekly: [
-            { icon: '🎮', title: '자유시간 1시간' },
-            { icon: '🍴', title: '주말 외식 메뉴 선택' },
-            { icon: '🗺️', title: '주말 활동 장소 선택' }
-        ],
-        monthly: [
-            { icon: '🕹️', title: '원하는 게임 1개 설치권', note: '부모 승인 필요' },
-            { icon: '🎮', title: '자유시간 2시간' },
-            { icon: '🎡', title: '원하는 체험·나들이 선택권' }
-        ]
+        daily:[{icon:'🌟',title:'오늘의 성취 배지',note:'4개 목표 완료'}],
+        weekly:[{icon:'🎲',title:'가족 활동 선택 제안권',note:'활동·시간·비용은 보호자와 상의해요'}],
+        monthly:[{icon:'🎡',title:'체험·나들이 선택 제안권',note:'장소·일정·비용은 보호자가 최종 결정해요'}]
     },
-
-    registeredSubjects(user = null) {
-        if (typeof SubjectRegistry !== 'undefined') {
-            return SubjectRegistry.list().map(subject => subject.id);
+    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().map(s=>s.id):['reading','english','english_reading','grammar','hanja','math']; },
+    get areas() { return [...new Set([...this.registeredSubjects(),'math_formula'])]; },
+    budget(user) {
+        const id=user?.id||UserSession.getActiveUser();
+        const value=window.SmartStudy?.LocalRepository?.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(id)}`,null);
+        return [30,45,60].includes(Number(value?.budgetMinutes))?Number(value.budgetMinutes):45;
+    },
+    targetOf(mission,user) { return mission.target==='budget'?this.budget(user)*60:mission.target; },
+    family(subject) { return ['english','grammar','english_reading'].includes(subject)?'english':subject==='math_formula'?'math':subject; },
+    dailyTimes(user) {
+        const daily=user.dailyStats||{}, f=user.formulaStudyTime||{};
+        return Object.fromEntries(this.areas.map(subject=>[subject,subject==='math_formula'
+            ? (f.date===this.periodKey('daily')?Math.max(0,Number(f.studySeconds||0))+Math.max(0,Number(f.quizSeconds||0)):0)
+            : Math.max(0,Number(daily.studyTime?.[subject]||0))]));
+    },
+    evidence(user) {
+        const records=window.SmartStudy?.LocalRepository?.listReports(user?.id||UserSession.getActiveUser())||[];
+        const unique=new Map();
+        for(const r of records){
+            const m=r.metadata||{}, attempts=m.initialAttempts||m.attempts||[], total=Number(r.totalQuestions);
+            const at=Number(m.submittedAt||r.createdAt||r.date);
+            const subject=m.source==='math-formula'?'math_formula':r.subject;
+            if(r.deleted||m.assessment||m.status==='draft'||!r.sessionId||!this.areas.includes(subject)||!Number.isInteger(total)||total<1||attempts.length<total||attempts.slice(0,total).some(a=>typeof a.correct!=='boolean')||!Number.isFinite(at)||at<=0||at>Date.now())continue;
+            const date=StudyPeriods.daily(new Date(at));
+            const key=subject+':'+r.sessionId;
+            // Only the first submission counts; a same-session retry cannot create a new learning day.
+            const scope=m.unitId||m.formulaNumber||m.level;
+            const context=scope?[subject,m.levelId||m.stageId||'',m.semesterId||'',scope,m.passageId||''].join(':'):null;
+            if(!unique.has(key)||at<unique.get(key).at)unique.set(key,{at,date,subject,context});
         }
-        return ['reading', 'english', 'grammar', 'hanja', 'math'];
+        return [...unique.values()].sort((a,b)=>a.at-b.at);
     },
-
-    targetOf(mission, user = null) {
-        return mission.target === 'subjects' ? this.registeredSubjects(user).length : mission.target;
-    },
-
-    progressOf(user, mission) {
-        const daily = user.dailyStats || {};
-        const weekly = user.weeklyStats || {};
-        const monthly = user.monthlyStats || {};
-        switch (mission.type || mission.id) {
-            case 'd_checkin': return 1;
-            case 'time_any': return Math.max(0, ...Object.values(daily.studyTime || {}));
-            case 'subjects_today': return new Set(daily.subjectsStudied || []).size;
-            case 'best_score_today':
-                return Math.max(0, ...Object.values(daily.quizScores || {}).flat());
-            case 'attendance_count': return weekly.attendanceDays || 0;
-            case 'total_time': return weekly.studyTime || 0;
-            case 'subjects_week': {
-                const studied = new Set(weekly.subjectsStudied || []);
-                return this.registeredSubjects(user).filter(subject => studied.has(subject)).length;
+    progressOf(user,mission,evidence=this.evidence(user)) {
+        const times=this.dailyTimes(user), today=this.periodKey('daily');
+        const entries=evidence.filter(e=>e.date>=this.periodKey(mission.period||'daily')&&e.date<=today);
+        const days=subject=>new Set(entries.filter(e=>e.subject===subject).map(e=>e.date)).size;
+        switch(mission.type){
+            case 'daily_time': return Object.values(times).reduce((a,b)=>a+b,0);
+            case 'daily_core': return ['reading','english','math'].filter(s=>Object.entries(times).filter(([id])=>this.family(id)===s).reduce((n,[,v])=>n+v,0)>=120).length;
+            case 'daily_quiz': return entries.length;
+            case 'quiz_days': return new Set(entries.map(e=>e.date)).size;
+            case 'core_days': return ['reading','english','math'].filter(s=>new Set(entries.filter(e=>this.family(e.subject)===s).map(e=>e.date)).size >= (mission.period==='weekly'?3:12)).length;
+            case 'coverage': return this.areas.filter(s=>days(s)>=mission.days).length;
+            case 'review_days': {
+                const first=new Map(),review=new Set();
+                for(const e of evidence){
+                    if(!e.context)continue;
+                    if(first.has(e.context)&&first.get(e.context)<e.date&&e.date>=this.periodKey(mission.period)&&e.date<=today)review.add(e.date);
+                    if(!first.has(e.context))first.set(e.context,e.date);
+                }
+                return review.size;
             }
-            case 'quiz_count_week': return weekly.quizCount || 0;
-            case 'attendance_count_month': return monthly.attendanceDays || 0;
-            case 'total_time_month': return monthly.studyTime || 0;
-            case 'subjects_month': {
-                const studied = new Set(monthly.subjectsStudied || []);
-                return this.registeredSubjects(user).filter(subject => studied.has(subject)).length;
-            }
-            case 'quiz_count_month': return monthly.quizCount || 0;
-            default: return 0;
+            default:return 0;
         }
     },
 
@@ -101,7 +103,7 @@ const MissionManager = {
 
     randomReward(category) {
         const pool = this.REWARDS[category] || [];
-        return pool[Math.floor(Math.random() * pool.length)];
+        return pool[0];
     },
 
     grantExp(user, amount) {
@@ -130,6 +132,7 @@ const MissionManager = {
         user.missionProgress.rewards = user.missionProgress.rewards || { daily: null, weekly: null, monthly: null };
         user.missionProgress.periods = user.missionProgress.periods || {};
         const completedNow = [];
+        const evidence = this.evidence(user);
 
         ['daily', 'weekly', 'monthly'].forEach(category => {
             const period = this.periodKey(category);
@@ -142,13 +145,13 @@ const MissionManager = {
                 const target = this.targetOf(mission, user);
                 const previous = user.missionProgress[category][mission.id];
                 if (previous?.completed) return;
-                const progress = this.progressOf(user, mission);
+                const progress = this.progressOf(user, mission, evidence);
                 if (progress >= target) {
-                    user.missionProgress[category][mission.id] = { progress: target, completed: true, date: Date.now() };
+                    user.missionProgress[category][mission.id] = { progress: target, completed: true, ruleVersion: 2, date: Date.now() };
                     this.grantExp(user, mission.exp);
                     completedNow.push(mission);
                 } else {
-                    user.missionProgress[category][mission.id] = { progress, completed: false };
+                    user.missionProgress[category][mission.id] = { progress, completed: false, ruleVersion: 2 };
                 }
             });
         });
@@ -167,79 +170,29 @@ const MissionManager = {
         return reward?.period === this.periodKey(category) ? reward : null;
     },
 
+    escape(value) { return String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); },
     renderMissionList(containerId) {
-        const user = UserSession.getUserData();
-        const container = document.getElementById(containerId);
-        if (!container || !user) return;
-
-        const makeSection = (emoji, label, category, isTwoCol) => {
-            const definitions = this.DEFINITIONS[category];
-            const progressMap = user.missionProgress[category];
-            const done = definitions.filter(mission => progressMap[mission.id]?.completed).length;
-            const reward = this.rewardFor(user, category);
-            const rewardCandidates = (this.REWARDS[category] || []).map(item =>
-                `<span class="mission-reward-chip">${item.icon} ${item.title}${item.note ? ` <small>(${item.note})</small>` : ''}</span>`
-            ).join('');
-            let html = `
-                <div class="mission-section-header">
-                    <span>${emoji} <span class="mission-section-label">${label}</span></span>
-                    <span class="mission-section-count">${done}/${definitions.length} 완료</span>
-                </div>
-                ${reward ? `<div class="mission-reward-banner">🎁 획득 보상: <strong>${reward.icon} ${reward.title}</strong>${reward.note ? ` · ${reward.note}` : ''}</div>` : ''}
-                <div class="mission-reward-preview">
-                    <div class="mission-reward-preview-title">🎲 모두 완료하면 아래 보상 중 1개를 무작위로 받아요!</div>
-                    <div class="mission-reward-chip-list">${rewardCandidates}</div>
-                </div>
-                <div class="mission-grid${isTwoCol ? '' : ' single-col'}">`;
-            definitions.forEach(mission => {
-                const progress = progressMap[mission.id] || { progress: 0, completed: false };
-                const target = this.targetOf(mission, user);
-                const pct = Math.min(100, Math.round((progress.progress / target) * 100));
-                html += this.generateMissionItemHtml(mission, progress, pct);
-            });
-            return html + '</div>';
-        };
-
-        container.innerHTML = '<div class="mission-list">'
-            + makeSection('📅', '오늘의 단기 목표', 'daily', true)
-            + makeSection('📆', '이번 주 목표', 'weekly', false)
-            + makeSection('🏆', '이번 달 장기 목표', 'monthly', false)
-            + '</div>';
+        const user=UserSession.getUserData(), container=document.getElementById(containerId);
+        if(!container||!user)return;
+        container.innerHTML=`<a class="goal-entry" href="goals.html"><span class="goal-entry-icon" aria-hidden="true">🎯</span><span><strong>학습 목표</strong><span class="goal-entry-sub">일간 · 주간 · 월간 목표와 보상 확인</span><span class="goal-entry-counts">${['daily','weekly','monthly'].map((c,i)=>`${['일간','주간','월간'][i]} ${this.DEFINITIONS[c].filter(m=>user.missionProgress?.[c]?.[m.id]?.completed).length}/4`).join(' · ')}</span></span><span aria-hidden="true">→</span></a>`;
     },
-
-    generateMissionItemHtml(mission, progress, pct) {
-        const completed = progress.completed;
-        return `
-            <div class="mission-item ${completed ? 'completed' : ''}">
-                <div class="mission-icon">${mission.icon}</div>
-                <div class="mission-body">
-                    <div class="mission-title-row">
-                        <span class="mission-title">${mission.title}</span>
-                        <span class="mission-reward">+${mission.exp} EXP</span>
-                    </div>
-                    <div class="mission-desc">${mission.desc}</div>
-                    <div class="mission-footer">
-                        <div class="mission-progress-bar"><div class="mission-progress-fill" style="width:${pct}%"></div></div>
-                        <span class="mission-progress-text">${completed ? '완료! ✅' : this.formatProgress(mission, progress.progress)}</span>
-                    </div>
-                </div>
-            </div>`;
-    },
-
-    formatProgress(mission, value) {
-        const current = value || 0;
-        const target = this.targetOf(mission, UserSession.getUserData());
-        if (['time_any', 'total_time', 'total_time_month'].includes(mission.type)) {
-            const currentMinutes = Math.floor(current / 60);
-            const targetMinutes = Math.floor(target / 60);
-            return `${currentMinutes}분 / ${targetMinutes}분`;
-        }
-        if (['subjects_today', 'subjects_week', 'subjects_month'].includes(mission.type)) return `${current} / ${target}과목`;
-        if (['attendance_count', 'attendance_count_month'].includes(mission.type)) return `${current} / ${target}일`;
-        if (['quiz_count_week', 'quiz_count_month'].includes(mission.type)) return `${current} / ${target}회`;
-        if (mission.type === 'best_score_today') return `${current}점 / ${target}점`;
-        return `${current} / ${target}`;
+    renderGoals(category) {
+        const user=UserSession.getUserData(), container=document.getElementById('goalList');
+        if(!container||!user)return;
+        const defs=this.DEFINITIONS[category], map=user.missionProgress?.[category]||{};
+        const done=defs.filter(m=>map[m.id]?.completed).length;
+        document.getElementById('goalSummary').textContent=`${this.periodKey(category)} 시작 · ${done}/4 완료 · 전체 달성 시 ${defs.reduce((s,m)=>s+m.exp,0)} EXP`;
+        const entries=this.evidence(user).filter(e=>e.date>=this.periodKey(category));
+        const names={reading:'국어',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+        container.innerHTML=defs.map(m=>{
+            const p=map[m.id]||{}, target=this.targetOf(m,user), value=Math.min(target,Math.max(0,p.progress||0));
+            const legacy=p.completed&&p.ruleVersion!==2;
+            const text=m.type==='daily_time'?`${Math.floor(value/60)} / ${target/60}분`:`${value} / ${target}${m.type.endsWith('_days')&&m.type!=='core_days'?'일':m.type==='coverage'?'영역':m.type.includes('core')?'과목':'회'}`;
+            const details=['coverage','core_days'].includes(m.type)?`<div class="goal-breakdown">${(m.type==='coverage'?this.areas:['reading','english','math']).map(subject=>{const count=new Set(entries.filter(e=>m.type==='coverage'?e.subject===subject:this.family(e.subject)===subject).map(e=>e.date)).size;const needed=m.days||(category==='weekly'?3:12);return `<span>${m.type==='core_days'&&subject==='english'?'영어':names[subject]||this.escape(subject)} ${Math.min(count,needed)}/${needed}일</span>`;}).join('')}</div>`:'';
+            return `<article class="goal-card ${p.completed?'is-complete':''}"><div class="goal-card-heading"><h2><span aria-hidden="true">${m.icon}</span> ${m.title}</h2><span class="goal-exp">+${m.exp} EXP</span></div><p>${m.desc}</p>${details}<div class="goal-meter"><progress max="${target}" value="${p.completed?target:value}" aria-label="${m.title}"></progress><strong>${legacy?'기존 달성 인정':p.completed?'달성 완료':text}</strong></div></article>`;
+        }).join('');
+        const earned=this.rewardFor(user,category),reward=earned||this.REWARDS[category][0],escape=this.escape;
+        document.getElementById('goalReward').innerHTML=`<span class="goal-eyebrow">${earned?(earned.used?'사용한 보상':'획득한 보상'):'4개 목표를 모두 완료하면'}</span><h2>${escape(reward.icon)} ${escape(reward.title)}</h2><p>${escape(reward.note||'기존에 획득한 보상을 유지합니다.')}</p><p class="goal-muted">경험치는 목표마다 한 번 지급됩니다. 실물·활동 보상은 자동 결제되거나 예약되지 않습니다.</p>`;
     }
 };
-
 window.MissionManager = MissionManager;
