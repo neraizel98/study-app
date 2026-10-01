@@ -1,0 +1,63 @@
+/* Exam presentation is scoped so weekly assessments retain their familiar layout. */
+body.exam-page{background:#eef0f3;color:#202b3b;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.exam-page .wrap{max-width:960px;padding:32px 24px 80px;box-sizing:border-box}
+.exam-page #back{display:inline-flex;padding:8px 0;margin-bottom:12px;text-decoration:none;font-size:14px;color:#52637a}
+.exam-page h1{font-size:clamp(25px,4vw,34px);letter-spacing:-.045em;line-height:1.35;margin:4px 0 10px}
+.exam-page .exam-subtitle{color:#536176;margin:0 0 20px;line-height:1.65;font-size:15px}
+.exam-page .exam-guide{border:1px solid #cbd2dc;border-radius:12px;padding:12px 16px;margin-bottom:20px;color:#536176;background:#f8fafc}
+.exam-page summary{cursor:pointer;font-size:14px;font-weight:600;line-height:1.6}
+.exam-page #intro{font-size:14px;line-height:1.85;margin:12px 0 2px}
+.exam-page .exam-toolbar{position:sticky;top:8px;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:20px;background:#ffffff;border:1px solid #c9d1db;border-radius:14px;padding:16px 20px;box-shadow:0 6px 24px #0003;margin:20px 0}
+.exam-page .exam-progress{flex:1;min-width:0}.exam-page .exam-progress p{margin:0 0 8px;font-size:14px;color:#334155}
+.exam-page progress{display:block;width:100%;height:6px;accent-color:#326fba;border:0;border-radius:20px;overflow:hidden;background:#dce3eb}
+.exam-page progress::-webkit-progress-bar{background:#dce3eb}.exam-page progress::-webkit-progress-value{background:#326fba}
+.exam-page #examTimer{margin:0;flex-shrink:0;color:#183554;font-size:21px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.4}
+.exam-page #examTimer.urgent{color:#b54720}.exam-page #examTimer small{display:block;color:#63738a;font-size:11px;font-weight:500;letter-spacing:.04em}
+.exam-page .counts{gap:8px;margin:0 0 8px}.exam-page .counts span{padding:6px 11px;border-radius:8px;font-size:13px;background:#f7f9fc;border:1px solid #d6dce5;color:#3f516b}
+.exam-page .counts span.empty-subject{background:transparent;color:#65748a;border-style:dashed}
+.exam-page .scope-note{font-size:13px;margin:8px 0 18px;color:#64748b}
+.exam-page .question-map{margin:16px 0}.exam-page .question-map summary{color:#405773}.exam-page #questionNav{display:flex;flex-wrap:wrap;gap:8px;padding-top:12px}
+.exam-page #questionNav button{min-width:44px;height:44px;margin:0;padding:6px;border-radius:9px;border:1px solid #ccd5e0;background:#ffffff;color:#4b607d;font-size:14px}
+.exam-page #questionNav button.answered{background:#eaf2fb;border-color:#829dbf;color:#234d7c}
+.exam-page #questionNav button.current{outline:2px solid #2d67ad;outline-offset:2px}
+.exam-page #work{padding:30px;margin:20px 0;border-radius:20px;border-color:#d5d9df;background:#ffffff}
+.exam-page #position{margin:0 0 14px;font-size:13px;letter-spacing:.01em;color:#4f6179}
+.exam-page #question{font-size:clamp(19px,3vw,23px);line-height:1.65;font-weight:650;margin:0 0 22px;word-break:keep-all;overflow-wrap:anywhere}
+.exam-page .passage{background:#fcfcfa;border:1px solid #c8ced6;border-radius:12px;padding:22px 24px;margin:0 0 24px;font-size:17px;line-height:1.95;white-space:pre-line;word-break:normal;overflow-wrap:anywhere;color:#263244;font-weight:400}
+.exam-page .passage-label{display:block;font-size:12px;font-weight:700;color:#607085;letter-spacing:.05em;margin-bottom:10px}
+.exam-page #choices{display:grid;gap:10px}.exam-page .choice{display:flex;gap:14px;align-items:flex-start;width:100%;box-sizing:border-box;margin:0;padding:16px 18px;background:#ffffff;color:#263447;border:1px solid #d2d9e2;border-radius:12px;font-weight:400;line-height:1.65;font-size:16px;transition:background .15s,border-color .15s}
+.exam-page .choice-number{display:inline-grid;place-items:center;min-width:27px;height:27px;border:1px solid #a8b4c4;border-radius:50%;font-size:13px;line-height:1.2;color:#4d607a;margin-top:1px}
+.exam-page .choice.selected{background:#ecf3fc;border:2px solid #3977ba;padding:15px 17px;color:#163f70}
+.exam-page .choice.selected .choice-number{background:#316cae;border-color:#316cae;color:#ffffff}
+.exam-page .choice:disabled{opacity:1;cursor:default}.exam-page .choice:not(:disabled):hover{background:#f4f7fb}
+.exam-page input,.exam-page textarea{box-sizing:border-box;width:100%;background:#fcfcfa;color:#1f314a;border:1px solid #b7c3d3;border-radius:11px;padding:14px 16px;font:inherit;line-height:1.7}
+.exam-page input{font-size:18px}.exam-page textarea{min-height:110px;resize:vertical}.exam-page input::placeholder,.exam-page textarea::placeholder{color:#718096;font-size:14px}
+.exam-page input:disabled,.exam-page textarea:disabled{opacity:1;color:#34465e}
+.exam-page .answer-label{display:block;font-size:14px;font-weight:600;color:#385477;margin-bottom:8px}
+.exam-page .reasoning-box{margin-top:10px;padding:14px 16px;border:1px solid #d5dce5;border-radius:11px;background:#f8fafc}.exam-page .reasoning-box summary{color:#49617d}
+.exam-page .reasoning-box p{font-size:13px;color:#65758a;margin:10px 0}.exam-page .actions{display:flex;gap:10px;flex-wrap:wrap;padding-top:24px;margin-top:24px;border-top:1px solid #d8dee6}
+.exam-page .actions button{margin:0;min-height:46px;font-size:15px;padding:12px 20px;border-radius:10px}.exam-page #prev{background:transparent;color:#52657e;border:1px solid #b8c5d5}.exam-page #next{background:#edf2f8;color:#304f74}.exam-page #submit{margin-left:auto;background:#245b96;color:#ffffff}
+.exam-page #saved{font-size:12px;color:#687b92;line-height:1.7;margin:16px 0 0}.exam-page #saved.error{color:#aa3b21}
+.exam-page .result{margin-top:22px;padding:18px;background:#edf5f9;border-radius:10px;white-space:pre-line;font-size:15px}
+.exam-page button:focus-visible,.exam-page a:focus-visible,.exam-page summary:focus-visible,.exam-page input:focus-visible,.exam-page textarea:focus-visible{outline:3px solid #347ac5;outline-offset:3px}
+.exam-page #question:focus{outline:none}
+.exam-page #empty{padding:24px;line-height:1.8}.exam-page .exam-start-link{display:block;text-decoration:none;background:#edf3fa;border:1px solid #aebfd2;border-radius:12px;padding:16px 20px;margin-top:12px;color:#264a76;font-weight:650}.exam-page .exam-start-link:hover{background:#e2edf9}
+.exam-page dialog{box-sizing:border-box;max-width:450px;width:calc(100% - 32px);padding:26px;border:1px solid #b6c5d6;border-radius:18px;background:#142238;color:#26374f}.exam-page dialog::backdrop{background:#020915bd}.exam-page dialog h2{font-size:21px;margin:0 0 12px}.exam-page dialog p{color:#516780;line-height:1.8;font-size:15px}.exam-page dialog .dialog-actions{display:flex;gap:10px;flex-wrap:wrap}.exam-page dialog button{margin:0;font-size:14px}.exam-page dialog #reviewUnanswered{background:#e9f0f8;color:#315277}
+@media(max-width:600px){.exam-page .wrap{padding:16px 14px 48px}.exam-page #work{padding:20px 16px;border-radius:15px}.exam-page .exam-toolbar{padding:12px 14px;gap:14px;top:4px}.exam-page #examTimer{font-size:19px}.exam-page .passage{padding:17px 16px;font-size:16px;line-height:1.9}.exam-page .choice{padding:14px 12px;font-size:15px;gap:10px}.exam-page .choice.selected{padding:13px 11px}.exam-page .actions{gap:8px}.exam-page .actions button{padding:11px 13px}.exam-page #submit{flex:1}.exam-page .exam-guide{margin-bottom:14px}.exam-page h1{font-size:27px}}
+@media(prefers-reduced-motion:reduce){.exam-page *{scroll-behavior:auto!important;transition:none!important}}
+
+/* Paper-style exam: clear rules, generous margins, readable one-question layout. */
+.exam-page .exam-paper-heading{text-align:center;border-top:2px solid #263a55;border-bottom:1px solid #8493a7;padding:24px 12px 20px;margin:8px 0 22px}
+.exam-page .paper-kicker{font-size:12px;letter-spacing:.13em;color:#65758a;margin:0 0 8px}
+.exam-page .exam-paper-heading h1{color:#182b45;letter-spacing:.1em;font-size:clamp(26px,5vw,36px)}
+.exam-page .exam-paper-heading .exam-subtitle{margin:8px 0 0}
+.exam-page #work{border-radius:4px;box-shadow:0 5px 20px #14253808;padding:36px 38px}
+.exam-page #question{font-family:system-ui,-apple-system,sans-serif;border-bottom:1px solid #d6dce4;padding-bottom:18px}
+.exam-page .passage{font-family:Georgia,'Noto Serif KR','Batang',serif;border-radius:2px;font-size:18px;line-height:2}
+.exam-page .choice{border-radius:6px}.exam-page #position{display:flex;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.exam-page .question-points{color:#66758a;font-size:12px}.exam-page .exam-progress progress{accent-color:#326fba}
+.exam-page #summaryResult{padding:18px 22px;border:1px solid #a8bfd7;background:#f5f9ff;border-radius:10px;margin:16px 0;font-size:15px;line-height:1.8;color:#284e78}
+@media(max-width:600px){.exam-page #work{padding:22px 17px}.exam-page .passage{font-size:17px}.exam-page .exam-paper-heading{padding:18px 4px}.exam-page .exam-paper-heading h1{font-size:27px}}
+
+.exam-page #work{scroll-margin-top:110px}.exam-page .counts .empty-subject{font-weight:400}
+.exam-page .exam-paper-heading h1{background:none;-webkit-text-fill-color:#182b45;color:#182b45}

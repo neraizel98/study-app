@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-mock-exam-card';
+const CACHE_NAME = 'smart-study-20261001-exam-paper-ui';
 
 try {
     importScripts('./firebase-config.js');
@@ -133,6 +133,7 @@ const STATIC_ASSETS = [
     './exam-training.js',
     './today.html',
     './weekly_assessment.html',
+    './assessment-ui.css',
     './MathDataExtra.js',
     './manifest.json',
     './icons/icon-192.png',

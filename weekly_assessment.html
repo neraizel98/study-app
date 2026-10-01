@@ -7,14 +7,14 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
 .choice{display:block;width:100%;text-align:left;background:#24374f;color:white;border:1px solid #46617e}.choice.selected{border-color:#74d8ff;background:#204c70}.passage{white-space:pre-line;background:#0d192c;padding:15px;border-radius:10px;line-height:1.75}
 .result{border-left:4px solid #67c5ff;padding:8px 14px;background:#11243a;line-height:1.6}
 @media(max-width:600px){.wrap{padding:15px 10px 60px}.panel{padding:15px}}
-</style></head><body><main class="wrap"><a id="back" href="index.html">← 대시보드</a><h1 id="title">주간 학습 확인</h1>
+</style><link rel="stylesheet" href="assessment-ui.css"></head><body><main class="wrap"><a id="back" href="index.html">← 대시보드</a><h1 id="title">주간 학습 확인</h1>
 <p class="muted" id="intro">최근 실제로 학습한 범위만 확인합니다. 제출 전에는 정답과 해설을 표시하지 않습니다.</p>
 <div id="counts" class="counts"></div><div id="empty" class="panel" hidden></div>
-<section id="work" class="panel" hidden><p id="position" class="muted"></p><h2 id="question"></h2><div id="passage"></div><div id="choices"></div><div id="result" class="result" hidden></div><div><button id="prev">이전</button><button id="next">다음</button><button id="submit">답안 제출</button></div><p id="saved" class="muted"></p></section>
+<section id="work" class="panel" hidden><p id="position" class="muted"></p><h2 id="question"></h2><div id="passage"></div><div id="choices"></div><div id="result" class="result" hidden></div><div class="actions"><button id="prev">이전</button><button id="next">다음</button><button id="submit">답안 제출</button></div><p id="saved" class="muted"></p></section>
 </main>
 <script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261001-mock-exam-card"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261001-exam-paper-ui"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
 <script src="EnglishReadingData.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script><script src="learning-session.js"></script><script src="EnglishGrammarQuiz.js"></script><script src="quiz-registry.js"></script><script src="MathFormulaQuiz.js"></script><script src="MathFormulaQuizExtra.js"></script><script src="MathFormulaQuizVolume2.js"></script><script src="MathFormulaQuizVolume3.js"></script><script src="MathFormulaQuizVolume4.js"></script><script src="weekly-assessment.js"></script><script src="weekly-assessment-expanded.js"></script><script src="exam-training.js"></script>
 <script>
 (async function(){
@@ -32,9 +32,17 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     $('back').href=practice?'today.html':'index.html';
     $('title').textContent=practice?`${names[task.subject]} 문항 연습`:'주간 학습 확인';
     $('intro').textContent=practice?'선택한 단원의 문항으로 연습합니다. 답안은 이 기기에 저장되어 이어 풀 수 있습니다.':'7개 활동을 확인합니다. 활동별 최대 5문항 중 이번 주 3문항, 이전 4주 2문항입니다. 학습 범위가 부족하면 문항을 줄이며, 기존 지문·예문의 재확인을 새 상황 평가로 보지 않습니다.';
-    if(exam){$('title').textContent='중학교 준비 · 학습 모의고사';$('intro').textContent='국어 사실·추론, 영어 달 관찰 독해, 초6 비례식을 새로운 상황에서 확인합니다. A/B형 각각 최대 9문항 · 15분. 배운 범위만 출제하며 시간이 지나면 현재 답안으로 제출합니다. 화면을 닫아도 제한 시간은 흐릅니다. 단답은 자동 채점하고 풀이 설명은 해설과 직접 비교합니다. 학교 성적·등수를 예측하는 검사는 아닙니다.';}
+    if(exam){document.body.classList.add('exam-page');document.title='학습 모의고사 · Smart Study';$('title').textContent='학습 모의고사';$('intro').textContent='국어 사실·추론, 영어 달 관찰 독해, 초6 비례식을 새로운 상황에서 확인합니다. A/B형 각각 최대 9문항 · 15분. 배운 범위만 출제하며 시간이 지나면 현재 답안으로 제출합니다. 화면을 닫아도 제한 시간은 흐릅니다. 단답은 자동 채점하고 풀이 설명은 해설과 직접 비교합니다. 학교 성적·등수를 예측하는 검사는 아닙니다.';}
+    if(exam){
+        const heading=document.createElement('header');heading.className='exam-paper-heading';
+        const kicker=document.createElement('p');kicker.className='paper-kicker';kicker.textContent='SMART STUDY · 중학교 준비';
+        $('title').before(heading);heading.append(kicker,$('title'));
+        const subtitle=document.createElement('p');subtitle.className='exam-subtitle';subtitle.textContent='배운 내용을 낯선 문제에 적용해 보세요.';heading.append(subtitle);
+        const guide=document.createElement('details');guide.className='exam-guide';const summary=document.createElement('summary');summary.textContent='시험 안내 · 최대 9문항 / 15분';$('intro').before(guide);guide.append(summary,$('intro'));
+        const warning=document.createElement('p');warning.className='scope-note';warning.textContent='시작 후에는 화면을 닫아도 시간이 흐르며, 종료 시 현재 답안으로 자동 제출됩니다.';guide.after(warning);
+    }
     let draft=session.get(user,sessionId),groups;
-    if(exam&&!draft&&!params.has('start')){const box=$('empty');box.hidden=false;box.textContent='완료한 퀴즈 기록이 있는 단원만 포함됩니다. 국어 r4 · 영어 독해 er1 · 수학 초6 2학기 4단원. 준비되면 시작하세요.';for(const f of ['A','B']){const a=document.createElement('a');a.href=`?mode=exam&form=${f}&start=1`;a.textContent=` ${f}형 시작 (15분) `;a.style.display='block';a.style.padding='14px';box.append(a);}return;}
+    if(exam&&!draft&&!params.has('start')){const box=$('empty');box.hidden=false;box.textContent='출제 범위: 국어 사실 확인과 추론 · 영어 달 관찰 독해 · 초6 비례식. 완료한 퀴즈 기록이 있는 범위만 포함합니다. 준비되면 시험지를 선택하세요.';for(const f of ['A','B']){const a=document.createElement('a');a.href=`?mode=exam&form=${f}&start=1`;a.textContent=` ${f}형 시작 (15분) `;a.className='exam-start-link';box.append(a);}return;}
     if(!draft){
         if(practice){
             const scope={context:task.context,seenKeys:new Set(),learnedWords:new Set()};
@@ -55,7 +63,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     if(!practice&&!exam&&draft.questions.length&&!draft.questions.some(q=>q.period)){$('intro').textContent+=' 이전에 시작한 평가의 문항과 답안은 그대로 유지합니다.';}
     const requested=draft.requestedCounts||{},actual={};for(const question of draft.questions)actual[question.subject]=(actual[question.subject]||0)+1;
     for(const subject of practice?[task.subject]:exam?["reading","english_reading","math"]:assessment.subjects){
-        const label=document.createElement('span');label.textContent=`${names[subject]} ${actual[subject]||0}/${requested[subject]||5}문항`;$('counts').append(label);
+        const label=document.createElement('span');label.textContent=exam?`${names[subject]} · ${actual[subject]?actual[subject]+'문항':'이번 시험 제외'}`:`${names[subject]} ${actual[subject]||0}/${requested[subject]||5}문항`;if(exam&&!actual[subject])label.className='empty-subject';$('counts').append(label);
     }
     if(!draft.questions.length){$('empty').hidden=false;$('empty').textContent='최근 학습 범위에서 낼 수 있는 검증 문항이 없습니다. 학습 후 다시 확인해 주세요.';return;}
     const ownsSession=()=>SmartStudy.LocalRepository.getActiveUser()===draft.userId;
@@ -64,9 +72,9 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     window.addEventListener('focus',accountGuard);
     if(!accountGuard())return;
     if(Object.entries(requested).some(([subject,count])=>(actual[subject]||0)<count)){
-        const label=document.createElement('p');label.className='muted';label.textContent=exam?'학습 완료 기록이 있는 범위만 출제했습니다.':'이번 주 또는 이전 4주 기록이 부족한 활동은 문항 수를 줄였습니다. 미학습 범위로 채우지 않습니다.';$('counts').after(label);
+        const label=document.createElement('p');label.className='muted scope-note';label.textContent=exam?'학습 완료 기록이 있는 범위만 출제했습니다.':'이번 주 또는 이전 4주 기록이 부족한 활동은 문항 수를 줄였습니다. 미학습 범위로 채우지 않습니다.';$('counts').after(label);
     }
-    let activeDelta=0,submitting=false,firstAnswerRecorded=Boolean(Object.keys(draft.responses||{}).length);
+    let activeDelta=0,submitting=false,saveError='',reasoningOpen=false,firstAnswerRecorded=Boolean(Object.keys(draft.responses||{}).length);
     const clock=session.createClock(seconds=>{
         if(draft.submittedAt||draft.submissionSnapshot)return;
         draft.activeSeconds+=seconds;const subject=draft.questions[draft.cursor]?.subject;
@@ -81,28 +89,41 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     if(!draft.submittedAt)clock.start();
     function expired(){return Boolean(exam&&draft.examDeadline&&Date.now()>=draft.examDeadline);}
     function isCorrect(q,value){return exam?SmartStudy.ExamTraining.correct(q,value):value===q.answer;}
+    function answered(q){return String(draft.responses[q.id]??'').trim().length>0;}
+    function updateProgress(){
+        if(!exam)return;
+        const count=draft.questions.filter(answered).length;
+        $('answerProgress').textContent=`${form}형 · ${count} / ${draft.questions.length}문항 응답`;
+        $('answerMeter').max=draft.questions.length;$('answerMeter').value=count;
+        $('questionNav').replaceChildren();
+        draft.questions.forEach((q,index)=>{const b=document.createElement('button');b.type='button';b.textContent=String(index+1);b.className=(answered(q)?'answered ':'')+(index===draft.cursor?'current':'');b.setAttribute('aria-label',`${index+1}번 · ${names[q.subject]} · ${answered(q)?'응답 완료':'미응답'}`);if(index===draft.cursor)b.setAttribute('aria-current','step');b.onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor=index;if(!draft.submittedAt)draft=session.save(user,draft);render();focusQuestion();};$('questionNav').append(b);});
+        const result=$('summaryResult');result.hidden=!draft.submittedAt;
+        if(draft.submittedAt){const correct=draft.questions.filter(q=>isCorrect(q,draft.responses[q.id])).length;result.textContent=`제출 완료 · ${draft.questions.length}문항 중 ${correct}문항 정답. 문항 번호를 눌러 내 답과 해설을 확인하세요. 풀이 설명은 직접 점검합니다.`;}
+    }
+    function focusQuestion(){if(exam){$('question').setAttribute('tabindex','-1');$('question').focus({preventScroll:true});$('work').scrollIntoView({block:'start',behavior:'auto'});}}
     function render(){
         const q=draft.questions[draft.cursor];$('work').hidden=false;
-        $('position').textContent=`${names[q.subject]} · ${draft.cursor+1}/${draft.questions.length} · ${q.sourceType||'학습 문항'}`;
+        $('position').textContent=exam?`${names[q.subject]} 영역 · ${draft.cursor+1}번 / ${draft.questions.length}번${q.repeated?' · 재연습':''}`:`${names[q.subject]} · ${draft.cursor+1}/${draft.questions.length} · ${q.sourceType||'학습 문항'}`;
+        if(exam){const points=document.createElement('span');points.className='question-points';points.textContent='정답 1개당 1점 · '+(q.kind==='written'?'단답형':'객관식');$('position').append(points);}
         if(['math','math_formula'].includes(q.subject))$('question').innerHTML=Utils.renderMath(q.question);
         else $('question').textContent=q.question;
         $('passage').replaceChildren();
-        if(q.passageLines?.length){const box=document.createElement('div');box.className='passage';box.textContent=`${q.passageTitle||''}\n${q.passageLines.join('\n')}`;$('passage').append(box);}
+        if(q.passageLines?.length){const box=document.createElement('div');box.className='passage';if(exam){const caption=document.createElement('span');caption.className='passage-label';caption.textContent='다음 글을 읽고 물음에 답하세요.';box.append(caption,document.createTextNode(q.passageLines.join('\n')));}else box.textContent=`${q.passageTitle||''}\n${q.passageLines.join('\n')}`;$('passage').append(box);}
         $('choices').replaceChildren();
-        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(['math','math_formula'].includes(q.subject))button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting);button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot||expired())return;if(!firstAnswerRecorded){firstAnswerRecorded=true;SmartStudy.InAppStudyRequest?.recordActualStart({source:'weekly-answer',subject:q.subject,startedAt:Date.now()}).catch(error=>console.warn('[Study activity]',error.message));}draft.responses[q.id]=choice;draft=session.save(user,draft);render();};$('choices').append(button);}
-        if(exam&&q.kind==='written'){const input=document.createElement('input');input.type='text';input.setAttribute('aria-label','직접 답 쓰기');input.placeholder='문제에서 요구한 답만 쓰세요';input.style.cssText='box-sizing:border-box;width:100%;padding:14px;font-size:18px';input.value=draft.responses[q.id]||'';input.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||expired());input.oninput=()=>{if(!accountGuard()||expired()||draft.submissionSnapshot)return;draft.responses[q.id]=input.value;draft=session.save(user,draft);};$('choices').append(input);}
-        if(exam){const reasoning=document.createElement('textarea');reasoning.setAttribute('aria-label','풀이와 근거 (점수에 포함하지 않음)');reasoning.placeholder='어떻게 구했나요? 지문의 근거나 계산 과정을 써 보세요. (직접 점검용)';reasoning.style.cssText='box-sizing:border-box;width:100%;min-height:90px;margin-top:14px;font:inherit';reasoning.value=draft.reasoning?.[q.id]||'';reasoning.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||expired());reasoning.oninput=()=>{if(!accountGuard()||expired()||draft.submissionSnapshot)return;draft.reasoning=draft.reasoning||{};draft.reasoning[q.id]=reasoning.value;draft=session.save(user,draft);};$('choices').append(reasoning);}
+        for(const choice of q.choices){const button=document.createElement('button');button.type='button';button.className='choice'+(draft.responses[q.id]===choice?' selected':'');if(['math','math_formula'].includes(q.subject))button.innerHTML=Utils.renderMath(choice);else button.textContent=choice;if(exam){const text=document.createElement('span');while(button.firstChild)text.append(button.firstChild);const number=document.createElement('span');number.className='choice-number';number.textContent=String(q.choices.indexOf(choice)+1);button.append(number,text);button.setAttribute('aria-pressed',String(draft.responses[q.id]===choice));}button.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||submitting||expired());button.onclick=()=>{if(!accountGuard()||submitting||draft.submissionSnapshot||expired())return;if(!firstAnswerRecorded){firstAnswerRecorded=true;SmartStudy.InAppStudyRequest?.recordActualStart({source:'weekly-answer',subject:q.subject,startedAt:Date.now()}).catch(error=>console.warn('[Study activity]',error.message));}draft.responses[q.id]=choice;draft=session.save(user,draft);render();if(exam)document.querySelector('.choice.selected')?.focus({preventScroll:true});};$('choices').append(button);}
+        if(exam&&q.kind==='written'){const input=document.createElement('input');input.type='text';input.setAttribute('aria-label','직접 답 쓰기');input.placeholder='문제에서 요구한 답만 쓰세요';input.id='writtenAnswer';const label=document.createElement('label');label.className='answer-label';label.htmlFor='writtenAnswer';label.textContent='답안 작성';$('choices').append(label);input.value=draft.responses[q.id]||'';input.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||expired());input.oninput=()=>{if(!accountGuard()||expired()||draft.submissionSnapshot)return;draft.responses[q.id]=input.value;draft=session.save(user,draft);updateProgress();};$('choices').append(input);}
+        if(exam){const detail=document.createElement('details');detail.className='reasoning-box';detail.open=reasoningOpen||Boolean(draft.reasoning?.[q.id]);const summary=document.createElement('summary');summary.textContent='풀이와 근거 쓰기 · 선택';const note=document.createElement('p');note.textContent='점수에는 포함하지 않습니다. 제출 후 해설과 비교해 보세요.';detail.append(summary,note);detail.ontoggle=()=>{reasoningOpen=detail.open;};const reasoning=document.createElement('textarea');reasoning.setAttribute('aria-label','풀이와 근거 (점수에 포함하지 않음)');reasoning.placeholder='어떻게 구했나요? 지문의 근거나 계산 과정을 써 보세요. (직접 점검용)';reasoning.value=draft.reasoning?.[q.id]||'';reasoning.disabled=Boolean(draft.submittedAt||draft.submissionSnapshot||expired());reasoning.oninput=()=>{if(!accountGuard()||expired()||draft.submissionSnapshot)return;draft.reasoning=draft.reasoning||{};draft.reasoning[q.id]=reasoning.value;draft=session.save(user,draft);};detail.append(reasoning);$('choices').append(detail);}
         $('result').hidden=!draft.submittedAt;
         if(draft.submittedAt){const selected=draft.responses[q.id]||'(미응답)';$('result').textContent=`${isCorrect(q,selected)?'정답':'오답'} · 내 답: ${selected} · 정답: ${q.answer}\n${q.explanation||''}`;}
         $('prev').disabled=draft.cursor===0;$('next').disabled=draft.cursor===draft.questions.length-1;
         $('submit').hidden=Boolean(draft.submittedAt);
-        $('saved').textContent=draft.submittedAt?'제출 완료 · 답안과 해설을 확인하세요.':`이 기기에 답안 저장됨 · 실제 활동 ${Math.floor(draft.activeSeconds/60)}분`;
+        $('saved').classList.toggle('error',Boolean(saveError));$('saved').textContent=saveError||(draft.submittedAt?'제출 완료 · 답안과 해설을 확인하세요.':`이 기기에 답안 저장됨 · 실제 활동 ${Math.floor(draft.activeSeconds/60)}분`);updateProgress();
     }
-    $('prev').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor--;if(!draft.submittedAt)draft=session.save(user,draft);render();};
-    $('next').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor++;if(!draft.submittedAt)draft=session.save(user,draft);render();};
-    $('submit').onclick=async()=>{
+    $('prev').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor--;if(!draft.submittedAt)draft=session.save(user,draft);render();focusQuestion();};
+    $('next').onclick=()=>{if(!accountGuard()||submitting)return;draft.cursor++;if(!draft.submittedAt)draft=session.save(user,draft);render();focusQuestion();};
+    async function submitAnswers(){
         if(draft.submittedAt||submitting||!accountGuard())return;
-        submitting=true;
+        submitting=true;saveError='';if(exam&&$('submitDialog').open)$('submitDialog').close();
         clock.stop();persist();
         $('submit').disabled=true;
         try{
@@ -146,10 +167,19 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
             draft=session.submit(user,sessionId);
             if(practice)planApi.refreshEvidence(user);
             render();
-        }catch(error){console.error(error);$('saved').textContent='기록을 저장하지 못했습니다. 기기 기록을 확인한 뒤 다시 제출해 주세요.';}
+        }catch(error){console.error(error);saveError='기록을 저장하지 못했습니다. 답안 제출을 눌러 다시 시도해 주세요.';}
         finally{submitting=false;$('submit').disabled=false;render();}
     };
-    if(exam){const remaining=document.createElement('p');remaining.id='examTimer';remaining.className='muted';$('intro').after(remaining);const tick=()=>{const sec=Math.max(0,Math.ceil((draft.examDeadline-Date.now())/1000));remaining.textContent=draft.submittedAt?'학습 모의고사 제출 완료':`남은 시간 ${Math.floor(sec/60)}분 ${sec%60}초 · 풀이 설명은 자동 채점하지 않습니다.`;if(expired()&&!draft.submittedAt&&!submitting)$('submit').onclick();};setInterval(tick,1000);tick();}
+    $('submit').onclick=()=>{if(!accountGuard()||submitting||draft.submittedAt)return;if(!exam||expired()||draft.submissionSnapshot){submitAnswers();return;}const missing=draft.questions.filter(q=>!answered(q)).length;$('submitMessage').textContent=missing?`아직 ${missing}문항에 답하지 않았습니다. 그대로 제출하면 미응답은 오답으로 처리됩니다.`:'모든 문항에 답했습니다. 제출하면 답안을 바꿀 수 없습니다.';$('reviewUnanswered').textContent=missing?'미응답 확인':'계속 풀기';$('submitDialog').showModal();};
+    if(exam){
+        const toolbar=document.createElement('div');toolbar.className='exam-toolbar';toolbar.innerHTML='<div class="exam-progress"><p id="answerProgress"></p><progress id="answerMeter" aria-label="답안 작성 진행률"></progress></div><p id="examTimer"></p>';$('counts').before(toolbar);
+        const map=document.createElement('details');map.className='question-map';map.innerHTML='<summary>전체 문항 보기 · 응답한 문항은 파란색으로 표시</summary><nav id="questionNav" aria-label="문항 이동"></nav>';$('work').before(map);
+        const result=document.createElement('div');result.id='summaryResult';result.hidden=true;result.setAttribute('role','status');map.before(result);
+        const dialog=document.createElement('dialog');dialog.id='submitDialog';dialog.setAttribute('aria-labelledby','submitTitle');dialog.innerHTML='<h2 id="submitTitle">답안을 제출할까요?</h2><p id="submitMessage"></p><div class="dialog-actions"><button id="reviewUnanswered" type="button">미응답 확인</button><button id="confirmSubmit" type="button">제출하기</button></div>';document.body.append(dialog);
+        $('reviewUnanswered').onclick=()=>{dialog.close();if(!accountGuard()||submitting||draft.submittedAt)return;const index=draft.questions.findIndex(q=>!answered(q));if(index>=0){draft.cursor=index;draft=session.save(user,draft);render();focusQuestion();}};
+        $('confirmSubmit').onclick=()=>submitAnswers();
+        const tick=()=>{const sec=Math.max(0,Math.ceil((draft.examDeadline-Date.now())/1000));$('examTimer').replaceChildren();const label=document.createElement('small');label.textContent=draft.submittedAt?'제출 완료':'남은 시간';$('examTimer').append(label,document.createTextNode(draft.submittedAt?'✓':`${String(Math.floor(sec/60)).padStart(2,'0')}:${String(sec%60).padStart(2,'0')}`));$('examTimer').classList.toggle('urgent',!draft.submittedAt&&sec<=60);if(expired()&&!draft.submittedAt&&!submitting&&!saveError)submitAnswers();};setInterval(tick,1000);tick();
+    }
     render();
 })().catch(error=>{console.error(error);document.getElementById('empty').hidden=false;document.getElementById('empty').textContent='학습을 열지 못했습니다. 새로고침해 주세요.';});
 </script></body></html>
