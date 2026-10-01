@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-learning-goals';
+const CACHE_NAME = 'smart-study-20261001-formula-visuals';
 
 try {
     importScripts('./firebase-config.js');
@@ -126,6 +126,8 @@ const STATIC_ASSETS = [
     './MathFormulaQuizVolume3.js',
     './MathFormulaQuizVolume4.js',
     './MathFormulaApp.js',
+    './MathFormulaVisuals.js',
+    './math-formula-visuals.css',
     './MathFormulaTime.js',
     './learning-plan.js',
     './unified-learning.js',

@@ -46,28 +46,11 @@ const MathFormulaApp = (() => {
     const scrollToContent = () => requestAnimationFrame(() =>
         $('content').scrollIntoView({ behavior: 'smooth', block: 'start' }));
 
-    function diagramSvg(type) {
-        const common = 'viewBox="0 0 520 270" role="img" aria-label="공식 원리 도형"';
+    function diagramSvg(type, item = {}) {
+        const common = 'viewBox="0 0 520 290" role="img" aria-label="공식 원리 도형"';
         const label = (x, y, text, color = '#dce8ff') =>
             `<text x="${x}" y="${y}" fill="${color}" font-size="18" font-weight="700" text-anchor="middle">${text}</text>`;
-        if (type === 'v4-ratio') {
-            return `<svg ${common}><rect x="60" y="70" width="400" height="80" fill="#1e293b" stroke="#77d9ff"/><rect x="60" y="70" width="100" height="80" fill="#38bdf8"/>${label(260,45,'예: 전체 100 중 25')}${label(110,120,'25','#082f49')}${label(260,210,'25 ÷ 100 = 0.25 = 25%')}</svg>`;
-        }
-        if (type === 'v4-coordinate' || type === 'v4-vector') {
-            return `<svg ${common}><path d="M60 220H470M90 250V30" stroke="#70839f" stroke-width="2"/><path d="M90 220L330 70" stroke="#38bdf8" stroke-width="4"/><path d="M90 220H330V70" stroke="#fbbf24" stroke-dasharray="7 5" fill="none"/>${label(215,245,'가로 변화')}${label(399,150,'세로 변화')}${label(280,40,'좌표 성분과 길이')}</svg>`;
-        }
-        if (type === 'v4-sets') {
-            return `<svg ${common}><rect x="35" y="25" width="450" height="220" fill="none" stroke="#64748b"/><ellipse cx="215" cy="135" rx="105" ry="85" fill="#38bdf833" stroke="#38bdf8"/><ellipse cx="305" cy="135" rx="105" ry="85" fill="#a78bfa33" stroke="#a78bfa"/>${label(160,135,'A')}${label(360,135,'B')}${label(260,135,'공통')}${label(60,52,'U')}</svg>`;
-        }
-        if (type === 'v3-solid') {
-            return `<svg ${common}><path d="M120 210H340V95H120ZM120 95L190 45H410V160L340 210M340 95L410 45M190 45V160H410M120 210L190 160" fill="#4facfe18" stroke="#77d9ff" stroke-width="3"/>${label(220,240,'a')}${label(390,200,'b')}${label(95,150,'c')}${label(260,25,'면 6 · 모서리 12 · 꼭짓점 8')}</svg>`;
-        }
-        if (type === 'v3-algebra') {
-            return `<svg ${common}><rect x="100" y="45" width="200" height="200" fill="#4facfe30" stroke="#77d9ff" stroke-width="3"/><path d="M240 45V245M100 185H300" stroke="#ffd166" stroke-width="3"/>${label(170,120,'a²')}${label(270,120,'ab')}${label(170,225,'ab')}${label(270,225,'b²')}${label(170,32,'a')}${label(270,32,'b')}${label(402,110,'전개 ↔ 인수분해')}${label(402,155,'(a+b)²')}${label(402,190,'a²+2ab+b²')}</svg>`;
-        }
-        if (type === 'v3-sequence') {
-            return `<svg ${common}>${[2,4,6,8].map((v,i)=>`<rect x="${70+100*i}" y="${220-v*20}" width="55" height="${v*20}" fill="#4facfe50" stroke="#77d9ff"/>${label(97+100*i,245,`a${['₁','₂','₃','₄'][i]}`)}${label(97+100*i,210-v*20,String(v))}`).join('')}${label(260,25,'예: 2, 4, 6, 8 …  공차 +2')}</svg>`;
-        }
+        if (type?.startsWith('example-')) return '<p>예제표를 불러오지 못했습니다. 아래 예제와 풀이를 확인해 주세요.</p>';
         if (type === 'right-triangle') {
             return `<svg ${common}><path d="M90 220 L410 220 L410 55 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
                 <path d="M390 220v-20h20" fill="none" stroke="#ffd166" stroke-width="3"/>
@@ -101,8 +84,8 @@ const MathFormulaApp = (() => {
                 ${label(264,249,'c')}${label(140,123,'b')}${label(118,210,'A','#f9a8d4')}${label(239,140,'h = b sin A','#ffd166')}</svg>`;
         }
         if (type === 'square' || type === 'rectangle' || type === 'rectangle-diagonal') {
-            const x = type === 'square' ? 145 : 105;
-            const width = type === 'square' ? 230 : 310;
+            const x = type === 'square' ? 167.5 : 105;
+            const width = type === 'square' ? 185 : 310;
             return `<svg ${common}><rect x="${x}" y="42" width="${width}" height="185" rx="3" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
                 ${type === 'rectangle-diagonal' ? `<line x1="${x}" y1="227" x2="${x + width}" y2="42" stroke="#f9a8d4" stroke-width="4"/>${label(270,120,'d','#f9a8d4')}` : ''}
                 ${label(260,252,'a')}${label(x + width + 28,140,type === 'square' ? 'a' : 'b')}</svg>`;
@@ -126,10 +109,10 @@ const MathFormulaApp = (() => {
                 ${label(260,252,type === 'trapezoid' ? 'b' : 'a')}${label(177,150,'h','#ffd166')}${type === 'trapezoid' ? label(258,52,'a') : ''}</svg>`;
         }
         if (['pentagon','pentagon-height','pentagon-diagonal','hexagon','regular-polygon','polygon-diagonals','polygon-angles'].includes(type)) {
-            const sides = type === 'hexagon' ? 6 : type.startsWith('pentagon') ? 5 : 8;
+            const sides = type === 'hexagon' ? 6 : type.startsWith('pentagon') ? 5 : ({27:8,28:7,29:4,30:6}[item.number] || 8);
             const vertices = Array.from({length:sides}, (_, i) => {
                 const angle = -Math.PI / 2 + i * Math.PI * 2 / sides;
-                return { x: 260 + 170 * Math.cos(angle), y: 137 + 100 * Math.sin(angle) };
+                return { x: 260 + 100 * Math.cos(angle), y: 137 + 100 * Math.sin(angle) };
             });
             const points = vertices.map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
             const line = (from, to, color = '#f9a8d4', width = 3) =>
@@ -140,14 +123,16 @@ const MathFormulaApp = (() => {
                 extras = `${line(vertices[0], oppositeMidpoint, '#ffd166')}<path d="M252 ${oppositeMidpoint.y.toFixed(1)}v-8h8" fill="none" stroke="#ffd166" stroke-width="2"/>${label(278,145,'h','#ffd166')}`;
             } else if (type === 'pentagon-diagonal') {
                 extras = vertices.map((point, index) => line(point, vertices[(index + 2) % sides])).join('');
-            } else if (type === 'polygon-diagonals' || type === 'polygon-angles') {
-                extras = vertices.slice(2, -1).map(point => line(vertices[0], point, type === 'polygon-angles' ? '#ffd166' : '#f9a8d4', 2)).join('');
+            } else if (type === 'polygon-diagonals') {
+                extras = vertices.flatMap((point,i)=>vertices.map((other,j)=>j>i+1 && !(i===0&&j===sides-1)?line(point,other,'#f9a8d4',1.5):'')).join('');
+            } else if (type === 'polygon-angles') {
+                extras = vertices.slice(2, -1).map(point => line(vertices[0], point, '#ffd166', 2)).join('');
             } else if (type === 'regular-polygon') {
                 extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.6)).join('');
             } else if (type === 'hexagon') {
                 extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.8)).join('');
             }
-            return `<svg ${common}><polygon points="${points}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>${extras}${label(260,260,'정다각형')}</svg>`;
+            return `<svg ${common}><polygon points="${points}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>${extras}${label(260,260,type==='polygon-diagonals'?`대각선 ${sides*(sides-3)/2}개`:type==='polygon-angles'?`${sides}각형 → 삼각형 ${sides-2}개`:'정다각형')}</svg>`;
         }
         if (type === 'vector' || type === 'coordinates' || type === 'centroid' || type === 'median') {
             if (type === 'vector') {
@@ -188,15 +173,14 @@ const MathFormulaApp = (() => {
             if (type === 'pi-series') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>
                 <line x1="155" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>
                 ${label(260,126,'d','#ffd166')}${label(260,258,'π = 둘레 ÷ 지름','#34d399')}</svg>`;
-            const extras = type === 'circle-coordinate'
-                ? `<path d="M35 220 H480 M90 260 V20" stroke="#718096" stroke-width="2"/><circle cx="280" cy="120" r="6" fill="#ffd166"/>${label(306,110,'P(x,y)')}${label(245,166,'C(a,b)')}`
-                : type === 'circle-angle'
-                    ? `<path d="M260 137 L355 80 M170 198 L355 80 L208 46" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(295,112,'α','#ffd166')}${label(185,72,'β','#f9a8d4')}`
-                    : type === 'secant'
-                        ? `<path d="M60 225 L445 70 M60 225 L435 200" stroke="#f9a8d4" stroke-width="3"/>${label(58,248,'P','#ffd166')}`
-                        : type === 'tangent-chord'
-                            ? `<line x1="55" y1="235" x2="465" y2="235" stroke="#34d399" stroke-width="4"/><path d="M260 235 L390 105 L175 100" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(292,218,'α','#ffd166')}`
-                            : `<line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(313,125,'r','#ffd166')}`;
+            if(type==='circle-angle')return `<svg ${common}><circle cx="260" cy="137" r="100" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M173.397 87L260 137L346.603 87M173.397 87L260 237L346.603 87" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(260,116,'α = 120°')}${label(260,206,'β = 60°')}${label(156,78,'A')}${label(364,78,'B')}${label(260,264,'C')}${label(280,156,'O')}</svg>`;
+            if(type==='tangent-chord')return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M60 242H460" stroke="#34d399" stroke-width="4"/><path d="M260 242L365 137L155 137Z" fill="none" stroke="#f9a8d4" stroke-width="3"/><path d="M260 137V242" stroke="#ffd166" stroke-dasharray="5 5"/><path d="M260 230h12v12" fill="none" stroke="#ffd166"/>${label(320,229,'α = 45°')}${label(207,164,'β = 45°')}${label(254,265,'접점 P')}${label(379,133,'B')}${label(140,133,'C')}</svg>`;
+            if(type==='secant'){
+                const angle=-.35,projection=210*Math.cos(angle),delta=Math.sqrt(105**2-(210*Math.sin(angle))**2);
+                const points=[projection-delta,projection+delta].map(t=>({x:50+t*Math.cos(angle),y:137+t*Math.sin(angle)}));
+                return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M50 137H425M50 137L${50+400*Math.cos(angle)} ${137+400*Math.sin(angle)}" stroke="#f9a8d4" stroke-width="3"/>${label(45,159,'P')}${label(155,162,'A')}${label(365,162,'B')}${points.map((v,i)=>`<circle cx="${v.x}" cy="${v.y}" r="4" fill="#ffd166"/>${label(v.x,v.y-12,i?'D':'C')}`).join('')}${label(260,269,'PA × PB = PC × PD')}</svg>`;
+            }
+            const extras=type==='circle-coordinate'?`<path d="M35 260H480M65 277V15" stroke="#718096" stroke-width="2"/><circle cx="260" cy="137" r="4" fill="#ffd166"/><circle cx="344" cy="74" r="4" fill="#f9a8d4"/><path d="M260 137L344 74" stroke="#ffd166" stroke-width="3"/>${label(243,165,'C(a,b)')}${label(369,60,'P(x,y)')}${label(309,128,'r')}`:`<line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(313,125,'r','#ffd166')}`;
             return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>${extras}</svg>`;
         }
         if (type === 'ellipse' || type === 'ellipse-coordinate') {
@@ -206,6 +190,8 @@ const MathFormulaApp = (() => {
                 <line x1="260" y1="137" x2="260" y2="49" stroke="#34d399" stroke-width="3"/>
                 ${label(350,126,'a','#ffd166')}${label(278,90,'b','#34d399')}</svg>`;
         }
+        if(type==='cylinder-net')return `<svg ${common}><rect x="150" y="90" width="${40*Math.PI}" height="90" fill="#4facfe25" stroke="#77d9ff" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="70" r="20" fill="#f472b625" stroke="#f9a8d4" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="200" r="20" fill="#f472b625" stroke="#f9a8d4" stroke-width="3"/>${label(215,138,'2πrh')}${label(325,140,'높이 h')}${label(215,255,'원 2개 + 직사각형 옆면')}${label(370,70,'각 원의 넓이 πr²')}</svg>`;
+        if(type==='cube-net')return `<svg ${common}>${[[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]].map(([x,y])=>`<rect x="${130+x*55}" y="${35+y*55}" width="55" height="55" fill="#4facfe25" stroke="#77d9ff" stroke-width="2"/>${label(157.5+x*55,69+y*55,'a²')}`).join('')}${label(260,245,'정사각형 6장 → 6a²')}</svg>`;
         if (['sphere','cylinder','cylinder-net','cone','cone-net'].includes(type)) {
             if (type === 'sphere') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
                 <ellipse cx="260" cy="137" rx="105" ry="30" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="7 6"/>
@@ -225,13 +211,14 @@ const MathFormulaApp = (() => {
             if (type === 'cube' || type === 'cube-net' || type === 'cuboid') {
                 const w=type==='cuboid'?250:180,h=145,x=135,y=85,dx=65,dy=-45;
                 return `<svg ${common}><path d="M${x} ${y} h${w} v${h} h-${w} Z M${x} ${y} l${dx} ${dy} h${w} l-${dx} ${-dy} M${x+w} ${y} l${dx} ${dy} v${h} l-${dx} ${-dy}" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
-                    ${label(x+w/2,y+h+26,'a')}${label(x+w+dx+18,y+h/2,'c')}${type==='cuboid'?label(x+w+30,y-10,'b'):''}</svg>`;
+                    ${label(x+w/2,y+h+26,'a')}${label(x+w+dx+18,y+h/2,type==='cuboid'?'c':'a')}${type==='cuboid'?label(x+w+30,y-10,'b'):''}</svg>`;
             }
-            const tetra=type.startsWith('tetrahedron');
-            const base=tetra?'M115 220 L405 220 L330 120 Z':'M115 220 L405 220 L350 145 L170 145 Z';
-            return `<svg ${common}><path d="${base} M260 30 L115 220 M260 30 L405 220 M260 30 L${tetra?'330 120':'350 145'} M260 30 L${tetra?'':'170 145'}" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="260" y1="30" x2="260" y2="180" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                ${label(278,112,'h','#ffd166')}${label(260,250,'a')}</svg>`;
+            const tetra=type.startsWith('tetrahedron')||type==='pyramid';
+            const base=tetra?'M115 220 L405 220 L330 120 Z':'M115 220 L405 220 L350 145 L60 145 Z';
+            const apexX=tetra?850/3:232.5, footY=tetra?560/3:182.5;
+            return `<svg ${common}><path d="${base} M${apexX} 30L115 220 M${apexX} 30L405 220 M${apexX} 30L${tetra?'330 120':'350 145'} ${tetra?'':`M${apexX} 30L60 145`}" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
+                <line x1="${apexX}" y1="30" x2="${apexX}" y2="${footY}" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
+                ${label(apexX+18,112,'h','#ffd166')}${label(260,250,'a')}</svg>`;
         }
         const isHeight = type === 'equilateral-height';
         const isGeneral = type === 'triangle-area';
@@ -343,8 +330,8 @@ const MathFormulaApp = (() => {
                 <h2>${item.title}</h2>
                 <div class="curriculum-row">${item.curriculum.map(tag => `<span>${tag}</span>`).join('')}</div>
                 <p class="lesson-summary">${item.summary}</p>
-                <div class="formula-display">${math(item.formula)}</div>
-                <div class="diagram-box">${diagramSvg(item.diagram)}</div>
+                <div class="formula-display">${(item.formulaLines || [item.formula]).map(math).join('')}</div>
+                <div class="diagram-box">${window.MathFormulaVisuals?.render(item) || diagramSvg(item.diagram, item)}${item.number<61?'<p class="diagram-caption">기호와 위치 관계를 보여 주는 개념도입니다. 아래 숫자 예제의 길이 비율과는 다를 수 있습니다.</p>':''}</div>
 
                 <section class="content-section">
                     <h3>🔤 기호부터 천천히 읽기</h3>
