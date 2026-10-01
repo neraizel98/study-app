@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261001-update-banner';
+    const APP_VERSION = '20261001-mock-exam-card';
 
     (async function () {
         try {

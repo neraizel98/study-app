@@ -506,7 +506,7 @@
                 const metadata = report.metadata || {};
                 const attempts = metadata.initialAttempts || metadata.attempts || [];
                 const line = document.createElement('p');
-                line.textContent = `${metadata.examTraining?"[시험형 연습] ":""}${labels[metadata.assessmentSubject || report.subject] || report.subject}: ${report.initialScore}/${report.totalQuestions} 정답 · 실제 ${metadata.actualCount ?? report.totalQuestions}/${metadata.requestedCount ?? report.totalQuestions}문항 · ${attempts.length}개 답안 확인${metadata.periodCounts&&!metadata.examTraining?` · 이번 주 ${metadata.periodCounts.current} / 누적 ${metadata.periodCounts.previous}`:''}`;
+                line.textContent = `${metadata.examTraining?"[학습 모의고사] ":""}${labels[metadata.assessmentSubject || report.subject] || report.subject}: ${report.initialScore}/${report.totalQuestions} 정답 · 실제 ${metadata.actualCount ?? report.totalQuestions}/${metadata.requestedCount ?? report.totalQuestions}문항 · ${attempts.length}개 답안 확인${metadata.periodCounts&&!metadata.examTraining?` · 이번 주 ${metadata.periodCounts.current} / 누적 ${metadata.periodCounts.previous}`:''}`;
                 panel.append(line);
                 attempts.filter(attempt => !attempt.correct).forEach(attempt => {
                     const context = attempt.context || metadata;

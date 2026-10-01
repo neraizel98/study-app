@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-update-banner';
+const CACHE_NAME = 'smart-study-20261001-mock-exam-card';
 
 try {
     importScripts('./firebase-config.js');

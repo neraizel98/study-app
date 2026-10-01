@@ -14,7 +14,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
 </main>
 <script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261001-update-banner"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261001-mock-exam-card"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
 <script src="EnglishReadingData.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script><script src="learning-session.js"></script><script src="EnglishGrammarQuiz.js"></script><script src="quiz-registry.js"></script><script src="MathFormulaQuiz.js"></script><script src="MathFormulaQuizExtra.js"></script><script src="MathFormulaQuizVolume2.js"></script><script src="MathFormulaQuizVolume3.js"></script><script src="MathFormulaQuizVolume4.js"></script><script src="weekly-assessment.js"></script><script src="weekly-assessment-expanded.js"></script><script src="exam-training.js"></script>
 <script>
 (async function(){
@@ -32,7 +32,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     $('back').href=practice?'today.html':'index.html';
     $('title').textContent=practice?`${names[task.subject]} 문항 연습`:'주간 학습 확인';
     $('intro').textContent=practice?'선택한 단원의 문항으로 연습합니다. 답안은 이 기기에 저장되어 이어 풀 수 있습니다.':'7개 활동을 확인합니다. 활동별 최대 5문항 중 이번 주 3문항, 이전 4주 2문항입니다. 학습 범위가 부족하면 문항을 줄이며, 기존 지문·예문의 재확인을 새 상황 평가로 보지 않습니다.';
-    if(exam){$('title').textContent='중학교 준비 · 시험형 연습';$('intro').textContent='국어 사실·추론, 영어 달 관찰 독해, 초6 비례식을 새로운 상황에서 확인합니다. A/B형 각각 최대 9문항 · 15분. 배운 범위만 출제하며 시간이 지나면 현재 답안으로 제출합니다. 화면을 닫아도 제한 시간은 흐릅니다. 단답은 자동 채점하고 풀이 설명은 해설과 직접 비교합니다. 학교 성적·등수를 예측하는 검사는 아닙니다.';}
+    if(exam){$('title').textContent='중학교 준비 · 학습 모의고사';$('intro').textContent='국어 사실·추론, 영어 달 관찰 독해, 초6 비례식을 새로운 상황에서 확인합니다. A/B형 각각 최대 9문항 · 15분. 배운 범위만 출제하며 시간이 지나면 현재 답안으로 제출합니다. 화면을 닫아도 제한 시간은 흐릅니다. 단답은 자동 채점하고 풀이 설명은 해설과 직접 비교합니다. 학교 성적·등수를 예측하는 검사는 아닙니다.';}
     let draft=session.get(user,sessionId),groups;
     if(exam&&!draft&&!params.has('start')){const box=$('empty');box.hidden=false;box.textContent='완료한 퀴즈 기록이 있는 단원만 포함됩니다. 국어 r4 · 영어 독해 er1 · 수학 초6 2학기 4단원. 준비되면 시작하세요.';for(const f of ['A','B']){const a=document.createElement('a');a.href=`?mode=exam&form=${f}&start=1`;a.textContent=` ${f}형 시작 (15분) `;a.style.display='block';a.style.padding='14px';box.append(a);}return;}
     if(!draft){
@@ -134,7 +134,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
                 });
                 if(existing)continue;
                 saveQuizResult(reportId,subject==='math_formula'?'math':subject,
-                    practice?`${names[subject]} 오늘 연습`:`${names[subject]} ${exam?'시험형 연습 '+form:'주간 확인'}`,questions.length,score,score,
+                    practice?`${names[subject]} 오늘 연습`:`${names[subject]} ${exam?'학습 모의고사 '+form:'주간 확인'}`,questions.length,score,score,
                     Math.floor(snapshot.subjectSeconds[subject]||0),score===questions.length,
                     {...context,...(subject==='math_formula'?{source:'math-formula',assessmentSubject:'math_formula',formulaNumber:Number(context.unitId.replace('formula-',''))}:{}),assessment:!practice,practice,examTraining:exam,examForm:exam?form:null,timeLimitSeconds:exam?900:null,timedOut:exam&&expired(),periodCounts:{current:questions.filter(q=>q.period==='current').length,previous:questions.filter(q=>q.period==='previous').length},assessmentId:practice?null:sessionId,
                         planId:plan?.id||null,taskId:task?.id||null,
@@ -149,7 +149,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
         }catch(error){console.error(error);$('saved').textContent='기록을 저장하지 못했습니다. 기기 기록을 확인한 뒤 다시 제출해 주세요.';}
         finally{submitting=false;$('submit').disabled=false;render();}
     };
-    if(exam){const remaining=document.createElement('p');remaining.id='examTimer';remaining.className='muted';$('intro').after(remaining);const tick=()=>{const sec=Math.max(0,Math.ceil((draft.examDeadline-Date.now())/1000));remaining.textContent=draft.submittedAt?'시험형 연습 제출 완료':`남은 시간 ${Math.floor(sec/60)}분 ${sec%60}초 · 풀이 설명은 자동 채점하지 않습니다.`;if(expired()&&!draft.submittedAt&&!submitting)$('submit').onclick();};setInterval(tick,1000);tick();}
+    if(exam){const remaining=document.createElement('p');remaining.id='examTimer';remaining.className='muted';$('intro').after(remaining);const tick=()=>{const sec=Math.max(0,Math.ceil((draft.examDeadline-Date.now())/1000));remaining.textContent=draft.submittedAt?'학습 모의고사 제출 완료':`남은 시간 ${Math.floor(sec/60)}분 ${sec%60}초 · 풀이 설명은 자동 채점하지 않습니다.`;if(expired()&&!draft.submittedAt&&!submitting)$('submit').onclick();};setInterval(tick,1000);tick();}
     render();
 })().catch(error=>{console.error(error);document.getElementById('empty').hidden=false;document.getElementById('empty').textContent='학습을 열지 못했습니다. 새로고침해 주세요.';});
 </script></body></html>
