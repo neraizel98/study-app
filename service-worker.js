@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-formula120';
+const CACHE_NAME = 'smart-study-20261001-update-banner';
 
 try {
     importScripts('./firebase-config.js');
