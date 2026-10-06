@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261007-english-warmup';
+const CACHE_NAME = 'smart-study-20261007-warmup-audit';
 
 try {
     importScripts('./firebase-config.js');
