@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261001-formula-visuals';
+const CACHE_NAME = 'smart-study-20261007-home-center';
 
 try {
     importScripts('./firebase-config.js');

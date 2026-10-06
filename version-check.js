@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261001-formula-visuals';
+    const APP_VERSION = '20261007-home-center';
 
     (async function () {
         try {
