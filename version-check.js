@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261007-daily-flow';
+    const APP_VERSION = '20261007-english-warmup';
 
     (async function () {
         try {

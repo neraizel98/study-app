@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261007-daily-flow';
+const CACHE_NAME = 'smart-study-20261007-english-warmup';
 
 try {
     importScripts('./firebase-config.js');
@@ -65,6 +65,8 @@ const STATIC_ASSETS = [
     './english_course.html',
     './EnglishCourse.js',
     './english-course-ui.js',
+    './english-warmup.js',
+    './english-warmup-ui.js',
     './EnglishReadingData.js',
     './EnglishReadingPolicy.js',
     './EnglishReadingApp.js',

@@ -178,6 +178,13 @@
             try{root.sessionStorage.setItem('SmartStudy_TodayFlow',JSON.stringify({user, date:plan.date, taskId:task.id}));}catch(_){}
             return task;
         },
+        entryUrl(user,task){
+            if(['english','grammar','english_reading'].includes(task.subject)&&task.status!=='completed'){
+                const warmup=local.getPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(user)}`,null)?.current;
+                if(warmup?.date!==today()||warmup.items?.length!==3||warmup.items.some(q=>q.response===undefined))return 'english_course.html#englishWarmup';
+            }
+            return task.targetUrl;
+        },
         refreshEvidence(user){
             const plan=this.getPlan(user);if(!plan)return null;
             const reports=local.listReports(user);

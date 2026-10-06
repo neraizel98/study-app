@@ -24,7 +24,7 @@
         note.textContent=task.status==='completed'?(next?`${names[task.subject]} 제출을 확인했어요. 다음은 ${names[next.subject]}입니다.`:completed===plan.tasks.length?'오늘 계획의 퀴즈를 모두 제출했어요. 수고했어요!':'남은 활동의 학습 범위를 확인해야 해요. 오늘 계획으로 돌아가 주세요.'):`현재 활동: ${names[task.subject]} · ${task.context.title}. 내용을 학습한 뒤 해당 범위의 퀴즈를 끝까지 풀고 제출해 주세요. 첫 퀴즈에서 틀려도 제출하면 다음 활동으로 이어갈 수 있어요.`;
         panel.append(note);
         if(task.status==='completed'&&next){
-            const go=document.createElement('a');go.href=next.targetUrl;go.textContent=`다음 활동 · ${names[next.subject]} →`;
+            const go=document.createElement('a');go.href=api.entryUrl?api.entryUrl(user,next):next.targetUrl;go.textContent=`다음 활동 · ${names[next.subject]} →`;
             go.style.cssText='display:inline-block;padding:10px 14px;border-radius:8px;background:#79beff;color:#071a2e;font-weight:700;text-decoration:none;margin:4px 12px 4px 0';
             go.onclick=()=>api.startTask(user,next.id);panel.append(go);
         }

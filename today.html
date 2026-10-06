@@ -44,7 +44,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
         $('overview').innerHTML=`<span>${escape(plan.date)} · ${plan.budget}분 목표</span><span>실제 활동 ${Math.floor(totalActual/60)}분</span><span>제출 확인 ${completed}/${plan.tasks.length}활동</span>`;
         const next=SmartStudy.LearningProgress.nextTask(plan.tasks);
         const unavailable=plan.tasks.filter(t=>!t.context&&t.status!=='completed').length;
-        $('nextActivity').innerHTML=`<span class="focus-eyebrow">TODAY · ${escape(plan.date)}</span><h2>${next?`${escape(names[next.subject])}부터 이어가요`:unavailable?'학습 범위를 확인해 주세요':'오늘 계획의 퀴즈를 모두 제출했어요'}</h2><p>${next?escape(next.context.title):unavailable?'지원 자료가 없는 활동은 완료 처리하지 않았습니다. 아래 활동에서 확인해 주세요.':'남은 시간에는 복습하거나 관심 있는 과목을 더 공부할 수 있어요.'}</p><progress class="focus-progress" max="${plan.tasks.length}" value="${completed}" aria-label="오늘 퀴즈 제출 활동 수"></progress><span class="focus-caption">${completed}/${plan.tasks.length}활동 제출 · 실제 학습 ${Math.floor(totalActual/60)}/${plan.budget}분</span>${next?`<a class="focus-primary" id="continueLearning" href="${escape(next.targetUrl)}">${next.status==='in_progress'?'이어서 학습':'학습 시작'} <span aria-hidden="true">→</span></a>`:'<a class="focus-primary" href="index.html">과목별 자유 학습 →</a>'}`;
+        $('nextActivity').innerHTML=`<span class="focus-eyebrow">TODAY · ${escape(plan.date)}</span><h2>${next?`${escape(names[next.subject])}부터 이어가요`:unavailable?'학습 범위를 확인해 주세요':'오늘 계획의 퀴즈를 모두 제출했어요'}</h2><p>${next?escape(next.context.title):unavailable?'지원 자료가 없는 활동은 완료 처리하지 않았습니다. 아래 활동에서 확인해 주세요.':'남은 시간에는 복습하거나 관심 있는 과목을 더 공부할 수 있어요.'}</p><progress class="focus-progress" max="${plan.tasks.length}" value="${completed}" aria-label="오늘 퀴즈 제출 활동 수"></progress><span class="focus-caption">${completed}/${plan.tasks.length}활동 제출 · 실제 학습 ${Math.floor(totalActual/60)}/${plan.budget}분</span>${next?`<a class="focus-primary" id="continueLearning" href="${escape(api.entryUrl(user,next))}">${next.status==='in_progress'?'이어서 학습':'학습 시작'} <span aria-hidden="true">→</span></a>`:'<a class="focus-primary" href="index.html">과목별 자유 학습 →</a>'}`;
         if(next)$('continueLearning').onclick=()=>api.startTask(user,next.id);
         const container=$('tasks');container.replaceChildren();
         for(const task of plan.tasks){
@@ -68,7 +68,7 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
             if(!task.context&&!done){
                 const note=document.createElement('p');note.className='muted';note.textContent='현재 설정에 맞는 단원이 없어 이 과목 과제를 시작할 수 없습니다. 보호자 설정을 확인해 주세요.';actions.append(note);
             }else{
-                const go=document.createElement('a');go.className='go';go.href=task.targetUrl;go.textContent=done?'내용 계속 학습':'내용 학습';go.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(go);
+                const go=document.createElement('a');go.className='go';go.href=api.entryUrl(user,task);go.textContent=done?'내용 계속 학습':'내용 학습';go.onclick=()=>{if(!done)api.startTask(user,task.id);};actions.append(go);
                 if(['reading','english','math'].includes(task.subject)){
                     const practice=document.createElement('a');practice.className='go';
                     const run=done?`&run=${Date.now()}`:'';
