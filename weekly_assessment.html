@@ -14,7 +14,7 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
 </main>
 <script src="utils.js"></script><script src="VocabEng.js"></script><script src="MathQuizData.js"></script><script src="MathQuizMiddle1.js"></script><script src="MathQuizMiddle1Semester2.js"></script><script src="ReadingPassages.js"></script>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261007-home-center"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261007-daily-flow"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
 <script src="EnglishReadingData.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script><script src="learning-session.js"></script><script src="EnglishGrammarQuiz.js"></script><script src="quiz-registry.js"></script><script src="MathFormulaQuiz.js"></script><script src="MathFormulaQuizExtra.js"></script><script src="MathFormulaQuizVolume2.js"></script><script src="MathFormulaQuizVolume3.js"></script><script src="MathFormulaQuizVolume4.js"></script><script src="weekly-assessment.js"></script><script src="weekly-assessment-expanded.js"></script><script src="exam-training.js"></script>
 <script>
 (async function(){
@@ -65,7 +65,12 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     for(const subject of practice?[task.subject]:exam?["reading","english_reading","math"]:assessment.subjects){
         const label=document.createElement('span');label.textContent=exam?`${names[subject]} · ${actual[subject]?actual[subject]+'문항':'이번 시험 제외'}`:`${names[subject]} ${actual[subject]||0}/${requested[subject]||5}문항`;if(exam&&!actual[subject])label.className='empty-subject';$('counts').append(label);
     }
-    if(!draft.questions.length){$('empty').hidden=false;$('empty').textContent='최근 학습 범위에서 낼 수 있는 검증 문항이 없습니다. 학습 후 다시 확인해 주세요.';return;}
+    if(!draft.questions.length){
+        $('empty').hidden=false;
+        $('empty').textContent=practice?'이 단원은 별도 연습 문항이 아직 없습니다. 아래 버튼으로 과목 화면에서 학습하고 퀴즈를 제출하면 오늘 계획을 이어갈 수 있어요.':'최근 학습 범위에서 낼 수 있는 검증 문항이 없습니다. 학습 후 다시 확인해 주세요.';
+        if(practice&&task?.targetUrl){const go=document.createElement('a');go.href=task.targetUrl;go.className='exam-start-link';go.style.cssText='display:block;margin-top:14px;padding:12px;background:#79beff;color:#071a2e;border-radius:8px;font-weight:700';go.textContent='과목 학습 · 퀴즈로 이어가기 →';go.onclick=()=>planApi.startTask(user,task.id);$('empty').append(go);}
+        return;
+    }
     const ownsSession=()=>SmartStudy.LocalRepository.getActiveUser()===draft.userId;
     const accountGuard=()=>{if(ownsSession())return true;$('work').hidden=true;$('empty').hidden=false;$('empty').textContent='계정이 바뀌었습니다. 원래 학습자 계정으로 돌아가 주세요.';return false;};
     window.addEventListener('storage',accountGuard);
@@ -182,4 +187,4 @@ button{font:inherit;background:#4facfe;color:#09223a;border:0;border-radius:10px
     }
     render();
 })().catch(error=>{console.error(error);document.getElementById('empty').hidden=false;document.getElementById('empty').textContent='학습을 열지 못했습니다. 새로고침해 주세요.';});
-</script></body></html>
+</script><script src="today-flow.js?v=20261007-flow"></script></body></html>

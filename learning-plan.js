@@ -175,6 +175,7 @@
             const plan=this.getPlan(user),task=plan?.tasks.find(item=>item.id===taskId);
             if(!task||!task.context)throw new Error('먼저 학습할 단원을 선택해 주세요.');
             if(task.status==='ready'){task.status='in_progress';task.startedAt=Date.now();this.savePlan(plan);}
+            try{root.sessionStorage.setItem('SmartStudy_TodayFlow',JSON.stringify({user, date:plan.date, taskId:task.id}));}catch(_){}
             return task;
         },
         refreshEvidence(user){
