@@ -21,9 +21,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
         rel="stylesheet">
-</head>
+<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"></head>
 
-<body>
+<body class="subject-study">
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
         <div class="blob blob-2"></div>
@@ -244,7 +244,7 @@
     <script src="VocabEng.js?v=20260911-content-accuracy"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261007-warmup-audit"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261007-learning-ui"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
@@ -253,8 +253,8 @@
             try {
                 // 1. UI 초기화
                 AppUI.init({
-                    title: 'English Vocab Mastery',
-                    subtitle: '시제와 의미를 동시에 마스터하는 스마트 앱'
+                    title: '영어 단어',
+                    subtitle: '뜻을 떠올리고, 예문 속에서 단어를 익혀요.'
                 });
 
                 // 2. 엔진 초기화 (VocabEng.js가 로드된 후 실행 보장)

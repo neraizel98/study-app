@@ -1,0 +1,33 @@
+/* Keep the daily path inside each subject's content column. */
+.subject-study{display:block;background:#0b1220;--bg:#0b1220;--card-bg:#141f31;--card-border:#2b3b53;--text:#edf3fc;--text-sub:#a7b8cf;--accent:#74b6ff;--accent2:#74b6ff}
+.subject-study .container{max-width:800px;margin-inline:auto}
+.subject-study .bg-blobs{display:none}
+.subject-study .nav-row-bottom .page-main-title{font-size:clamp(1.7rem,5vw,2.1rem);letter-spacing:-.04em;line-height:1.4;background:none;-webkit-text-fill-color:currentColor;color:#edf3fc}
+.subject-study .nav-row-top{flex-wrap:wrap;gap:12px}.subject-study .nav-right{min-width:0;flex-wrap:wrap}
+.subject-study .study-card{border-radius:18px;box-shadow:none}
+.subject-study .mode-btn.active{box-shadow:none}
+.subject-study .nav-row-bottom .page-sub-title{color:#a7b8cf;font-size:.9rem}
+.subject-course-return{display:flex;align-items:center;justify-content:center;min-height:44px;margin:24px 0 8px;padding:12px 16px;background:#1c3049;color:#d5e6fb;border:1px solid #3d5674;border-radius:10px;text-decoration:none;font-size:14px;font-weight:700}
+#todayFlow{box-sizing:border-box;width:100%;min-width:0;margin:0 0 24px;padding:20px;background:#142238;border:1px solid #334d6a;border-radius:16px;color:#edf4ff;font:400 14px/1.6 'Noto Sans KR',system-ui,sans-serif;text-align:left}
+#todayFlow .today-flow-head{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:12px}
+#todayFlow .today-flow-title{margin:0;font-size:16px;font-weight:750;line-height:1.5;letter-spacing:-.025em;color:#edf4ff;min-width:0}
+#todayFlow .today-flow-count{flex-shrink:0;border-radius:6px;padding:3px 8px;background:#243851;color:#bbd4f4;font-size:12px;white-space:nowrap}
+#todayFlow .today-flow-progress{display:block;width:100%;height:6px;appearance:none;border:0;border-radius:6px;overflow:hidden;background:#27384d;accent-color:#79bbff;margin:0 0 12px}
+#todayFlow .today-flow-progress::-webkit-progress-bar{background:#27384d;border-radius:6px}
+#todayFlow .today-flow-progress::-webkit-progress-value{background:#79bbff;border-radius:6px}
+#todayFlow .today-flow-progress::-moz-progress-bar{background:#79bbff;border-radius:6px}
+#todayFlow .today-flow-context{margin:0 0 14px;color:#b8cbe2;font-size:14px;line-height:1.65;overflow-wrap:anywhere}
+#todayFlow .today-flow-footer{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+#todayFlow .today-flow-help{min-width:0;flex:1;color:#a7bfdc;font-size:13px}
+#todayFlow .today-flow-help summary{cursor:pointer;min-height:44px;display:flex;align-items:center;gap:8px;list-style:none}
+#todayFlow .today-flow-help summary::-webkit-details-marker{display:none}
+#todayFlow .today-flow-help summary:before{content:'＋';font-size:16px}
+#todayFlow .today-flow-help[open] summary:before{content:'−'}
+#todayFlow .today-flow-help p{margin:4px 0 0;line-height:1.7;color:#b8cbe2}
+#todayFlow .today-flow-actions{display:flex;align-items:center;flex-wrap:wrap;justify-content:flex-end;gap:8px}
+#todayFlow .today-flow-actions a{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:10px 14px;border-radius:9px;text-decoration:none;font-size:13px;font-weight:700;line-height:1.5;text-align:center;box-sizing:border-box;overflow-wrap:anywhere}
+#todayFlow .today-flow-primary{background:#79bbff;color:#0b1c30;border:1px solid #79bbff}
+#todayFlow .today-flow-secondary{background:#1c3049;color:#d5e6fb;border:1px solid #3d5674}
+#todayFlow .today-flow-actions a:hover{filter:brightness(1.1)}
+#todayFlow :focus-visible{outline:3px solid #b6d8ff;outline-offset:3px}
+@media(max-width:520px){#todayFlow{padding:16px;margin-bottom:18px}#todayFlow .today-flow-head{align-items:flex-start;gap:8px}#todayFlow .today-flow-title{font-size:15px}#todayFlow .today-flow-count{font-size:11px}#todayFlow .today-flow-footer{flex-wrap:wrap}#todayFlow .today-flow-help{flex:1 1 120px}#todayFlow .today-flow-actions{flex:1 1 140px;justify-content:stretch}#todayFlow .today-flow-actions a{flex:1;min-width:0}}

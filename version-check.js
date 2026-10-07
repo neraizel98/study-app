@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261007-warmup-audit';
+    const APP_VERSION = '20261007-learning-ui';
 
     (async function () {
         try {

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261007-warmup-audit';
+const CACHE_NAME = 'smart-study-20261007-learning-ui';
 
 try {
     importScripts('./firebase-config.js');
@@ -134,6 +134,7 @@ const STATIC_ASSETS = [
     './learning-plan.js',
     './unified-learning.js',
     './today-flow.js',
+    './today-flow.css',
     './study-focus.css',
     './learning-session.js',
     './weekly-assessment.js',
