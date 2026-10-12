@@ -31,6 +31,8 @@ let quizSessionData = { id: null, total: 0, initialScore: null, currentScore: 0,
 let quizActiveTimer = null;
 let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 let showKoEx = false;
+let studyVocabularyBand = null;
+let studyVocabularyKey = "";
 let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
 
 // ============================================================
@@ -64,12 +66,13 @@ function updateCard() {
             return;
         }
     // 랜덤 순서 인덱스가 없으면 생성 (학습 모드용)
-    if (shuffledStudyIndices.length !== dataList.length) refreshStudyOrder();
+    if (!shuffledStudyIndices.length || studyVocabularyKey !== vocabularyBand().name + currentLevel) refreshStudyOrder();
+    currentIndex %= shuffledStudyIndices.length;
     
     const realIdx = shuffledStudyIndices[currentIndex];
     const d = dataList[realIdx];
     
-    wordIndexEl.textContent = `${currentIndex + 1} / ${dataList.length}`;
+    wordIndexEl.textContent = `${currentIndex + 1} / ${shuffledStudyIndices.length}${currentLevel === "level3" ? " · 중" + EnglishVocabularyProgress.grade(studyVocabularyBand) + " 단계" : ""}`;
     englishWordEl.textContent = d.word;
     pronunciationEl.textContent = d.pron || '';
     koreanMeaningEl.textContent = d.meaning;
@@ -109,7 +112,7 @@ function updateCard() {
                     <div class="phrasal-ex-box">
                         <div class="phrasal-ex-en">
                             <span>${pv.ex}</span>
-                            <span class="accent-listen-group"><button class="accent-listen-btn" onclick="speak('${pv.ex.replace(/'/g, "\\'")}', 'us')" title="미국식 예문 듣기">🇺🇸</button><button class="accent-listen-btn" onclick="speak('${pv.ex.replace(/'/g, "\\'")}', 'uk')" title="영국식 예문 듣기">🇬🇧</button></span>
+                            <span class="accent-listen-group"></span>
                         </div>
                         <div class="phrasal-ex-ko">${pv.exKo}</div>
                     </div>
@@ -129,18 +132,37 @@ function formatPhrase(p) {
     return p.replace(/^(\w+)\s+(.+)$/, '$1 <span class="particle-highlight">$2</span>');
 }
 
-function refreshStudyOrder() {
-    const len = vocabData[currentLevel].length;
-    shuffledStudyIndices = Utils.shuffle([...Array(len).keys()]);
+function vocabularyBand() {
+    if (currentLevel === 'level3' && window.EnglishVocabularyProgress && typeof LearningPolicy !== 'undefined') {
+        return EnglishVocabularyProgress.band(LocalRepository.listReports(UserSession.getActiveUser()),
+            (rows, subject, context) => LearningPolicy.evaluate(rows, subject, context));
+    }
+    return typeof LearningPolicy !== 'undefined' && typeof LocalRepository !== 'undefined'
+        ? LearningPolicy.evaluate(LocalRepository.listReports(UserSession.getActiveUser()), 'english', currentLevel)
+        : { name: 'foundation', score: null, wrongRatio: .3 };
 }
-
-function handleNext() { currentIndex = (currentIndex + 1) % vocabData[currentLevel].length; updateCard(); }
-function handlePrev() { currentIndex = (currentIndex - 1 + vocabData[currentLevel].length) % vocabData[currentLevel].length; updateCard(); }
+function vocabularyPool(band = currentQuizBand) {
+    return window.EnglishVocabularyProgress
+        ? EnglishVocabularyProgress.eligible(currentLevel, band)
+        : (window.vocabData || {})[currentLevel] || [];
+}
+function refreshStudyOrder() {
+    studyVocabularyBand = vocabularyBand();
+    studyVocabularyKey = studyVocabularyBand.name + currentLevel;
+    const data = vocabData[currentLevel];
+    const words = window.EnglishVocabularyProgress
+        ? EnglishVocabularyProgress.focused(currentLevel, studyVocabularyBand, items => Utils.shuffle(items))
+        : Utils.shuffle([...data]);
+    shuffledStudyIndices = words.map(word => data.indexOf(word));
+    currentIndex = 0;
+}
+function handleNext() { currentIndex = (currentIndex + 1) % shuffledStudyIndices.length; updateCard(); }
+function handlePrev() { currentIndex = (currentIndex - 1 + shuffledStudyIndices.length) % shuffledStudyIndices.length; updateCard(); }
 
 // ============================================================
 // TTS
 // ============================================================
-function speak(t, accent = 'us') { return window.EnglishSpeech?.speak(t, accent); }
+function speak(t, accent = 'us') { return window.EnglishSpeech?.speak(t, 'us'); }
 
 // ============================================================
 // UTILS
@@ -173,7 +195,7 @@ function getVerbChoices(d, tenseIdx, exactCorrect) {
 }
 
 function getWordChoices(cur) {
-    const dataList = (window.vocabData || {})[currentLevel] || [];
+    const dataList = vocabularyPool();
     const others = Utils.shuffle(dataList.filter(w => w.word !== cur.word && !isVerb(w))).slice(0, 3);
     if (others.length < 3) {
         const fallback = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).slice(0, 3 - others.length);
@@ -279,11 +301,22 @@ function startQuiz(wordList) {
                 quizWords = wrongAnswers.map(word => fullData.find(item => item && item.word === word)).filter(x => x);
                 quizWords = Utils.shuffle(quizWords);
             } else {
-                const dataList = (window.vocabData || {})[currentLevel] || [];
                 let challengeWords = [];
-                currentQuizBand = typeof AdaptiveQuiz !== 'undefined'
+                currentQuizBand = currentLevel === 'level3' ? vocabularyBand() : typeof AdaptiveQuiz !== 'undefined'
                     ? AdaptiveQuiz.getBand('english', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
-                    : { name: 'standard', score: null, wrongRatio: 0.45 };
+                    : { name: 'foundation', score: null, wrongRatio: 0.3 };
+                const dataList = window.EnglishVocabularyProgress
+                    ? EnglishVocabularyProgress.focused(currentLevel, currentQuizBand, items => Utils.shuffle(items), Math.floor(QUIZ_COUNT * .3))
+                    : vocabularyPool();
+                if (currentLevel === 'level3') {
+                    let notice = document.getElementById('adaptiveNotice');
+                    if (!notice) {
+                        notice = document.createElement('p'); notice.id = 'adaptiveNotice';
+                        notice.style.cssText = 'padding:12px;text-align:center;color:inherit;font-size:.9rem';
+                        notice.setAttribute('role', 'status'); quizView.prepend(notice);
+                    }
+                    notice.textContent = `중${EnglishVocabularyProgress.grade(currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
+                }
                 const baseCount = QUIZ_COUNT - challengeWords.length;
                 const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
                 const baseWords = typeof AdaptiveQuiz !== 'undefined'
@@ -369,7 +402,7 @@ function showQuestion() {
             quizChoicesParent.style.display = 'grid';
             
             quizWordEl.textContent = cur.word;
-            const dataList = (window.vocabData || {})[currentLevel] || [];
+            const dataList = vocabularyPool();
             const seenMeanings = new Set([cur.meaning]);
             const wrong = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).filter(w => {
                 if (seenMeanings.has(w.meaning)) return false;
@@ -438,7 +471,7 @@ function showQuestion() {
             tenseBadgeEl.textContent = '🔥 구동사 퀴즈';
             
             let correctAnswer, choices, qText, contextHtml;
-            const dataList = (window.vocabData || {})[currentLevel] || [];
+            const dataList = vocabularyPool();
             const others = Utils.shuffle(dataList.filter(w => w !== cur)).slice(0, 3);
 
             if (quizPhase === 3) {
@@ -859,6 +892,7 @@ function showResult() {
             review: isReviewMode,
             unitId: currentLevel,
             unitTitle: lvName,
+            adaptiveBandSnapshot: currentQuizBand.name,
             attempts: questionResults.map(r => ({
                 question: r.word,
                 hintUsed: Boolean(r.hintUsed),
@@ -1039,7 +1073,8 @@ window.AppEngine = {
             if (match) {
                 currentLevel = match.level;
                 levelBtns.forEach(button => button.classList.toggle('active', button.dataset.level === currentLevel));
-                shuffledStudyIndices = [match.index, ...vocabData[currentLevel].map((_, index) => index).filter(index => index !== match.index)];
+                refreshStudyOrder();
+                shuffledStudyIndices = [match.index, ...shuffledStudyIndices.filter(index => index !== match.index)];
                 currentIndex = 0;
             }
         }

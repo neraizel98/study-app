@@ -31,6 +31,7 @@
     function desktopVoice(accentId) {
         if (isMobileDevice() || !('speechSynthesis' in window)) return null;
         return window.speechSynthesis.getVoices()
+            .filter(voice => String(voice.lang || '').replace('_', '-').toLowerCase() === ACCENTS[accentId].lang.toLowerCase())
             .filter(voice => voiceScore(voice, accentId) > 0)
             .sort((a, b) => voiceScore(b, accentId) - voiceScore(a, accentId))[0] || null;
     }

@@ -661,3 +661,1007 @@ var vocabData = {
         { word: 'vulnerable', pron: '/ˈvʌlnərəbl/', pos: 'adj.', meaning: '취약한', def: 'exposed to the possibility of being harmed', ex: 'Children are vulnerable to illness.', exKo: '아이들은 질병에 취약하다.', tenseExs: ['Children are vulnerable.', 'The city was vulnerable.', 'The system will be vulnerable.'] }
     ]
 };
+
+// Original examples for gradual middle-school vocabulary practice.
+vocabData.level3.push(...[
+  {
+    "word": "classmate",
+    "pron": "/ˈklæsmeɪt/",
+    "pos": "n.",
+    "meaning": "반 친구",
+    "def": "a student in the same class",
+    "ex": "My classmate sits next to me.",
+    "exKo": "내 반 친구는 내 옆에 앉는다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "classroom",
+    "pron": "/ˈklæsruːm/",
+    "pos": "n.",
+    "meaning": "교실",
+    "def": "a room where students learn",
+    "ex": "Our classroom has two windows.",
+    "exKo": "우리 교실에는 창문이 두 개 있다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "textbook",
+    "pron": "/ˈtekstbʊk/",
+    "pos": "n.",
+    "meaning": "교과서",
+    "def": "a book used for a school subject",
+    "ex": "I put my textbook in my bag.",
+    "exKo": "나는 교과서를 가방에 넣었다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "semester",
+    "pron": "/səˈmestər/",
+    "pos": "n.",
+    "meaning": "학기",
+    "def": "one part of a school year",
+    "ex": "The new semester starts in March.",
+    "exKo": "새 학기는 3월에 시작한다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "grade",
+    "pron": "/ɡreɪd/",
+    "pos": "n.",
+    "meaning": "학년, 성적",
+    "def": "a school year or a mark for schoolwork",
+    "ex": "My brother is in the seventh grade.",
+    "exKo": "내 남동생은 7학년이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "exam",
+    "pron": "/ɪɡˈzæm/",
+    "pos": "n.",
+    "meaning": "시험",
+    "def": "a test of what you know",
+    "ex": "We have an English exam today.",
+    "exKo": "우리는 오늘 영어 시험이 있다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "club",
+    "pron": "/klʌb/",
+    "pos": "n.",
+    "meaning": "동아리, 모임",
+    "def": "a group of people with the same interest",
+    "ex": "I joined the music club.",
+    "exKo": "나는 음악 동아리에 가입했다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "dictionary",
+    "pron": "/ˈdɪkʃəneri/",
+    "pos": "n.",
+    "meaning": "사전",
+    "def": "a book that explains words",
+    "ex": "I found the word in a dictionary.",
+    "exKo": "나는 사전에서 그 단어를 찾았다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "hobby",
+    "pron": "/ˈhɑːbi/",
+    "pos": "n.",
+    "meaning": "취미",
+    "def": "an activity you enjoy in your free time",
+    "ex": "My hobby is drawing animals.",
+    "exKo": "내 취미는 동물을 그리는 것이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "goal",
+    "pron": "/ɡoʊl/",
+    "pos": "n.",
+    "meaning": "목표",
+    "def": "something you want to achieve",
+    "ex": "My goal is to read ten books.",
+    "exKo": "내 목표는 책 열 권을 읽는 것이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "neighbor",
+    "pron": "/ˈneɪbər/",
+    "pos": "n.",
+    "meaning": "이웃",
+    "def": "a person who lives near you",
+    "ex": "Our neighbor has a small dog.",
+    "exKo": "우리 이웃은 작은 개를 키운다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "teenager",
+    "pron": "/ˈtiːneɪdʒər/",
+    "pos": "n.",
+    "meaning": "십 대 청소년",
+    "def": "a person aged thirteen to nineteen",
+    "ex": "My sister is a teenager.",
+    "exKo": "내 누나는 십 대 청소년이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "adult",
+    "pron": "/əˈdʌlt/",
+    "pos": "n.",
+    "meaning": "어른",
+    "def": "a person who has grown up",
+    "ex": "Ask an adult for help.",
+    "exKo": "어른에게 도움을 요청해라.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "friendship",
+    "pron": "/ˈfrendʃɪp/",
+    "pos": "n.",
+    "meaning": "우정",
+    "def": "the relationship between friends",
+    "ex": "Our friendship began at school.",
+    "exKo": "우리의 우정은 학교에서 시작되었다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "airport",
+    "pron": "/ˈerpɔːrt/",
+    "pos": "n.",
+    "meaning": "공항",
+    "def": "a place where planes arrive and leave",
+    "ex": "We met Dad at the airport.",
+    "exKo": "우리는 공항에서 아빠를 만났다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "passport",
+    "pron": "/ˈpæspɔːrt/",
+    "pos": "n.",
+    "meaning": "여권",
+    "def": "an official document used for travel abroad",
+    "ex": "Keep your passport in a safe place.",
+    "exKo": "여권을 안전한 곳에 보관해라.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "bicycle",
+    "pron": "/ˈbaɪsɪkəl/",
+    "pos": "n.",
+    "meaning": "자전거",
+    "def": "a vehicle with two wheels and pedals",
+    "ex": "I ride my bicycle to the park.",
+    "exKo": "나는 자전거를 타고 공원에 간다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "helmet",
+    "pron": "/ˈhelmɪt/",
+    "pos": "n.",
+    "meaning": "헬멧",
+    "def": "a hard hat that protects your head",
+    "ex": "Wear a helmet when you ride.",
+    "exKo": "탈 때 헬멧을 써라.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "subway",
+    "pron": "/ˈsʌbweɪ/",
+    "pos": "n.",
+    "meaning": "지하철",
+    "def": "a train system that runs below a city",
+    "ex": "We took the subway to the museum.",
+    "exKo": "우리는 지하철을 타고 박물관에 갔다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "medicine",
+    "pron": "/ˈmedɪsən/",
+    "pos": "n.",
+    "meaning": "약",
+    "def": "something used to treat an illness",
+    "ex": "Take this medicine after lunch.",
+    "exKo": "점심 식사 후에 이 약을 먹어라.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "fever",
+    "pron": "/ˈfiːvər/",
+    "pos": "n.",
+    "meaning": "열",
+    "def": "a body temperature that is too high",
+    "ex": "She stayed home because she had a fever.",
+    "exKo": "그녀는 열이 나서 집에 있었다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "headache",
+    "pron": "/ˈhedeɪk/",
+    "pos": "n.",
+    "meaning": "두통",
+    "def": "pain in your head",
+    "ex": "I have a headache today.",
+    "exKo": "나는 오늘 머리가 아프다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "dessert",
+    "pron": "/dɪˈzɜːrt/",
+    "pos": "n.",
+    "meaning": "후식",
+    "def": "sweet food eaten after a meal",
+    "ex": "We had fruit for dessert.",
+    "exKo": "우리는 후식으로 과일을 먹었다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "recipe",
+    "pron": "/ˈresəpi/",
+    "pos": "n.",
+    "meaning": "요리법",
+    "def": "instructions for making food",
+    "ex": "This recipe is easy to follow.",
+    "exKo": "이 요리법은 따라 하기 쉽다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "battery",
+    "pron": "/ˈbætəri/",
+    "pos": "n.",
+    "meaning": "건전지, 배터리",
+    "def": "something that stores power for a device",
+    "ex": "The clock needs a new battery.",
+    "exKo": "그 시계에는 새 건전지가 필요하다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "keyboard",
+    "pron": "/ˈkiːbɔːrd/",
+    "pos": "n.",
+    "meaning": "키보드",
+    "def": "a set of keys used for typing",
+    "ex": "My keyboard is on the desk.",
+    "exKo": "내 키보드는 책상 위에 있다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "email",
+    "pron": "/ˈiːmeɪl/",
+    "pos": "n.",
+    "meaning": "전자 우편",
+    "def": "a message sent using the internet",
+    "ex": "I sent an email to my teacher.",
+    "exKo": "나는 선생님께 전자 우편을 보냈다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "website",
+    "pron": "/ˈwebsaɪt/",
+    "pos": "n.",
+    "meaning": "웹사이트",
+    "def": "a set of pages on the internet",
+    "ex": "This website has English stories.",
+    "exKo": "이 웹사이트에는 영어 이야기가 있다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "password",
+    "pron": "/ˈpæswɜːrd/",
+    "pos": "n.",
+    "meaning": "비밀번호",
+    "def": "a secret word or code used to enter an account",
+    "ex": "Do not share your password.",
+    "exKo": "비밀번호를 다른 사람에게 알려 주지 마라.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "forest",
+    "pron": "/ˈfɔːrɪst/",
+    "pos": "n.",
+    "meaning": "숲",
+    "def": "a large area with many trees",
+    "ex": "We walked through the forest.",
+    "exKo": "우리는 숲을 걸어서 지나갔다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "ocean",
+    "pron": "/ˈoʊʃən/",
+    "pos": "n.",
+    "meaning": "대양, 바다",
+    "def": "a very large area of salt water",
+    "ex": "Many animals live in the ocean.",
+    "exKo": "많은 동물들이 바다에 산다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "temperature",
+    "pron": "/ˈtemprətʃər/",
+    "pos": "n.",
+    "meaning": "온도",
+    "def": "how hot or cold something is",
+    "ex": "The temperature is twenty degrees today.",
+    "exKo": "오늘 기온은 20도이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "absent",
+    "pron": "/ˈæbsənt/",
+    "pos": "adj.",
+    "meaning": "결석한",
+    "def": "not present where you should be",
+    "ex": "Tom was absent from school yesterday.",
+    "exKo": "톰은 어제 학교에 결석했다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "honest",
+    "pron": "/ˈɑːnɪst/",
+    "pos": "adj.",
+    "meaning": "정직한",
+    "def": "telling the truth",
+    "ex": "She is an honest person.",
+    "exKo": "그녀는 정직한 사람이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "active",
+    "pron": "/ˈæktɪv/",
+    "pos": "adj.",
+    "meaning": "활동적인",
+    "def": "doing many things or moving often",
+    "ex": "My grandfather is still active.",
+    "exKo": "우리 할아버지는 여전히 활동적이다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "nervous",
+    "pron": "/ˈnɜːrvəs/",
+    "pos": "adj.",
+    "meaning": "긴장한",
+    "def": "worried about what may happen",
+    "ex": "I felt nervous before the exam.",
+    "exKo": "나는 시험 전에 긴장했다.",
+    "schoolGrade": 1
+  },
+  {
+    "word": "assignment",
+    "pron": "/əˈsaɪnmənt/",
+    "pos": "n.",
+    "meaning": "과제",
+    "def": "a piece of work a teacher gives you",
+    "ex": "I finished my science assignment.",
+    "exKo": "나는 과학 과제를 끝냈다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "contest",
+    "pron": "/ˈkɑːntest/",
+    "pos": "n.",
+    "meaning": "대회",
+    "def": "an event where people compete",
+    "ex": "She won the drawing contest.",
+    "exKo": "그녀는 그림 대회에서 우승했다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "talent",
+    "pron": "/ˈtælənt/",
+    "pos": "n.",
+    "meaning": "재능",
+    "def": "a natural ability to do something well",
+    "ex": "He has a talent for music.",
+    "exKo": "그는 음악에 재능이 있다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "relationship",
+    "pron": "/rɪˈleɪʃənʃɪp/",
+    "pos": "n.",
+    "meaning": "관계",
+    "def": "the way people are connected to each other",
+    "ex": "I have a good relationship with my sister.",
+    "exKo": "나는 내 누나와 사이가 좋다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "culture",
+    "pron": "/ˈkʌltʃər/",
+    "pos": "n.",
+    "meaning": "문화",
+    "def": "the way of life of a group of people",
+    "ex": "Food is an important part of culture.",
+    "exKo": "음식은 문화의 중요한 부분이다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "tradition",
+    "pron": "/trəˈdɪʃən/",
+    "pos": "n.",
+    "meaning": "전통",
+    "def": "a custom passed from older people to younger people",
+    "ex": "Making rice cakes is a family tradition.",
+    "exKo": "떡을 만드는 것은 우리 가족의 전통이다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "invitation",
+    "pron": "/ˌɪnvɪˈteɪʃən/",
+    "pos": "n.",
+    "meaning": "초대, 초대장",
+    "def": "a request to come to an event",
+    "ex": "Thank you for the invitation to your party.",
+    "exKo": "네 파티에 초대해 줘서 고마워.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "celebration",
+    "pron": "/ˌseləˈbreɪʃən/",
+    "pos": "n.",
+    "meaning": "축하 행사",
+    "def": "an event for a happy or special occasion",
+    "ex": "The school held a celebration.",
+    "exKo": "학교는 축하 행사를 열었다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "adventure",
+    "pron": "/ədˈventʃər/",
+    "pos": "n.",
+    "meaning": "모험",
+    "def": "an exciting experience",
+    "ex": "Our camping trip was a great adventure.",
+    "exKo": "우리의 캠핑 여행은 멋진 모험이었다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "flight",
+    "pron": "/flaɪt/",
+    "pos": "n.",
+    "meaning": "비행, 항공편",
+    "def": "a journey by plane",
+    "ex": "Our flight leaves at nine.",
+    "exKo": "우리 항공편은 9시에 출발한다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "luggage",
+    "pron": "/ˈlʌɡɪdʒ/",
+    "pos": "n.",
+    "meaning": "여행 짐",
+    "def": "bags you take when you travel",
+    "ex": "Put your luggage beside the door.",
+    "exKo": "여행 짐을 문 옆에 두어라.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "passenger",
+    "pron": "/ˈpæsɪndʒər/",
+    "pos": "n.",
+    "meaning": "승객",
+    "def": "a person traveling in a vehicle",
+    "ex": "Each passenger needs a ticket.",
+    "exKo": "각 승객은 표가 필요하다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "destination",
+    "pron": "/ˌdestɪˈneɪʃən/",
+    "pos": "n.",
+    "meaning": "목적지",
+    "def": "the place you are traveling to",
+    "ex": "Our destination is a small island.",
+    "exKo": "우리 목적지는 작은 섬이다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "direction",
+    "pron": "/dəˈrekʃən/",
+    "pos": "n.",
+    "meaning": "방향",
+    "def": "the way something points or moves",
+    "ex": "The wind changed direction.",
+    "exKo": "바람의 방향이 바뀌었다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "injury",
+    "pron": "/ˈɪndʒəri/",
+    "pos": "n.",
+    "meaning": "부상",
+    "def": "damage to your body",
+    "ex": "His leg injury is getting better.",
+    "exKo": "그의 다리 부상은 나아지고 있다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "diet",
+    "pron": "/ˈdaɪət/",
+    "pos": "n.",
+    "meaning": "식단",
+    "def": "the food someone usually eats",
+    "ex": "A healthy diet includes vegetables.",
+    "exKo": "건강한 식단에는 채소가 포함된다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "ingredient",
+    "pron": "/ɪnˈɡriːdiənt/",
+    "pos": "n.",
+    "meaning": "재료",
+    "def": "one of the foods used to make a dish",
+    "ex": "Flour is an ingredient in bread.",
+    "exKo": "밀가루는 빵의 재료이다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "pollution",
+    "pron": "/pəˈluːʃən/",
+    "pos": "n.",
+    "meaning": "오염",
+    "def": "harmful substances in air or water",
+    "ex": "Air pollution can make people sick.",
+    "exKo": "대기 오염은 사람들을 아프게 할 수 있다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "environment",
+    "pron": "/ɪnˈvaɪrənmənt/",
+    "pos": "n.",
+    "meaning": "환경",
+    "def": "the natural world around us",
+    "ex": "We should protect the environment.",
+    "exKo": "우리는 환경을 보호해야 한다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "garbage",
+    "pron": "/ˈɡɑːrbɪdʒ/",
+    "pos": "n.",
+    "meaning": "쓰레기",
+    "def": "things that people throw away",
+    "ex": "Put the garbage in the bin.",
+    "exKo": "쓰레기를 쓰레기통에 넣어라.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "plastic",
+    "pron": "/ˈplæstɪk/",
+    "pos": "n.",
+    "meaning": "플라스틱",
+    "def": "a light material used to make many things",
+    "ex": "This bottle is made of plastic.",
+    "exKo": "이 병은 플라스틱으로 만들어졌다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "electricity",
+    "pron": "/ɪˌlekˈtrɪsəti/",
+    "pos": "n.",
+    "meaning": "전기",
+    "def": "power used to run lights and machines",
+    "ex": "The storm cut off the electricity.",
+    "exKo": "폭풍 때문에 전기 공급이 끊겼다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "device",
+    "pron": "/dɪˈvaɪs/",
+    "pos": "n.",
+    "meaning": "장치, 기기",
+    "def": "a tool or machine made for a purpose",
+    "ex": "This device measures temperature.",
+    "exKo": "이 기기는 온도를 측정한다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "information",
+    "pron": "/ˌɪnfərˈmeɪʃən/",
+    "pos": "n.",
+    "meaning": "정보",
+    "def": "facts about something",
+    "ex": "The website has useful information.",
+    "exKo": "그 웹사이트에는 유용한 정보가 있다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "experiment",
+    "pron": "/ɪkˈsperəmənt/",
+    "pos": "n.",
+    "meaning": "실험",
+    "def": "a test used to find out something",
+    "ex": "We did an experiment with water.",
+    "exKo": "우리는 물로 실험을 했다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "scientist",
+    "pron": "/ˈsaɪəntɪst/",
+    "pos": "n.",
+    "meaning": "과학자",
+    "def": "a person who studies science",
+    "ex": "The scientist studies plants.",
+    "exKo": "그 과학자는 식물을 연구한다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "discovery",
+    "pron": "/dɪˈskʌvəri/",
+    "pos": "n.",
+    "meaning": "발견",
+    "def": "something found for the first time",
+    "ex": "The discovery surprised everyone.",
+    "exKo": "그 발견은 모두를 놀라게 했다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "creative",
+    "pron": "/kriˈeɪtɪv/",
+    "pos": "adj.",
+    "meaning": "창의적인",
+    "def": "good at thinking of new ideas",
+    "ex": "She found a creative solution.",
+    "exKo": "그녀는 창의적인 해결책을 찾았다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "confident",
+    "pron": "/ˈkɑːnfɪdənt/",
+    "pos": "adj.",
+    "meaning": "자신 있는",
+    "def": "sure that you can do something well",
+    "ex": "I feel confident about the test.",
+    "exKo": "나는 그 시험에 자신이 있다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "comfortable",
+    "pron": "/ˈkʌmftərbəl/",
+    "pos": "adj.",
+    "meaning": "편안한",
+    "def": "making you feel relaxed",
+    "ex": "This chair is comfortable.",
+    "exKo": "이 의자는 편안하다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "crowded",
+    "pron": "/ˈkraʊdɪd/",
+    "pos": "adj.",
+    "meaning": "붐비는",
+    "def": "full of people",
+    "ex": "The bus was crowded this morning.",
+    "exKo": "오늘 아침 버스는 붐볐다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "necessary",
+    "pron": "/ˈnesəseri/",
+    "pos": "adj.",
+    "meaning": "필요한",
+    "def": "needed for a reason",
+    "ex": "Sleep is necessary for good health.",
+    "exKo": "잠은 건강에 필요하다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "private",
+    "pron": "/ˈpraɪvət/",
+    "pos": "adj.",
+    "meaning": "개인적인, 사적인",
+    "def": "meant for one person or a small group",
+    "ex": "This is a private conversation.",
+    "exKo": "이것은 사적인 대화이다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "abroad",
+    "pron": "/əˈbrɔːd/",
+    "pos": "adv.",
+    "meaning": "해외에, 해외로",
+    "def": "in or to another country",
+    "ex": "My cousin studies abroad.",
+    "exKo": "내 사촌은 해외에서 공부한다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "although",
+    "pron": "/ɔːlˈðoʊ/",
+    "pos": "conj.",
+    "meaning": "비록 ~이지만",
+    "def": "used to show a contrast",
+    "ex": "Although it rained, we enjoyed the trip.",
+    "exKo": "비가 왔지만 우리는 여행을 즐겼다.",
+    "schoolGrade": 2
+  },
+  {
+    "word": "achievement",
+    "pron": "/əˈtʃiːvmənt/",
+    "pos": "n.",
+    "meaning": "성취",
+    "def": "something good you succeed in doing",
+    "ex": "Finishing the race was a great achievement.",
+    "exKo": "경주를 끝낸 것은 큰 성취였다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "responsibility",
+    "pron": "/rɪˌspɑːnsəˈbɪləti/",
+    "pos": "n.",
+    "meaning": "책임",
+    "def": "a duty to take care of something",
+    "ex": "Feeding the dog is my responsibility.",
+    "exKo": "개에게 먹이를 주는 것은 내 책임이다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "transportation",
+    "pron": "/ˌtrænspərˈteɪʃən/",
+    "pos": "n.",
+    "meaning": "교통, 운송",
+    "def": "ways of moving people or goods",
+    "ex": "Public transportation saves energy.",
+    "exKo": "대중교통은 에너지를 절약한다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "resource",
+    "pron": "/ˈriːsɔːrs/",
+    "pos": "n.",
+    "meaning": "자원",
+    "def": "something useful that people can use",
+    "ex": "Water is an important resource.",
+    "exKo": "물은 중요한 자원이다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "climate",
+    "pron": "/ˈklaɪmət/",
+    "pos": "n.",
+    "meaning": "기후",
+    "def": "the usual weather in a place over many years",
+    "ex": "This country has a warm climate.",
+    "exKo": "이 나라는 기후가 따뜻하다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "invention",
+    "pron": "/ɪnˈvenʃən/",
+    "pos": "n.",
+    "meaning": "발명품, 발명",
+    "def": "something new that someone creates",
+    "ex": "The bicycle was an important invention.",
+    "exKo": "자전거는 중요한 발명품이었다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "community",
+    "pron": "/kəˈmjuːnəti/",
+    "pos": "n.",
+    "meaning": "지역 사회",
+    "def": "people who live in the same area",
+    "ex": "Our community has a small library.",
+    "exKo": "우리 지역 사회에는 작은 도서관이 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "citizen",
+    "pron": "/ˈsɪtɪzən/",
+    "pos": "n.",
+    "meaning": "시민",
+    "def": "a person who belongs to a country or city",
+    "ex": "Each citizen has rights and duties.",
+    "exKo": "각 시민에게는 권리와 의무가 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "opportunity",
+    "pron": "/ˌɑːpərˈtuːnəti/",
+    "pos": "n.",
+    "meaning": "기회",
+    "def": "a chance to do something",
+    "ex": "The trip gave me an opportunity to learn.",
+    "exKo": "그 여행은 내게 배울 기회를 주었다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "advantage",
+    "pron": "/ədˈvæntɪdʒ/",
+    "pos": "n.",
+    "meaning": "장점, 이점",
+    "def": "something that helps you succeed",
+    "ex": "Living near school has an advantage.",
+    "exKo": "학교 가까이 사는 데는 이점이 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "disadvantage",
+    "pron": "/ˌdɪsədˈvæntɪdʒ/",
+    "pos": "n.",
+    "meaning": "단점, 불리한 점",
+    "def": "something that makes success harder",
+    "ex": "The high price is a disadvantage.",
+    "exKo": "비싼 가격은 단점이다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "evidence",
+    "pron": "/ˈevɪdəns/",
+    "pos": "n.",
+    "meaning": "증거",
+    "def": "facts that help show something is true",
+    "ex": "We need evidence to support this idea.",
+    "exKo": "우리는 이 생각을 뒷받침할 증거가 필요하다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "solution",
+    "pron": "/səˈluːʃən/",
+    "pos": "n.",
+    "meaning": "해결책",
+    "def": "a way to solve a problem",
+    "ex": "We found a solution to the problem.",
+    "exKo": "우리는 그 문제의 해결책을 찾았다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "attitude",
+    "pron": "/ˈætɪtuːd/",
+    "pos": "n.",
+    "meaning": "태도",
+    "def": "the way you think or feel about something",
+    "ex": "A positive attitude can help you learn.",
+    "exKo": "긍정적인 태도는 배우는 데 도움이 될 수 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "decision",
+    "pron": "/dɪˈsɪʒən/",
+    "pos": "n.",
+    "meaning": "결정",
+    "def": "a choice you make after thinking",
+    "ex": "It was a difficult decision.",
+    "exKo": "그것은 어려운 결정이었다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "explanation",
+    "pron": "/ˌekspləˈneɪʃən/",
+    "pos": "n.",
+    "meaning": "설명",
+    "def": "something that makes an idea clear",
+    "ex": "Her explanation was easy to understand.",
+    "exKo": "그녀의 설명은 이해하기 쉬웠다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "preparation",
+    "pron": "/ˌprepəˈreɪʃən/",
+    "pos": "n.",
+    "meaning": "준비",
+    "def": "work you do to get ready",
+    "ex": "The exam requires careful preparation.",
+    "exKo": "그 시험에는 꼼꼼한 준비가 필요하다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "comparison",
+    "pron": "/kəmˈpærɪsən/",
+    "pos": "n.",
+    "meaning": "비교",
+    "def": "looking at how things are similar or different",
+    "ex": "This comparison shows the difference.",
+    "exKo": "이 비교는 차이점을 보여 준다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "connection",
+    "pron": "/kəˈnekʃən/",
+    "pos": "n.",
+    "meaning": "연결, 관련",
+    "def": "a link between people or things",
+    "ex": "There is a connection between sleep and memory.",
+    "exKo": "잠과 기억 사이에는 관련이 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "freedom",
+    "pron": "/ˈfriːdəm/",
+    "pos": "n.",
+    "meaning": "자유",
+    "def": "being able to act or choose freely",
+    "ex": "We all value freedom.",
+    "exKo": "우리는 모두 자유를 소중히 여긴다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "responsible",
+    "pron": "/rɪˈspɑːnsəbəl/",
+    "pos": "adj.",
+    "meaning": "책임이 있는",
+    "def": "having a duty to take care of something",
+    "ex": "I am responsible for cleaning this room.",
+    "exKo": "나는 이 방을 청소할 책임이 있다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "convenient",
+    "pron": "/kənˈviːniənt/",
+    "pos": "adj.",
+    "meaning": "편리한",
+    "def": "easy to use or suitable for your needs",
+    "ex": "This bus route is convenient.",
+    "exKo": "이 버스 노선은 편리하다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "endangered",
+    "pron": "/ɪnˈdeɪndʒərd/",
+    "pos": "adj.",
+    "meaning": "멸종 위기에 처한",
+    "def": "at risk of disappearing forever",
+    "ex": "The zoo helps endangered animals.",
+    "exKo": "그 동물원은 멸종 위기에 처한 동물들을 돕는다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "however",
+    "pron": "/haʊˈevər/",
+    "pos": "adv.",
+    "meaning": "그러나",
+    "def": "used to introduce a different or opposite idea",
+    "ex": "The bag is small. However, it is heavy.",
+    "exKo": "그 가방은 작다. 그러나 무겁다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "therefore",
+    "pron": "/ˈðerfɔːr/",
+    "pos": "adv.",
+    "meaning": "그러므로",
+    "def": "for that reason",
+    "ex": "It was raining. Therefore, we stayed inside.",
+    "exKo": "비가 오고 있었다. 그러므로 우리는 실내에 있었다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "instead",
+    "pron": "/ɪnˈsted/",
+    "pos": "adv.",
+    "meaning": "대신에",
+    "def": "in place of something else",
+    "ex": "We walked instead of taking the bus.",
+    "exKo": "우리는 버스를 타는 대신 걸었다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "especially",
+    "pron": "/ɪˈspeʃəli/",
+    "pos": "adv.",
+    "meaning": "특히",
+    "def": "more than usual or more than others",
+    "ex": "I like fruit, especially apples.",
+    "exKo": "나는 과일을 좋아하는데 특히 사과를 좋아한다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "probably",
+    "pron": "/ˈprɑːbəbli/",
+    "pos": "adv.",
+    "meaning": "아마",
+    "def": "very likely but not certain",
+    "ex": "It will probably rain tomorrow.",
+    "exKo": "내일은 아마 비가 올 것이다.",
+    "schoolGrade": 3
+  },
+  {
+    "word": "immediately",
+    "pron": "/ɪˈmiːdiətli/",
+    "pos": "adv.",
+    "meaning": "즉시",
+    "def": "without waiting",
+    "ex": "She called for help immediately.",
+    "exKo": "그녀는 즉시 도움을 요청했다.",
+    "schoolGrade": 3
+  }
+]);

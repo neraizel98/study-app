@@ -21,7 +21,8 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
         rel="stylesheet">
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui">    <style>.accent-listen-btn { min-width:44px; min-height:44px; font-size:1.2rem; }</style>
+</head>
 
 <body class="subject-study">
     <div class="bg-blobs">
@@ -61,7 +62,7 @@
                     <span class="index" id="wordIndex">1/40</span>
                     <div class="word-row">
                         <h2 id="englishWord">ability</h2>
-                        <div class="accent-listen-group"><button id="speakWordBtn" class="accent-listen-btn" title="미국식 발음">🇺🇸 미국식</button><button id="speakWordUkBtn" class="accent-listen-btn" title="영국식 발음">🇬🇧 영국식</button></div>
+                        <div class="accent-listen-group"><button id="speakWordBtn" class="accent-listen-btn" title="발음 듣기" aria-label="미국 영어 발음 듣기">🔊</button></div>
                         <!--
                         <button class="speak-btn">
                             <svg viewBox="0 0 24 24" width="22" height="22">
@@ -94,7 +95,7 @@
                         <div class="detail-label">영문 뜻</div>
                         <div class="detail-row">
                             <p id="englishDef" class="english-def"></p>
-                            <div class="accent-listen-group"><button id="speakDefBtn" class="accent-listen-btn" title="미국식 영문 뜻 듣기">🇺🇸</button><button id="speakDefUkBtn" class="accent-listen-btn" title="영국식 영문 뜻 듣기">🇬🇧</button></div>
+                            <div class="accent-listen-group"><button id="speakDefBtn" class="accent-listen-btn" title="발음 듣기" aria-label="미국 영어 발음 듣기">🔊</button></div>
                             <!-- <button class="speak-btn speak-sm">
                                 <svg viewBox="0 0 24 24" width="18" height="18">
                                     <path fill="currentColor"
@@ -113,7 +114,7 @@
                                 <p id="exampleSentence" class="example-en"></p>
                                 <p id="exampleKorean" class="example-ko"></p>
                             </div>
-                            <div class="accent-listen-group"><button id="speakExBtn" class="accent-listen-btn" title="미국식 예문 듣기">🇺🇸</button><button id="speakExUkBtn" class="accent-listen-btn" title="영국식 예문 듣기">🇬🇧</button></div>
+                            <div class="accent-listen-group"><button id="speakExBtn" class="accent-listen-btn" title="발음 듣기" aria-label="미국 영어 발음 듣기">🔊</button></div>
                             <!-- <button class="speak-btn speak-sm">
                                 <svg viewBox="0 0 24 24" width="18" height="18">
                                     <path fill="currentColor"
@@ -157,7 +158,7 @@
                 <p class="quiz-question-label" id="quizQuestionLabel">이 단어의 뜻은?</p>
                 <div id="phase1Area">
                     <h2 id="quizWord" class="quiz-word"></h2>
-                    <div class="accent-listen-group quiz-accent-listen"><button id="quizSpeakBtn" class="accent-listen-btn" title="미국식 발음">🇺🇸</button><button id="quizSpeakUkBtn" class="accent-listen-btn" title="영국식 발음">🇬🇧</button></div>
+                    <div class="accent-listen-group quiz-accent-listen"><button id="quizSpeakBtn" class="accent-listen-btn" title="발음 듣기" aria-label="미국 영어 발음 듣기">🔊</button></div>
                     <!-- <button class="speak-btn quiz-speak">
                         <svg viewBox="0 0 24 24" width="20" height="20">
                             <path fill="currentColor"
@@ -241,10 +242,11 @@
     </div>
     <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script src="utils.js?v=20260911-adaptive"></script>
-    <script src="VocabEng.js?v=20260911-content-accuracy"></script>
+    <script src="VocabEng.js?v=20261012-vocabulary-grades"></script>
+    <script src="english-vocabulary-progress.js?v=20261012-vocabulary-grades"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261012-parent-plan-aligned"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261012-vocabulary-grades"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
     <script src="ui-core.js?v=20260917-storage2"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
@@ -266,8 +268,8 @@
             }
         });
     </script>
-    <script src="english-speech.js?v=20260803-desktop-accent3"></script>
-    <script src="main.js?v=20260930-shared-subjects"></script>
+    <script src="english-speech.js?v=20261012-vocabulary-grades"></script>
+    <script src="main.js?v=20261012-vocabulary-grades"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)

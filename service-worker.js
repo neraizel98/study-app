@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261012-parent-plan-aligned';
+const CACHE_NAME = 'smart-study-20261012-vocabulary-grades';
 
 try {
     importScripts('./firebase-config.js');
@@ -78,6 +78,7 @@ const STATIC_ASSETS = [
     './styles.css',
     './main.js',
     './english-speech.js',
+    './english-vocabulary-progress.js',
     './utils.js',
     './ui-core.js',
     './storage-keys.js',
