@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261012-formula-review';
+    const APP_VERSION = '20261012-today-journey';
 
     (async function () {
         try {

@@ -163,10 +163,11 @@
             const plan=this.getPlan(user);if(!plan||plan.id!==planId)throw new Error('오늘 계획을 찾지 못했습니다.');
             const task=plan.tasks.find(item=>item.id===taskId);if(!task)return plan;
             if(task.required&&task.status!=='completed')throw new Error('보호자가 지정한 필수 단원은 완료 전 변경할 수 없습니다.');
-            if(task.status!=='ready')throw new Error('시작하거나 완료한 과제는 변경할 수 없습니다.');
+            if(task.status==='completed')throw new Error('완료한 과제는 변경할 수 없습니다.');
             const choice=catalog(task.subject,plan.profile).find(item=>contextKey(task.subject,item.context)===contextKey(task.subject,context));
             if(!choice)throw new Error('현재 학습 자료에 없는 단원입니다.');
-            task.context=choice.context;task.targetUrl=target(task.subject,choice.context);
+            if(this.contextKey(task.subject,task.context)===this.contextKey(task.subject,choice.context))return plan;
+            task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.studyConfirmed=false;task.context=choice.context;task.targetUrl=target(task.subject,choice.context);
             task.status='ready';task.startedAt=null;task.sessionId=null;
             task.reasonText='직접 선택한 단원을 학습해요.';
             return this.savePlan(plan);

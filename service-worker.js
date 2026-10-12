@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261012-formula-review';
+const CACHE_NAME = 'smart-study-20261012-today-journey';
 
 try {
     importScripts('./firebase-config.js');
@@ -135,6 +135,7 @@ const STATIC_ASSETS = [
     './learning-plan.js',
     './unified-learning.js',
     './today-flow.js',
+    './today-journey.js',
     './today-flow.css',
     './study-focus.css',
     './learning-session.js',

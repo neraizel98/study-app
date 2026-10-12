@@ -50,3 +50,15 @@ local.setPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(flowUser)}`,{
 assert.equal(p.entryUrl(flowUser,flowTask),flowTask.targetUrl);
 local.setPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(flowUser)}`,{current:{date:'yesterday',items:[{response:'a'},{response:'b'},{response:'c'}]}});
 assert.equal(p.entryUrl(flowUser,flowTask),'english_course.html#englishWarmup');
+vm.runInContext(fs.readFileSync('today-journey.js','utf8'),ctx);
+const switchUser='journey-switch',switchPlan=p.createPlan(switchUser),switchTask=switchPlan.tasks.find(t=>t.subject==='reading');
+p.startTask(switchUser,switchTask.id);const switching=p.getPlan(switchUser);switching.tasks.find(t=>t.id===switchTask.id).studyConfirmed=true;p.savePlan(switching);
+const alternate=p.catalog('reading',switchPlan.profile).find(c=>p.contextKey('reading',c.context)!==p.contextKey('reading',switchTask.context));
+const beforeSwitch=clone(reports);p.selectContext(switchPlan.id,switchUser,switchTask.id,alternate.context);
+let switched=p.getPlan(switchUser).tasks.find(t=>t.id===switchTask.id);assert.equal(switched.status,'ready');assert.equal(switched.studyConfirmed,false);assert.equal(switched.previousContexts.length,1);assert.deepEqual(clone(reports),beforeSwitch);
+const protect=p.getPlan(switchUser);protect.tasks.find(t=>t.id===switchTask.id).required=true;p.savePlan(protect);assert.throws(()=>p.selectContext(protect.id,switchUser,switchTask.id,switchTask.context));
+const recoverUser='journey-recover',recover=p.createPlan(recoverUser),recoverTask=recover.tasks.find(t=>t.subject==='reading');
+const recoveryContext=p.catalog('reading',recover.profile).find(c=>p.contextKey('reading',c.context)!==p.contextKey('reading',recoverTask.context));
+reports.push({userId:recoverUser,sessionId:'other-unit-completed',subject:'reading',date:Date.now(),totalQuestions:1,metadata:{...recoveryContext.context,attempts:[{correct:false}]}});
+const diagnosed=ctx.SmartStudy.TodayJourney.state(recoverUser,recoverTask.id);assert.equal(diagnosed.phase,1);assert(diagnosed.alternative);
+p.selectContext(recover.id,recoverUser,recoverTask.id,diagnosed.alternative.context);assert.equal(ctx.SmartStudy.TodayJourney.state(recoverUser,recoverTask.id).phase,3,'submitted wrong answers also complete the task');

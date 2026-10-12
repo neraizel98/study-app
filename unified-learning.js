@@ -116,10 +116,11 @@
     plan.selectContext=function(planId,user,taskId,context){
         const p=this.getPlan(user),task=p?.tasks.find(t=>t.id===taskId);
         if(!p?.curriculumVersion)return oldSelect(planId,user,taskId,context);
-        if(p.id!==planId||!task||task.required||task.status!=='ready')throw Error('진행 중이거나 보호자가 지정한 과제는 변경할 수 없습니다.');
+        if(p.id!==planId||!task||task.required||task.status==='completed')throw Error('완료했거나 보호자가 지정한 과제는 변경할 수 없습니다.');
         const choice=catalog(task.subject,p.profile).find(c=>this.contextKey(task.subject,c.context)===this.contextKey(task.subject,context));
         if(!choice)throw Error('학습 자료에 없는 단원입니다.');
-        task.context=choice.context;task.targetUrl=target(task.subject,choice.context);task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
+        if(this.contextKey(task.subject,task.context)===this.contextKey(task.subject,choice.context))return p;
+        task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.context=choice.context;task.targetUrl=target(task.subject,choice.context);task.status='ready';task.startedAt=null;task.studyConfirmed=false;task.sessionId=null;task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
     };
     plan.refreshEvidence=function(user){
         const p=this.getPlan(user);if(!p?.curriculumVersion)return oldRefresh(user);
