@@ -100,21 +100,29 @@ assert(app.includes('circle cx="260" cy="151.3" r="78.7"'), 'Incircle must be ta
 assert(app.includes('M260 30 L450 140 L260 250 L70 140 Z'), 'Rhombus must use perpendicular diagonals');
 
 context.window.addEventListener = () => {};
+context.SmartStudy.LocalRepository={getActiveUser:()=>null,listReports:()=>[]};
+vm.runInContext(fs.readFileSync('MathFormulaReview.js','utf8'),context);
 vm.runInContext(app, context);
 const appApi = vm.runInContext('MathFormulaApp', context);
 formulas.forEach(item => {
     const calculationQuestions = Array.from(appApi.createCalculationQuestions(item.number));
     assert.strictEqual(calculationQuestions.length, 3, `Formula ${item.number} must show exactly three calculation questions`);
-    assert(calculationQuestions[0].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a principle question`);
-    assert(calculationQuestions[1].prompt.includes('기호가 나타내는 뜻'), `Formula ${item.number} needs a symbol question`);
-    assert(!calculationQuestions[2].prompt.includes('만들어지는 과정'), `Formula ${item.number} needs a calculation application`);
-    calculationQuestions.forEach((question,index) => {
-        if(item.number>=91 && index===2){assert.equal(question.kind,"written");assert(question.strictNumeric);return;}
-        assert.strictEqual(question.kind, 'choice', `Formula ${item.number} must not show written questions`);
-        assert.strictEqual(question.level, '계산 연습', `Formula ${item.number} must not expose difficulty categories`);
-        assert.strictEqual(new Set(Array.from(question.choices)).size, question.choices.length,
-            `Formula ${item.number} calculation quiz has duplicate choices`);
+    assert.equal(calculationQuestions[0].level,'공식 떠올리기');
+    assert.equal(calculationQuestions[1].level,'기호 확인');
+    assert.equal(calculationQuestions[2].level,'공식 보고 계산');
+    assert(calculationQuestions[2].assisted);
+    calculationQuestions.forEach(question=>{
+        assert.equal(question.kind,'choice');
+        assert.equal(new Set(Array.from(question.choices)).size,question.choices.length);
+        assert(question.choices.includes(String(question.answer)),`Formula ${item.number}: correct answer missing`);
+        assert(quiz.isCorrect(question,question.answer));
     });
+    for(const stage of ['practice','application']){
+        const qs=context.MathFormulaReview.create(item.number,stage);
+        assert.equal(qs.length,3);assert.equal(qs[2].kind,'written');assert(Number.isFinite(qs[2].answer));
+        assert(quiz.isCorrect(qs[2],String(qs[2].answer)));assert(!quiz.isCorrect(qs[2],''));
+    }
+
 });
 assert(!app.includes('${qi + 1}. ${q.level}'), 'Quiz difficulty category must not be rendered');
 
@@ -156,3 +164,14 @@ try{Math.random=()=>0;expectedV4.forEach((expected,i)=>{const qs=quiz.create(91+
 for(let i=0;i<20;i++)for(let number=91;number<=120;number++){for(const q of quiz.create(number)){assert(Number.isFinite(Number(q.answer)));assert(quiz.isCorrect(q,q.answer));if(q.choices)assert.equal(new Set(q.choices).size,4);}}
 for(const asset of ['MathFormulaDataVolume4.js','MathFormulaQuizVolume4.js']){assert(page.includes(asset));assert(worker.includes(asset));}
 try{for(let n=2;n<=6;n++){Math.random=()=>(n-2+.1)/5;let compound=100,annuity=0;for(let k=0;k<2;k++)compound*=1+n/10;for(let k=0;k<n;k++)annuity=annuity*1.1+10;const expected=[n*10,Number(compound.toFixed(2)),Number(annuity.toFixed(2)),2**n-1,n*(n+1),3*(n+1),n,3,5*n,n,2*n+2,-n*n,4*n,n,2*n,7*n,3*n+8,2*n,n,5*n,1.67,Number((1/n).toFixed(2)),2*n+5,2,2**(n-1)-1,n,(n+2)*(n+1),(n+2)*(n+1)/2,n*(n+1)/2,n*12.5];expected.forEach((value,i)=>assert.equal(Number(quiz.create(91+i)[2].answer),value,`formula ${91+i}, n=${n}`));}}finally{Math.random=originalRandom;}
+
+const review=context.MathFormulaReview;
+const reviewRecord=(i,correct=true)=>({sessionId:'review'+i,date:Date.now()-i*1000,totalQuestions:3,metadata:{source:'math-formula',formulaNumber:31,quizFormat:'formula-review-v2',initialAttempts:[{correct},{correct},{correct,assisted:true}]}});
+assert.equal(review.band([],31),'foundation');
+assert.equal(review.band([0,1,2].map(i=>reviewRecord(i)),31),'practice');
+assert.equal(review.band([0,1,2,3,4,5].map(i=>reviewRecord(i)),31),'application');
+assert.equal(review.band([0,1,2].map(i=>reviewRecord(i,false)),31),'foundation');
+assert.equal(review.band([0,1,2].map(i=>reviewRecord(i)),32),'foundation');
+assert.equal(review.band([0,1,2].map(i=>({...reviewRecord(i),metadata:{...reviewRecord(i).metadata,review:true}})),31),'foundation');
+const easyExpected={3:6,6:4,15:16,16:12,17:14,19:8,20:8,21:10,31:12.56,32:12.56,37:3.14,58:8,59:24,60:24,61:52,120:20};
+const savedRandom=Math.random;try{Math.random=()=>0;for(const [id,answer]of Object.entries(easyExpected)){const q=review.create(Number(id))[2];assert.equal(Number(q.answer),answer,`elementary formula ${id} verified calculation`);assert(q.givens);}}finally{Math.random=savedRandom;}
