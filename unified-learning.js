@@ -91,7 +91,9 @@
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
         const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId));
         p.tasks=ids.map((subject,index)=>{
-            const existing=original.find(t=>t.subject===subject), assigned=existing?.required;
+            const existing=original.find(t=>t.subject===subject),scope=settings.scopes?.[subject];
+            const assigned=Boolean(existing?.required||scope?.mode==='assigned');
+            const assignedChoice=scope?.mode==='assigned'?catalog(subject,p.profile).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
             let rec=recommend(subject,p.profile,entries,p.userId);
             if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
@@ -100,10 +102,10 @@
                 const found=catalog(subject,p.profile).find(c=>plan.contextKey(subject,c.context)===plan.contextKey(subject,linked));
                 if(found)rec={...found,reason:'영어 통합 과정과 같은 단어·문법·독해 범위예요.'};
             }
-            const context=assigned?existing.context:rec?.context||null;
+            const context=assigned?(assignedChoice?.context||existing?.context||null):rec?.context||null;
             const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
             return {...(existing||{}),id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage,
-                reasonText:assigned?existing.reasonText:rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
+                reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
         });
         p.curriculumVersion=1;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);

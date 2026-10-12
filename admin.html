@@ -121,7 +121,8 @@
             .user-grid { grid-template-columns:1fr; }
             .settings-fold { padding:18px 16px; }
         }
-    </style>
+    #parentPlanSettingsList select{background:#132238;color:#edf4ff;border:1px solid #49637f;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#1b2b3f;color:#b5c5da}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ffffff12}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#213a54;color:#bfdcff;border-radius:6px;font-size:12px}
+</style>
 </head>
 <body>
     <div class="background-blobs">
@@ -154,7 +155,7 @@
         <details class="chart-card settings-fold" id="parentPlanSettings" style="margin-bottom:20px;">
             <summary class="chart-title">🗓️ 학습자별 하루 계획 설정</summary>
             <div class="settings-fold-content">
-            <div style="font-size:.75rem;color:var(--text-sub);margin-bottom:12px;">하루 목표 시간과 학년·학기는 보호자가 관리합니다. 기존 오늘 계획은 진행 상태와 선택 단원을 유지한 채 시간 배분만 갱신됩니다.</div>
+            <div style="font-size:.75rem;color:var(--text-sub);margin-bottom:12px;">하루 목표 시간과 학년·학기는 보호자가 관리합니다. 시작 전 계획은 새 설정을 반영합니다. 이미 시작한 오늘 계획은 유지하고, 변경한 설정은 다음 계획부터 적용합니다.</div>
             <div id="parentPlanSettingsList" style="display:grid;gap:12px;"></div>
             </div>
         </details>
@@ -434,25 +435,27 @@
                     <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학년<select data-plan="grade" style="display:block;margin-top:4px;">${[1,2,3,4,5,6,7,8,9,10,11,12].map(grade=>`<option value="${grade}">${grade<=6?'초등 '+grade+'학년':grade<=9?'중학교 '+(grade-6)+'학년':'고등학교 '+(grade-9)+'학년'}</option>`).join('')}</select></label>
                     <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
-                    <label style="font-size:.75rem;color:var(--text-sub);">영어 필수 지정 대상<select data-plan="english-activity" style="display:block;margin-top:4px;"><option value="vocabulary">영어 단어</option><option value="reading">영어 독해 (초6)</option></select></label>
+
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">하루 목표 시간 안에 국어·영어 단어·문법·독해·수학·수학 공식·한자를 배분합니다. 아래 영어 선택은 보호자 지정 활동에 적용됩니다. 문법·한자·학년별 수학 공식은 자동 추천하며, 공식 선행학습은 자유롭게 가능합니다.</p>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 위 7과목을 순서대로 진행합니다. 국어·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
-            card.querySelector('[data-plan="english-activity"]').value = value.englishActivity==='reading'?'reading':'vocabulary';
             const scopeState=Object.fromEntries(['reading','english','english_reading','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
-            const subjectNames={reading:'국어 독해',english:'영어 단어',english_reading:'영어 독해',math:'수학'};
+            const subjectNames={reading:'국어 독해',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
             function drawScopes(){
                 const profile={grade:Number(card.querySelector('[data-plan="grade"]').value),semester:Number(card.querySelector('[data-plan="semester"]').value)};
                 const host=card.querySelector('[data-plan="scopes"]');host.replaceChildren();
-                const englishSubject=card.querySelector('[data-plan="english-activity"]').value==='reading'?'english_reading':'english';
-                ['reading',englishSubject,'math'].forEach(subject=>{
+
+                SmartStudy.LearningProgress.subjects.forEach((subject,index)=>{
                     const choices=SmartStudy.LearningPlan.catalog(subject,profile),row=document.createElement('div');
+                    row.dataset.planSubject=subject;row.className='plan-scope-row';
                     row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
-                    row.innerHTML=`<strong style="min-width:75px;font-size:.78rem;">${subjectNames[subject]}</strong><label style="font-size:.72rem;color:var(--text-sub);">범위 방식<select data-mode style="display:block;margin-top:3px;"><option value="auto">자동 추천</option><option value="assigned">부모 지정</option></select></label><label style="flex:1;min-width:180px;font-size:.72rem;color:var(--text-sub);">지정 단원<select data-unit style="display:block;width:100%;min-width:0;margin-top:3px;"></select></label><span data-note style="font-size:.72rem;color:var(--text-sub);"></span>`;
+                    const minutes=SmartStudy.LearningProgress.allocations[Number(card.querySelector('[data-plan="budget"]').value)][index];
+                    if(!scopeState[subject]){row.innerHTML=`<strong style="min-width:90px;font-size:.78rem;">${subjectNames[subject]}</strong><span class="plan-minute">${minutes}분</span><span class="plan-auto">자동 추천</span><span style="font-size:.75rem;color:var(--text-sub);">${subject==='grammar'?'단어·독해에 연결된 문법':subject==='math_formula'?'학년에 맞는 공식 복습':'학습 기록에 맞는 한자 급수'}</span>`;host.append(row);return;}
+                    row.innerHTML=`<strong style="min-width:75px;font-size:.78rem;">${subjectNames[subject]}</strong><span class="plan-minute">${minutes}분</span><label style="font-size:.72rem;color:var(--text-sub);">범위 방식<select data-mode style="display:block;margin-top:3px;"><option value="auto">자동 추천</option><option value="assigned">부모 지정</option></select></label><label style="flex:1;min-width:180px;font-size:.72rem;color:var(--text-sub);">지정 단원<select data-unit style="display:block;width:100%;min-width:0;margin-top:3px;"></select></label><span data-note style="font-size:.72rem;color:var(--text-sub);"></span>`;
                     const mode=row.querySelector('[data-mode]'),unit=row.querySelector('[data-unit]'),note=row.querySelector('[data-note]');
                     mode.querySelector('option[value="assigned"]').disabled=!choices.length;mode.value=scopeState[subject].mode;
                     choices.forEach((choice,index)=>{const option=document.createElement('option');option.value=String(index);option.textContent=choice.label;unit.append(option);});
@@ -462,10 +465,9 @@
                     mode.onchange=sync;unit.onchange=sync;sync();host.append(row);
                 });
             }
-            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningProgress.allocations[budget];card.querySelector('[data-plan="allocation"]').textContent=`국어 ${minutes[0]}분 · 영어 ${minutes[1]+minutes[2]+minutes[3]}분 · 수학(공식 포함) ${minutes[4]+minutes[5]}분 · 한자 ${minutes[6]}분`;};
+            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningProgress.allocations[budget];card.querySelector('[data-plan="allocation"]').textContent=`7과목 합계 ${minutes.reduce((a,b)=>a+b,0)}분`;drawScopes();};
             card.querySelector('[data-plan="budget"]').onchange=allocation;
-            const refreshEnglishAvailability=()=>{const activity=card.querySelector('[data-plan="english-activity"]'),reading=activity.querySelector('option[value="reading"]'),unsupported=Number(card.querySelector('[data-plan="grade"]').value)!==6;reading.disabled=unsupported;const invalid=unsupported&&activity.value==='reading',message=card.querySelector('[data-plan="message"]');card.querySelector('[data-plan="save"]').disabled=invalid;if(invalid)message.textContent='영어 독해는 현재 초등 6학년만 선택할 수 있습니다.';else if(message.textContent.includes('초등 6학년만'))message.textContent='';drawScopes();};
-            card.querySelector('[data-plan="grade"]').onchange=refreshEnglishAvailability;card.querySelector('[data-plan="semester"]').onchange=drawScopes;card.querySelector('[data-plan="english-activity"]').onchange=refreshEnglishAvailability;allocation();refreshEnglishAvailability();
+            card.querySelector('[data-plan="grade"]').onchange=drawScopes;card.querySelector('[data-plan="semester"]').onchange=drawScopes;allocation();
             card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
                 const button = event.currentTarget, message = card.querySelector('[data-plan="message"]');
                 button.disabled = true; message.textContent = '저장 중...';
@@ -474,7 +476,7 @@
                         budgetMinutes:Number(card.querySelector('[data-plan="budget"]').value),
                         grade:Number(card.querySelector('[data-plan="grade"]').value),
                         semester:Number(card.querySelector('[data-plan="semester"]').value),
-                        englishActivity:card.querySelector('[data-plan="english-activity"]').value,
+                        englishActivity:Number(card.querySelector('[data-plan="grade"]').value)===6&&value.englishActivity==='reading'?'reading':'vocabulary',
                         scopes:scopeState
                     });
                     message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';

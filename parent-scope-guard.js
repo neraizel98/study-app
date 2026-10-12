@@ -42,8 +42,7 @@
         if(!plan){
             if(!subject)return;
             const settings=await settingsWhenMissing(user);
-            const inactiveEnglish=(subject==='english'&&settings?.englishActivity==='reading')||(subject==='english_reading'&&settings?.englishActivity!=='reading');
-            const scope=inactiveEnglish?null:settings?.scopes?.[subject];
+            const scope=settings?.scopes?.[subject];
             if(scope?.mode==='assigned'){location.replace('today.html');return;}
             if(!settings){
                 const box=document.createElement('aside');box.id='parentScopeGuard';box.textContent='이 기기에서 보호자 설정을 아직 확인하지 못했습니다. ';

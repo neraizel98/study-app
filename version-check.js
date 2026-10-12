@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261012-today-journey';
+    const APP_VERSION = '20261012-parent-plan-aligned';
 
     (async function () {
         try {

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261012-today-journey';
+const CACHE_NAME = 'smart-study-20261012-parent-plan-aligned';
 
 try {
     importScripts('./firebase-config.js');
