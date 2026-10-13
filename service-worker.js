@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261013-weekly-course';
+const CACHE_NAME = 'smart-study-20261013-visual-progress';
 
 try {
     importScripts('./firebase-config.js');

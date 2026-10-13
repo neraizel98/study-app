@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261013-weekly-course';
+    const APP_VERSION = '20261013-visual-progress';
 
     (async function () {
         try {
