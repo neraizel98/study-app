@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-reading-validation';
+const CACHE_NAME = 'smart-study-20261014-light-planner';
 
 try {
     importScripts('./firebase-config.js');
@@ -77,6 +77,7 @@ const STATIC_ASSETS = [
     './report-subject-summary.js',
     './shared-report-loader.js',
     './styles.css',
+    './learning-theme.css',
     './main.js',
     './weekly-schedule.js',
     './weekly-dashboard.js',
