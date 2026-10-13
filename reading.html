@@ -19,8 +19,8 @@
         .result{position:fixed;inset:0;display:grid;place-items:center;background:rgba(2,6,23,.84);z-index:50}.result[hidden]{display:none}.result-box{width:min(430px,90vw);padding:30px;border-radius:22px;background:#111827;border:1px solid #475569;text-align:center}.result-score{font-size:2.3rem;color:#fda4af;font-weight:900}
         [hidden]{display:none!important}@media(max-width:620px){.reading-shell{width:92%}.hero{padding:22px}.card h3{margin-top:24px}.principle{padding:17px;line-height:1.8}.rules{gap:10px}.study-examples{gap:14px}.study-example{padding:17px}.study-example-text{line-height:1.85}.passage-head{display:block}.actions button{flex:1}.passage{padding:16px}.unit-tabs{display:grid;grid-template-columns:1fr 1fr}.unit-btn{width:100%;padding:10px 7px}.lesson-tabs{justify-content:stretch}.lesson-btn{flex:1}}
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"><link rel="stylesheet" href="learning-theme.css?v=20261014-light-planner"></head>
-<body class="learning-light">
+<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"></head>
+<body>
 <main class="reading-shell">
     <nav class="top-nav"><a href="index.html">← 과목 목록</a><a href="index.html">🏠 홈</a></nav>
     <header class="hero"><div class="label">KOREAN READING LAB</div><h1>📖 국어 독해력</h1><p>Lv. 1 · 중1 수준 · 근거를 찾으며 정확하게 읽기</p></header>
@@ -45,14 +45,14 @@
 <section id="resultModal" class="result" hidden><div class="result-box"><div style="font-size:55px">🏆</div><h2>독해 퀴즈 결과</h2><div id="resultScore" class="result-score"></div><p id="resultMessage"></p><div class="actions"><button id="retryQuiz" class="primary">새 지문 풀기</button><button id="resultStudy">학습으로</button><button id="shareResult">아빠에게 공유</button></div></div></section>
 <script src="utils.js?v=20260911-adaptive"></script>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-light-planner"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
 <script src="study-timer.js?v=20260930-shared-subjects"></script>
 <script src="kakao-share.js?v=20260928-record-reliability"></script>
 <script src="ReadingData.js?v=20260728-examples"></script>
 <script src="ReadingPassages.js?v=20260728-lv1"></script>
 <script src="ReadingVocabulary.js?v=20260728-vocabulary"></script>
-<script src="ReadingApp.js?v=20261014-light-planner"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-light-planner"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-light-planner"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+<script src="ReadingApp.js?v=20261014-ui-rollback"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
 <script src="version-check.js"></script>
-<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-light-planner"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script></body>
+<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script></body>
 </html>

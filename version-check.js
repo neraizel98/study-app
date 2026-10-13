@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-light-planner';
+    const APP_VERSION = '20261014-ui-rollback';
 
     (async function () {
         try {
