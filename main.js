@@ -305,7 +305,7 @@ function startQuiz(wordList) {
                 currentQuizBand = currentLevel === 'level3' ? vocabularyBand() : typeof AdaptiveQuiz !== 'undefined'
                     ? AdaptiveQuiz.getBand('english', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
                     : { name: 'foundation', score: null, wrongRatio: 0.3 };
-                const dataList = window.EnglishVocabularyProgress
+                let dataList = window.EnglishVocabularyProgress
                     ? EnglishVocabularyProgress.focused(currentLevel, currentQuizBand, items => Utils.shuffle(items), Math.floor(QUIZ_COUNT * .3))
                     : vocabularyPool();
                 if (currentLevel === 'level3') {
@@ -317,7 +317,12 @@ function startQuiz(wordList) {
                     }
                     notice.textContent = `중${EnglishVocabularyProgress.grade(currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
                 }
-                const baseCount = QUIZ_COUNT - challengeWords.length;
+                if (window.QuizExposure) dataList = QuizExposure.freshWords(dataList);
+                if (!dataList.length) {
+                    alert('최근에 풀지 않은 새 단어 문제가 부족해요. 새 범위를 학습하거나 오답 노트에서 복습해 주세요.');
+                    setMode('study'); return;
+                }
+                const baseCount = Math.min(QUIZ_COUNT, dataList.length) - challengeWords.length;
                 const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
                 const baseWords = typeof AdaptiveQuiz !== 'undefined'
                     ? AdaptiveQuiz.mix(dataList, wrongItems, item => item.word, item => item.word, baseCount, currentQuizBand.wrongRatio)

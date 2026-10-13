@@ -697,7 +697,7 @@ function getQuizReports() {
     const userId = UserSession.getActiveUser();
     if (!userId) return [];
     try {
-        return LocalRepository.listReports(userId);
+        return LocalRepository.listReports(userId).filter(r=>!r.metadata?.mockExam);
     } catch (e) {
         console.error('[Quiz Reports Load Error]', e);
         return [];

@@ -114,6 +114,8 @@
         }
         const item = selectedPassage || passage();
         if (!item) { alert('풀 수 있는 지문이 없습니다.'); return; }
+        const questionPool = params.get('mode')==='review'?questionSnapshot(item):(window.QuizExposure?QuizExposure.fresh('english_reading',questionSnapshot(item)).slice(0,10):questionSnapshot(item));
+        if (!questionPool.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 선택하거나 오답 복습을 진행해 주세요.'); return; }
         const isNovel = kind === 'assessment' && !exposedIds().includes(item.id);
         const recommendation = EnglishReadingPolicy.recommendation([item], typeof WrongNote === 'undefined' ? {} : WrongNote.getAll(), reports());
         session = {
@@ -121,7 +123,7 @@
             levelId: LEVEL_ID, unitId: data().units.find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
             passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', review: params.get('mode') === 'review',
             isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, status: 'active', activeSeconds: 0,
-            questions: questionSnapshot(item), roundQuestionIds: item.questions.map(question => question.id), questionIndex: 0, round: 1,
+            questions: questionPool, roundQuestionIds: questionPool.map(question => question.id), questionIndex: 0, round: 1,
             answers: [], initialAttempts: [], attempts: [], initialScore: null, finalScore: 0, hintUsed: false, startedAt: Date.now()
         };
         expose(item.id, kind === 'assessment' ? 'assessment' : 'practice');

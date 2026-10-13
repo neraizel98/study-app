@@ -123,7 +123,7 @@
         }
     #parentPlanSettingsList select{background:#132238;color:#edf4ff;border:1px solid #49637f;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#1b2b3f;color:#b5c5da}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ffffff12}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#213a54;color:#bfdcff;border-radius:6px;font-size:12px}
 </style>
-</head>
+<link rel="stylesheet" href="weekly-dashboard.css"></head>
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -175,9 +175,9 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20260930-shared-subjects"></script>
-    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="learning-plan.js?v=20260930-unified"></script><script src="unified-learning.js?v=20260930-unified"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20260930-shared-subjects"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261013-weekly-course"></script>
+    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261013-weekly-course"></script><script src="unified-learning.js?v=20260930-unified"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261013-weekly-course"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
@@ -387,6 +387,7 @@
             ${buildRewardPanel(ud)}
 
             <div class="detail-tabs">
+                <button class="d-tab" data-tab="mock" onclick="switchTab(this,'mock','${userId}')">📝 모의고사 통계</button>
                 <button class="d-tab active" data-tab="quiz"    onclick="switchTab(this,'quiz',    '${userId}')">📋 퀴즈 기록</button>
                 <button class="d-tab"        data-tab="weekly"  onclick="switchTab(this,'weekly',  '${userId}')">📅 주간 통계</button>
                 <button class="d-tab"        data-tab="subject" onclick="switchTab(this,'subject', '${userId}')">📊 과목별 통계</button>
@@ -441,6 +442,15 @@
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
                 </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 위 7과목을 순서대로 진행합니다. 국어·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
+            const weeklySettings=SmartStudy.WeeklySchedule.normalize(value.weekly);
+            const examSettings=document.createElement('details');examSettings.style.cssText='padding:12px;border:1px solid var(--card-border);border-radius:12px;margin-top:12px;';
+            const summary=document.createElement('summary');summary.textContent='주간 과정 · 모의고사 시간';examSettings.append(summary);
+            const note=document.createElement('p');note.textContent='월~금 학습 · 토 55문항 시험 · 일 오답 복습. 시험 시간은 평일 목표와 별도입니다. 시작한 시험에는 변경이 적용되지 않습니다.';examSettings.append(note);
+            for(const [subject,label] of Object.entries({reading:'국어',english:'영어',math:'수학',hanja:'한자'})){
+                const line=document.createElement('label');line.textContent=label+' 시험 시간(분) ';const input=document.createElement('input');input.type='number';input.min=5;input.max=60;input.step=1;input.required=true;input.value=weeklySettings.mockSectionMinutes[subject];input.dataset.examMinutes=subject;input.style.cssText='width:75px;min-height:44px;';line.append(input);examSettings.append(line);
+            }
+            card.append(examSettings);
+
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
             const scopeState=Object.fromEntries(['reading','english','english_reading','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
@@ -471,13 +481,15 @@
             card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
                 const button = event.currentTarget, message = card.querySelector('[data-plan="message"]');
                 button.disabled = true; message.textContent = '저장 중...';
+                const invalidTime=[...card.querySelectorAll('[data-exam-minutes]')].find(input=>!input.checkValidity());if(invalidTime){button.disabled=false;message.textContent='시험 시간은 5~60분 사이의 정수로 입력해 주세요.';invalidTime.focus();return;}
                 try {
                     await SmartStudy.FirestoreRepository.saveLearnerPlanSettings(learner.userId, {
                         budgetMinutes:Number(card.querySelector('[data-plan="budget"]').value),
                         grade:Number(card.querySelector('[data-plan="grade"]').value),
                         semester:Number(card.querySelector('[data-plan="semester"]').value),
                         englishActivity:Number(card.querySelector('[data-plan="grade"]').value)===6&&value.englishActivity==='reading'?'reading':'vocabulary',
-                        scopes:scopeState
+                        scopes:scopeState,
+                        weekly:SmartStudy.WeeklySchedule.normalize({...weeklySettings,mockSectionMinutes:Object.fromEntries([...card.querySelectorAll("[data-exam-minutes]")].map(input=>[input.dataset.examMinutes,Number(input.value)]))})
                     });
                     message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';
                 } catch (error) {
@@ -536,6 +548,7 @@
         }
         const { ud, reports, wrongAnswers } = window._adminData;
         const el = document.getElementById('tabContent');
+        if (tab === 'mock') await SmartStudy.MockAdmin.render(userId, el);
         if (tab === 'quiz')    el.innerHTML = buildQuizTab(reports, wrongAnswers);
         if (tab === 'subject') el.innerHTML = buildSubjectTab(reports, ud);
         if (tab === 'level')   el.innerHTML = buildStudyDetailTab(reports);
@@ -1400,6 +1413,6 @@
         }
     });
     </script>
-<script src="version-check.js"></script>
+<script src="mock-publication.js"></script><script src="mock-admin.js"></script><script src="version-check.js"></script>
 </body>
 </html>

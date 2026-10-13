@@ -30,7 +30,7 @@
         let pageCount = 0;
         while (hasMore && pageCount < MAX_PAGES) {
             const page = await repository.getReportsPage(learnerId, { before, start: range.start, end: range.end, limit: PAGE_SIZE, source: 'server' });
-            reports.push(...(Array.isArray(page?.reports) ? page.reports : []));
+            reports.push(...(Array.isArray(page?.reports) ? page.reports : []).filter(r=>!r.metadata?.mockExam));
             hasMore = Boolean(page?.hasMore && page?.cursor);
             before = page?.cursor || null;
             pageCount += 1;
@@ -48,7 +48,7 @@
     async function loadLegacy(repository, learnerId, date, dateKey) {
         const bundle = await repository.getUserBundle(learnerId);
         const reports = (Array.isArray(bundle?.reports) ? bundle.reports : []).filter(report =>
-            !date || dateKey(new Date(Number(report.date || report.createdAt || 0))) === date
+            !report.metadata?.mockExam && (!date || dateKey(new Date(Number(report.date || report.createdAt || 0))) === date)
         );
         const daily = date && bundle?.user?.dailyStats?.date === date ? bundle.user.dailyStats : null;
         return { reports, daily, legacy: true, getDetail: async report => report };

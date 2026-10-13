@@ -114,7 +114,11 @@
                 ? AdaptiveQuiz.weightedWrongItems(activeWrong, wrongTarget)
                 : activeWrong.slice(0, wrongTarget);
             const priorityQuestions = getReviewQuestions(selectedWrong);
-            const currentQuestions = EnglishGrammarQuiz.generate(unit().id, 10, band.name);
+            let currentQuestions = [];
+            for (let batch=0; batch<8 && currentQuestions.length<20; batch++) {
+                const candidates=EnglishGrammarQuiz.generate(unit().id, 20, band.name).filter(q=>q.type&&q.type!=='choice'?Boolean(q.answer):!window.AnswerValidation||AnswerValidation.choice({...q,answer:q.answer||q.choices?.[q.answerIndex]},q.answer||q.choices?.[q.answerIndex]).status==='correct');
+                currentQuestions.push(...(window.QuizExposure?QuizExposure.fresh('grammar',candidates):candidates));
+            }
             let challengeQuestions = [];
             const seen = new Set(priorityQuestions.map(item => item.question));
             const fresh = [...challengeQuestions, ...currentQuestions].filter(item => {
@@ -130,6 +134,7 @@
             location.href = 'wrong_note.html';
             return;
         }
+        if (!questions.length) { alert('최근에 풀지 않은 새 문항이 부족해요. 다른 범위를 학습하거나 오답 복습을 선택해 주세요.'); return; }
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
         sessionId = `grammar-${Date.now()}`; attempts = [];
         quizActiveTimer?.destroy();
@@ -177,6 +182,7 @@
     }
 
     function normalizeTyped(value) {
+        if(window.AnswerValidation)return AnswerValidation.englishNormalize(value);
         return String(value ?? '')
             .normalize('NFC')
             .trim()
@@ -190,7 +196,7 @@
         const selected = $('quizTypedInput').value.trim();
         if (!selected) return;
         const q = questions[questionIndex];
-        completeAnswer(selected, normalizeTyped(selected) === normalizeTyped(q.answer), null);
+        completeAnswer(selected, [q.answer,...(q.acceptedAnswers||[])].some(value=>normalizeTyped(selected) === normalizeTyped(value)), null);
     }
 
     function completeAnswer(selectedAnswer, correct, selectedIndex) {

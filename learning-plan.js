@@ -22,7 +22,8 @@
             semester:[1,2].includes(semester)?semester:fallback.semester,
             englishActivity:value?.englishActivity==='reading'?'reading':'vocabulary',
             scopes:Object.fromEntries(subjects.map(subject=>[subject,normalizeScope(subject,value?.scopes?.[subject])])),
-            source:value?.source||fallback.source
+            source:value?.source||fallback.source,
+            ...(value?.weekly ? {weekly:root.WeeklySchedule?.normalize(value.weekly)||value.weekly} : {})
         };
     };
     const contextOf=(subject,item)=>{
@@ -70,7 +71,7 @@
     function recommend(user,profile,subject){
         const available=new Set(catalog(subject,profile).map(item=>contextKey(subject,item.context)));
         const usable=context=>allowed(profile,subject,context)&&available.has(contextKey(subject,context));
-        const reports=local.listReports(user).filter(r=>r.subject===subject&&!r.metadata?.assessment&&r.metadata?.source!=='math-formula'
+        const reports=local.listReports(user).filter(r=>r.subject===subject&&!r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
             &&Number(r.date||0)>=Date.now()-30*86400000)
             .sort((a,b)=>Number(b.updatedAt||b.date||0)-Number(a.updatedAt||a.date||0));
         const wrong=(local.getWrongAnswers(user)[subject]||[]).filter(item=>!item.deleted&&!item.isMastered
@@ -79,7 +80,7 @@
             const context=contextOf(subject,item);
             if(usable(context))return {context,reasonText:'복습할 시기가 된 오답을 먼저 확인해요.'};
         }
-        const assessments=local.listReports(user).filter(r=>r.subject===subject&&r.metadata?.assessment)
+        const assessments=local.listReports(user).filter(r=>r.subject===subject&&r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published'))
             .sort((a,b)=>Number(b.updatedAt||b.date||0)-Number(a.updatedAt||a.date||0));
         for(const report of assessments){
             for(const attempt of report.metadata?.attempts||[]){
@@ -118,7 +119,7 @@
             targetUrl:target(subject,context),assignmentMode:scope.mode,required:scope.mode==='assigned',status:'ready',sessionId:null,startedAt:null,completedAt:null,submittedAt:null};
     }
     const taskSubjects=settings=>['reading',settings.englishActivity==='reading'?'english_reading':'english','math'];
-    const settingsSignature=settings=>JSON.stringify({budgetMinutes:settings.budgetMinutes,grade:settings.grade,semester:settings.semester,englishActivity:settings.englishActivity,scopes:settings.scopes});
+    const settingsSignature=settings=>JSON.stringify({budgetMinutes:settings.budgetMinutes,grade:settings.grade,semester:settings.semester,englishActivity:settings.englishActivity,scopes:settings.scopes,weekly:settings.weekly});
     const api={
         budgets:minutesByBudget,subjects,contextOf,contextKey,target,today,catalog,settingsSignature,
         getSettings(user){return normalizeSettings(user,local.getPreference(settingsKey(user),null));},
@@ -193,7 +194,7 @@
             for(const task of plan.tasks){
                 if(task.status!=='in_progress'||!task.startedAt)continue;
                 const expected=contextKey(task.subject,task.context);
-                const report=reports.find(r=>r.subject===task.subject&&!r.metadata?.assessment&&r.metadata?.source!=='math-formula'
+                const report=reports.find(r=>r.subject===task.subject&&!r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
                     && Number(r.createdAt||r.date||0)>task.startedAt
                     && Number(r.metadata?.submittedAt||0)>task.startedAt
                     && (r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=Math.max(1,Number(r.totalQuestions)||0)

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261012-vocabulary-grades';
+const CACHE_NAME = 'smart-study-20261013-weekly-course';
 
 try {
     importScripts('./firebase-config.js');
@@ -77,6 +77,23 @@ const STATIC_ASSETS = [
     './shared-report-loader.js',
     './styles.css',
     './main.js',
+    './weekly-schedule.js',
+    './weekly-dashboard.js',
+    './weekly-dashboard.css',
+    './weekly-review.html',
+    './weekly-review.js',
+    './answer-validation.js',
+    './quiz-exposure.js',
+    './reading-question-variants.js',
+    './mock-exam.html',
+    './mock-exam.js',
+    './mock-exam-ui.js',
+    './mock-exam-results.js',
+    './mock-exam.css',
+    './mock-publication.js',
+    './mock-admin.js',
+    './mock-exam-bank.js',
+    './mock-reading-content.js',
     './english-speech.js',
     './english-vocabulary-progress.js',
     './utils.js',

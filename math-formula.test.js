@@ -106,7 +106,9 @@ vm.runInContext(app, context);
 const appApi = vm.runInContext('MathFormulaApp', context);
 formulas.forEach(item => {
     const calculationQuestions = Array.from(appApi.createCalculationQuestions(item.number));
-    assert.strictEqual(calculationQuestions.length, 3, `Formula ${item.number} must show exactly three calculation questions`);
+    assert(calculationQuestions.length>0&&calculationQuestions.length<=5, `Formula ${item.number} must provide up to five valid distinct review questions`);
+    assert.equal(new Set(calculationQuestions.map(q=>q.prompt+"|"+q.answer)).size,calculationQuestions.length);
+    if(item.number===1)assert.equal(calculationQuestions.length,5,"variable elementary formulas can supply five questions");
     assert.equal(calculationQuestions[0].level,'공식 떠올리기');
     assert.equal(calculationQuestions[1].level,'기호 확인');
     assert.equal(calculationQuestions[2].level,'공식 보고 계산');

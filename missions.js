@@ -31,6 +31,8 @@ const MissionManager = {
     get areas() { return [...new Set([...this.registeredSubjects(),'math_formula'])]; },
     budget(user) {
         const id=user?.id||UserSession.getActiveUser();
+        const current=window.SmartStudy?.LocalRepository?.getPreference(`SmartStudy_DailyPlan_${encodeURIComponent(id)}_${this.periodKey('daily')}`,null);
+        if(current?.tasks?.some(t=>t.startedAt||t.completedAt||t.status!=='ready')&&[30,45,60].includes(Number(current.budget)))return Number(current.budget);
         const value=window.SmartStudy?.LocalRepository?.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(id)}`,null);
         return [30,45,60].includes(Number(value?.budgetMinutes))?Number(value.budgetMinutes):45;
     },

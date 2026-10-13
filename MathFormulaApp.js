@@ -412,6 +412,9 @@ const MathFormulaApp = (() => {
             hintUsed = new Set();
             window.MathFormulaTime?.startQuizSession();
         }
+        if (!questions.length) {
+            $('content').replaceChildren();const message=document.createElement('p');message.textContent='최근에 풀지 않은 새 공식 문제가 부족해요. 다른 공식을 공부하거나 오답 노트에서 복습해 주세요.';const back=document.createElement('a');back.href=`math_formula.html?formula=${formulaNumber}&mode=study`;back.textContent='공식 내용으로 돌아가기';$('content').append(message,back);return;
+        }
         const item = formula();
         const score = submitted ? questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length : 0;
         const quizLabels = questions.map(q=>q.level||'오답 복습');
@@ -473,7 +476,13 @@ const MathFormulaApp = (() => {
     function createCalculationQuestions(number) {
         const user=SmartStudy.LocalRepository.getActiveUser();
         const reports=user?SmartStudy.LocalRepository.listReports(user):[];
-        return window.MathFormulaReview.create(number,window.MathFormulaReview.band(reports,number));
+        const stage=window.MathFormulaReview.band(reports,number), pool=[],seen=new Set();
+        for(let batch=0;batch<20&&pool.length<5;batch++){
+            const candidates=window.MathFormulaReview.create(number,stage);
+            const fresh=window.QuizExposure?QuizExposure.fresh('math',candidates):candidates;
+            for(const q of fresh){const fingerprint=window.QuizExposure?QuizExposure.fingerprint(q):q.prompt+'|'+q.answer;if(seen.has(fingerprint))continue;seen.add(fingerprint);pool.push(q);if(pool.length===5)break;}
+        }
+        return pool;
     }
 
     function bindQuiz() {

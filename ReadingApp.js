@@ -116,11 +116,15 @@
             return;
         }
         const wrongIds = new Set(activeWrongItems().filter(item => item.passageId === passage.id && (reviewMode || LearningPolicy.isDue(item))).map(item => item.questionId));
-        const base = questionPool.filter(item => {
+        let base = questionPool.filter(item => {
             if (reviewMode) return wrongIds.has(item.id);
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
             return true;
         });
+        if (!reviewMode && window.QuizExposure) {
+            const fresh=QuizExposure.fresh('reading',base);base=base.filter(q=>wrongIds.has(q.id)||fresh.includes(q));
+            if (!base.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 학습하거나 오답 복습을 선택해 주세요.'); return; }
+        }
         const priority = Utils.shuffle(base.filter(item => wrongIds.has(item.id)));
         const selected = [];
         const addUnique = item => {

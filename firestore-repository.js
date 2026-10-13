@@ -56,6 +56,7 @@
             const db = await client.getDB();
             return db.collection('learnerPlanSettings').doc(userId).set({
                 budgetMinutes, grade, semester, englishActivity,
+                ...(settings.weekly ? {weekly:root.WeeklySchedule.normalize(settings.weekly)} : {}),
                 scopes: Object.fromEntries(['reading','english','english_reading','math'].map(subject => [subject, {
                     mode: scopes[subject].mode,
                     ...(scopes[subject].mode === 'assigned' ? {
@@ -66,7 +67,7 @@
                 }])),
                 updatedAt: root.firebase.firestore.FieldValue.serverTimestamp(),
                 updatedBy: authUser.uid
-            }, { mergeFields: ['budgetMinutes', 'grade', 'semester', 'englishActivity', 'scopes', 'updatedAt', 'updatedBy'] });
+            }, { mergeFields: ['budgetMinutes', 'grade', 'semester', 'englishActivity', 'scopes', 'updatedAt', 'updatedBy', ...(settings.weekly ? ['weekly'] : [])] });
         },
         async getUserBundle(userId) {
             const r = await refs(userId);
@@ -182,4 +183,28 @@
     };
 
     root.SmartStudy.FirestoreRepository = Repository;
+})(window);
+
+// Assessment publication stays inside the Firestore repository boundary.
+(function(root){
+ 'use strict';const app=root.SmartStudy=root.SmartStudy||{},client=app.FirebaseClient;
+ const id=(user,assessment)=>{if(String(user).includes('/')||String(assessment).includes('/'))throw new Error('시험 식별자가 올바르지 않습니다.');return user+'|'+assessment;};
+ async function ref(user,assessment){return (await client.getDB()).collection('mockExamResults').doc(id(user,assessment));}
+ const timed=p=>{let timer;return Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('서버 확인 시간이 초과되었습니다. 다시 시도해 주세요.')),10000);})]).finally(()=>clearTimeout(timer));};
+ function markPublished(data){
+  const local=app.LocalRepository;if(!data.published||local?.getActiveUser?.()!==data.learnerId||!local.listReports||!local.saveReports)return;
+  const rows=local.listReports(data.learnerId);if(!rows.some(r=>r.metadata?.assessmentId===data.assessmentId&&r.metadata.resultVisibility!=='published'))return;
+  local.saveReports(data.learnerId,rows.map(r=>r.metadata?.assessmentId===data.assessmentId?{...r,updatedAt:Date.now(),metadata:{...r.metadata,resultVisibility:'published',publicationConfirmedAt:Date.now()}}:r));
+ }
+ async function get(user,assessment){const doc=await timed((await ref(user,assessment)).get({source:'server'}));if(!doc.exists)return {published:false};const data=doc.data();if(data.learnerId!==user||data.assessmentId!==assessment)throw new Error('시험 정보가 일치하지 않습니다.');markPublished(data);return {published:data.published===true,publishedAt:data.publishedAt?.toMillis?.()||null,snapshot:data.payload};}
+ async function submit(user,snapshot){const auth=await client.getCurrentUser();if(!auth)throw new Error('계정 연결 후 다시 저장해 주세요.');const r=await ref(user,snapshot.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists){if(old.data().payload.submittedAt!==snapshot.submittedAt||JSON.stringify(old.data().payload.questions)!==JSON.stringify(snapshot.questions)||JSON.stringify(old.data().payload.initialAttempts)!==JSON.stringify(snapshot.initialAttempts))throw new Error('다른 기기의 제출 기록이 있습니다. 관리자 확인이 필요합니다.');return;}tx.set(r,{learnerId:user,assessmentId:snapshot.assessmentId,payload:JSON.parse(JSON.stringify(snapshot)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};}
+ async function list(user,options={}){
+  const count=Math.max(1,Math.min(12,Number(options.weeks)||1)),dates=[];
+  for(let i=0;i<count;i++){const k=new Date(Date.now()+9*3600000-i*7*86400000);k.setUTCDate(k.getUTCDate()-(k.getUTCDay()+6)%7);dates.push(k.toISOString().slice(0,10));}
+  if(options.week&&/^\d{4}-\d{2}-\d{2}$/.test(options.week))dates.splice(0,dates.length,options.week);
+  const rows=await timed(Promise.all(dates.map(async week=>{const assessment='mock:'+user+':'+week+':first',doc=await (await ref(user,assessment)).get({source:'server'});if(!doc.exists)return null;const data=doc.data();if(data.learnerId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);return {...data,documentId:doc.id};})));
+  return rows.filter(Boolean).sort((a,b)=>Number(b.payload.submittedAt)-Number(a.payload.submittedAt));
+ }
+ async function publish(user,assessment){const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');const r=await ref(user,assessment),db=await client.getDB();await timed(db.runTransaction(async tx=>{const doc=await tx.get(r);if(!doc.exists)throw new Error('저장된 시험이 없습니다.');if(doc.data().published)return;tx.update(r,{published:true,publishedAt:root.firebase.firestore.FieldValue.serverTimestamp(),publishedBy:auth.uid});}));return get(user,assessment);}
+ app.MockPublication={get,submit,list,publish,id};
 })(window);

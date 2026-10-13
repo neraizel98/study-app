@@ -66,7 +66,7 @@
             const choice=choices.find(c=>same(c.context,contextOf(subject,item)));
             if(choice)return {...choice,reason:'복습할 오답이 있는 범위를 먼저 확인해요.'};
         }
-        const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
+        const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
         const assessed=new Set();
         for(const report of assessments)for(const attempt of report.metadata.initialAttempts||report.metadata.attempts||[]){
             const c=attempt.context||contextOf(subject,report),id=plan.contextKey(subject,c);
