@@ -1,0 +1,30 @@
+/* Math pages must size to the viewport, not to an unbroken formula. */
+body.math-mobile-layout{display:block;width:100%;min-width:0;height:auto;min-height:100dvh;overflow-y:auto}
+.math-mobile-layout .viewer-container,.math-mobile-layout .container{width:100%;min-width:0;max-width:750px;margin-inline:auto;box-sizing:border-box;padding-bottom:calc(100px + env(safe-area-inset-bottom))}
+.math-mobile-layout .container{max-width:600px}
+.math-mobile-layout .viewer-header>div:first-child{flex-wrap:wrap;gap:10px}
+.math-mobile-layout .viewer-header nav{flex-wrap:wrap}
+.math-mobile-layout .step-content,.math-mobile-layout .detail-item>div:last-child{min-width:0;max-width:100%}
+.math-mobile-layout .step-num{flex-shrink:0}
+.math-mobile-layout .principle-text,.math-mobile-layout .detail-item,.math-mobile-layout .deep-dive-item,.math-mobile-layout .solution-item,.math-mobile-layout .example-problem{overflow-wrap:anywhere}
+.math-mobile-layout .step-formula{display:block;max-width:100%;overflow-x:auto;overflow-y:hidden;padding-block:18px;line-height:1.8}
+.math-mobile-layout .katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden;padding-block:8px}
+.math-mobile-layout #svgDiagram svg{display:block;width:100%;height:auto;max-width:100%}
+.math-mobile-layout .concept-image{display:block;width:auto;height:auto;max-width:100%;margin:auto;object-fit:contain}
+.math-mobile-layout .bottom-nav{flex-wrap:wrap;gap:10px}
+.math-mobile-layout .nav-btn{min-width:0;overflow-wrap:anywhere;min-height:48px}
+@media(max-width:600px){
+ .math-mobile-layout .viewer-container{padding:18px 14px calc(100px + env(safe-area-inset-bottom))}
+ .math-mobile-layout .principle-card,.math-mobile-layout .example-section,.math-mobile-layout .deep-dive-card{padding:22px 16px;border-radius:20px}
+ .math-mobile-layout .principle-text{padding:16px;font-size:1.05rem;margin-bottom:24px}
+ .math-mobile-layout .step-box{padding:16px 12px;gap:10px;border-radius:14px}
+ .math-mobile-layout .step-box:hover{transform:none}
+ .math-mobile-layout .step-formula{font-size:1.05rem;padding:14px 10px}
+ .math-mobile-layout .svg-diagram-box,.math-mobile-layout .concept-image-box{padding:16px 8px;margin:22px 0;border-radius:16px}
+ .math-mobile-layout .detail-item{gap:10px;font-size:1rem}
+ .math-mobile-layout .deep-dive-example,.math-mobile-layout .solution-item{padding:14px}
+ .math-mobile-layout .nav-btn{padding:16px 10px;font-size:.9rem}
+ .math-mobile-layout .global-btn{min-height:44px;padding:10px 12px}
+ .math-mobile-layout .choices-grid{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+ .math-mobile-layout .choices-grid button{min-width:0;white-space:normal;overflow-wrap:anywhere}
+}

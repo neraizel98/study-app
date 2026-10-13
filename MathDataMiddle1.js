@@ -7,7 +7,7 @@
 
     const visual = {
         factorTree: {
-            svg: `<svg viewBox="0 0 640 260" role="img" aria-label="60의 소인수분해 나무">
+            svg: `<svg viewBox="0 0 640 300" role="img" aria-label="60의 소인수분해 나무">
                 <style>.n{fill:#161b22;stroke:#58a6ff;stroke-width:3}.t{fill:#f0f6fc;font:700 22px sans-serif;text-anchor:middle}.p{stroke:#8b949e;stroke-width:3}.prime{fill:#1f6f46;stroke:#3fb950}</style>
                 <line class="p" x1="320" y1="48" x2="220" y2="105"/><line class="p" x1="320" y1="48" x2="420" y2="105"/>
                 <line class="p" x1="420" y1="130" x2="365" y2="200"/><line class="p" x1="420" y1="130" x2="475" y2="200"/>
@@ -16,7 +16,7 @@
                 <circle class="n" cx="420" cy="120" r="30"/><text class="t" x="420" y="128">30</text>
                 <circle class="n prime" cx="365" cy="215" r="28"/><text class="t" x="365" y="223">2</text>
                 <circle class="n" cx="475" cy="215" r="30"/><text class="t" x="475" y="223">15</text>
-                <text class="t" x="95" y="238" style="fill:#3fb950">60 = 2² × 3 × 5</text>
+                <text class="t" x="320" y="283" style="fill:#3fb950">60 = 2² × 3 × 5</text>
             </svg>`,
             caption: "합성수를 소수가 될 때까지 가지로 나누면 소인수분해가 보입니다."
         },

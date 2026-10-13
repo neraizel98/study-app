@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261013-visual-progress';
+const CACHE_NAME = 'smart-study-20261013-math-mobile';
 
 try {
     importScripts('./firebase-config.js');
@@ -59,6 +59,7 @@ const STATIC_ASSETS = [
     './goals-ui.js',
     './math.html',
     './math_viewer.html',
+    './math-mobile.css',
     './math_quiz.html',
     './english.html',
     './english_reading.html',
