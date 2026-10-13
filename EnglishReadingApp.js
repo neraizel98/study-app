@@ -29,12 +29,13 @@
 
     function validateContent() {
         const ids = new Set();
-        return allPassages().every(item => {
+        const content = allPassages();
+        return content.length > 0 && content.every(item => {
             if (!item?.id || ids.has(item.id) || ![0, 1, 2].includes(Number(item.band))) return false;
             ids.add(item.id);
             return Array.isArray(item.sentences) && item.sentences.length > 0
-                && item.translations?.length === item.sentences.length && item.questions?.length === 5
-                && new Set(item.questions.map(question => question.id)).size === 5
+                && item.translations?.length === item.sentences.length && Array.isArray(item.questions) && item.questions.length >= 5
+                && new Set(item.questions.map(question => question.id)).size === item.questions.length
                 && item.questions.every(question => question.choices?.length === 4
                     && new Set(question.choices.map(choice => String(choice).normalize('NFC').trim())).size === 4
                     && Number.isInteger(question.answerIndex) && question.answerIndex >= 0 && question.answerIndex < 4
@@ -331,7 +332,7 @@
     async function init() {
         await window.SmartStudy?.LocalRepository?.ready;
         if (!userId()) { location.href = 'index.html'; return; }
-        if (!validateContent()) { document.querySelector('main').innerHTML = '<section class="card"><h1>영어 독해 콘텐츠를 확인할 수 없습니다.</h1><p>검증된 5문항 지문 데이터가 필요합니다.</p></section>'; return; }
+        if (!validateContent()) { document.querySelector('main').innerHTML = '<section class="card"><h1>영어 독해 콘텐츠를 확인할 수 없습니다.</h1><p>지문과 문제 데이터를 다시 확인해 주세요. 홈으로 돌아가 다시 열 수 있습니다.</p></section>'; return; }
         const requestedPassage = params.get('passage'); if (requestedPassage) selectPassageById(requestedPassage);
         else if (!params.has('unit')) { const candidate = getRecommendation().passageId; if (candidate) selectPassageById(candidate); }
         renderSelectors(); bind(); updateBandNotice();

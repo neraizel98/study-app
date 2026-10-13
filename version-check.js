@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261013-math-mobile';
+    const APP_VERSION = '20261014-reading-validation';
 
     (async function () {
         try {

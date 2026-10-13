@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261013-math-mobile';
+const CACHE_NAME = 'smart-study-20261014-reading-validation';
 
 try {
     importScripts('./firebase-config.js');
