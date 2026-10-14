@@ -89,7 +89,11 @@ function mockFirestore(){
     const detail=await R.getReportDetail('test',page.reports[0]);assert.equal(detail.metadata.attempts.length,1);
     const older=await R.getReportsPage('test',{before:page.cursor});assert.equal(older.reports.length,5);
     remote.fromCache=true;
-    const bundle=await R.getUserBundle('test',{runId:'test-run'});assert.equal(bundle.reports.length,25);
+    const readsBeforeBundle=remote.reads;
+    const bundle=await R.getUserBundle('test',{runId:'test-run'});
+    assert.equal(bundle.reports.length,0,'records this device uploaded are not downloaded again');
+    assert.ok(remote.reads-readsBeforeBundle<10,'held records cost no body reads');
+    assert.ok(D.getMeta('cursor:test:quizRecords')>0,'held records advance the cursor before the run finishes');
     const progress=ctx.events.filter(event=>event.type==='smartstudy:sync-progress'&&event.detail.runId==='test-run').map(event=>event.detail);
     assert(progress.some(event=>event.operation==='reports-list'&&event.completed===25&&event.total===25),'download list reports a known final total');
     assert(progress.some(event=>event.operation==='reports-body'&&event.completed===25&&event.total===25),'body verification reports every completed record');
@@ -102,15 +106,32 @@ function mockFirestore(){
     await R.confirmBundle('test',bundle,{uploaded:true});
     assert.equal(remote.docs.has(markerPath),true,'migration marker follows confirmed uploads');
     assert.equal(remote.writes-beforeConfirmation,1,'confirmation never repeats the entire upload');
+    // A second device downloads each body once; after its local commit and upload pass, nothing is read or written again.
+    const other=await create(new IDBFactory(),storage());other.firebase=ctx.firebase;
+    other.SmartStudy.FirestoreRepository={getDB:async()=>remote.db,getUserBundle:async()=>({user:{id:'test'},reports:[],wrongAnswers:{}})};
+    vm.runInContext(fs.readFileSync('partition-repository.js','utf8'),other);
+    const R2=other.SmartStudy.FirestoreRepository,L2=other.SmartStudy.LocalRepository;
+    // Real uploads come from records the origin device already saved (createdAt/updatedAt/deviceId stamped).
+    L.saveReports('echo',reports.slice(0,25));await L.flush();await R.putReports('echo',L.listReports('echo'));
+    const first=await R2.getUserBundle('echo');assert.equal(first.reports.length,25,'a new device receives every record');
+    L2.saveReports('echo',first.reports);await L2.flush();
+    const writesBeforeEcho=remote.writes;
+    await R2.putReports('echo',L2.listReports('echo'));
+    assert.equal(remote.writes,writesBeforeEcho,'echoing downloaded records back performs no writes');
+    const readsBeforeRepeat=remote.reads;
+    const repeat=await R2.getUserBundle('echo');
+    assert.equal(repeat.reports.length,0,'an interrupted sync does not download held records again');
+    assert.ok(remote.reads-readsBeforeRepeat<10,'repeat sync after interruption stays cheap');
     remote.fail=true;
     await assert.rejects(R.putReports('test',[{sessionId:'failed',date:3000,subject:'math'}]),/offline/);
-    assert.equal([...remote.docs.keys()].filter(k=>k.includes('/quizRecords/')).length,25,'failed upload never acknowledges or publishes an incomplete record');
+    assert.equal([...remote.docs.keys()].filter(k=>k.startsWith('users/test/quizRecords/')).length,25,'failed upload never acknowledges or publishes an incomplete record');
     remote.fail=false;await R.putReports('test',[{sessionId:'failed',date:3000,subject:'math'}]);
-    assert.equal([...remote.docs.keys()].filter(k=>k.includes('/quizRecords/')).length,26);
+    assert.equal([...remote.docs.keys()].filter(k=>k.startsWith('users/test/quizRecords/')).length,26);
     const pageRecords=Array.from({length:105},(_,i)=>({sessionId:`page-${i}`,date:i,subject:'math'}));
-    await R.putReports('pages',pageRecords);ctx.events.length=0;
-    const paged=await R.getUserBundle('pages',{runId:'page-run'});assert.equal(paged.reports.length,105);
-    const pageProgress=ctx.events.filter(event=>event.detail?.runId==='page-run'&&event.detail.operation==='reports-list').map(event=>event.detail);
+    await R.putReports('pages',pageRecords);other.events.length=0;
+    // Paging is exercised from the second device, which does not hold these records yet.
+    const paged=await R2.getUserBundle('pages',{runId:'page-run'});assert.equal(paged.reports.length,105);
+    const pageProgress=other.events.filter(event=>event.detail?.runId==='page-run'&&event.detail.operation==='reports-list').map(event=>event.detail);
     assert.equal(pageProgress[0].pages,1);assert.equal(pageProgress[0].completed,100);assert.equal(pageProgress[0].total,null,'full first page keeps total unknown');
     assert.equal(pageProgress.at(-1).pages,2);assert.equal(pageProgress.at(-1).total,105,'last page publishes the confirmed total');
     await R.putWrongAnswers('test',L.getWrongAnswers('test'));

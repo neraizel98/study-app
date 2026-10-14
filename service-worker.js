@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-today-english';
+const CACHE_NAME = 'smart-study-20261014-sync-reads';
 
 try {
     importScripts('./firebase-config.js');

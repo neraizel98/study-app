@@ -67,6 +67,8 @@
                 merged={subject,item:_mergeWrong({[subject]:[value.item]},{[subject]:[old.item]})[subject][0]};
             }
         }
+        // The server already holds this exact content (e.g. a record this device just downloaded): no writes.
+        if(previous.exists && await hash(canonical(merged))===previous.data().body?.revision){await D.setMeta(ack,revision);return;}
         const body=await writeBody(ref,merged);
         const summary=collection==='quizRecords'?{...merged,metadata:{...merged.metadata}}:{subject:merged.subject,item:{...merged.item}};
         if(collection==='quizRecords'){
@@ -103,28 +105,44 @@
             emitProgress(user,'wrong',Math.min(i+4,entries.length),entries.length,{...options,lane:'upload',operation:'wrong',status:'progress',source:'unknown'});
         }
     });
+    // A record whose server revision equals this device's acknowledged upload is already held locally.
+    async function held(user,collection,data){
+        const summary=data.summary||{},revision=data.body?.revision;
+        if(!revision)return false;
+        const id=collection==='quizRecords'?String(summary.sessionId):JSON.stringify([summary.subject,identifier(summary.subject,summary.item||{})]);
+        return D.getMeta(`ack:${user}:${collection}:${await hash(id)}`)===revision;
+    }
     async function changes(user,collection,{runId=null,kind=collection}={}){
         const ref=await base(user), cursorKey=`cursor:${user}:${collection}`, cursor=D.getMeta(cursorKey)||0;
         let query=ref.collection(collection).orderBy('syncAt').where('syncAt','>=',new Date(cursor)).limit(100), last=null;
-        const values=[],records=[];let pages=0;
+        const values=[];let pages=0,listed=0,checked=0,pending=false,safe=cursor;
         while(true){
             let page;
             try{page=await query.get();}catch(error){
-                emitProgress(user,kind,records.length,null,{runId,lane:'download',operation:`${kind}-list`,status:'failed',source:'unknown',pages,error});
+                emitProgress(user,kind,listed,null,{runId,lane:'download',operation:`${kind}-list`,status:'failed',source:'unknown',pages,error});
                 throw error;
             }
-            pages++;records.push(...page.docs);last=page.docs.at(-1)||last;
-            emitProgress(user,kind,records.length,page.size<100?records.length:null,{runId,lane:'download',operation:`${kind}-list`,status:page.size<100?'completed':'progress',source:responseSource(page),pages});
+            pages++;listed+=page.size;last=page.docs.at(-1)||last;
+            emitProgress(user,kind,listed,page.size<100?listed:null,{runId,lane:'download',operation:`${kind}-list`,status:page.size<100?'completed':'progress',source:responseSource(page),pages});
+            for(const record of page.docs){
+                const data=record.data();
+                emitProgress(user,kind,checked,null,{runId,lane:'download',operation:`${kind}-body`,status:'waiting',source:'unknown'});
+                if(await held(user,collection,data)){
+                    // Every earlier record is held too, so the next sync can start here even if this one is interrupted.
+                    if(!pending)safe=data.syncAt?.toMillis?.()??safe;
+                }else{
+                    pending=true;
+                    try{values.push(await readBody(ref,data.body));}catch(error){
+                        emitProgress(user,kind,checked,null,{runId,lane:'download',operation:`${kind}-body`,status:'failed',source:'unknown',error});
+                        throw error;
+                    }
+                }
+                checked++;
+                emitProgress(user,kind,checked,page.size<100&&record===page.docs.at(-1)?listed:null,{runId,lane:'download',operation:`${kind}-body`,status:page.size<100&&record===page.docs.at(-1)?'completed':'progress',source:'unknown'});
+            }
+            if(safe>cursor)await D.setMeta(cursorKey,safe);
             if(page.size<100)break;
             query=ref.collection(collection).orderBy('syncAt').where('syncAt','>=',new Date(cursor)).startAfter(last).limit(100);
-        }
-        for(let i=0;i<records.length;i++){
-            emitProgress(user,kind,i,records.length,{runId,lane:'download',operation:`${kind}-body`,status:'waiting',source:'unknown'});
-            try{values.push(await readBody(ref,records[i].data().body));}catch(error){
-                emitProgress(user,kind,i,records.length,{runId,lane:'download',operation:`${kind}-body`,status:'failed',source:'unknown',error});
-                throw error;
-            }
-            emitProgress(user,kind,i+1,records.length,{runId,lane:'download',operation:`${kind}-body`,status:i+1===records.length?'completed':'progress',source:'unknown'});
         }
         // Caller commits received records locally before advancing this checkpoint.
         return {values,checkpoint:last?last.data().syncAt.toMillis():cursor,cursorKey};

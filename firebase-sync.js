@@ -27,6 +27,11 @@ const _watchdogs = new Map();
 const _initialSucceeded = new Set();
 const _retryTimers = new Map();
 const _retryDelays = new Map();
+const _lastSyncErrors = new Map();
+// Each login retry re-lists changed records, so retries back off far enough to protect the daily Firestore read quota.
+const RETRY_MAX_DELAY = 15 * 60000;
+const QUOTA_RETRY_DELAY = 60 * 60000;
+const _isQuotaError = error => _classifySyncError(error, 'download')?.code === 'quota';
 const _syncRuns = new Map();
 let _runSequence = 0;
 let _lastInitError = null;
@@ -89,7 +94,8 @@ function _failActiveSyncStep(run, error) {
 }
 function _retryLogin(userId) {
     if (_retryTimers.has(userId) || window.navigator?.onLine === false) return;
-    const delay = Math.min(60000, (_retryDelays.get(userId) || 1000) * 2);
+    const error = _lastSyncErrors.get(userId) || _lastInitError;
+    const delay = _isQuotaError(error) ? QUOTA_RETRY_DELAY : Math.min(RETRY_MAX_DELAY, (_retryDelays.get(userId) || 1000) * 2);
     _retryDelays.set(userId, delay);
     _retryTimers.set(userId, setTimeout(() => {
         _retryTimers.delete(userId);
@@ -151,7 +157,7 @@ async function _drainUpload(userId, kind) {
         }
         state.delay = 2000;
     } catch (error) {
-        state.delay = Math.min(60000, (state.delay || 2000) * 2);
+        state.delay = _isQuotaError(error) ? QUOTA_RETRY_DELAY : Math.min(RETRY_MAX_DELAY, (state.delay || 2000) * 2);
         if (run?.state === 'running') {
             _finishSyncRun(run, 'failed', error);
         } else _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#eb0015', true, userId);
@@ -367,6 +373,7 @@ async function _downloadAndMerge(userId, run) {
         window.dispatchEvent(new CustomEvent('firemerged', { detail: { userId } }));
         return true;
     } catch (e) {
+        _lastSyncErrors.set(userId, e);
         _failActiveSyncStep(run, e);
         console.warn('[FireSync] 동기화 실패:', e.message);
         window.dispatchEvent(new CustomEvent('firesyncerror', { detail: { userId, message: e.message } }));
@@ -736,6 +743,7 @@ window.FireSync = {
         _loginPromises[userId] = (async () => {
             const run = _beginSyncRun(userId);
             _syncingUsers.add(userId);
+            _lastSyncErrors.delete(userId);
             _badgeOwner = userId;
             _recordSyncStep(userId, run.runId, 'connect', 'sdk', 'waiting');
             _touchSync(userId);
@@ -755,6 +763,7 @@ window.FireSync = {
                 _recordSyncStep(userId, run.runId, 'connect', 'sdk', 'completed', { completed: 1, total: 1, source: 'unknown' });
                 const synced = await _downloadAndMerge(userId, run);
                 if (synced) {
+                    _lastSyncErrors.delete(userId);
                     _initialSucceeded.add(userId);
                     _retryDelays.delete(userId);
                     clearTimeout(_retryTimers.get(userId));
@@ -770,6 +779,7 @@ window.FireSync = {
                 else _finishSyncRun(run, 'failed');
                 return synced;
             } catch (error) {
+                _lastSyncErrors.set(userId, error);
                 _initialSucceeded.delete(userId);
                 _retryLogin(userId);
                 _finishSyncRun(run, 'failed', error);
