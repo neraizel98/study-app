@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-plan-fix';
+const CACHE_NAME = 'smart-study-20261014-scratchpad';
 
 try {
     importScripts('./firebase-config.js');
@@ -58,6 +58,7 @@ const STATIC_ASSETS = [
     './icons.js',
     './app-shell.js',
     './celebrate.js',
+    './scratchpad.js',
     './subjects.html',
     './goals.html',
     './goals.css',

@@ -121,9 +121,9 @@
             .user-grid { grid-template-columns:1fr; }
             .settings-fold { padding:18px 16px; }
         }
-    #parentPlanSettingsList select{background:#ffffff;color:#2b2620;border:1px solid #ddd2bf;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#ffffff;color:#6e6559}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ede5d6}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#ffffff;color:#23845c;border-radius:6px;font-size:12px}
+    #parentPlanSettingsList .plan-exam{margin-top:12px;padding:12px 14px;border:1px solid #ede5d6;border-radius:12px;background:#ffffff}#parentPlanSettingsList .plan-exam summary{cursor:pointer;font-size:.85rem;font-weight:700;color:#2b2620}#parentPlanSettingsList .plan-exam-note{margin:8px 0 10px;font-size:.72rem;line-height:1.5;color:#6e6559}#parentPlanSettingsList .plan-exam-fields{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}#parentPlanSettingsList .plan-exam-field{display:grid;gap:4px;font-size:.75rem;color:#6e6559}#parentPlanSettingsList .plan-exam-input{display:flex;align-items:center;gap:6px;min-height:40px;padding:0 10px;border:1px solid #ddd2bf;border-radius:8px;background:#ffffff;color:#2b2620}#parentPlanSettingsList .plan-exam-input:focus-within{border-color:#23845c;box-shadow:0 0 0 3px rgba(35,132,92,.18)}#parentPlanSettingsList .plan-exam-input input{flex:1;min-width:0;width:100%;min-height:38px;padding:0;border:0;background:transparent;color:#2b2620;font:inherit;font-size:.9rem;outline:none}#parentPlanSettingsList .plan-exam-input span{font-size:.75rem;color:#6e6559}@media(max-width:600px){#parentPlanSettingsList .plan-exam-fields{grid-template-columns:repeat(2,minmax(0,1fr))}}#parentPlanSettingsList select{background:#ffffff;color:#2b2620;border:1px solid #ddd2bf;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#ffffff;color:#6e6559}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ede5d6}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#ffffff;color:#23845c;border-radius:6px;font-size:12px}
 </style>
-<link rel="stylesheet" href="weekly-dashboard.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
+<link rel="stylesheet" href="weekly-dashboard.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-scratchpad"></head>
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -443,11 +443,12 @@
                 </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 위 7과목을 순서대로 진행합니다. 국어·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             const weeklySettings=SmartStudy.WeeklySchedule.normalize(value.weekly);
-            const examSettings=document.createElement('details');examSettings.style.cssText='padding:12px;border:1px solid var(--card-border);border-radius:12px;margin-top:12px;';
+            const examSettings=document.createElement('details');examSettings.className='plan-exam';
             const summary=document.createElement('summary');summary.textContent='주간 과정 · 모의고사 시간';examSettings.append(summary);
-            const note=document.createElement('p');note.textContent='월~금 학습 · 토 55문항 시험 · 일 오답 복습. 시험 시간은 평일 목표와 별도입니다. 시작한 시험에는 변경이 적용되지 않습니다.';examSettings.append(note);
+            const note=document.createElement('p');note.className='plan-exam-note';note.textContent='월~금 학습 · 토 55문항 시험 · 일 오답 복습. 시험 시간은 평일 목표와 별도입니다. 시작한 시험에는 변경이 적용되지 않습니다.';examSettings.append(note);
+            const examFields=document.createElement('div');examFields.className='plan-exam-fields';examSettings.append(examFields);
             for(const [subject,label] of Object.entries({reading:'국어',english:'영어',math:'수학',hanja:'한자'})){
-                const line=document.createElement('label');line.textContent=label+' 시험 시간(분) ';const input=document.createElement('input');input.type='number';input.min=5;input.max=60;input.step=1;input.required=true;input.value=weeklySettings.mockSectionMinutes[subject];input.dataset.examMinutes=subject;input.style.cssText='width:75px;min-height:44px;';line.append(input);examSettings.append(line);
+                const line=document.createElement('label');line.className='plan-exam-field';line.textContent=label+' 시험';const box=document.createElement('span');box.className='plan-exam-input';const input=document.createElement('input');input.type='number';input.inputMode='numeric';input.min=5;input.max=60;input.step=1;input.required=true;input.value=weeklySettings.mockSectionMinutes[subject];input.dataset.examMinutes=subject;input.setAttribute('aria-label',label+' 시험 시간(분)');const unit=document.createElement('span');unit.textContent='분';box.append(input,unit);line.append(box);examFields.append(line);
             }
             card.append(examSettings);
 

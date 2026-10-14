@@ -460,3 +460,50 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
     .home-stat-row b, .home-tile-body b { font-size: 1rem; }
     .home-hello { font-size: 1.3rem; }
 }
+
+/* =====================================================================
+   Math scratchpad (scratchpad.js) — floating, unsaved work area
+   ===================================================================== */
+.ss-pad-fab { position: fixed; right: 16px; bottom: calc(68px + env(safe-area-inset-bottom)); z-index: 1200; display: inline-flex; align-items: center; gap: 6px; height: 50px; padding: 0 18px 0 14px; border: 0; border-radius: 999px; background: var(--accent); color: #fff; font: 700 .92rem var(--font); box-shadow: 0 6px 18px rgba(35, 132, 92, .35); cursor: pointer; }
+.ss-pad-fab:hover { background: #1d7451; }
+.ss-pad-fab.is-open { background: #2b2620; box-shadow: 0 6px 18px rgba(43, 38, 32, .3); }
+.ss-pad { position: fixed; right: 20px; bottom: calc(128px + env(safe-area-inset-bottom)); z-index: 1250; width: min(440px, calc(100vw - 32px)); height: min(520px, calc(100vh - 160px)); display: flex; flex-direction: column; background: #fffdf8; border: 1px solid var(--card-border); border-radius: 20px; box-shadow: 0 18px 50px rgba(80, 60, 30, .25); overflow: hidden; color: var(--text); font-family: var(--font); }
+.ss-pad[hidden], .ss-pad [hidden] { display: none !important; }
+.ss-pad.is-dragging { opacity: .96; user-select: none; }
+.ss-pad-head { display: flex; align-items: center; gap: 8px; padding: 10px 10px 8px 16px; cursor: grab; touch-action: none; }
+.ss-pad.is-dragging .ss-pad-head { cursor: grabbing; }
+.ss-pad-head strong { font-size: 1rem; }
+.ss-pad-head small { flex: 1; font-size: .72rem; color: var(--text-sub); }
+.ss-pad-grip { display: none; }
+.ss-pad-icon { width: 36px; height: 36px; min-height: 0; margin: 0; padding: 0; display: inline-grid; place-items: center; border: 0; border-radius: 10px; background: transparent; color: var(--text-sub); cursor: pointer; }
+.ss-pad-icon:hover { background: #f3eee5; color: var(--text); }
+.ss-pad-icon[aria-pressed="true"] { background: #2b2620; color: #fff; }
+.ss-pad-tools { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 0 10px 10px 12px; border-bottom: 1px solid var(--card-border); }
+.ss-pad-modes { display: inline-flex; padding: 3px; gap: 2px; background: #f1ebdf; border-radius: 12px; }
+.ss-pad-modes button { display: inline-flex; align-items: center; gap: 4px; min-height: 32px; margin: 0; padding: 4px 10px; border: 0; border-radius: 9px; background: transparent; color: var(--text-sub); font: 600 .82rem var(--font); cursor: pointer; }
+.ss-pad-modes button[aria-pressed="true"] { background: #fff; color: var(--text); box-shadow: 0 1px 3px rgba(80, 60, 30, .12); }
+.ss-pad-draw-tools { display: inline-flex; align-items: center; gap: 4px; }
+.ss-pad-color { width: 26px; height: 26px; min-height: 0; margin: 0 2px; padding: 0; border-radius: 50%; border: 3px solid #fff; background: var(--pen); box-shadow: 0 0 0 1.5px #d8cdb9; cursor: pointer; }
+.ss-pad-color[aria-pressed="true"] { box-shadow: 0 0 0 2.5px var(--pen); }
+.ss-pad-body { position: relative; flex: 1; min-height: 0; }
+.ss-pad-canvas { position: absolute; inset: 0; background-color: #fffdf8; background-image: linear-gradient(#efe6d6 1px, transparent 1px), linear-gradient(90deg, #efe6d6 1px, transparent 1px); background-size: 24px 24px; background-position: -1px -1px; }
+.ss-pad-canvas canvas { display: block; touch-action: none; cursor: crosshair; }
+.ss-pad-canvas.is-erasing canvas { cursor: cell; }
+.ss-pad-text { position: absolute; inset: 0; width: 100%; height: 100%; box-sizing: border-box; margin: 0; padding: 14px 16px; border: 0; resize: none; background: #fffdf8; color: var(--text); font: 18px/1.6 ui-monospace, 'SFMono-Regular', Menlo, Consolas, monospace; outline: none; }
+@media (max-width: 700px) {
+    /* Phones: a bottom sheet so the problem stays visible above it */
+    .ss-pad { left: 0 !important; right: 0 !important; top: auto !important; bottom: 0 !important; width: 100%; height: min(60vh, 520px); border-radius: 22px 22px 0 0; padding-bottom: env(safe-area-inset-bottom); }
+    .ss-pad-head { cursor: default; padding-top: 14px; }
+    .ss-pad-grip { display: block; position: absolute; left: 50%; top: 6px; width: 40px; height: 4px; margin-left: -20px; border-radius: 4px; background: #ddd2bf; }
+    .ss-pad-head { position: relative; }
+    .ss-pad-fab { bottom: calc(64px + env(safe-area-inset-bottom)); }
+    .ss-pad-fab.is-open { bottom: calc(min(60vh, 520px) + 12px); }
+    .ss-pad-fab span { display: none; }
+    .ss-pad-fab { width: 52px; height: 52px; padding: 0; justify-content: center; }
+    .ss-pad-tools { flex-wrap: nowrap; gap: 4px; padding: 0 8px 8px 10px; }
+    .ss-pad-modes button { padding: 4px 8px; font-size: .78rem; }
+    .ss-pad-draw-tools { gap: 0; }
+    .ss-pad-color { width: 24px; height: 24px; margin: 0 2px; }
+    .ss-pad-icon { width: 32px; height: 32px; }
+    body.ss-pad-open #_firesync_badge { display: none !important; }
+}

@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-plan-fix';
+    const APP_VERSION = '20261014-scratchpad';
 
     (async function () {
         try {
