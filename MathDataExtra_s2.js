@@ -4,28 +4,28 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
   <!-- 수직선 -->
-  <line x1="20" y1="55" x2="280" y2="55" stroke="#e0e0e0" stroke-width="2"/>
+  <line x1="20" y1="55" x2="280" y2="55" stroke="#2b2620" stroke-width="2"/>
   <!-- 양 끝 눈금 -->
-  <line x1="20" y1="48" x2="20" y2="62" stroke="#e0e0e0" stroke-width="2"/>
-  <line x1="280" y1="48" x2="280" y2="62" stroke="#e0e0e0" stroke-width="2"/>
+  <line x1="20" y1="48" x2="20" y2="62" stroke="#2b2620" stroke-width="2"/>
+  <line x1="280" y1="48" x2="280" y2="62" stroke="#2b2620" stroke-width="2"/>
   <!-- 1/4 눈금 -->
-  <line x1="85" y1="48" x2="85" y2="62" stroke="#4facfe" stroke-width="2"/>
+  <line x1="85" y1="48" x2="85" y2="62" stroke="#23845c" stroke-width="2"/>
   <!-- 2/4 눈금 -->
-  <line x1="150" y1="48" x2="150" y2="62" stroke="#4facfe" stroke-width="2"/>
+  <line x1="150" y1="48" x2="150" y2="62" stroke="#23845c" stroke-width="2"/>
   <!-- 3/4 눈금 (강조) -->
-  <line x1="215" y1="44" x2="215" y2="66" stroke="#ff5252" stroke-width="3"/>
+  <line x1="215" y1="44" x2="215" y2="66" stroke="#eb0000" stroke-width="3"/>
   <!-- 라벨 -->
-  <text x="13" y="76" fill="#e0e0e0" font-size="12" font-family="Arial">0</text>
-  <text x="78" y="76" fill="#4facfe" font-size="12" font-family="Arial">1/4</text>
-  <text x="143" y="76" fill="#4facfe" font-size="12" font-family="Arial">2/4</text>
-  <text x="208" y="76" fill="#ff5252" font-size="12" font-family="Arial" font-weight="bold">3/4</text>
-  <text x="273" y="76" fill="#e0e0e0" font-size="12" font-family="Arial">1</text>
+  <text x="13" y="76" fill="#2b2620" font-size="12" font-family="Arial">0</text>
+  <text x="78" y="76" fill="#23845c" font-size="12" font-family="Arial">1/4</text>
+  <text x="143" y="76" fill="#23845c" font-size="12" font-family="Arial">2/4</text>
+  <text x="208" y="76" fill="#eb0000" font-size="12" font-family="Arial" font-weight="bold">3/4</text>
+  <text x="273" y="76" fill="#2b2620" font-size="12" font-family="Arial">1</text>
   <!-- 묶음 표시 -->
-  <text x="55" y="40" fill="#ffd740" font-size="11" font-family="Arial">①</text>
-  <text x="120" y="40" fill="#ffd740" font-size="11" font-family="Arial">②</text>
-  <text x="185" y="40" fill="#ffd740" font-size="11" font-family="Arial">③</text>
+  <text x="55" y="40" fill="#8f7100" font-size="11" font-family="Arial">①</text>
+  <text x="120" y="40" fill="#8f7100" font-size="11" font-family="Arial">②</text>
+  <text x="185" y="40" fill="#8f7100" font-size="11" font-family="Arial">③</text>
   <!-- 수식 -->
-  <text x="50" y="108" fill="#00c853" font-size="13" font-family="Arial" font-weight="bold">(3/4) ÷ (1/4) = 3  →  분자 3÷1=3</text>
+  <text x="50" y="108" fill="#008637" font-size="13" font-family="Arial" font-weight="bold">(3/4) ÷ (1/4) = 3  →  분자 3÷1=3</text>
 </svg>`,
       caption: '수직선에서 3/4을 1/4씩 묶으면 3묶음 → (3/4)÷(1/4)=3'
     },
@@ -63,19 +63,19 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 140" xmlns="http://www.w3.org/2000/svg">
   <!-- 위 수직선 -->
-  <line x1="20" y1="40" x2="280" y2="40" stroke="#e0e0e0" stroke-width="2"/>
-  <line x1="20" y1="33" x2="20" y2="47" stroke="#e0e0e0" stroke-width="2"/>
-  <line x1="280" y1="33" x2="280" y2="47" stroke="#e0e0e0" stroke-width="2"/>
-  <line x1="107" y1="33" x2="107" y2="47" stroke="#00c853" stroke-width="2.5"/>
-  <line x1="194" y1="33" x2="194" y2="47" stroke="#00c853" stroke-width="2.5"/>
-  <text x="15" y="60" fill="#e0e0e0" font-size="11" font-family="Arial">0</text>
-  <text x="100" y="60" fill="#00c853" font-size="11" font-family="Arial">1/3</text>
-  <text x="188" y="60" fill="#00c853" font-size="11" font-family="Arial">2/3</text>
-  <text x="275" y="60" fill="#e0e0e0" font-size="11" font-family="Arial">1</text>
+  <line x1="20" y1="40" x2="280" y2="40" stroke="#2b2620" stroke-width="2"/>
+  <line x1="20" y1="33" x2="20" y2="47" stroke="#2b2620" stroke-width="2"/>
+  <line x1="280" y1="33" x2="280" y2="47" stroke="#2b2620" stroke-width="2"/>
+  <line x1="107" y1="33" x2="107" y2="47" stroke="#008637" stroke-width="2.5"/>
+  <line x1="194" y1="33" x2="194" y2="47" stroke="#008637" stroke-width="2.5"/>
+  <text x="15" y="60" fill="#2b2620" font-size="11" font-family="Arial">0</text>
+  <text x="100" y="60" fill="#008637" font-size="11" font-family="Arial">1/3</text>
+  <text x="188" y="60" fill="#008637" font-size="11" font-family="Arial">2/3</text>
+  <text x="275" y="60" fill="#2b2620" font-size="11" font-family="Arial">1</text>
   <!-- 역수 변환 화살표 -->
-  <text x="80" y="90" fill="#4facfe" font-size="13" font-family="Arial" font-weight="bold">÷ 1/4 = × 4</text>
+  <text x="80" y="90" fill="#23845c" font-size="13" font-family="Arial" font-weight="bold">÷ 1/4 = × 4</text>
   <!-- 결과 -->
-  <text x="80" y="120" fill="#ffd740" font-size="14" font-family="Arial" font-weight="bold">2/3 × 4 = 8/3</text>
+  <text x="80" y="120" fill="#8f7100" font-size="14" font-family="Arial" font-weight="bold">2/3 × 4 = 8/3</text>
 </svg>`,
       caption: '2/3 ÷ 1/4 에서 제수 1/4의 역수(4)를 곱하면 8/3'
     },
@@ -116,27 +116,27 @@ var MathDataExtra_s2 = {
       svg: `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
   <!-- 직사각형 3개 (각각 4등분) -->
   <!-- 첫 번째 -->
-  <rect x="10" y="20" width="80" height="40" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="2"/>
-  <line x1="30" y1="20" x2="30" y2="60" stroke="#00c853" stroke-width="1"/>
-  <line x1="50" y1="20" x2="50" y2="60" stroke="#00c853" stroke-width="1"/>
-  <line x1="70" y1="20" x2="70" y2="60" stroke="#00c853" stroke-width="1"/>
+  <rect x="10" y="20" width="80" height="40" fill="rgba(0,164,68,0.15)" stroke="#008637" stroke-width="2"/>
+  <line x1="30" y1="20" x2="30" y2="60" stroke="#008637" stroke-width="1"/>
+  <line x1="50" y1="20" x2="50" y2="60" stroke="#008637" stroke-width="1"/>
+  <line x1="70" y1="20" x2="70" y2="60" stroke="#008637" stroke-width="1"/>
   <!-- 두 번째 -->
-  <rect x="110" y="20" width="80" height="40" fill="rgba(79,172,254,0.15)" stroke="#4facfe" stroke-width="2"/>
-  <line x1="130" y1="20" x2="130" y2="60" stroke="#4facfe" stroke-width="1"/>
-  <line x1="150" y1="20" x2="150" y2="60" stroke="#4facfe" stroke-width="1"/>
-  <line x1="170" y1="20" x2="170" y2="60" stroke="#4facfe" stroke-width="1"/>
+  <rect x="110" y="20" width="80" height="40" fill="rgba(35,132,92,0.15)" stroke="#23845c" stroke-width="2"/>
+  <line x1="130" y1="20" x2="130" y2="60" stroke="#23845c" stroke-width="1"/>
+  <line x1="150" y1="20" x2="150" y2="60" stroke="#23845c" stroke-width="1"/>
+  <line x1="170" y1="20" x2="170" y2="60" stroke="#23845c" stroke-width="1"/>
   <!-- 세 번째 -->
-  <rect x="210" y="20" width="80" height="40" fill="rgba(255,215,64,0.15)" stroke="#ffd740" stroke-width="2"/>
-  <line x1="230" y1="20" x2="230" y2="60" stroke="#ffd740" stroke-width="1"/>
-  <line x1="250" y1="20" x2="250" y2="60" stroke="#ffd740" stroke-width="1"/>
-  <line x1="270" y1="20" x2="270" y2="60" stroke="#ffd740" stroke-width="1"/>
+  <rect x="210" y="20" width="80" height="40" fill="rgba(173,137,0,0.15)" stroke="#8f7100" stroke-width="2"/>
+  <line x1="230" y1="20" x2="230" y2="60" stroke="#8f7100" stroke-width="1"/>
+  <line x1="250" y1="20" x2="250" y2="60" stroke="#8f7100" stroke-width="1"/>
+  <line x1="270" y1="20" x2="270" y2="60" stroke="#8f7100" stroke-width="1"/>
   <!-- 라벨 -->
-  <text x="35" y="80" fill="#00c853" font-size="12" font-family="Arial">4칸</text>
-  <text x="135" y="80" fill="#4facfe" font-size="12" font-family="Arial">4칸</text>
-  <text x="235" y="80" fill="#ffd740" font-size="12" font-family="Arial">4칸</text>
+  <text x="35" y="80" fill="#008637" font-size="12" font-family="Arial">4칸</text>
+  <text x="135" y="80" fill="#23845c" font-size="12" font-family="Arial">4칸</text>
+  <text x="235" y="80" fill="#8f7100" font-size="12" font-family="Arial">4칸</text>
   <!-- 총 개수 -->
-  <text x="60" y="105" fill="#ff5252" font-size="14" font-family="Arial" font-weight="bold">3 ÷ (1/4) = 12조각</text>
-  <text x="40" y="125" fill="#e0e0e0" font-size="11" font-family="Arial">3개 × 4등분 = 총 12조각</text>
+  <text x="60" y="105" fill="#eb0000" font-size="14" font-family="Arial" font-weight="bold">3 ÷ (1/4) = 12조각</text>
+  <text x="40" y="125" fill="#2b2620" font-size="11" font-family="Arial">3개 × 4등분 = 총 12조각</text>
 </svg>`,
       caption: '3개의 직사각형을 각각 4등분하면 총 12조각 → 3÷(1/4)=12'
     },
@@ -175,17 +175,17 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
   <!-- 원래 식 -->
-  <text x="20" y="50" fill="#e0e0e0" font-size="16" font-family="Arial" font-weight="bold">1.2 ÷ 0.4</text>
+  <text x="20" y="50" fill="#2b2620" font-size="16" font-family="Arial" font-weight="bold">1.2 ÷ 0.4</text>
   <!-- 화살표 -->
-  <line x1="140" y1="55" x2="175" y2="55" stroke="#ffd740" stroke-width="2" marker-end="url(#arrow)"/>
-  <text x="148" y="45" fill="#ffd740" font-size="11" font-family="Arial">×10</text>
+  <line x1="140" y1="55" x2="175" y2="55" stroke="#8f7100" stroke-width="2" marker-end="url(#arrow)"/>
+  <text x="148" y="45" fill="#8f7100" font-size="11" font-family="Arial">×10</text>
   <!-- 변환 식 -->
-  <text x="185" y="50" fill="#00c853" font-size="16" font-family="Arial" font-weight="bold">12 ÷ 4</text>
+  <text x="185" y="50" fill="#008637" font-size="16" font-family="Arial" font-weight="bold">12 ÷ 4</text>
   <!-- 결과 -->
-  <text x="110" y="90" fill="#4facfe" font-size="18" font-family="Arial" font-weight="bold">= 3</text>
+  <text x="110" y="90" fill="#23845c" font-size="18" font-family="Arial" font-weight="bold">= 3</text>
   <defs>
     <marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L9,3 z" fill="#ffd740"/>
+      <path d="M0,0 L0,6 L9,3 z" fill="#8f7100"/>
     </marker>
   </defs>
 </svg>`,
@@ -227,20 +227,20 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 150" xmlns="http://www.w3.org/2000/svg">
   <!-- 제목 -->
-  <text x="20" y="28" fill="#e0e0e0" font-size="13" font-family="Arial" font-weight="bold">12.6 ÷ 0.3</text>
+  <text x="20" y="28" fill="#2b2620" font-size="13" font-family="Arial" font-weight="bold">12.6 ÷ 0.3</text>
   <!-- 세로셈 박스 -->
-  <rect x="20" y="38" width="120" height="70" fill="rgba(79,172,254,0.07)" stroke="#4facfe" stroke-width="1.5"/>
-  <text x="28" y="60" fill="#4facfe" font-size="13" font-family="Arial">12.6 ÷ 0.3</text>
-  <text x="28" y="82" fill="#e0e0e0" font-size="11" font-family="Arial">→ ×10 양쪽</text>
-  <text x="28" y="100" fill="#00c853" font-size="13" font-family="Arial">126 ÷ 3 = 42</text>
+  <rect x="20" y="38" width="120" height="70" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="1.5"/>
+  <text x="28" y="60" fill="#23845c" font-size="13" font-family="Arial">12.6 ÷ 0.3</text>
+  <text x="28" y="82" fill="#2b2620" font-size="11" font-family="Arial">→ ×10 양쪽</text>
+  <text x="28" y="100" fill="#008637" font-size="13" font-family="Arial">126 ÷ 3 = 42</text>
   <!-- 화살표 -->
-  <text x="155" y="78" fill="#ffd740" font-size="22" font-family="Arial">→</text>
+  <text x="155" y="78" fill="#8f7100" font-size="22" font-family="Arial">→</text>
   <!-- 결과 -->
-  <rect x="185" y="38" width="100" height="70" fill="rgba(0,200,83,0.07)" stroke="#00c853" stroke-width="1.5"/>
-  <text x="195" y="62" fill="#00c853" font-size="13" font-family="Arial">126 ÷ 3</text>
-  <text x="195" y="85" fill="#ffd740" font-size="16" font-family="Arial" font-weight="bold">= 42</text>
+  <rect x="185" y="38" width="100" height="70" fill="rgba(0,164,68,0.08)" stroke="#008637" stroke-width="1.5"/>
+  <text x="195" y="62" fill="#008637" font-size="13" font-family="Arial">126 ÷ 3</text>
+  <text x="195" y="85" fill="#8f7100" font-size="16" font-family="Arial" font-weight="bold">= 42</text>
   <!-- 검산 -->
-  <text x="20" y="130" fill="#e0e0e0" font-size="11" font-family="Arial">검산: 42 × 0.3 = 12.6 ✓</text>
+  <text x="20" y="130" fill="#2b2620" font-size="11" font-family="Arial">검산: 42 × 0.3 = 12.6 ✓</text>
 </svg>`,
       caption: '12.6÷0.3: 양쪽 ×10 → 126÷3=42'
     },
@@ -280,27 +280,27 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
   <!-- 수직선 -->
-  <line x1="20" y1="60" x2="280" y2="60" stroke="#e0e0e0" stroke-width="2"/>
+  <line x1="20" y1="60" x2="280" y2="60" stroke="#2b2620" stroke-width="2"/>
   <!-- 2.33 눈금 -->
-  <line x1="100" y1="53" x2="100" y2="67" stroke="#4facfe" stroke-width="2"/>
-  <text x="78" y="80" fill="#4facfe" font-size="11" font-family="Arial">2.33...</text>
+  <line x1="100" y1="53" x2="100" y2="67" stroke="#23845c" stroke-width="2"/>
+  <text x="78" y="80" fill="#23845c" font-size="11" font-family="Arial">2.33...</text>
   <!-- 2.335 기준점 -->
-  <line x1="160" y1="50" x2="160" y2="70" stroke="#ffd740" stroke-width="3"/>
-  <text x="143" y="44" fill="#ffd740" font-size="11" font-family="Arial">2.335</text>
-  <text x="128" y="90" fill="#ffd740" font-size="10" font-family="Arial">(반올림 기준)</text>
+  <line x1="160" y1="50" x2="160" y2="70" stroke="#8f7100" stroke-width="3"/>
+  <text x="143" y="44" fill="#8f7100" font-size="11" font-family="Arial">2.335</text>
+  <text x="128" y="90" fill="#8f7100" font-size="10" font-family="Arial">(반올림 기준)</text>
   <!-- 2.34 눈금 -->
-  <line x1="220" y1="53" x2="220" y2="67" stroke="#00c853" stroke-width="2"/>
-  <text x="208" y="80" fill="#00c853" font-size="11" font-family="Arial">2.34</text>
+  <line x1="220" y1="53" x2="220" y2="67" stroke="#008637" stroke-width="2"/>
+  <text x="208" y="80" fill="#008637" font-size="11" font-family="Arial">2.34</text>
   <!-- 반올림 화살표 -->
-  <path d="M100,52 Q130,30 218,52" fill="none" stroke="#ff5252" stroke-width="1.5" marker-end="url(#rarrow)"/>
-  <text x="120" y="22" fill="#ff5252" font-size="11" font-family="Arial">반올림 →</text>
+  <path d="M100,52 Q130,30 218,52" fill="none" stroke="#eb0000" stroke-width="1.5" marker-end="url(#rarrow)"/>
+  <text x="120" y="22" fill="#eb0000" font-size="11" font-family="Arial">반올림 →</text>
   <defs>
     <marker id="rarrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
-      <path d="M0,0 L0,6 L8,3 z" fill="#ff5252"/>
+      <path d="M0,0 L0,6 L8,3 z" fill="#eb0000"/>
     </marker>
   </defs>
   <!-- 설명 -->
-  <text x="20" y="115" fill="#e0e0e0" font-size="11" font-family="Arial">2.335 이상 → 2.34 / 미만 → 2.33</text>
+  <text x="20" y="115" fill="#2b2620" font-size="11" font-family="Arial">2.335 이상 → 2.34 / 미만 → 2.33</text>
 </svg>`,
       caption: '수직선의 2.335 기준으로 2.33...은 2.34로 반올림되는 과정'
     },
@@ -339,30 +339,30 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 170" xmlns="http://www.w3.org/2000/svg">
   <!-- 위에서 본 모양 (격자 2×3) -->
-  <text x="20" y="22" fill="#e0e0e0" font-size="11" font-family="Arial">위에서 본 모양</text>
-  <rect x="20" y="28" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="50" y="28" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="80" y="28" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="20" y="58" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="50" y="58" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="80" y="58" width="30" height="30" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
+  <text x="20" y="22" fill="#2b2620" font-size="11" font-family="Arial">위에서 본 모양</text>
+  <rect x="20" y="28" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="50" y="28" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="80" y="28" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="20" y="58" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="50" y="58" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="80" y="58" width="30" height="30" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
   <!-- 층수 표시 -->
-  <text x="30" y="48" fill="#ffd740" font-size="11" font-family="Arial">2</text>
-  <text x="60" y="48" fill="#ffd740" font-size="11" font-family="Arial">1</text>
-  <text x="90" y="48" fill="#ffd740" font-size="11" font-family="Arial">2</text>
-  <text x="30" y="78" fill="#ffd740" font-size="11" font-family="Arial">1</text>
-  <text x="60" y="78" fill="#ffd740" font-size="11" font-family="Arial">2</text>
-  <text x="90" y="78" fill="#ffd740" font-size="11" font-family="Arial">1</text>
+  <text x="30" y="48" fill="#8f7100" font-size="11" font-family="Arial">2</text>
+  <text x="60" y="48" fill="#8f7100" font-size="11" font-family="Arial">1</text>
+  <text x="90" y="48" fill="#8f7100" font-size="11" font-family="Arial">2</text>
+  <text x="30" y="78" fill="#8f7100" font-size="11" font-family="Arial">1</text>
+  <text x="60" y="78" fill="#8f7100" font-size="11" font-family="Arial">2</text>
+  <text x="90" y="78" fill="#8f7100" font-size="11" font-family="Arial">1</text>
   <!-- 옆에서 본 모양 -->
-  <text x="160" y="22" fill="#e0e0e0" font-size="11" font-family="Arial">옆에서 본 모양</text>
-  <rect x="160" y="58" width="30" height="30" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
-  <rect x="190" y="58" width="30" height="30" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
-  <rect x="220" y="58" width="30" height="30" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
-  <rect x="160" y="28" width="30" height="30" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
-  <rect x="220" y="28" width="30" height="30" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
+  <text x="160" y="22" fill="#2b2620" font-size="11" font-family="Arial">옆에서 본 모양</text>
+  <rect x="160" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="190" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="220" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="160" y="28" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="220" y="28" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <!-- 총 개수 -->
-  <text x="20" y="115" fill="#ff5252" font-size="12" font-family="Arial" font-weight="bold">총 개수: 2+1+2+1+2+1 = 9개</text>
-  <text x="20" y="133" fill="#e0e0e0" font-size="11" font-family="Arial">위 격자의 숫자 = 각 칸의 층수</text>
+  <text x="20" y="115" fill="#eb0000" font-size="12" font-family="Arial" font-weight="bold">총 개수: 2+1+2+1+2+1 = 9개</text>
+  <text x="20" y="133" fill="#2b2620" font-size="11" font-family="Arial">위 격자의 숫자 = 각 칸의 층수</text>
 </svg>`,
       caption: '위에서 본 격자에 층수를 적어 쌓기나무 개수를 구합니다'
     },
@@ -402,26 +402,26 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
   <!-- 평면도 (위) -->
-  <text x="10" y="18" fill="#ffd740" font-size="10" font-family="Arial">평면도(위)</text>
-  <rect x="10" y="22" width="22" height="22" fill="rgba(255,215,64,0.2)" stroke="#ffd740" stroke-width="1.5"/>
-  <rect x="32" y="22" width="22" height="22" fill="rgba(255,215,64,0.2)" stroke="#ffd740" stroke-width="1.5"/>
-  <rect x="10" y="44" width="22" height="22" fill="rgba(255,215,64,0.2)" stroke="#ffd740" stroke-width="1.5"/>
+  <text x="10" y="18" fill="#8f7100" font-size="10" font-family="Arial">평면도(위)</text>
+  <rect x="10" y="22" width="22" height="22" fill="rgba(173,137,0,0.18)" stroke="#8f7100" stroke-width="1.5"/>
+  <rect x="32" y="22" width="22" height="22" fill="rgba(173,137,0,0.18)" stroke="#8f7100" stroke-width="1.5"/>
+  <rect x="10" y="44" width="22" height="22" fill="rgba(173,137,0,0.18)" stroke="#8f7100" stroke-width="1.5"/>
   <!-- 정면도 (앞) -->
-  <text x="90" y="18" fill="#00c853" font-size="10" font-family="Arial">정면도(앞)</text>
-  <rect x="90" y="22" width="22" height="22" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="112" y="22" width="22" height="22" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="90" y="44" width="22" height="22" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
-  <rect x="112" y="44" width="22" height="22" fill="rgba(0,200,83,0.2)" stroke="#00c853" stroke-width="1.5"/>
+  <text x="90" y="18" fill="#008637" font-size="10" font-family="Arial">정면도(앞)</text>
+  <rect x="90" y="22" width="22" height="22" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="112" y="22" width="22" height="22" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="90" y="44" width="22" height="22" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <rect x="112" y="44" width="22" height="22" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
   <!-- 측면도 (옆) -->
-  <text x="180" y="18" fill="#4facfe" font-size="10" font-family="Arial">측면도(옆)</text>
-  <rect x="180" y="22" width="22" height="22" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
-  <rect x="180" y="44" width="22" height="22" fill="rgba(79,172,254,0.2)" stroke="#4facfe" stroke-width="1.5"/>
+  <text x="180" y="18" fill="#23845c" font-size="10" font-family="Arial">측면도(옆)</text>
+  <rect x="180" y="22" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="180" y="44" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <!-- 화살표 및 방향 라벨 -->
-  <text x="10" y="90" fill="#e0e0e0" font-size="11" font-family="Arial">↑ 위  ↗ 앞  → 옆</text>
+  <text x="10" y="90" fill="#2b2620" font-size="11" font-family="Arial">↑ 위  ↗ 앞  → 옆</text>
   <!-- 설명 -->
-  <text x="10" y="110" fill="#e0e0e0" font-size="11" font-family="Arial">세 방향에서 보이는 최대 높이/너비</text>
-  <text x="10" y="128" fill="#e0e0e0" font-size="11" font-family="Arial">를 투영하여 그립니다.</text>
-  <text x="10" y="150" fill="#ff5252" font-size="11" font-family="Arial" font-weight="bold">겹치는 나무: 뒤쪽은 앞 투영도에 포함</text>
+  <text x="10" y="110" fill="#2b2620" font-size="11" font-family="Arial">세 방향에서 보이는 최대 높이/너비</text>
+  <text x="10" y="128" fill="#2b2620" font-size="11" font-family="Arial">를 투영하여 그립니다.</text>
+  <text x="10" y="150" fill="#eb0000" font-size="11" font-family="Arial" font-weight="bold">겹치는 나무: 뒤쪽은 앞 투영도에 포함</text>
 </svg>`,
       caption: '같은 쌓기나무를 위·앞·옆 세 방향에서 투영한 정투영도'
     },
@@ -460,19 +460,19 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
   <!-- 원래 비 -->
-  <text x="20" y="50" fill="#e0e0e0" font-size="20" font-family="Arial" font-weight="bold">12 : 18</text>
+  <text x="20" y="50" fill="#2b2620" font-size="20" font-family="Arial" font-weight="bold">12 : 18</text>
   <!-- 전항·후항 라벨 -->
-  <text x="22" y="28" fill="#4facfe" font-size="11" font-family="Arial">전항</text>
-  <text x="65" y="28" fill="#ff5252" font-size="11" font-family="Arial">후항</text>
+  <text x="22" y="28" fill="#23845c" font-size="11" font-family="Arial">전항</text>
+  <text x="65" y="28" fill="#eb0000" font-size="11" font-family="Arial">후항</text>
   <!-- 화살표 -->
-  <text x="120" y="55" fill="#ffd740" font-size="14" font-family="Arial">÷6 →</text>
+  <text x="120" y="55" fill="#8f7100" font-size="14" font-family="Arial">÷6 →</text>
   <!-- 간단한 비 -->
-  <text x="185" y="50" fill="#00c853" font-size="20" font-family="Arial" font-weight="bold">2 : 3</text>
-  <text x="188" y="28" fill="#4facfe" font-size="11" font-family="Arial">전항</text>
-  <text x="218" y="28" fill="#ff5252" font-size="11" font-family="Arial">후항</text>
+  <text x="185" y="50" fill="#008637" font-size="20" font-family="Arial" font-weight="bold">2 : 3</text>
+  <text x="188" y="28" fill="#23845c" font-size="11" font-family="Arial">전항</text>
+  <text x="218" y="28" fill="#eb0000" font-size="11" font-family="Arial">후항</text>
   <!-- 설명 -->
-  <text x="20" y="85" fill="#e0e0e0" font-size="11" font-family="Arial">전항과 후항을 최대공약수(6)로 나눕니다.</text>
-  <text x="20" y="105" fill="#ffd740" font-size="11" font-family="Arial">12:18 ≠ 12/18(분수)  →  비와 분수는 다릅니다!</text>
+  <text x="20" y="85" fill="#2b2620" font-size="11" font-family="Arial">전항과 후항을 최대공약수(6)로 나눕니다.</text>
+  <text x="20" y="105" fill="#8f7100" font-size="11" font-family="Arial">12:18 ≠ 12/18(분수)  →  비와 분수는 다릅니다!</text>
 </svg>`,
       caption: '12:18을 최대공약수 6으로 나누어 가장 간단한 자연수 비 2:3으로 나타냄'
     },
@@ -511,19 +511,19 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 130" xmlns="http://www.w3.org/2000/svg">
   <!-- 비례식 -->
-  <text x="30" y="60" fill="#ff5252" font-size="22" font-weight="bold" font-family="Arial">2</text>
-  <text x="60" y="60" fill="#e0e0e0" font-size="22" font-family="Arial"> : </text>
-  <text x="88" y="60" fill="#4facfe" font-size="22" font-weight="bold" font-family="Arial">3</text>
-  <text x="115" y="60" fill="#e0e0e0" font-size="22" font-family="Arial"> = </text>
-  <text x="150" y="60" fill="#4facfe" font-size="22" font-weight="bold" font-family="Arial">4</text>
-  <text x="178" y="60" fill="#e0e0e0" font-size="22" font-family="Arial"> : </text>
-  <text x="206" y="60" fill="#ff5252" font-size="22" font-weight="bold" font-family="Arial">6</text>
+  <text x="30" y="60" fill="#eb0000" font-size="22" font-weight="bold" font-family="Arial">2</text>
+  <text x="60" y="60" fill="#2b2620" font-size="22" font-family="Arial"> : </text>
+  <text x="88" y="60" fill="#23845c" font-size="22" font-weight="bold" font-family="Arial">3</text>
+  <text x="115" y="60" fill="#2b2620" font-size="22" font-family="Arial"> = </text>
+  <text x="150" y="60" fill="#23845c" font-size="22" font-weight="bold" font-family="Arial">4</text>
+  <text x="178" y="60" fill="#2b2620" font-size="22" font-family="Arial"> : </text>
+  <text x="206" y="60" fill="#eb0000" font-size="22" font-weight="bold" font-family="Arial">6</text>
   <!-- 외항 곱 -->
-  <path d="M38,70 Q148,105 214,70" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-dasharray="4"/>
-  <text x="110" y="115" fill="#ff5252" font-size="12" font-family="Arial">외항 곱: 2×6=12</text>
+  <path d="M38,70 Q148,105 214,70" fill="none" stroke="#eb0000" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="110" y="115" fill="#eb0000" font-size="12" font-family="Arial">외항 곱: 2×6=12</text>
   <!-- 내항 곱 -->
-  <path d="M96,65 Q148,85 158,65" fill="none" stroke="#4facfe" stroke-width="1.5" stroke-dasharray="4"/>
-  <text x="110" y="40" fill="#4facfe" font-size="12" font-family="Arial">내항 곱: 3×4=12</text>
+  <path d="M96,65 Q148,85 158,65" fill="none" stroke="#23845c" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="110" y="40" fill="#23845c" font-size="12" font-family="Arial">내항 곱: 3×4=12</text>
 </svg>`,
       caption: '비례식 2:3=4:6에서 외항(2,6)의 곱과 내항(3,4)의 곱은 같다'
     },
@@ -563,19 +563,19 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 120" xmlns="http://www.w3.org/2000/svg">
   <!-- 전체 띠 -->
-  <rect x="20" y="30" width="260" height="40" fill="none" stroke="#e0e0e0" stroke-width="1.5"/>
+  <rect x="20" y="30" width="260" height="40" fill="none" stroke="#2b2620" stroke-width="1.5"/>
   <!-- 2칸 (12개, 파랑) -->
-  <rect x="20" y="30" width="86" height="40" fill="rgba(79,172,254,0.3)" stroke="#4facfe" stroke-width="1.5"/>
-  <text x="45" y="56" fill="#4facfe" font-size="13" font-family="Arial" font-weight="bold">12개</text>
+  <rect x="20" y="30" width="86" height="40" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <text x="45" y="56" fill="#23845c" font-size="13" font-family="Arial" font-weight="bold">12개</text>
   <!-- 4칸 (24개, 초록) -->
-  <rect x="106" y="30" width="174" height="40" fill="rgba(0,200,83,0.3)" stroke="#00c853" stroke-width="1.5"/>
-  <text x="168" y="56" fill="#00c853" font-size="13" font-family="Arial" font-weight="bold">24개</text>
+  <rect x="106" y="30" width="174" height="40" fill="rgba(0,164,68,0.18)" stroke="#008637" stroke-width="1.5"/>
+  <text x="168" y="56" fill="#008637" font-size="13" font-family="Arial" font-weight="bold">24개</text>
   <!-- 라벨 -->
-  <text x="45" y="22" fill="#4facfe" font-size="11" font-family="Arial">2칸</text>
-  <text x="175" y="22" fill="#00c853" font-size="11" font-family="Arial">4칸</text>
+  <text x="45" y="22" fill="#23845c" font-size="11" font-family="Arial">2칸</text>
+  <text x="175" y="22" fill="#008637" font-size="11" font-family="Arial">4칸</text>
   <!-- 총 -->
-  <text x="20" y="90" fill="#ffd740" font-size="12" font-family="Arial">전체: 36개 = (2+4)칸 = 6칸</text>
-  <text x="20" y="108" fill="#e0e0e0" font-size="11" font-family="Arial">1칸 = 36÷6 = 6개  →  2칸=12, 4칸=24</text>
+  <text x="20" y="90" fill="#8f7100" font-size="12" font-family="Arial">전체: 36개 = (2+4)칸 = 6칸</text>
+  <text x="20" y="108" fill="#2b2620" font-size="11" font-family="Arial">1칸 = 36÷6 = 6개  →  2칸=12, 4칸=24</text>
 </svg>`,
       caption: '36개를 2:4로 비례배분: 전체 6칸 중 2칸(12개)과 4칸(24개)'
     },
@@ -616,17 +616,17 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
   <!-- 원 -->
-  <circle cx="130" cy="100" r="70" fill="none" stroke="#4facfe" stroke-width="2.5"/>
+  <circle cx="130" cy="100" r="70" fill="none" stroke="#23845c" stroke-width="2.5"/>
   <!-- 지름 -->
-  <line x1="60" y1="100" x2="200" y2="100" stroke="#00c853" stroke-width="2" stroke-dasharray="6,3"/>
-  <text x="115" y="92" fill="#00c853" font-size="13" font-family="Arial" font-weight="bold">지름(d)</text>
+  <line x1="60" y1="100" x2="200" y2="100" stroke="#008637" stroke-width="2" stroke-dasharray="6,3"/>
+  <text x="115" y="92" fill="#008637" font-size="13" font-family="Arial" font-weight="bold">지름(d)</text>
   <!-- 반지름 -->
-  <line x1="130" y1="100" x2="200" y2="100" stroke="#ffd740" stroke-width="2.5"/>
-  <text x="157" y="118" fill="#ffd740" font-size="12" font-family="Arial">반지름(r)</text>
+  <line x1="130" y1="100" x2="200" y2="100" stroke="#8f7100" stroke-width="2.5"/>
+  <text x="157" y="118" fill="#8f7100" font-size="12" font-family="Arial">반지름(r)</text>
   <!-- 원주율 -->
-  <text x="30" y="170" fill="#ff5252" font-size="13" font-family="Arial" font-weight="bold">원주 = 지름 × π (π≈3.14)</text>
+  <text x="30" y="170" fill="#eb0000" font-size="13" font-family="Arial" font-weight="bold">원주 = 지름 × π (π≈3.14)</text>
   <!-- 원주 곡선 화살표 -->
-  <path d="M200,100 A70,70 0 1,0 200,101" fill="none" stroke="#ff5252" stroke-width="1.5" stroke-dasharray="3,3"/>
+  <path d="M200,100 A70,70 0 1,0 200,101" fill="none" stroke="#eb0000" stroke-width="1.5" stroke-dasharray="3,3"/>
 </svg>`,
       caption: '원의 지름·반지름·원주 관계: 원주 = 지름 × π'
     },
@@ -665,18 +665,18 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
   <!-- 원 (왼쪽) -->
-  <circle cx="65" cy="90" r="50" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="2"/>
-  <text x="50" y="155" fill="#e0e0e0" font-size="11" font-family="Arial">원 (r=50)</text>
+  <circle cx="65" cy="90" r="50" fill="rgba(0,164,68,0.15)" stroke="#008637" stroke-width="2"/>
+  <text x="50" y="155" fill="#2b2620" font-size="11" font-family="Arial">원 (r=50)</text>
   <!-- 화살표 -->
-  <text x="122" y="95" fill="#ffd740" font-size="24" font-family="Arial">→</text>
+  <text x="122" y="95" fill="#8f7100" font-size="24" font-family="Arial">→</text>
   <!-- 직사각형 (오른쪽) -->
-  <rect x="158" y="55" width="120" height="65" fill="rgba(79,172,254,0.15)" stroke="#4facfe" stroke-width="2"/>
+  <rect x="158" y="55" width="120" height="65" fill="rgba(35,132,92,0.15)" stroke="#23845c" stroke-width="2"/>
   <!-- 가로 라벨 -->
-  <text x="175" y="145" fill="#4facfe" font-size="11" font-family="Arial">가로 = 원주/2</text>
+  <text x="175" y="145" fill="#23845c" font-size="11" font-family="Arial">가로 = 원주/2</text>
   <!-- 세로 라벨 -->
-  <text x="162" y="75" fill="#00c853" font-size="11" font-family="Arial">세로=r</text>
+  <text x="162" y="75" fill="#008637" font-size="11" font-family="Arial">세로=r</text>
   <!-- 넓이 공식 -->
-  <text x="155" y="170" fill="#ff5252" font-size="12" font-family="Arial" font-weight="bold">넓이 = r × r × π</text>
+  <text x="155" y="170" fill="#eb0000" font-size="12" font-family="Arial" font-weight="bold">넓이 = r × r × π</text>
 </svg>`,
       caption: '원을 부채꼴로 잘라 직사각형으로 재배열: 가로=원주/2=πr, 세로=r → 넓이=πr²'
     },
@@ -716,20 +716,20 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 300 180" xmlns="http://www.w3.org/2000/svg">
   <!-- 원기둥 -->
-  <ellipse cx="70" cy="55" rx="45" ry="12" fill="rgba(0,200,83,0.15)" stroke="#00c853" stroke-width="2"/>
-  <ellipse cx="70" cy="140" rx="45" ry="12" fill="rgba(0,200,83,0.1)" stroke="#00c853" stroke-width="2"/>
-  <line x1="25" y1="55" x2="25" y2="140" stroke="#00c853" stroke-width="2"/>
-  <line x1="115" y1="55" x2="115" y2="140" stroke="#00c853" stroke-width="2"/>
-  <text x="20" y="170" fill="#00c853" font-size="11" font-family="Arial">원기둥</text>
-  <line x1="115" y1="95" x2="130" y2="95" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="3"/>
-  <text x="132" y="99" fill="#e0e0e0" font-size="10" font-family="Arial">높이 h</text>
+  <ellipse cx="70" cy="55" rx="45" ry="12" fill="rgba(0,164,68,0.15)" stroke="#008637" stroke-width="2"/>
+  <ellipse cx="70" cy="140" rx="45" ry="12" fill="rgba(0,164,68,0.1)" stroke="#008637" stroke-width="2"/>
+  <line x1="25" y1="55" x2="25" y2="140" stroke="#008637" stroke-width="2"/>
+  <line x1="115" y1="55" x2="115" y2="140" stroke="#008637" stroke-width="2"/>
+  <text x="20" y="170" fill="#008637" font-size="11" font-family="Arial">원기둥</text>
+  <line x1="115" y1="95" x2="130" y2="95" stroke="#2b2620" stroke-width="1" stroke-dasharray="3"/>
+  <text x="132" y="99" fill="#2b2620" font-size="10" font-family="Arial">높이 h</text>
   <!-- 원뿔 -->
-  <line x1="200" y1="20" x2="155" y2="145" stroke="#4facfe" stroke-width="2"/>
-  <line x1="200" y1="20" x2="245" y2="145" stroke="#4facfe" stroke-width="2"/>
-  <ellipse cx="200" cy="145" rx="45" ry="12" fill="rgba(79,172,254,0.1)" stroke="#4facfe" stroke-width="2"/>
-  <text x="185" y="170" fill="#4facfe" font-size="11" font-family="Arial">원뿔</text>
-  <line x1="200" y1="20" x2="200" y2="145" stroke="#ffd740" stroke-width="1.5" stroke-dasharray="4"/>
-  <text x="204" y="90" fill="#ffd740" font-size="10" font-family="Arial">높이</text>
+  <line x1="200" y1="20" x2="155" y2="145" stroke="#23845c" stroke-width="2"/>
+  <line x1="200" y1="20" x2="245" y2="145" stroke="#23845c" stroke-width="2"/>
+  <ellipse cx="200" cy="145" rx="45" ry="12" fill="rgba(35,132,92,0.1)" stroke="#23845c" stroke-width="2"/>
+  <text x="185" y="170" fill="#23845c" font-size="11" font-family="Arial">원뿔</text>
+  <line x1="200" y1="20" x2="200" y2="145" stroke="#8f7100" stroke-width="1.5" stroke-dasharray="4"/>
+  <text x="204" y="90" fill="#8f7100" font-size="10" font-family="Arial">높이</text>
 </svg>`,
       caption: '원기둥(좌)과 원뿔(우): 밑면·옆면·높이의 구조 비교'
     },
@@ -768,16 +768,16 @@ var MathDataExtra_s2 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
   <!-- 구 외곽 -->
-  <circle cx="130" cy="100" r="75" fill="rgba(255,152,0,0.08)" stroke="#ffd740" stroke-width="2.5"/>
+  <circle cx="130" cy="100" r="75" fill="rgba(204,122,0,0.08)" stroke="#8f7100" stroke-width="2.5"/>
   <!-- 적도 타원 -->
-  <ellipse cx="130" cy="100" rx="75" ry="18" fill="none" stroke="#ffd740" stroke-width="1.5" stroke-dasharray="5,4"/>
+  <ellipse cx="130" cy="100" rx="75" ry="18" fill="none" stroke="#8f7100" stroke-width="1.5" stroke-dasharray="5,4"/>
   <!-- 반지름 -->
-  <line x1="130" y1="100" x2="205" y2="100" stroke="#00c853" stroke-width="2.5"/>
-  <text x="155" y="92" fill="#00c853" font-size="13" font-family="Arial" font-weight="bold">r</text>
+  <line x1="130" y1="100" x2="205" y2="100" stroke="#008637" stroke-width="2.5"/>
+  <text x="155" y="92" fill="#008637" font-size="13" font-family="Arial" font-weight="bold">r</text>
   <!-- 중심점 -->
-  <circle cx="130" cy="100" r="4" fill="#ff5252"/>
+  <circle cx="130" cy="100" r="4" fill="#eb0000"/>
   <!-- 공식 -->
-  <text x="20" y="185" fill="#ffd740" font-size="11" font-family="Arial">부피: (4/3)πr³  |  겉넓이: 4πr²</text>
+  <text x="20" y="185" fill="#8f7100" font-size="11" font-family="Arial">부피: (4/3)πr³  |  겉넓이: 4πr²</text>
 </svg>`,
       caption: '구의 단면도: 반지름 r, 부피=(4/3)πr³, 겉넓이=4πr²'
     },

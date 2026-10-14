@@ -24,9 +24,9 @@
     function banner(task,onTarget){
         if(document.getElementById('parentScopeGuard'))return;
         const box=document.createElement('aside');box.id='parentScopeGuard';
-        box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #ffd166;border-radius:12px;background:#362f1d;color:#fff3c4;font-weight:700;line-height:1.5;';
+        box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #c28800;border-radius:12px;background:#ffffff;color:#8f7200;font-weight:700;line-height:1.5;';
         box.append(document.createTextNode(onTarget?`📌 보호자 필수 단원 학습 중 · ${String(task.context?.title||'지정 단원')} · 이 단원 퀴즈를 제출한 뒤 오늘 학습으로 돌아오면 자유 학습이 열립니다.`:'📌 먼저 완료할 보호자 지정 단원이 있습니다. '));
-        if(!onTarget){const link=document.createElement('a');link.style.color='#8bd1ff';link.href=task.targetUrl;link.textContent=`${String(task.context?.title||'필수 단원')}으로 이동`;box.append(link);}
+        if(!onTarget){const link=document.createElement('a');link.style.color='#23845c';link.href=task.targetUrl;link.textContent=`${String(task.context?.title||'필수 단원')}으로 이동`;box.append(link);}
         (document.querySelector('main,.wrap')||document.body).prepend(box);
     }
     function cachedSettings(user){return app.LocalRepository.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`,null);}
@@ -46,8 +46,8 @@
             if(scope?.mode==='assigned'){location.replace('today.html');return;}
             if(!settings){
                 const box=document.createElement('aside');box.id='parentScopeGuard';box.textContent='이 기기에서 보호자 설정을 아직 확인하지 못했습니다. ';
-                const link=document.createElement('a');link.href='today.html';link.textContent='오늘 학습에서 설정 다시 확인';link.style.color='#8bd1ff';box.append(link);
-                box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #8b949e;border-radius:12px;background:#242b36;color:#d7e0ea;';(document.querySelector('main,.wrap')||document.body).prepend(box);
+                const link=document.createElement('a');link.href='today.html';link.textContent='오늘 학습에서 설정 다시 확인';link.style.color='#23845c';box.append(link);
+                box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #ddd2bf;border-radius:12px;background:#ffffff;color:#2b2620;';(document.querySelector('main,.wrap')||document.body).prepend(box);
             }
             return;
         }

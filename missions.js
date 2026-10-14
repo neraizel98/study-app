@@ -176,7 +176,15 @@ const MissionManager = {
     renderMissionList(containerId) {
         const user=UserSession.getUserData(), container=document.getElementById(containerId);
         if(!container||!user)return;
-        container.innerHTML=`<a class="goal-entry" href="goals.html"><span class="goal-entry-icon" aria-hidden="true">🎯</span><span><strong>학습 목표</strong><span class="goal-entry-sub">일간 · 주간 · 월간 목표와 보상 확인</span><span class="goal-entry-counts">${['daily','weekly','monthly'].map((c,i)=>`${['일간','주간','월간'][i]} ${this.DEFINITIONS[c].filter(m=>user.missionProgress?.[c]?.[m.id]?.completed).length}/4`).join(' · ')}</span></span><span aria-hidden="true">→</span></a>`;
+        const icon=(name,size)=>window.SmartStudyIcons?.icon(name,{size})||'';
+        const map=user.missionProgress?.daily||{};
+        const progressText=(m,value,target)=>m.type==='daily_time'?`${Math.floor(value/60)}/${Math.round(target/60)}분`:m.type==='daily_core'?`${value}/${target}과목`:`${value}/${target}회`;
+        const rows=this.DEFINITIONS.daily.map(m=>{
+            const p=map[m.id]||{}, target=this.targetOf(m,user), value=Math.min(target,Math.max(0,p.progress||0)), done=!!p.completed;
+            return `<li class="mission-row${done?' is-done':''}"><span class="mission-check">${icon(done?'circle-check':'circle-dashed',20)}</span><span class="mission-row-text"><strong>${this.escape(m.title)}</strong><span class="ss-meter"><i style="width:${done?100:Math.round(value/target*100)}%"></i></span></span><span class="mission-row-meta">${done?'완료':progressText(m,value,target)}<small>+${m.exp}</small></span></li>`;
+        }).join('');
+        const counts=['weekly','monthly'].map((c,i)=>`${['이번 주','이번 달'][i]} ${this.DEFINITIONS[c].filter(m=>user.missionProgress?.[c]?.[m.id]?.completed).length}/4`).join(' · ');
+        container.innerHTML=`<ul class="mission-rows">${rows}</ul><a class="mission-more" href="goals.html">${icon('target-arrow',16)}<span>${counts}</span>${icon('chevron-right',16)}</a>`;
     },
     renderGoals(category) {
         const user=UserSession.getUserData(), container=document.getElementById('goalList');
@@ -191,10 +199,10 @@ const MissionManager = {
             const legacy=p.completed&&p.ruleVersion!==2;
             const text=m.type==='daily_time'?`${Math.floor(value/60)} / ${target/60}분`:`${value} / ${target}${m.type.endsWith('_days')&&m.type!=='core_days'?'일':m.type==='coverage'?'영역':m.type.includes('core')?'과목':'회'}`;
             const details=['coverage','core_days'].includes(m.type)?`<div class="goal-breakdown">${(m.type==='coverage'?this.areas:['reading','english','math']).map(subject=>{const count=new Set(entries.filter(e=>m.type==='coverage'?e.subject===subject:this.family(e.subject)===subject).map(e=>e.date)).size;const needed=m.days||(category==='weekly'?3:12);return `<span>${m.type==='core_days'&&subject==='english'?'영어':names[subject]||this.escape(subject)} ${Math.min(count,needed)}/${needed}일</span>`;}).join('')}</div>`:'';
-            return `<article class="goal-card ${p.completed?'is-complete':''}"><div class="goal-card-heading"><h2><span aria-hidden="true">${m.icon}</span> ${m.title}</h2><span class="goal-exp">+${m.exp} EXP</span></div><p>${m.desc}</p>${details}<div class="goal-meter"><progress max="${target}" value="${p.completed?target:value}" aria-label="${m.title}"></progress><strong>${legacy?'기존 달성 인정':p.completed?'달성 완료':text}</strong></div></article>`;
+            return `<article class="goal-card ${p.completed?'is-complete':''}"><div class="goal-card-heading"><span class="goal-status">${window.SmartStudyIcons?.icon(p.completed?'circle-check':'circle-dashed',{size:22})||''}</span><h2>${m.title}</h2><span class="goal-exp">+${m.exp} EXP</span></div><p>${m.desc}</p>${details}<div class="goal-meter"><progress max="${target}" value="${p.completed?target:value}" aria-label="${m.title}"></progress><strong>${legacy?'기존 달성 인정':p.completed?'달성 완료':text}</strong></div></article>`;
         }).join('');
         const earned=this.rewardFor(user,category),reward=earned||this.REWARDS[category][0],escape=this.escape;
-        document.getElementById('goalReward').innerHTML=`<span class="goal-eyebrow">${earned?(earned.used?'사용한 보상':'획득한 보상'):'4개 목표를 모두 완료하면'}</span><h2>${escape(reward.icon)} ${escape(reward.title)}</h2><p>${escape(reward.note||'기존에 획득한 보상을 유지합니다.')}</p><p class="goal-muted">경험치는 목표마다 한 번 지급됩니다. 실물·활동 보상은 자동 결제되거나 예약되지 않습니다.</p>`;
+        document.getElementById('goalReward').innerHTML=`<span class="goal-eyebrow">${earned?(earned.used?'사용한 보상':'획득한 보상'):'4개 목표를 모두 완료하면'}</span><h2><span class="goal-reward-icon">${window.SmartStudyIcons?.icon('gift',{size:22})||escape(reward.icon)}</span>${escape(reward.title)}</h2><p>${escape(reward.note||'기존에 획득한 보상을 유지합니다.')}</p><p class="goal-muted">경험치는 목표마다 한 번 지급됩니다. 실물·활동 보상은 자동 결제되거나 예약되지 않습니다.</p>`;
     }
 };
 window.MissionManager = MissionManager;

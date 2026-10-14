@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Math Quiz - 실전 테스트</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -25,10 +25,10 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <style>
         :root {
-            --math-primary: #00c853;
-            --math-secondary: #00e676;
-            --quiz-wrong: #ff5252;
-            --quiz-correct: #00c853;
+            --math-primary: #00903c;
+            --math-secondary: #008f4a;
+            --quiz-wrong: #fa0000;
+            --quiz-correct: #00903c;
         }
 
         body {
@@ -68,7 +68,7 @@
             border: 1px solid var(--card-border);
             border-radius: 35px;
             padding: 40px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 50px rgba(43,38,32,0.105);
             animation: slideUp 0.6s cubic-bezier(0.4, 0, 0.2, 1);
             position: relative;
         }
@@ -102,7 +102,7 @@
         }
 
         .option-btn {
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border: 1px solid var(--card-border);
             padding: 18px 25px;
             border-radius: 20px;
@@ -118,19 +118,19 @@
         }
 
         .option-btn:hover:not(:disabled) {
-            background: rgba(255, 255, 255, 0.1);
+            background: #f5efe4;
             border-color: var(--math-primary);
             transform: translateX(5px);
         }
 
         .option-btn.correct {
-            background: rgba(0, 200, 83, 0.2) !important;
+            background: rgba(0,164,68,0.18) !important;
             border-color: var(--quiz-correct) !important;
             color: var(--quiz-correct);
         }
 
         .option-btn.wrong {
-            background: rgba(255, 82, 82, 0.2) !important;
+            background: rgba(255,61,61,0.18) !important;
             border-color: var(--quiz-wrong) !important;
             color: var(--quiz-wrong);
         }
@@ -138,7 +138,7 @@
         .explanation-box {
             margin-top: 30px;
             padding: 25px;
-            background: rgba(0, 200, 83, 0.05);
+            background: rgba(0,164,68,0.08);
             border-radius: 20px;
             border-left: 5px solid var(--math-primary);
             display: none;
@@ -159,7 +159,7 @@
             background: var(--math-primary);
             border: none;
             border-radius: 18px;
-            color: #0d1117;
+            color: #ffffff;
             font-weight: 800;
             font-size: 1.1rem;
             cursor: pointer;
@@ -172,7 +172,7 @@
         /* 글로벌 메뉴 */
         .global-nav { position: fixed; top: 20px; right: 20px; display: flex; gap: 10px; z-index: 1000; }
         .global-btn {
-            background: rgba(13, 17, 23, 0.8);
+            background: #ffffff;
             backdrop-filter: blur(10px);
             border: 1px solid var(--card-border);
             padding: 10px 15px;
@@ -187,7 +187,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -224,12 +224,12 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-    <script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script src="MathData.js"></script>
-    <script src="MathDataMiddle1.js"></script>
-    <script src="MathDataMiddle1Semester2.js"></script>
+    <script src="MathDataMiddle1.js?v=20261014-redesign"></script>
+    <script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script>
     <script src="MathQuizData.js"></script>
     <script src="MathQuizMiddle1.js?v=20260727-m1quiz"></script>
     <script src="MathQuizMiddle1Semester2.js?v=20260727-m1s2quiz"></script>
@@ -490,11 +490,11 @@
                     if (!scoreList) return;
                     results.forEach((r, i) => {
                         const row = document.createElement('div');
-                        row.style.cssText = `display:flex; flex-direction:column; padding:12px 16px; border-radius:14px; background:${r.isOk ? 'rgba(0,200,83,0.08)' : 'rgba(255,82,82,0.08)'}; border:1px solid ${r.isOk ? 'rgba(0,200,83,0.3)' : 'rgba(255,82,82,0.3)'};`;
+                        row.style.cssText = `display:flex; flex-direction:column; padding:12px 16px; border-radius:14px; background:${r.isOk ? 'rgba(0,134,55,0.08)' : 'rgba(235,0,0,0.08)'}; border:1px solid ${r.isOk ? 'rgba(0,134,55,0.3)' : 'rgba(235,0,0,0.3)'};`;
                         
                         const expHtml = r.isOk 
                             ? `<button class="explanation-btn" onclick="document.getElementById('exp_${i}').classList.toggle('show');">💡 해설 보기</button>` 
-                            : `<span style="font-size:0.8rem; color:#ff5252; margin-left:auto;">다시 풀기</span>`;
+                            : `<span style="font-size:0.8rem; color:#eb0000; margin-left:auto;">다시 풀기</span>`;
                             
                         const expBoxHtml = r.isOk 
                             ? `<div id="exp_${i}" class="result-explanation-box">${Utils.renderMath(quizzes[i].explanation)}</div>`
@@ -582,7 +582,7 @@
                         // [New] 경험치 지급 및 레벨업 확인
                         const result = UserSession.addEXP(score);
                         if (result && result.levelUp) {
-                            alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
+                            if (window.SmartStudyCelebrate) SmartStudyCelebrate(`레벨 ${result.user.level} 달성!`, '꾸준히 쌓은 경험치로 한 단계 올라갔어요.', `Lv.${result.user.level}`); else alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
                         }
                     }
                 }, 50);
@@ -617,6 +617,7 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
-<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261014-redesign"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="celebrate.js?v=20261014-redesign"></script>
+</body>
 </html>

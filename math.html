@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Smart Math - 수학 원리 마스터</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -25,9 +25,9 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <style>
         :root {
-            --math-primary: #4facfe;
-            --math-secondary: #00f2fe;
-            --math-accent: #00c853;
+            --math-primary: #23845c;
+            --math-secondary: #008c93;
+            --math-accent: #00903c;
         }
 
         body {
@@ -64,7 +64,7 @@
             display: inline-flex;
             align-items: center;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.08);
+            background: #f5efe4;
             border: 1px solid var(--card-border);
             padding: 8px 16px;
             border-radius: 12px;
@@ -77,7 +77,7 @@
         }
 
         .back-home:hover {
-            background: rgba(255, 255, 255, 0.15);
+            background: #f5efe4;
             transform: scale(0.98);
         }
 
@@ -109,7 +109,7 @@
         .mode-toggle {
             display: flex;
             gap: 5px;
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border: 1px solid var(--card-border);
             border-radius: 16px;
             padding: 5px;
@@ -136,15 +136,15 @@
 
         .mode-btn.active {
             background: linear-gradient(135deg, var(--math-primary), var(--math-secondary));
-            color: #0d1117;
-            box-shadow: 0 4px 15px rgba(79, 172, 254, 0.35);
+            color: #ffffff;
+            box-shadow: 0 4px 15px rgba(35,132,92,0.122);
         }
 
         /* 레벨 선택기 (단추형 탭) */
         .level-selector {
             display: flex;
             gap: 8px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #fdfbf6;
             border: 1px solid var(--card-border);
             border-radius: 14px;
             padding: 6px;
@@ -167,9 +167,9 @@
         }
 
         .level-btn.active {
-            background: rgba(79, 172, 254, 0.15);
+            background: rgba(35,132,92,0.15);
             color: var(--math-primary);
-            box-shadow: inset 0 0 0 1px rgba(79, 172, 254, 0.3);
+            box-shadow: inset 0 0 0 1px rgba(35,132,92,0.105);
         }
 
         /* 목차 섹션 */
@@ -185,7 +185,7 @@
             border-radius: 30px;
             padding: 30px;
             border: 1px solid var(--card-border);
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            box-shadow: 0 10px 30px rgba(43,38,32,0.07);
             animation: fadeInUp 0.6s ease-out both;
         }
 
@@ -205,7 +205,7 @@
         }
 
         .chapter-item {
-            background: rgba(255, 255, 255, 0.03);
+            background: #fdfbf6;
             padding: 20px 25px;
             border-radius: 20px;
             text-decoration: none;
@@ -219,7 +219,7 @@
         }
 
         .chapter-item:hover {
-            background: rgba(255, 255, 255, 0.06);
+            background: #ffffff;
             border-color: var(--math-primary);
             transform: scale(1.02);
         }
@@ -227,7 +227,7 @@
         .chapter-item i {
             font-style: normal;
             font-size: 0.8rem;
-            background: rgba(79, 172, 254, 0.15);
+            background: rgba(35,132,92,0.15);
             color: var(--math-primary);
             padding: 6px 14px;
             border-radius: 12px;
@@ -245,7 +245,7 @@
             .container { padding: 30px 15px; }
         }
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"><link rel="stylesheet" href="math-mobile.css?v=20261014-ui-rollback"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="math-mobile.css?v=20261014-ui-rollback"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body class="math-mobile-layout">
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -286,8 +286,8 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-    <script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -299,8 +299,8 @@
         });
     </script>
     <script src="MathData.js"></script>
-    <script src="MathDataMiddle1.js"></script>
-    <script src="MathDataMiddle1Semester2.js"></script>
+    <script src="MathDataMiddle1.js?v=20261014-redesign"></script>
+    <script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
@@ -459,6 +459,6 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
-<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261014-redesign"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
 </html>

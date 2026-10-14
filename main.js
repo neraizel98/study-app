@@ -868,7 +868,7 @@ function showResult() {
             if (wData.phrasalVerbs) wData.phrasalVerbs.forEach(pv => exText += `<br>🔥 ${pv.phrase}: ${pv.meaning}`);
             expBoxHtml = `<div id="exp_${i}" class="result-explanation-box" style="margin-top:10px;">뜻: ${wData.meaning}${exText}</div>`;
         } else {
-            expHtml = !ok ? `<span style="font-size:0.8rem; color:#ff5252; margin-left:auto;">다시 풀기</span>` : '';
+            expHtml = !ok ? `<span style="font-size:0.8rem; color:#eb0000; margin-left:auto;">다시 풀기</span>` : '';
         }
 
         row.innerHTML = `
@@ -916,7 +916,7 @@ function showResult() {
         // [New] 경험치 지급 및 레벨업 확인
         const result = UserSession.addEXP(quizScore);
         if (result && result.levelUp) {
-            alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
+            if (window.SmartStudyCelebrate) SmartStudyCelebrate(`레벨 ${result.user.level} 달성!`, '꾸준히 쌓은 경험치로 한 단계 올라갔어요.', `Lv.${result.user.level}`); else alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
         }
     }
 
@@ -974,7 +974,7 @@ function reportCriticalError(msg) {
     console.error('[CRITICAL]', msg);
     const target = (currentMode === 'study') ? englishWordEl : quizWordEl;
     if (target && typeof target.innerHTML !== 'undefined') {
-        target.innerHTML = `<div style="color:#ff5252; font-size:1.0rem; background:rgba(255,82,82,0.1); padding:10px; border-radius:8px; border:1px solid rgba(255,82,82,0.3); line-height:1.4;">⚠️ ${msg}</div>`;
+        target.innerHTML = `<div style="color:#eb0000; font-size:1.0rem; background:rgba(255,61,61,0.1); padding:10px; border-radius:8px; border:1px solid rgba(255,61,61,0.39); line-height:1.4;">⚠️ ${msg}</div>`;
     } else {
         // UI가 로드되지 않은 상태면 alert 시도
         setTimeout(() => alert('English App Error: ' + msg), 100);

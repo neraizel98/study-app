@@ -348,9 +348,9 @@ function setupWritingQuiz(q) {
         height: 250,
         showCharacter: false,
         showOutline: false,
-        strokeColor: '#4facfe',
-        outlineColor: 'rgba(255,255,255,0.05)',
-        drawingColor: '#00f2fe',
+        strokeColor: '#23845c',
+        outlineColor: '#ede5d6',
+        drawingColor: '#008289',
         drawingWidth: 20,
         padding: 5,
         onLoadCharDataError: () => {
@@ -449,7 +449,7 @@ function showResult() {
             if (wData.antonym) exText += `<br>반의어: ${wData.antonym}`;
             expBoxHtml = `<div id="exp_${i}" class="result-explanation-box" style="margin-top:10px;">[ ${wData.meaning} ] ${wData.eum}${exText}</div>`;
         } else {
-            expHtml = !r.isOk ? `<span style="font-size:0.8rem; color:#ff5252; margin-left:auto;">다시 풀기</span>` : '';
+            expHtml = !r.isOk ? `<span style="font-size:0.8rem; color:#eb0000; margin-left:auto;">다시 풀기</span>` : '';
         }
 
         row.innerHTML = `
@@ -494,7 +494,7 @@ function showResult() {
         
         const result = UserSession.addEXP(quizScore);
         if (result && result.levelUp) {
-            alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
+            if (window.SmartStudyCelebrate) SmartStudyCelebrate(`레벨 ${result.user.level} 달성!`, '꾸준히 쌓은 경험치로 한 단계 올라갔어요.', `Lv.${result.user.level}`); else alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
         }
     }
 
@@ -615,8 +615,8 @@ studyStrokeBtn.addEventListener('click', () => {
         studyStrokeBtn.innerHTML = '✨ 애니메이션 재생 중...';
         const strokeCharacter = getStrokeDataCharacter(d.hanja);
         studyWriterInstance = HanziWriter.create('studyStrokeContainer', strokeCharacter, {
-            width: 200, height: 200, showCharacter: false, showOutline: true, strokeColor: '#4facfe',
-            outlineColor: 'rgba(255,255,255,0.05)', padding: 5,
+            width: 200, height: 200, showCharacter: false, showOutline: true, strokeColor: '#23845c',
+            outlineColor: '#ede5d6', padding: 5,
             onLoadCharDataError: () => {
                 studyWriterInstance = null;
                 studyStrokeContainer.textContent = '획순 데이터를 불러오지 못했습니다. 인터넷 연결 후 다시 눌러 주세요.';

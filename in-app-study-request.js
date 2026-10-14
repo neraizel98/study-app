@@ -37,15 +37,15 @@
         document.getElementById('inAppStudyRequestBanner')?.remove();
         if(!request||request.status!=='pending')return;
         const box=document.createElement('aside');box.id='inAppStudyRequestBanner';
-        box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #58a6ff;border-radius:12px;background:#162b45;color:#e6f2ff;font-weight:700;line-height:1.5;';
+        box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #23845c;border-radius:12px;background:#ffffff;color:#2b2620;font-weight:700;line-height:1.5;';
         box.append(document.createTextNode('📣 보호자가 공부 시작을 요청했어요. '));
-        const link=document.createElement('a');link.href='today.html';link.textContent='오늘 학습 열기';link.style.color='#8bd1ff';box.append(link);
+        const link=document.createElement('a');link.href='today.html';link.textContent='오늘 학습 열기';link.style.color='#23845c';box.append(link);
         (document.querySelector('main,.wrap')||document.body).prepend(box);
     }
     function showLearnerError(){
         showLearnerBanner(null);const box=document.createElement('aside');box.id='inAppStudyRequestBanner';
         box.textContent='공부 요청 상태를 확인하지 못했습니다. 계정 연결과 네트워크를 확인해 주세요.';
-        box.style.cssText='margin:12px auto;padding:10px 14px;max-width:900px;box-sizing:border-box;border:1px solid #8b949e;border-radius:12px;background:#242b36;color:#d7e0ea;';
+        box.style.cssText='margin:12px auto;padding:10px 14px;max-width:900px;box-sizing:border-box;border:1px solid #ddd2bf;border-radius:12px;background:#ffffff;color:#2b2620;';
         (document.querySelector('main,.wrap')||document.body).prepend(box);
     }
     let stop=null,generation=0;

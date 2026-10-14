@@ -1,23 +1,23 @@
 <!doctype html>
 <html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>오늘 학습 · Smart Study</title><link rel="stylesheet" href="styles.css">
+<title>오늘 학습 · Smart Study</title><link rel="stylesheet" href="styles.css?v=20261014-redesign">
 <style>
-body{background:#0d1117;color:#ecf4ff;font-family:Arial,sans-serif;margin:0}.wrap{max-width:920px;margin:auto;padding:24px 16px 70px}
-a{color:#83caff}.panel,.task{background:#162033;border:1px solid #34445e;border-radius:16px;padding:20px;margin:16px 0}
-h1{font-size:1.7rem;margin:16px 0 4px}h2{font-size:1.14rem;margin:0 0 10px}.muted{color:#a8b8ce;line-height:1.6}
-label{display:block;margin:12px 0 5px}select,input,button{font:inherit}select,input{max-width:100%;background:#0e1726;color:#fff;border:1px solid #50617a;border-radius:9px;padding:9px}
-button,.go{background:#4facfe;color:#092038;border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none;margin-top:9px}
+body{background:#fbf7ef;color:#2b2620;font-family:var(--font);margin:0}.wrap{max-width:920px;margin:auto;padding:24px 16px 70px}
+a{color:#23845c}.panel,.task{background:#ffffff;border:1px solid #ddd2bf;border-radius:16px;padding:20px;margin:16px 0}
+h1{font-size:1.7rem;margin:16px 0 4px}h2{font-size:1.14rem;margin:0 0 10px}.muted{color:#6e6559;line-height:1.6}
+label{display:block;margin:12px 0 5px}select,input,button{font:inherit}select,input{max-width:100%;background:#ffffff;color:#2b2620;border:1px solid #ddd2bf;border-radius:9px;padding:9px}
+button,.go{background:#23845c;color:#ffffff;border:0;border-radius:9px;padding:10px 15px;font-weight:700;cursor:pointer;display:inline-block;text-decoration:none;margin-top:9px}
 button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-columns:minmax(0,1fr);gap:14px}.task>div{min-width:0}.task p{margin:5px 0;overflow-wrap:anywhere}.task .actions{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px;min-width:0}.task .actions>*{min-width:0;max-width:100%}.task .actions select{flex:1 1 260px;width:min(100%,420px)}.task .actions button,.task .actions .go{margin-top:0}
-.tag{display:inline-block;white-space:nowrap;border-radius:20px;background:#263956;padding:4px 10px;font-size:.8rem}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary span{background:#25334a;border-radius:10px;padding:10px}
+.tag{display:inline-block;white-space:nowrap;border-radius:20px;background:#ffffff;padding:4px 10px;font-size:.8rem}.summary{display:flex;gap:12px;flex-wrap:wrap}.summary span{background:#ffffff;border-radius:10px;padding:10px}
 @media(max-width:620px){.wrap{padding:15px 12px 55px}}
-</style><link rel="stylesheet" href="study-focus.css?v=20260930-focus"><link rel="stylesheet" href="today-flow.css?v=20261012-journey"><link rel="stylesheet" href="weekly-dashboard.css"></head><body class="study-focus"><main class="wrap">
+</style><link rel="stylesheet" href="study-focus.css?v=20261014-redesign"><link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="weekly-dashboard.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head><body class="study-focus" data-app-tabs><main class="wrap">
 <a href="index.html">← 대시보드</a><h1>오늘 학습</h1><p class="muted">하나씩 학습하고 퀴즈를 끝까지 풀면 다음 단계로 이어져요.</p>
 <section id="nextActivity" class="focus-hero" aria-live="polite"></section><details id="setup" class="panel"><summary>학습 설정과 동기화 상태</summary><p id="settingsSummary" class="muted"></p><p id="settingsStatus" class="muted">저장된 설정을 먼저 표시하고 보호자 설정을 확인하는 중입니다.</p></details>
 <section id="planPanel"><details class="panel"><summary>오늘의 시간 계획</summary><p id="budgetSummary" class="muted"></p><div id="overview" class="summary"></div></details><div class="focus-section-title"><h2>오늘의 학습 순서</h2><a href="weekly_assessment.html">주간 실력 확인 →</a></div><div id="tasks"></div><p id="timeNote" class="muted"></p></section>
 </main>
 <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script><script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261012-journey"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-<script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261012-journey"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+<script src="MathData.js"></script><script src="MathDataMiddle1.js?v=20261014-redesign"></script><script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script><script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script>
 <script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="learning-session.js"></script><script src="today-journey.js?v=20261012-journey"></script>
 <script>
 (async function(){
@@ -67,4 +67,5 @@ button:disabled{opacity:.5;cursor:default}.task{display:grid;grid-template-colum
     render();
     refreshParentSettings();
 })().catch(error=>{console.error(error);document.getElementById('planPanel').hidden=false;document.getElementById('tasks').textContent='오늘 학습을 여는 중 오류가 발생했습니다. 새로고침해 주세요.';});
-</script><script src="mock-publication.js"></script><script src="weekly-dashboard.js"></script></body></html>
+</script><script src="mock-publication.js"></script><script src="weekly-dashboard.js?v=20261014-redesign"></script><script src="icons.js?v=20261014-redesign"></script><script src="app-shell.js?v=20261014-redesign"></script>
+</body></html>

@@ -104,7 +104,7 @@ function _touchSync(userId) {
             run.stalled = true;
             _renderSyncStatus(run);
         } else {
-            _showSyncBadge('☁️ 현재 단계에서 새 완료 신호가 없습니다 · 기록은 기기에 보관됩니다', '#f0c674', true, userId);
+            _showSyncBadge('☁️ 현재 단계에서 새 완료 신호가 없습니다 · 기록은 기기에 보관됩니다', '#9b6b0d', true, userId);
         }
     }, 30000));
 }
@@ -146,7 +146,7 @@ async function _drainUpload(userId, kind) {
                 const failed = [...run.lanes.values()].some(step => step.status === 'failed');
                 if (!failed) _recordSyncStep(userId, run.runId, 'final', 'final', 'completed', { completed: 1, total: 1, source: 'local' });
                 _finishSyncRun(run, failed ? 'failed' : 'completed');
-            } else _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364', false, userId);
+            } else _showSyncBadge('✅ 변경 기록 동기화 완료', '#20852b', false, userId);
             window.dispatchEvent(new CustomEvent('firesynced', { detail: { userId } }));
         }
         state.delay = 2000;
@@ -154,7 +154,7 @@ async function _drainUpload(userId, kind) {
         state.delay = Math.min(60000, (state.delay || 2000) * 2);
         if (run?.state === 'running') {
             _finishSyncRun(run, 'failed', error);
-        } else _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true, userId);
+        } else _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#eb0015', true, userId);
         _scheduleUpload(userId, kind, state.delay);
     } finally {
         state.running = false;
@@ -210,8 +210,8 @@ async function _initDB() {
 // ─────────────────────────────────────────────
 function _debounce(key, fn, ms = 2000) {
     clearTimeout(_timers[key]);
-    _timers[key] = setTimeout(() => Promise.resolve().then(fn).then(() => _showSyncBadge('✅ 변경 기록 동기화 완료', '#56d364')).catch(() => {
-        _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#ff5f6d', true);
+    _timers[key] = setTimeout(() => Promise.resolve().then(fn).then(() => _showSyncBadge('✅ 변경 기록 동기화 완료', '#20852b')).catch(() => {
+        _showSyncBadge('⚠️ 기기에 보관 중 · 자동 재시도', '#eb0015', true);
         _debounce(key, fn, Math.min(60000, ms * 2));
     }), ms);
 }
@@ -230,7 +230,7 @@ async function _uploadUserData(userId, run = null) {
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'daily-upload', 'waiting');
         await _remoteRepository.putDaily?.(userId);
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'daily-upload', 'completed', { completed: 1, total: 1, source: 'unknown' });
-    } catch (e) { _showSyncBadge('⚠️ 저장 재시도 필요', '#ff5f6d', true); throw e; }
+    } catch (e) { _showSyncBadge('⚠️ 저장 재시도 필요', '#eb0015', true); throw e; }
 }
 
 async function _uploadReports(userId, run = null) {
@@ -241,7 +241,7 @@ async function _uploadReports(userId, run = null) {
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'reports', 'waiting', { completed: 0, total: reports.length });
         await _remoteRepository.putReports(userId, reports, run ? { runId: run.runId } : {});
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'reports', 'completed', { completed: reports.length, total: reports.length, source: 'unknown' });
-    } catch (e) { _showSyncBadge('⚠️ 퀴즈 저장 재시도 필요', '#ff5f6d', true); throw e; }
+    } catch (e) { _showSyncBadge('⚠️ 퀴즈 저장 재시도 필요', '#eb0015', true); throw e; }
 }
 
 async function _uploadStudyConfig(cfg) {
@@ -272,7 +272,7 @@ async function _uploadWrong(userId, run = null) {
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'wrong', 'waiting', { completed: 0, total });
         await _remoteRepository.putWrongAnswers(userId, trimmed, run ? { runId: run.runId } : {});
         if (run) _recordSyncStep(userId, run.runId, 'upload', 'wrong', 'completed', { completed: total, total, source: 'unknown' });
-    } catch (e) { _showSyncBadge('⚠️ 오답 저장 재시도 필요', '#ff5f6d', true); throw e; }
+    } catch (e) { _showSyncBadge('⚠️ 오답 저장 재시도 필요', '#eb0015', true); throw e; }
 }
 
 function _trimWrongHistory(wrongAnswers) {
@@ -345,7 +345,7 @@ async function _downloadAndMerge(userId, run) {
             const userState = _dirty.get(_dirtyKey(userId, 'user'));
             if (userState) userState.confirmed = Math.max(userState.confirmed, generation);
             _touchSync(userId);
-            _showSyncBadge('☁️ 학습 기록 1/1', '#4facfe', true, userId);
+            _showSyncBadge('☁️ 학습 기록 1/1', '#23845c', true, userId);
             generation = _dirty.get(_dirtyKey(userId, 'reports'))?.generation || 0;
             await _uploadReports(userId, run);
             const reportsState = _dirty.get(_dirtyKey(userId, 'reports'));
@@ -358,7 +358,7 @@ async function _downloadAndMerge(userId, run) {
         }
 
         _touchSync(userId);
-        _showSyncBadge('☁️ 최종 저장 확인 중', '#4facfe', true, userId);
+        _showSyncBadge('☁️ 최종 저장 확인 중', '#23845c', true, userId);
         await _remoteRepository.confirmBundle?.(userId, bundle, { uploaded: true, runId: run.runId });
         _recordSyncStep(userId, run.runId, 'final', 'flush', 'waiting');
         await _localRepository.flush?.();
@@ -642,18 +642,18 @@ function _renderSyncStatus(run) {
         : failed ? `⚠️ ${_operationLabels[failed.operation] || '동기화'} 실패`
         : run.stalled ? `☁️ ${_operationLabels[active?.operation] || '현재 단계'} · 새 완료 신호 없음`
         : `☁️ ${active ? _stepDescription(active) : '동기화 준비 중'}`;
-    _showSyncBadge(summary, failed ? '#ff5f6d' : run.stalled ? '#f0c674' : run.state === 'completed' ? '#56d364' : '#4facfe', run.state !== 'completed', run.userId);
+    _showSyncBadge(summary, failed ? '#eb0015' : run.stalled ? '#9b6b0d' : run.state === 'completed' ? '#20852b' : '#23845c', run.state !== 'completed', run.userId);
     let panel = document.getElementById('_firesync_panel');
     if (!panel) {
         panel = document.createElement('section');
         panel.id = '_firesync_panel';
         panel.hidden = true;
-        panel.style.cssText = `position:fixed;right:12px;bottom:58px;z-index:9999;width:min(390px,calc(100vw - 24px));max-height:min(70vh,520px);overflow:auto;background:#161b22;border:1px solid #30363d;border-radius:14px;padding:14px;color:#f0f6fc;font:0.82rem/1.45 'Outfit',sans-serif;box-shadow:0 12px 32px #0008;`;
+        panel.style.cssText = `position:fixed;right:12px;bottom:58px;z-index:9999;width:min(390px,calc(100vw - 24px));max-height:min(70vh,520px);overflow:auto;background:#ffffff;border:1px solid #ede5d6;border-radius:14px;padding:14px;color:#2b2620;font:0.82rem/1.45 var(--font);box-shadow:0 12px 32px rgba(43,38,32,0.105);`;
         const title = document.createElement('strong'); title.textContent = '동기화 상세'; panel.appendChild(title);
         const timing = document.createElement('p'); timing.style.margin = '6px 0 10px'; panel.appendChild(timing);
-        const notice = document.createElement('p'); notice.style.cssText = 'color:#f0c674;margin:0 0 10px'; panel.appendChild(notice);
+        const notice = document.createElement('p'); notice.style.cssText = 'color:#9b6b0d;margin:0 0 10px'; panel.appendChild(notice);
         const list = document.createElement('div'); panel.appendChild(list);
-        const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '진단 정보 복사'; copy.style.cssText = 'margin-top:10px;padding:7px 10px;border:1px solid #4facfe;border-radius:8px;background:#0d1117;color:#f0f6fc';
+        const copy = document.createElement('button'); copy.type = 'button'; copy.textContent = '진단 정보 복사'; copy.style.cssText = 'margin-top:10px;padding:7px 10px;border:1px solid #23845c;border-radius:8px;background:#fbf7ef;color:#2b2620';
         copy.addEventListener('click', () => {
             if (!navigator.clipboard?.writeText) { copy.textContent = '복사 실패'; return; }
             navigator.clipboard.writeText(JSON.stringify(panel._diagnostic, null, 2)).then(() => { copy.textContent = '복사됨'; }).catch(() => { copy.textContent = '복사 실패'; });
@@ -670,7 +670,7 @@ function _renderSyncStatus(run) {
     notice.hidden = !run.stalled;
     notice.textContent = run.stalled ? '현재 단계에서 30초 동안 새 완료 신호가 없습니다. 원인은 아직 확정할 수 없으며 학습 기록은 기기에 보관됩니다.' : '';
     list.replaceChildren();
-    for (const step of steps) { const row=document.createElement('div'); row.style.cssText='padding:7px 0;border-top:1px solid #30363d'; row.textContent=_stepDescription(step); if(step.source==='cache')row.textContent+=' · 기기 캐시'; else if(step.source==='server')row.textContent+=' · 서버 응답'; if(step.error){const action=document.createElement('div');action.style.color='#ff9b9b';action.textContent=step.error.action;row.appendChild(action);} list.appendChild(row); }
+    for (const step of steps) { const row=document.createElement('div'); row.style.cssText='padding:7px 0;border-top:1px solid #ede5d6'; row.textContent=_stepDescription(step); if(step.source==='cache')row.textContent+=' · 기기 캐시'; else if(step.source==='server')row.textContent+=' · 서버 응답'; if(step.error){const action=document.createElement('div');action.style.color='#eb0000';action.textContent=step.error.action;row.appendChild(action);} list.appendChild(row); }
     if (copy.textContent !== '복사됨' && copy.textContent !== '복사 실패') copy.textContent = '진단 정보 복사';
 }
 function _finishSyncRun(run, state, error = null) {
@@ -684,7 +684,7 @@ function _finishSyncRun(run, state, error = null) {
     _watchdogs.delete(run.userId);
     _renderSyncStatus(run);
 }
-function _showSyncBadge(text, color = '#4facfe', persistent = false, userId = null) {
+function _showSyncBadge(text, color = '#23845c', persistent = false, userId = null) {
     if (userId && userId !== _localRepository.getActiveUser()) return;
     let badge = document.getElementById('_firesync_badge');
     if (!badge) {
@@ -692,8 +692,8 @@ function _showSyncBadge(text, color = '#4facfe', persistent = false, userId = nu
         badge.id = '_firesync_badge';
         badge.style.cssText = `
             position:fixed; bottom:16px; right:16px; z-index:9999;
-            background:#161b22; border:1px solid rgba(255,255,255,0.1);
-            color:#f0f6fc; font-size:0.75rem; font-family:'Outfit',sans-serif;
+            background:#ffffff; border:1px solid #ede5d6;
+            color:#2b2620; font-size:0.75rem; font-family:var(--font);
             padding:6px 12px; border-radius:20px; pointer-events:auto; cursor:pointer;
             transition:opacity 0.4s; opacity:0;
         `;
@@ -801,7 +801,7 @@ window.FireSync = {
         const db = await _initDB();
         if (!db) return;
         await _uploadStudyConfig(cfg);
-        _showSyncBadge('✅ 학습 시간 설정 저장됨', '#56d364');
+        _showSyncBadge('✅ 학습 시간 설정 저장됨', '#20852b');
     },
 
     /**
@@ -828,7 +828,7 @@ window.FireSync = {
             _uploadWrong(uid)
         ]);
         if (UserSession.getActiveUser() !== uid) throw Object.assign(new Error('학습자가 바뀌어 저장 확인을 완료하지 못했습니다.'), { code: 'sync/user-changed' });
-        _showSyncBadge('✅ 업로드 완료', '#56d364');
+        _showSyncBadge('✅ 업로드 완료', '#20852b');
         return { userId: uid, confirmed: true };
     }
 };
@@ -854,9 +854,9 @@ window.addEventListener?.('focus', _retryForegroundSync);
 document.addEventListener?.('visibilitychange', () => {
     if (document.visibilityState === 'visible') _retryForegroundSync();
 });
-window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#f0c674', true));
-window.addEventListener?.('smartstudy:storage-error', event => _showSyncBadge(`⚠️ ${event.detail?.message || '기기 저장 실패 · 앱을 닫지 말고 백업해 주세요'}`, '#ff5f6d', true));
-window.addEventListener?.('smartstudy:sync-state', event => { if (!_badgeOwner) _showSyncBadge(`☁️ ${event.detail.message}`, '#4facfe', true); });
+window.addEventListener?.('offline', () => _showSyncBadge('📵 기기에 저장 중 · 연결되면 다시 전송합니다', '#9b6b0d', true));
+window.addEventListener?.('smartstudy:storage-error', event => _showSyncBadge(`⚠️ ${event.detail?.message || '기기 저장 실패 · 앱을 닫지 말고 백업해 주세요'}`, '#eb0015', true));
+window.addEventListener?.('smartstudy:sync-state', event => { if (!_badgeOwner) _showSyncBadge(`☁️ ${event.detail.message}`, '#23845c', true); });
 window.addEventListener?.('smartstudy:sync-progress', event => {
     const detail = event.detail || {};
     const user = detail.userId || detail.user;

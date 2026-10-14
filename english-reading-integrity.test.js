@@ -75,7 +75,7 @@ vm.runInContext(fs.readFileSync('english-speech.js', 'utf8'), speechContext);
 await speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-US');
 assert.equal(spoken.at(-1).voice.lang, 'en-US');
-assert.equal(spoken.at(-1).rate, 0.85);
+assert.equal(spoken.at(-1).rate, 0.95);
 speechContext.window.EnglishSpeech.setAccent('uk');
 await speechContext.window.EnglishSpeech.speak('Good morning.');
 assert.equal(spoken.at(-1).lang, 'en-GB');

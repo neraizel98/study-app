@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Math Viewer - 원리 학습</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -25,8 +25,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <style>
         :root {
-            --math-primary: #00c853;
-            --math-secondary: #00e676;
+            --math-primary: #00903c;
+            --math-secondary: #008f4a;
         }
 
         body {
@@ -93,7 +93,7 @@
             color: var(--text);
             font-size: 2.2rem;
             letter-spacing: -1px;
-            background: linear-gradient(135deg, #00c853, #00f2fe);
+            background: linear-gradient(135deg, #008637, #008289);
             -webkit-background-clip: text;
             background-clip: text;
             -webkit-text-fill-color: transparent;
@@ -113,7 +113,7 @@
             backdrop-filter: blur(20px);
             border-radius: 35px;
             padding: 45px;
-            box-shadow: 0 15px 40px rgba(0,0,0,0.3);
+            box-shadow: 0 15px 40px rgba(43,38,32,0.105);
             margin-bottom: 40px;
             border: 1px solid var(--card-border);
             animation: fadeIn 0.8s ease-out;
@@ -133,7 +133,7 @@
             font-size: 1.25rem;
             line-height: 1.7;
             color: var(--text);
-            background: rgba(255, 255, 255, 0.03);
+            background: #fdfbf6;
             border-left: 5px solid var(--math-primary);
             padding: 25px;
             border-radius: 0 20px 20px 0;
@@ -162,7 +162,7 @@
             border-radius: 3px;
             margin-top: 7px;
             flex-shrink: 0;
-            box-shadow: 0 0 10px rgba(0, 200, 83, 0.5);
+            box-shadow: 0 0 10px rgba(0,164,68,0.175);
         }
 
         .steps-container {
@@ -173,7 +173,7 @@
         }
 
         .step-box {
-            background: rgba(255, 255, 255, 0.02);
+            background: #fdfbf6;
             border: 1px solid var(--card-border);
             border-radius: 22px;
             padding: 25px;
@@ -185,13 +185,13 @@
 
         .step-box:hover {
             transform: scale(1.02);
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border-color: var(--math-primary);
         }
 
         .step-num {
             background: var(--math-primary);
-            color: #0d1117;
+            color: #ffffff;
             min-width: 32px;
             height: 32px;
             border-radius: 10px;
@@ -208,19 +208,19 @@
             font-size: 1.4rem;
             margin-top: 12px;
             padding: 15px;
-            background: rgba(255, 255, 255, 0.03);
+            background: #fdfbf6;
             border-radius: 15px;
             display: inline-block;
             border: 1px solid var(--card-border);
         }
 
         .example-section {
-            background: linear-gradient(135deg, rgba(0, 200, 83, 0.05), rgba(26, 35, 126, 0.1));
+            background: linear-gradient(135deg, rgba(0,164,68,0.08), rgba(24,33,128,0.1));
             backdrop-filter: blur(20px);
-            color: white;
+            color: #2b2620;
             border-radius: 35px;
             padding: 45px;
-            box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+            box-shadow: 0 20px 40px rgba(43,38,32,0.105);
             margin-top: 50px;
             border: 1px solid var(--card-border);
         }
@@ -249,14 +249,14 @@
         .solution-item {
             font-size: 1.05rem;
             color: var(--text-sub);
-            background: rgba(255,255,255,0.03);
+            background: #fdfbf6;
             padding: 15px 20px;
             border-radius: 12px;
             border: 1px solid var(--card-border);
         }
 
         .concept-image-box {
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border-radius: 25px;
             margin: 30px 0;
             padding: 30px;
@@ -268,7 +268,7 @@
             max-width: 100%;
             max-height: 350px;
             border-radius: 15px;
-            filter: drop-shadow(0 0 20px rgba(0, 200, 83, 0.2));
+            filter: drop-shadow(0 0 20px rgba(0,134,55,0.2));
         }
 
         /* 하단 이동 버튼 스타일 */
@@ -295,7 +295,7 @@
         }
 
         .nav-btn:hover {
-            background: rgba(0, 200, 83, 0.1);
+            background: rgba(0,164,68,0.1);
             border-color: var(--math-primary);
             transform: translateY(-5px);
         }
@@ -311,7 +311,7 @@
         }
 
         .global-btn {
-            background: rgba(13, 17, 23, 0.8);
+            background: #ffffff;
             backdrop-filter: blur(10px);
             border: 1px solid var(--card-border);
             padding: 10px 15px;
@@ -328,7 +328,7 @@
 
         .global-btn:hover {
             background: var(--math-primary);
-            color: #0d1117;
+            color: #ffffff;
             transform: scale(1.05);
         }
 
@@ -348,7 +348,7 @@
 
         /* SVG 다이어그램 */
         .svg-diagram-box {
-            background: rgba(255,255,255,0.03);
+            background: #fdfbf6;
             border: 1px solid var(--card-border);
             border-radius: 24px;
             padding: 28px 20px;
@@ -364,8 +364,8 @@
 
         /* 심화 학습 카드 */
         .deep-dive-card {
-            background: linear-gradient(135deg, rgba(79,172,254,0.07), rgba(0,242,254,0.04));
-            border: 1px solid rgba(79,172,254,0.35);
+            background: linear-gradient(135deg, rgba(35,132,92,0.08), rgba(0,159,167,0.08));
+            border: 1px solid rgba(35,132,92,0.455);
             border-radius: 28px;
             padding: 36px;
             margin-top: 36px;
@@ -373,7 +373,7 @@
         .deep-dive-header {
             font-size: 1.2rem;
             font-weight: 800;
-            color: #4facfe;
+            color: #23845c;
             margin-bottom: 20px;
             display: flex;
             align-items: center;
@@ -385,26 +385,26 @@
             line-height: 1.7;
             color: var(--text-sub);
             padding-left: 16px;
-            border-left: 3px solid rgba(79,172,254,0.5);
+            border-left: 3px solid rgba(35,132,92,0.65);
         }
         .deep-dive-example {
-            background: rgba(255,255,255,0.04);
+            background: #ffffff;
             border-radius: 16px;
             padding: 20px;
             margin-top: 16px;
-            border: 1px solid rgba(79,172,254,0.2);
+            border: 1px solid rgba(35,132,92,0.26);
         }
         .deep-dive-example-label {
             font-size: 0.8rem;
             font-weight: 700;
-            color: #4facfe;
+            color: #23845c;
             text-transform: uppercase;
             letter-spacing: 1px;
             margin-bottom: 10px;
         }
 
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"><link rel="stylesheet" href="math-mobile.css?v=20261014-ui-rollback"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="math-mobile.css?v=20261014-ui-rollback"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body class="math-mobile-layout">
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -470,12 +470,12 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script src="MathData.js?v=20260507-1855"></script>
-    <script src="MathDataMiddle1.js"></script>
-    <script src="MathDataMiddle1Semester2.js"></script>
-    <script src="MathDataExtra.js"></script>
+    <script src="MathDataMiddle1.js?v=20261014-redesign"></script>
+    <script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script>
+    <script src="MathDataExtra.js?v=20261014-redesign"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
@@ -640,7 +640,7 @@
             viewSolBtn.className = 'btn-next-quiz'; // 기존 스타일 재활용
             viewSolBtn.style.display = 'block';
             viewSolBtn.style.marginTop = '20px';
-            viewSolBtn.style.background = 'rgba(255, 255, 255, 0.1)';
+            viewSolBtn.style.background = '#f5efe4';
             viewSolBtn.style.color = 'var(--math-primary)';
             viewSolBtn.style.border = '1px solid var(--math-primary)';
             viewSolBtn.innerText = '💡 단계별 풀이 보기';
@@ -682,7 +682,7 @@
                     qBox.className = 'quiz-item';
                     qBox.style.marginBottom = '30px';
                     qBox.style.padding = '20px';
-                    qBox.style.background = 'rgba(255,255,255,0.02)';
+                    qBox.style.background = '#fdfbf6';
                     qBox.style.borderRadius = '20px';
                     qBox.style.border = '1px solid var(--card-border)';
                     
@@ -703,16 +703,16 @@
                             const feedback = document.getElementById(`feedback_${qIdx}`);
                             feedback.style.display = 'block';
                             if (cIdx === q.answer) {
-                                feedback.style.background = 'rgba(0, 200, 83, 0.2)';
-                                feedback.style.color = '#00c853';
+                                feedback.style.background = 'rgba(0,164,68,0.18)';
+                                feedback.style.color = '#008637';
                                 feedback.innerHTML = `✅ **정답입니다!**<br>${renderMath(q.explanation)}`;
                                 btn.style.background = 'var(--math-primary)';
-                                btn.style.color = '#0d1117';
+                                btn.style.color = '#ffffff';
                             } else {
-                                feedback.style.background = 'rgba(255, 82, 82, 0.2)';
-                                feedback.style.color = '#ff5252';
+                                feedback.style.background = 'rgba(255,61,61,0.18)';
+                                feedback.style.color = '#eb0000';
                                 feedback.innerHTML = `❌ **틀렸습니다.** 다시 생각해보세요!`;
-                                btn.style.background = 'rgba(255, 82, 82, 0.3)';
+                                btn.style.background = 'rgba(255,61,61,0.18)';
                             }
                         };
                         choicesGrid.appendChild(btn);
@@ -782,6 +782,6 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
-<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261014-redesign"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
 </html>

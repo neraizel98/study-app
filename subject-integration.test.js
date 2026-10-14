@@ -10,6 +10,7 @@ const admin = read('admin.html');
 const missions = read('missions.js');
 const wrongNote = read('wrong_note.html');
 const home = read('index.html');
+const subjectsPage = read('subjects.html');
 const timer = read('study-timer.js');
 const readingPage = read('reading.html');
 const grammarPage = read('english_grammar.html');
@@ -20,9 +21,9 @@ subjects.forEach(subject => {
 });
 
 assert(report.indexOf('reading: { name:') < report.indexOf('english: { name:'), 'Reading must precede English in the common subject registry');
-assert(home.indexOf('<!-- Korean Reading -->') < home.indexOf('<!-- English Vocabulary -->'), 'Reading card must precede English vocabulary');
-assert(home.indexOf('<!-- English Vocabulary -->') < home.indexOf('<!-- English Reading -->'), 'English reading card must follow the existing vocabulary card');
-assert(home.includes("KakaoShare.sendRequest('grammar')"), 'Grammar sharing must use the grammar subject key');
+assert(subjectsPage.indexOf('<!-- Korean Reading -->') < subjectsPage.indexOf('<!-- English Vocabulary -->'), 'Reading card must precede English vocabulary');
+assert(subjectsPage.indexOf('<!-- English Vocabulary -->') < subjectsPage.indexOf('<!-- English Reading -->'), 'English reading card must follow the existing vocabulary card');
+assert(subjectsPage.includes("KakaoShare.sendRequest('grammar')"), 'Grammar sharing must use the grammar subject key');
 
 assert(stats.includes('const d = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven study-time series is missing');
 assert(stats.includes('const series = Object.fromEntries(SUBJECT_IDS.map'), 'Registry-driven score series is missing');

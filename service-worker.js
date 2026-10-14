@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-ui-rollback';
+const CACHE_NAME = 'smart-study-20261014-redesign';
 
 try {
     importScripts('./firebase-config.js');
@@ -54,6 +54,11 @@ self.addEventListener('activate', event => {
 const STATIC_ASSETS = [
     './',
     './index.html',
+    './theme.css',
+    './icons.js',
+    './app-shell.js',
+    './celebrate.js',
+    './subjects.html',
     './goals.html',
     './goals.css',
     './goals-ui.js',

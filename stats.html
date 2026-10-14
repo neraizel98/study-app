@@ -6,9 +6,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>학습 통계 - Smart Study</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -69,7 +69,7 @@
             white-space: nowrap;
         }
         .page-tab.active {
-            background: rgba(79,172,254,0.15);
+            background: rgba(35,132,92,0.15);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -152,7 +152,7 @@
             transition: all 0.2s;
         }
         .subj-tab.active {
-            background: rgba(79,172,254,0.15);
+            background: rgba(35,132,92,0.15);
             border-color: var(--accent);
             color: var(--accent);
             font-weight: 700;
@@ -164,7 +164,7 @@
             align-items: center;
             gap: 12px;
             padding: 10px 0;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid #ede5d6;
         }
         .session-row:last-child { border-bottom: none; }
         .session-badge {
@@ -180,23 +180,23 @@
         .session-score { font-size: 1rem; font-weight: 700; flex-shrink: 0; }
         .session-date  { font-size: 0.72rem; color: var(--text-sub); flex-shrink: 0; }
         .quiz-unit-tabs { display:flex; gap:7px; flex-wrap:wrap; margin:0 0 14px; }
-        .quiz-unit-btn { border:1px solid var(--card-border); border-radius:16px; background:rgba(255,255,255,0.03); color:var(--text-sub); padding:5px 11px; cursor:pointer; font-size:0.76rem; }
-        .quiz-unit-btn.active { color:#c4b5fd; border-color:#a78bfa; background:rgba(167,139,250,0.13); }
+        .quiz-unit-btn { border:1px solid var(--card-border); border-radius:16px; background:#fdfbf6; color:var(--text-sub); padding:5px 11px; cursor:pointer; font-size:0.76rem; }
+        .quiz-unit-btn.active { color:#663efe; border-color:#7041fb; background:rgba(112,65,251,0.13); }
         .quiz-session-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:16px; margin-bottom:10px; overflow:hidden; }
         .quiz-session-head { width:100%; display:flex; align-items:center; gap:12px; padding:13px 15px; border:0; background:transparent; color:var(--text); text-align:left; cursor:pointer; font-family:var(--font); }
-        .quiz-session-head:hover { background:rgba(255,255,255,0.03); }
+        .quiz-session-head:hover { background:#fdfbf6; }
         .quiz-session-toggle { color:var(--text-sub); transition:transform .2s; }
         .quiz-session-card.open .quiz-session-toggle { transform:rotate(90deg); }
         .quiz-session-detail { display:none; padding:0 15px 15px; }
         .quiz-session-card.open .quiz-session-detail { display:block; }
         .quiz-score-summary { display:flex; gap:8px; flex-wrap:wrap; margin:0 0 12px; }
-        .quiz-summary-chip { padding:5px 9px; border-radius:12px; background:rgba(255,255,255,0.06); font-size:0.75rem; }
-        .answer-row { border:1px solid rgba(255,255,255,0.08); border-left:3px solid #56d364; border-radius:12px; padding:11px 12px; margin-top:8px; }
-        .answer-row.wrong { border-left-color:#ff5f6d; background:rgba(255,95,109,0.04); }
+        .quiz-summary-chip { padding:5px 9px; border-radius:12px; background:#ffffff; font-size:0.75rem; }
+        .answer-row { border:1px solid #ede5d6; border-left:3px solid #28aa37; border-radius:12px; padding:11px 12px; margin-top:8px; }
+        .answer-row.wrong { border-left-color:#ff3d4e; background:rgba(255,61,78,0.08); }
         .answer-question { font-size:0.86rem; font-weight:700; margin-bottom:7px; line-height:1.45; }
         .answer-values { font-size:0.76rem; color:var(--text-sub); line-height:1.55; }
-        .answer-explanation { margin-top:6px; font-size:0.76rem; color:#c4b5fd; line-height:1.5; }
-        .detail-unavailable { color:var(--text-sub); font-size:0.8rem; padding:12px; text-align:center; background:rgba(255,255,255,0.03); border-radius:12px; }
+        .answer-explanation { margin-top:6px; font-size:0.76rem; color:#663efe; line-height:1.5; }
+        .detail-unavailable { color:var(--text-sub); font-size:0.8rem; padding:12px; text-align:center; background:#fdfbf6; border-radius:12px; }
 
         .empty-msg {
             text-align: center;
@@ -212,15 +212,15 @@
             .week-nav { gap:8px; padding:12px 0; }
             .week-label { min-width:0; flex:1; font-size:.88rem; }
             .week-btn { flex-shrink:0; width:40px; height:40px; }
-            .page-tabs { padding:4px; background:#151d28; border-radius:14px; gap:4px; }
+            .page-tabs { padding:4px; background:#ffffff; border-radius:14px; gap:4px; }
             .page-tab { flex:1; padding:10px 8px; border-radius:11px; font-size:.86rem; }
-            .chart-card { padding:18px 14px; border-radius:18px; background:#151c25; }
+            .chart-card { padding:18px 14px; border-radius:18px; background:#ffffff; }
             .chart-title { font-size:1rem; }
             .subj-tabs { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:7px; }
             .subj-tab { padding:9px 4px; font-size:.75rem; border-radius:11px; min-height:42px; }
             .quiz-unit-tabs { flex-wrap:nowrap; overflow-x:auto; padding-bottom:6px; }
             .quiz-unit-btn { flex:0 0 auto; max-width:85%; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; min-height:36px; }
-            .quiz-session-card { background:#151c25; }
+            .quiz-session-card { background:#ffffff; }
             .quiz-session-head { display:grid; grid-template-columns:12px 32px minmax(0,1fr) auto; gap:8px; padding:14px 12px; }
             .quiz-session-head .session-badge { width:32px; height:32px; }
             .quiz-session-head .session-info { grid-column:3 / 5; }
@@ -235,8 +235,8 @@
             .page-title   { font-size: 1.2rem; }
         }
     </style>
-</head>
-<body>
+<link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
+<body data-app-tabs>
     <div class="blob blob-1"></div>
     <div class="blob blob-2"></div>
     <div class="blob blob-3"></div>
@@ -244,10 +244,14 @@
     <div class="stats-wrap">
 
         <!-- Header -->
-        <div class="page-header">
-            <a href="index.html" class="back-btn">← 홈</a>
-            <h1 class="page-title">📈 나의 학습</h1>
-        </div>
+        <header class="ss-page-head">
+            <p class="ss-eyebrow">기록</p>
+            <h1>나의 학습</h1>
+        </header>
+        <nav class="records-links" aria-label="기록 바로가기">
+            <a href="report.html" class="records-link"><span data-icon="file-pencil"></span>통합 성적표</a>
+            <a href="wrong_note.html" class="records-link"><span data-icon="refresh"></span>오답노트</a>
+        </nav>
 
         <!-- Week nav — 공통 상단 (탭보다 위) -->
         <div class="week-nav">
@@ -258,8 +262,8 @@
 
         <!-- Page tabs -->
         <div class="page-tabs" id="pageTabs">
-            <button class="page-tab active" data-tab="stats" onclick="switchStatsView('stats', this)">📈 학습 통계</button>
-            <button class="page-tab" data-tab="quiz" onclick="switchStatsView('quiz', this)">📋 퀴즈 기록</button>
+            <button class="page-tab active" data-tab="stats" onclick="switchStatsView('stats', this)">학습 통계</button>
+            <button class="page-tab" data-tab="quiz" onclick="switchStatsView('quiz', this)">퀴즈 기록</button>
         </div>
 
         <!-- ── Stats view ── -->
@@ -270,7 +274,7 @@
 
         <!-- Chart 1 : daily study time -->
         <div class="chart-card">
-            <div class="chart-title">📅 일별 학습 시간</div>
+            <div class="chart-title">일별 학습 시간</div>
             <div class="chart-sub">요일별 과목 학습 시간 (분, 이번 주 기준)</div>
             <div class="chart-wrap">
                 <canvas id="studyTimeChart"></canvas>
@@ -280,7 +284,7 @@
 
         <!-- Chart 2 : 8-week score trend -->
         <div class="chart-card">
-            <div class="chart-title">📈 주간 점수 추이</div>
+            <div class="chart-title">주간 점수 추이</div>
             <div class="chart-sub">최근 8주간 과목별 평균 정답률 (%)</div>
             <div class="chart-wrap">
                 <canvas id="scoreTrendChart"></canvas>
@@ -290,14 +294,14 @@
 
         <!-- Chart 3 : level / unit performance -->
         <div class="chart-card">
-            <div class="chart-title">🎯 레벨·단원별 달성률</div>
+            <div class="chart-title">레벨·단원별 달성률</div>
             <div class="subj-tabs" id="subjTabs">
-                <button class="subj-tab active" data-subj="reading">📖 국어 독해력</button>
-                <button class="subj-tab"        data-subj="english">🇬🇧 영어</button>
-                <button class="subj-tab"        data-subj="english_reading">📗 영어 독해</button>
-                <button class="subj-tab"        data-subj="grammar">📘 영문법</button>
-                <button class="subj-tab"        data-subj="hanja">🏮 한자</button>
-                <button class="subj-tab"        data-subj="math">📐 수학</button>
+                <button class="subj-tab active" data-subj="reading">국어 독해</button>
+                <button class="subj-tab"        data-subj="english">영어 단어</button>
+                <button class="subj-tab"        data-subj="english_reading">영어 독해</button>
+                <button class="subj-tab"        data-subj="grammar">영어 문법</button>
+                <button class="subj-tab"        data-subj="hanja">한자</button>
+                <button class="subj-tab"        data-subj="math">수학</button>
             </div>
             <div class="chart-wrap">
                 <canvas id="levelChart"></canvas>
@@ -307,7 +311,7 @@
 
         <!-- Learning status -->
         <div class="chart-card">
-            <div class="chart-title">📚 나의 학습 현황</div>
+            <div class="chart-title">나의 학습 현황</div>
             <div class="chart-sub">학습한 과목·단원, 소요 시간과 퀴즈 결과를 함께 확인합니다.</div>
             <div id="recentList"></div>
         </div>
@@ -324,8 +328,9 @@
     </div><!-- .stats-wrap -->
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="icons.js?v=20261014-redesign"></script><script src="achievements.js?v=20261014-redesign"></script>
+    <script src="report.js?v=20261014-ui-rollback"></script><script src="missions.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -336,12 +341,12 @@
     const SUBJ_NAMES = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.name]));
     const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
     const SUBJ_COLOR  = {
-        english: { bg: 'rgba(79,172,254,0.6)',  bd: '#4facfe' },
-        english_reading: { bg: 'rgba(34,198,165,0.6)', bd: '#22c6a5' },
-        grammar: { bg: 'rgba(167,139,250,0.6)', bd: '#a78bfa' },
-        hanja:   { bg: 'rgba(249,130,108,0.6)', bd: '#f9826c' },
-        math:    { bg: 'rgba(86,211,100,0.6)',  bd: '#56d364' },
-        reading: { bg: 'rgba(251,113,133,0.6)', bd: '#fb7185' }
+        english: { bg: 'rgba(35,132,92,0.18)',  bd: '#23845c' },
+        english_reading: { bg: 'rgba(24,162,134,0.18)', bd: '#13836d' },
+        grammar: { bg: 'rgba(112,65,251,0.18)', bd: '#7041fb' },
+        hanja:   { bg: 'rgba(252,85,54,0.18)', bd: '#e22604' },
+        math:    { bg: 'rgba(38,162,52,0.18)',  bd: '#20852b' },
+        reading: { bg: 'rgba(254,62,90,0.18)', bd: '#ea0123' }
     };
     const DAYS = ['월','화','수','목','금','토','일'];
 
@@ -350,23 +355,23 @@
         maintainAspectRatio: false,
         animation: { duration: 350 },
         plugins: {
-            legend: { labels: { color: '#f0f6fc', font: { family: 'Outfit', size: 12 }, boxWidth: 12, padding: 14 } },
-            tooltip: { backgroundColor: '#161b22', titleColor: '#f0f6fc', bodyColor: '#8b949e', borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1 }
+            legend: { labels: { color: '#2b2620', font: { family:'Pretendard Variable', size: 12 }, boxWidth: 12, padding: 14 } },
+            tooltip: { backgroundColor: '#ffffff', titleColor: '#2b2620', bodyColor: '#6e6559', borderColor: '#ede5d6', borderWidth: 1 }
         }
     };
     const AXIS_BASE = {
-        ticks:  { color: '#8b949e', font: { family: 'Outfit', size: 11 } },
-        grid:   { color: 'rgba(255,255,255,0.06)' },
-        border: { color: 'rgba(255,255,255,0.1)' }
+        ticks:  { color: '#6e6559', font: { family:'Pretendard Variable', size: 11 } },
+        grid:   { color: '#968c7e' },
+        border: { color: '#968c7e' }
     };
-    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLOR[subject]) SUBJ_COLOR[subject] = { bg:'rgba(255,255,255,0.16)', bd:'#8b949e' }; });
+    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLOR[subject]) SUBJ_COLOR[subject] = { bg:'#f5efe4', bd:'#6e6559' }; });
     const SCORE_FLOOR = 50;
     const scoreFloorLabelPlugin = {
         id: 'scoreFloorLabel',
         afterDatasetsDraw(chart) {
             const { ctx } = chart;
             ctx.save();
-            ctx.fillStyle = '#fca5a5';
+            ctx.fillStyle = '#ee0202';
             ctx.font = '700 11px Outfit, sans-serif';
             ctx.textAlign = 'center';
             ctx.textBaseline = 'bottom';
@@ -434,17 +439,17 @@
         const avgPct = count > 0
             ? Math.round(weekReports.reduce((a, r) => a + pct(r), 0) / count)
             : 0;
-        const streak = user?.attendance?.currentStreak || 0;
+        const streak = window.Achievements ? Achievements.summary(user).current : (user?.attendance?.currentStreak || 0);
 
         const items = [
-            { icon:'⏱', val: Math.round(sec / 60) + '분',  lbl:'이번 주 학습 시간' },
-            { icon:'📝', val: count + '회',                  lbl:'이번 주 퀴즈 횟수' },
-            { icon:'🎯', val: avgPct + '%',                  lbl:'이번 주 평균 정답률' },
-            { icon:'🔥', val: streak + '일',                 lbl:'연속 출석' }
+            { icon:'clock', val: Math.round(sec / 60) + '분',  lbl:'이번 주 학습 시간' },
+            { icon:'file-pencil', val: count + '회',         lbl:'이번 주 퀴즈 횟수' },
+            { icon:'target-arrow', val: avgPct + '%',        lbl:'이번 주 평균 정답률' },
+            { icon:'flame', val: streak + '일',              lbl:'연속 학습' }
         ];
         document.getElementById('summaryGrid').innerHTML = items.map(i => `
             <div class="summary-card">
-                <div class="s-icon">${i.icon}</div>
+                <div class="s-icon">${window.SmartStudyIcons?.icon(i.icon, { size: 20 }) || ''}</div>
                 <div class="s-value">${i.val}</div>
                 <div class="s-label">${i.lbl}</div>
             </div>`).join('');
@@ -483,7 +488,7 @@
                 scales: {
                     x: { ...AXIS_BASE, stacked: true },
                     y: { ...AXIS_BASE, stacked: true, beginAtZero: true,
-                         title: { display: true, text: '분', color: '#8b949e', font: { size: 11 } } }
+                         title: { display: true, text: '분', color: '#6e6559', font: { size: 11 } } }
                 }
             }
         });
@@ -540,7 +545,7 @@
                 scales: {
                     x: { ...AXIS_BASE },
                     y: { ...AXIS_BASE, min: SCORE_FLOOR, max: 100,
-                         title: { display: true, text: '%', color: '#8b949e', font: { size: 11 } } }
+                         title: { display: true, text: '%', color: '#6e6559', font: { size: 11 } } }
                 }
             },
             plugins: [scoreFloorLabelPlugin]
@@ -618,8 +623,8 @@
                 ...CHART_DEFAULTS,
                 indexAxis: isHorizontal ? 'y' : 'x',
                 scales: {
-                    x: { ...AXIS_BASE, ...(isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}) },
-                    y: { ...AXIS_BASE, ...(!isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#8b949e', font:{size:11} } } : {}), ...(mobileChart ? { ticks:{color:'#b7c5d8',font:{size:11},autoSkip:false,callback:function(value){const label=this.getLabelForValue(value);return label.length>16?label.slice(0,15)+'…':label;}}, afterFit:axis=>{axis.width=Math.min(140,ctx.canvas.parentElement.clientWidth*.48);} } : {}) }
+                    x: { ...AXIS_BASE, ...(isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#6e6559', font:{size:11} } } : {}) },
+                    y: { ...AXIS_BASE, ...(!isHorizontal ? { min:SCORE_FLOOR, max:100, title:{ display:true, text:'%', color:'#6e6559', font:{size:11} } } : {}), ...(mobileChart ? { ticks:{color:'#6e6559',font:{size:11},autoSkip:false,callback:function(value){const label=this.getLabelForValue(value);return label.length>16?label.slice(0,15)+'…':label;}}, afterFit:axis=>{axis.width=Math.min(140,ctx.canvas.parentElement.clientWidth*.48);} } : {}) }
                 },
                 plugins: { ...CHART_DEFAULTS.plugins, legend: { display: false } }
             },
@@ -639,8 +644,8 @@
         }
         el.innerHTML = rows.map(r => {
             const p = pct(r);
-            const scoreColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
-            const c = SUBJ_COLOR[r.subject] || { bg:'rgba(255,255,255,0.1)', bd:'#888' };
+            const scoreColor = p >= 80 ? '#20852b' : p >= 50 ? '#e22604' : '#eb0015';
+            const c = SUBJ_COLOR[r.subject] || { bg:'#f5efe4', bd:'#6e6559' };
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const levelShort = r.level ? (r.level.length > 18 ? r.level.slice(0,18) + '…' : r.level) : '-';
@@ -753,8 +758,8 @@
 
         const html = rows.map((r, rowIndex) => {
             const p = pct(r);
-            const scoreColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
-            const c = SUBJ_COLOR[r.subject] || { bg:'rgba(255,255,255,0.1)', bd:'#888' };
+            const scoreColor = p >= 80 ? '#20852b' : p >= 50 ? '#e22604' : '#eb0015';
+            const c = SUBJ_COLOR[r.subject] || { bg:'#f5efe4', bd:'#6e6559' };
             const subjectInfo = SubjectRegistry.get(r.subject);
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
@@ -884,6 +889,7 @@
         window.addEventListener('firesynced', () => render());
     });
     </script>
-<script src="version-check.js"></script>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="app-shell.js?v=20261014-redesign"></script>
 </body>
 </html>

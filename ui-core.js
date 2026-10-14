@@ -3,14 +3,14 @@
 // ============================================================
 window.onerror = function (msg, url, line, col, error) {
     const errorDiv = document.createElement('div');
-    errorDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:#ff5252; color:white; padding:15px; z-index:10000; font-family:monospace; font-size:12px; border-bottom:2px solid black; box-shadow:0 5px 15px rgba(0,0,0,0.3);';
+    errorDiv.style.cssText = 'position:fixed; top:0; left:0; width:100%; background:#eb0000; color:#ffffff; padding:15px; z-index:10000; font-family:monospace; font-size:12px; border-bottom:2px solid #ede5d6; box-shadow:0 5px 15px rgba(43,38,32,0.105);';
     errorDiv.innerHTML = `
         <strong>[Runtime Error]</strong><br>
         Message: ${msg}<br>
         File: ${url.split('/').pop()}<br>
         Line: ${line}, Column: ${col}<br>
-        <button onclick="this.parentElement.remove()" style="margin-top:10px; padding:4px 8px; cursor:pointer; background:white; border:none; border-radius:4px; font-weight:bold;">닫기 (X)</button>
-        <button onclick="location.reload();" style="margin-top:10px; margin-left:10px; padding:4px 8px; cursor:pointer; background:black; color:white; border:none; border-radius:4px; font-weight:bold;">기록을 유지하고 새로고침</button>
+        <button onclick="this.parentElement.remove()" style="margin-top:10px; padding:4px 8px; cursor:pointer; background:#ffffff; border:none; border-radius:4px; font-weight:bold;">닫기 (X)</button>
+        <button onclick="location.reload();" style="margin-top:10px; margin-left:10px; padding:4px 8px; cursor:pointer; background:#fbf7ef; color:#2b2620; border:none; border-radius:4px; font-weight:bold;">기록을 유지하고 새로고침</button>
     `;
     document.body.prepend(errorDiv);
     return false;
@@ -117,15 +117,15 @@ const AppUI = {
                 justify-content: space-between;
                 align-items: center;
                 padding: 10px 20px;
-                background: rgba(0,0,0,0.2);
-                border-bottom: 1px solid rgba(255,255,255,0.05);
+                background: #f5efe4;
+                border-bottom: 1px solid #ede5d6;
             }
             .nav-row-bottom {
                 display: flex;
                 flex-direction: column;
                 align-items: center;
                 padding: 24px 20px;
-                background: linear-gradient(180deg, rgba(255,255,255,0.02) 0%, transparent 100%);
+                background: linear-gradient(180deg, #fdfbf6 0%, transparent 100%);
             }
             
             .nav-logo-link {
@@ -148,8 +148,8 @@ const AppUI = {
                 letter-spacing: -1.5px; 
                 line-height: 1.2;
                 white-space: nowrap;
-                color: #ffffff;
-                text-shadow: 0 4px 10px rgba(0,0,0,0.3);
+                color: #2b2620;
+                text-shadow: 0 4px 10px rgba(43,38,32,0.105);
             }
             .page-sub-title { 
                 font-size: 1rem; 
@@ -163,11 +163,11 @@ const AppUI = {
             .header-cloud-connect {
                 display: inline-flex; align-items: center; justify-content: center; gap: 6px;
                 min-height: 38px; padding: 8px 13px; border: 1px solid var(--card-border);
-                border-radius: 11px; background: rgba(79,172,254,0.08); color: var(--text);
+                border-radius: 11px; background: rgba(35,132,92,0.08); color: var(--text);
                 font-family: inherit; font-size: 0.78rem; font-weight: 700;
                 white-space: nowrap; cursor: pointer;
             }
-            .header-cloud-connect:hover { border-color: var(--accent); background: rgba(79,172,254,0.16); }
+            .header-cloud-connect:hover { border-color: var(--accent); background: rgba(35,132,92,0.16); }
             .header-cloud-connect:disabled { cursor: wait; opacity: 0.65; }
             .nav-links { display: flex; gap: 10px; }
             .nav-link-item { 
@@ -180,14 +180,14 @@ const AppUI = {
                 transition: all 0.2s;
                 white-space: nowrap;
             }
-            .nav-link-item:hover { color: var(--accent); background: rgba(79, 172, 254, 0.1); }
+            .nav-link-item:hover { color: var(--accent); background: rgba(35,132,92,0.1); }
             
             /* Profile Styles */
             .user-profile-mini {
                 display: flex;
                 flex-direction: column;
                 gap: 3px;
-                background: rgba(255, 255, 255, 0.05);
+                background: #ffffff;
                 padding: 6px 14px;
                 border-radius: 12px;
                 border: 1px solid var(--card-border);
@@ -200,7 +200,7 @@ const AppUI = {
             
             .exp-bar-container {
                 height: 4px;
-                background: rgba(255, 255, 255, 0.1);
+                background: #ece4d6;
                 border-radius: 2px;
                 overflow: hidden;
             }

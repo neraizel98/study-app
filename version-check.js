@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-ui-rollback';
+    const APP_VERSION = '20261014-redesign';
 
     (async function () {
         try {
@@ -28,8 +28,8 @@
         banner.id = '_update_banner';
         banner.style.cssText = `
             position: fixed; bottom: 0; left: 0; right: 0; z-index: 10000;
-            background: linear-gradient(135deg, #1a2332, #0d1117);
-            border-top: 2px solid rgba(79,172,254,0.5);
+            background: linear-gradient(135deg, #ffffff, #fbf7ef);
+            border-top: 2px solid rgba(35,132,92,0.65);
             padding: 14px 20px;
             display: flex; align-items: center; gap: 12px;
             font-family: 'Outfit', sans-serif;
@@ -41,12 +41,12 @@
         document.head.appendChild(style);
 
         banner.innerHTML = `
-            <span style="flex:1; font-size:0.88rem; color:#f0f6fc; line-height:1.4;">
+            <span style="flex:1; font-size:0.88rem; color:#2b2620; line-height:1.4;">
                 🔄 <strong>새 버전</strong>이 있습니다. 업데이트 후 최신 기능을 사용하세요.
             </span>
             <button id="_update_btn" style="
-                background: linear-gradient(135deg,#4facfe,#00f2fe);
-                color: #0d1117; border: none;
+                background: linear-gradient(135deg,#23845c,#008289);
+                color: #ffffff; border: none;
                 padding: 9px 20px; border-radius: 20px;
                 font-weight: 700; cursor: pointer;
                 font-size: 0.85rem; font-family: inherit;
@@ -54,7 +54,7 @@
             ">지금 업데이트</button>
             <button onclick="document.getElementById('_update_banner').remove()" style="
                 background: none; border: none;
-                color: rgba(255,255,255,0.35); cursor: pointer;
+                color: #968c7e; cursor: pointer;
                 font-size: 1.2rem; padding: 4px; flex-shrink: 0;
                 line-height: 1;
             ">✕</button>

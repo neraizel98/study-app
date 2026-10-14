@@ -14,9 +14,9 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Smart Vocab - 통합 성적표</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -46,7 +46,7 @@
             margin-bottom: 30px;
         }
         .subject-tab {
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border: 2px solid transparent;
             padding: 12px 24px;
             border-radius: 30px;
@@ -57,7 +57,7 @@
             transition: all 0.3s;
         }
         .subject-tab.active {
-            background: rgba(79, 172, 254, 0.1);
+            background: rgba(35,132,92,0.1);
             border-color: var(--accent);
             color: var(--accent);
         }
@@ -69,7 +69,7 @@
             margin-bottom: 40px;
         }
         .stat-card {
-            background: rgba(255, 255, 255, 0.05);
+            background: #ffffff;
             border: 1px solid var(--card-border);
             border-radius: 16px;
             padding: 20px;
@@ -87,7 +87,7 @@
         .stat-value {
             font-size: 1.8rem;
             font-weight: 800;
-            font-family: 'Outfit', sans-serif;
+            font-family:var(--font);
             color: var(--text);
         }
         .stat-value.highlight {
@@ -96,7 +96,7 @@
 
         /* ── 그리드 기반 리포트 레이아웃 ── */
         .report-grid-container {
-            background: rgba(255, 255, 255, 0.02);
+            background: #fdfbf6;
             border: 1px solid var(--card-border);
             border-radius: 20px;
             overflow: hidden;
@@ -113,7 +113,7 @@
         .report-grid-header {
             padding-top: 14px;
             padding-bottom: 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
+            border-bottom: 1px solid #ede5d6;
             color: var(--text-sub);
             font-weight: 600;
             font-size: 0.8rem;
@@ -127,7 +127,7 @@
             white-space: nowrap;
         }
         .report-row-wrapper {
-            border-bottom: 1px solid rgba(255,255,255,0.07);
+            border-bottom: 1px solid #ede5d6;
         }
         .report-row-wrapper:last-child { border-bottom: none; }
         .report-data-row {
@@ -136,7 +136,7 @@
             cursor: pointer;
             transition: background 0.2s;
         }
-        .report-data-row:hover { background: rgba(79,172,254,0.06); }
+        .report-data-row:hover { background: rgba(35,132,92,0.08); }
 
         .row-toggle-icon {
             display: inline-block;
@@ -156,8 +156,8 @@
         .detail-panel.open { max-height: 2000px; }
         .detail-inner {
             padding: 20px 28px 24px;
-            background: rgba(0,0,0,0.18);
-            border-top: 1px solid rgba(255,255,255,0.06);
+            background: #f5efe4;
+            border-top: 1px solid #ede5d6;
         }
 
         .score-badge {
@@ -167,10 +167,10 @@
             font-size: 0.82rem;
             font-weight: 700;
         }
-        .score-good { background: rgba(0, 200, 83, 0.15); color: #00e676; }
-        .score-bad { background: rgba(255, 82, 82, 0.15); color: #ff5252; }
-        .score-neutral { background: rgba(255, 255, 255, 0.1); color: var(--text); }
-        .time-text { font-family: 'Outfit', monospace; color: var(--text-sub); }
+        .score-good { background: rgba(0,164,68,0.15); color: #008544; }
+        .score-bad { background: rgba(255,61,61,0.15); color: #eb0000; }
+        .score-neutral { background: #f5efe4; color: var(--text); }
+        .time-text { font-family:'Pretendard Variable', monospace; color: var(--text-sub); }
 
         .empty-state {
             text-align: center;
@@ -195,9 +195,9 @@
             border-radius: 20px;
             font-weight: 700;
         }
-        .chip-ok   { background: rgba(0,200,83,0.12);  color: #00c853; }
-        .chip-retry{ background: rgba(79,172,254,0.12); color: var(--accent); }
-        .chip-fail { background: rgba(255,82,82,0.12);  color: #ff5252; }
+        .chip-ok   { background: rgba(0,164,68,0.12);  color: #008637; }
+        .chip-retry{ background: rgba(35,132,92,0.12); color: var(--accent); }
+        .chip-fail { background: rgba(255,61,61,0.12);  color: #eb0000; }
 
         /* 문항 카드 그리드 */
         .question-grid {
@@ -206,15 +206,15 @@
             gap: 12px;
         }
         .q-card {
-            background: rgba(255,255,255,0.04);
-            border: 1px solid rgba(255,255,255,0.08);
+            background: #ffffff;
+            border: 1px solid #ede5d6;
             border-radius: 14px;
             padding: 14px 16px;
             font-size: 0.88rem;
         }
-        .q-card.ok     { border-left: 3px solid #00c853; }
+        .q-card.ok     { border-left: 3px solid #ddd2bf; }
         .q-card.retry  { border-left: 3px solid var(--accent); }
-        .q-card.fail   { border-left: 3px solid #ff5252; }
+        .q-card.fail   { border-left: 3px solid #ff3d3d; }
         .q-identifier  { font-size: 1.05rem; font-weight: 800; margin-bottom: 4px; }
         .q-meaning     { color: var(--text-sub); margin-bottom: 8px; font-size: 0.82rem; }
         .q-rounds      { display: flex; gap: 4px; margin-bottom: 8px; flex-wrap: wrap; }
@@ -224,18 +224,18 @@
             border-radius: 6px;
             font-weight: 700;
         }
-        .rd-wrong   { background: rgba(255,82,82,0.15);  color: #ff5252; }
-        .rd-correct { background: rgba(0,200,83,0.15);   color: #00c853; }
-        .q-explanation { color: var(--text-sub); font-size: 0.8rem; line-height: 1.5; border-top: 1px solid rgba(255,255,255,0.06); padding-top: 8px; margin-top: 4px; }
+        .rd-wrong   { background: rgba(255,61,61,0.15);  color: #eb0000; }
+        .rd-correct { background: rgba(0,164,68,0.15);   color: #008637; }
+        .q-explanation { color: var(--text-sub); font-size: 0.8rem; line-height: 1.5; border-top: 1px solid #ede5d6; padding-top: 8px; margin-top: 4px; }
 
         /* 첫 시도 정답 그리드 */
         .first-ok-section { margin-top: 16px; }
         .first-ok-section h4 { color: var(--text-sub); font-size: 0.82rem; font-weight: 600; margin: 0 0 10px; letter-spacing: 0.5px; }
         .first-ok-chips { display: flex; flex-wrap: wrap; gap: 6px; }
         .first-ok-chip {
-            background: rgba(0,200,83,0.08);
-            border: 1px solid rgba(0,200,83,0.2);
-            color: #00c853;
+            background: rgba(0,164,68,0.08);
+            border: 1px solid rgba(0,169,70,0.26);
+            color: #008637;
             padding: 3px 10px;
             border-radius: 8px;
             font-size: 0.8rem;
@@ -254,8 +254,8 @@
         .shared-view { padding: 20px 0; }
         .shared-notice {
             display: inline-flex; align-items: center; gap: 8px;
-            background: rgba(254, 229, 0, 0.12); border: 1px solid rgba(254, 229, 0, 0.3);
-            color: #fde68a; font-size: 0.85rem; font-weight: 600;
+            background: rgba(157,142,0,0.12); border: 1px solid rgba(162,146,0,0.39);
+            color: #8f7200; font-size: 0.85rem; font-weight: 600;
             padding: 8px 18px; border-radius: 20px; margin-bottom: 28px;
         }
         .shared-subject-header {
@@ -272,14 +272,14 @@
             font-size: 5rem; font-weight: 800; line-height: 1;
             color: var(--accent);
         }
-        .shared-score-main.perfect { color: #56d364; }
+        .shared-score-main.perfect { color: #20852b; }
         .shared-score-sub { font-size: 1.1rem; color: var(--text-sub); margin-top: 8px; }
         .shared-meta-grid {
             display: grid; grid-template-columns: repeat(3, 1fr);
             gap: 16px; margin-bottom: 32px;
         }
         .shared-meta-card {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            background: #ffffff; border: 1px solid #ede5d6;
             border-radius: 16px; padding: 16px;
         }
         .shared-meta-label { font-size: 0.8rem; color: var(--text-sub); margin-bottom: 6px; }
@@ -287,7 +287,7 @@
         .shared-report-unavailable #reportSubjectTabs,
         .shared-report-unavailable .stats-grid,
         .shared-report-unavailable .report-grid-container { display: none; }
-        .shared-retry-btn { margin-top: 12px; border: 0; border-radius: 10px; padding: 9px 15px; background: var(--primary); color: white; font-weight: 700; cursor: pointer; }
+        .shared-retry-btn { margin-top: 12px; border: 0; border-radius: 10px; padding: 9px 15px; background: var(--primary); color: #ffffff; font-weight: 700; cursor: pointer; }
         @media (max-width: 600px) {
             .shared-meta-grid { grid-template-columns: 1fr 1fr; }
             .shared-score-main { font-size: 3.5rem; }
@@ -305,19 +305,19 @@
             #reportSubjectTabs .subject-tab{padding:12px 4px;font-size:.78rem;border-radius:12px;text-align:center;min-height:44px}
             #shareHistoryBtn{grid-column:1/-1;max-width:100%}
             .stats-grid{gap:10px;margin-bottom:22px}
-            .stat-card{padding:16px 10px;background:#18212d}
+            .stat-card{padding:16px 10px;background:#ffffff}
             .stat-title{font-size:.8rem}.stat-value{font-size:1.55rem}
             .report-grid-container{border:0;background:transparent;overflow:visible}
             .report-grid-header{display:none!important}
-            .report-row-wrapper{background:#17212e;border:1px solid #344156!important;border-radius:15px;margin-bottom:12px;overflow:hidden}
+            .report-row-wrapper{background:#ffffff;border:1px solid #ddd2bf!important;border-radius:15px;margin-bottom:12px;overflow:hidden}
             .report-data-row{grid-template-columns:minmax(0,1fr) minmax(0,1fr)!important;padding:16px 12px!important;gap:12px 8px!important}
             .report-data-row>div{min-width:0;white-space:normal!important;overflow-wrap:anywhere;padding:0!important;font-size:.84rem}
             .report-data-row>div:nth-child(2){text-align:right;font-size:.73rem!important}
             .report-data-row>div:nth-child(3),.report-data-row>div:nth-child(5){grid-column:1/-1}
             .report-data-row>div:nth-child(3){font-weight:700;line-height:1.6}
-            .report-data-row>div:nth-child(4)::before{content:'문항 · ';color:#9eafc4}
-            .report-data-row>div:nth-child(5)::before{content:'최초 / 최종 점수';display:block;color:#9eafc4;font-size:.72rem;margin-bottom:7px}
-            .report-data-row>div:nth-child(6)::before{content:'소요 시간 · ';color:#9eafc4}
+            .report-data-row>div:nth-child(4)::before{content:'문항 · ';color:#6e6559}
+            .report-data-row>div:nth-child(5)::before{content:'최초 / 최종 점수';display:block;color:#6e6559;font-size:.72rem;margin-bottom:7px}
+            .report-data-row>div:nth-child(6)::before{content:'소요 시간 · ';color:#6e6559}
             .report-data-row>div:nth-child(6){grid-column:1/-1}
             .detail-inner{padding:16px 12px!important;overflow-wrap:anywhere}
             .detail-panel.open{max-height:none}
@@ -325,7 +325,7 @@
             .shared-notice{max-width:100%;overflow-wrap:anywhere}
         }
     </style>
-</head>
+<link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -348,7 +348,7 @@
             </button>
         </div>
 
-        <p id="subjectDataScope" style="color:#a9bbd0;margin:0 0 14px;line-height:1.6" role="status"></p><p id="subjectTimeScope" style="color:#a9bbd0;margin:0 0 16px"></p><div class="stats-grid">
+        <p id="subjectDataScope" style="color:#6e6559;margin:0 0 14px;line-height:1.6" role="status"></p><p id="subjectTimeScope" style="color:#6e6559;margin:0 0 16px"></p><div class="stats-grid">
             <div class="stat-card">
                 <div class="stat-title">테스트 시도</div>
                 <div class="stat-value" id="statAttempts">0</div>
@@ -384,8 +384,8 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script>
-    <script src="report-subject-summary.js"></script><script src="shared-report-loader.js?v=20261014-ui-rollback"></script><script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script>
+    <script src="report-subject-summary.js"></script><script src="shared-report-loader.js?v=20261014-ui-rollback"></script><script src="ui-core.js?v=20261014-redesign"></script>
     <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -518,7 +518,7 @@
                             </div>
                             <div class="shared-meta-card">
                                 <div class="shared-meta-label">완료 여부</div>
-                                <div class="shared-meta-value" style="color:${isPerfect ? '#56d364' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
+                                <div class="shared-meta-value" style="color:${isPerfect ? '#20852b' : 'var(--text-sub)'};">${isPerfect ? '✅ 완료' : '🔄 진행 중'}</div>
                             </div>
                             ${r.subjectTime?.totalSeconds ? `<div class="shared-meta-card">
                                 <div class="shared-meta-label">과목 누적 시간</div>
@@ -927,6 +927,6 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
+<script src="version-check.js?v=20261014-redesign"></script>
 </body>
 </html>

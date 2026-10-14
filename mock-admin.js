@@ -1,5 +1,5 @@
 (function(){
- 'use strict';const app=window.SmartStudy,names={reading:'국어',english:'영어',math:'수학',hanja:'한자'},colors={reading:'#77bbff',english:'#79ddb1',math:'#ddaeff',hanja:'#ffd27a'};
+ 'use strict';const app=window.SmartStudy,names={reading:'국어',english:'영어',math:'수학',hanja:'한자'},colors={reading:'#23845c',english:'#1f8558',math:'#a933ff',hanja:'#9e6900'};
  const group=s=>['english','grammar','english_reading'].includes(s)?'english':['math','math_formula'].includes(s)?'math':s;
  function scores(snapshot){const result=Object.fromEntries(Object.keys(names).map(s=>[s,{correct:0,total:0}]));for(const a of snapshot.initialAttempts||[]){const q=snapshot.questions?.find(q=>q.id===a.questionId),s=group(a.subject||q?.subject);if(!result[s]||typeof a.correct!=='boolean')continue;result[s].total++;if(a.correct)result[s].correct++;}return result;}
  async function render(user,host){host.textContent='모의고사 기록을 확인하는 중...';let records;try{records=await app.MockPublication.list(user,{weeks:12});}catch(e){host.textContent='시험 기록을 받지 못했습니다. Firebase 규칙과 계정 연결을 확인하고 다시 선택해 주세요.';return;}if(!host.isConnected||window._adminData?.userId!==user)return;

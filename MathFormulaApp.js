@@ -48,65 +48,65 @@ const MathFormulaApp = (() => {
 
     function diagramSvg(type, item = {}) {
         const common = 'viewBox="0 0 520 290" role="img" aria-label="공식 원리 도형"';
-        const label = (x, y, text, color = '#dce8ff') =>
+        const label = (x, y, text, color = '#2b2620') =>
             `<text x="${x}" y="${y}" fill="${color}" font-size="18" font-weight="700" text-anchor="middle">${text}</text>`;
         if (type?.startsWith('example-')) return '<p>예제표를 불러오지 못했습니다. 아래 예제와 풀이를 확인해 주세요.</p>';
         if (type === 'right-triangle') {
-            return `<svg ${common}><path d="M90 220 L410 220 L410 55 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <path d="M390 220v-20h20" fill="none" stroke="#ffd166" stroke-width="3"/>
-                ${label(250,248,'b')}${label(434,145,'a')}${label(245,125,'c')}${label(112,210,'A','#ffd166')}</svg>`;
+            return `<svg ${common}><path d="M90 220 L410 220 L410 55 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <path d="M390 220v-20h20" fill="none" stroke="#996b00" stroke-width="3"/>
+                ${label(250,248,'b')}${label(434,145,'a')}${label(245,125,'c')}${label(112,210,'A','#996b00')}</svg>`;
         }
         if (type === 'pythagorean') {
-            return `<svg ${common}><path d="M220 180 L320 180 L320 105 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <path d="M220 180 L320 180 L320 280 L220 280 Z" fill="#4facfe28" stroke="#4facfe" stroke-width="2"/>
-                <path d="M320 180 L395 180 L395 105 L320 105 Z" fill="#34d39928" stroke="#34d399" stroke-width="2"/>
-                <path d="M220 180 L320 105 L245 5 L145 80 Z" fill="#f472b628" stroke="#f472b6" stroke-width="2"/>
-                <path d="M302 180v-18h18" fill="none" stroke="#ffd166" stroke-width="3"/>
-                ${label(270,242,'a²')}${label(360,149,'b²')}${label(215,78,'c²','#f9a8d4')}</svg>`;
+            return `<svg ${common}><path d="M220 180 L320 180 L320 105 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <path d="M220 180 L320 180 L320 280 L220 280 Z" fill="rgba(35,132,92,0.157)" stroke="#23845c" stroke-width="2"/>
+                <path d="M320 180 L395 180 L395 105 L320 105 Z" fill="rgba(31,161,113,0.157)" stroke="#19835c" stroke-width="2"/>
+                <path d="M220 180 L320 105 L245 5 L145 80 Z" fill="rgba(245,71,162,0.157)" stroke="#e30c7d" stroke-width="2"/>
+                <path d="M302 180v-18h18" fill="none" stroke="#996b00" stroke-width="3"/>
+                ${label(270,242,'a²')}${label(360,149,'b²')}${label(215,78,'c²','#e10a7f')}</svg>`;
         }
         if (type === 'incircle') {
-            return `<svg ${common}><path d="M70 230 L450 230 L260 40 Z" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
-                <circle cx="260" cy="151.3" r="78.7" fill="#f472b618" stroke="#f9a8d4" stroke-width="3"/>
-                <circle cx="260" cy="151.3" r="5" fill="#ffd166"/><line x1="260" y1="151.3" x2="260" y2="230" stroke="#ffd166" stroke-width="3"/>
-                <path d="M260 218h-12v12" fill="none" stroke="#ffd166" stroke-width="2.5"/>
-                ${label(279,193,'r','#ffd166')}${label(260,256,'a')}${label(150,126,'c')}${label(370,126,'b')}</svg>`;
+            return `<svg ${common}><path d="M70 230 L450 230 L260 40 Z" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
+                <circle cx="260" cy="151.3" r="78.7" fill="rgba(245,71,162,0.094)" stroke="#e10a7f" stroke-width="3"/>
+                <circle cx="260" cy="151.3" r="5" fill="#996b00"/><line x1="260" y1="151.3" x2="260" y2="230" stroke="#996b00" stroke-width="3"/>
+                <path d="M260 218h-12v12" fill="none" stroke="#996b00" stroke-width="2.5"/>
+                ${label(279,193,'r','#996b00')}${label(260,256,'a')}${label(150,126,'c')}${label(370,126,'b')}</svg>`;
         }
         if (type === 'circumcircle') {
-            return `<svg ${common}><circle cx="260" cy="140" r="110" fill="#4facfe0d" stroke="#60a5fa" stroke-width="3"/>
-                <path d="M165 85 L355 85 L260 250 Z" fill="#f472b618" stroke="#f9a8d4" stroke-width="4"/>
-                <circle cx="260" cy="140" r="5" fill="#ffd166"/><line x1="260" y1="140" x2="355" y2="85" stroke="#ffd166" stroke-width="3"/>
-                ${label(315,105,'R','#ffd166')}${label(260,75,'c')}${label(327,178,'a')}${label(194,178,'b')}</svg>`;
+            return `<svg ${common}><circle cx="260" cy="140" r="110" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="3"/>
+                <path d="M165 85 L355 85 L260 250 Z" fill="rgba(245,71,162,0.094)" stroke="#e10a7f" stroke-width="4"/>
+                <circle cx="260" cy="140" r="5" fill="#996b00"/><line x1="260" y1="140" x2="355" y2="85" stroke="#996b00" stroke-width="3"/>
+                ${label(315,105,'R','#996b00')}${label(260,75,'c')}${label(327,178,'a')}${label(194,178,'b')}</svg>`;
         }
         if (type === 'angle-area') {
-            return `<svg ${common}><path d="M90 220 L438 220 L220 52 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="220" y1="52" x2="220" y2="220" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                <path d="M132 220 A42 42 0 0 0 116 187" fill="none" stroke="#f9a8d4" stroke-width="4"/>
-                ${label(264,249,'c')}${label(140,123,'b')}${label(118,210,'A','#f9a8d4')}${label(239,140,'h = b sin A','#ffd166')}</svg>`;
+            return `<svg ${common}><path d="M90 220 L438 220 L220 52 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <line x1="220" y1="52" x2="220" y2="220" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                <path d="M132 220 A42 42 0 0 0 116 187" fill="none" stroke="#e10a7f" stroke-width="4"/>
+                ${label(264,249,'c')}${label(140,123,'b')}${label(118,210,'A','#e10a7f')}${label(239,140,'h = b sin A','#996b00')}</svg>`;
         }
         if (type === 'square' || type === 'rectangle' || type === 'rectangle-diagonal') {
             const x = type === 'square' ? 167.5 : 105;
             const width = type === 'square' ? 185 : 310;
-            return `<svg ${common}><rect x="${x}" y="42" width="${width}" height="185" rx="3" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                ${type === 'rectangle-diagonal' ? `<line x1="${x}" y1="227" x2="${x + width}" y2="42" stroke="#f9a8d4" stroke-width="4"/>${label(270,120,'d','#f9a8d4')}` : ''}
+            return `<svg ${common}><rect x="${x}" y="42" width="${width}" height="185" rx="3" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                ${type === 'rectangle-diagonal' ? `<line x1="${x}" y1="227" x2="${x + width}" y2="42" stroke="#e10a7f" stroke-width="4"/>${label(270,120,'d','#e10a7f')}` : ''}
                 ${label(260,252,'a')}${label(x + width + 28,140,type === 'square' ? 'a' : 'b')}</svg>`;
         }
         if (type === 'rhombus' || type === 'quadrilateral') {
             const shape = type === 'rhombus' ? 'M260 30 L450 140 L260 250 L70 140 Z' : 'M70 150 L270 35 L455 135 L245 238 Z';
             const diagonal1 = type === 'rhombus'
-                ? '<line x1="70" y1="140" x2="450" y2="140" stroke="#f9a8d4" stroke-width="3"/>'
-                : '<line x1="70" y1="150" x2="455" y2="135" stroke="#f9a8d4" stroke-width="3"/>';
+                ? '<line x1="70" y1="140" x2="450" y2="140" stroke="#e10a7f" stroke-width="3"/>'
+                : '<line x1="70" y1="150" x2="455" y2="135" stroke="#e10a7f" stroke-width="3"/>';
             const diagonal2 = type === 'rhombus'
-                ? '<line x1="260" y1="30" x2="260" y2="250" stroke="#34d399" stroke-width="3"/><path d="M260 140h13v13" fill="none" stroke="#ffd166" stroke-width="2.5"/>'
-                : '<line x1="270" y1="35" x2="245" y2="238" stroke="#34d399" stroke-width="3"/>';
-            return `<svg ${common}><path d="${shape}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ? '<line x1="260" y1="30" x2="260" y2="250" stroke="#19835c" stroke-width="3"/><path d="M260 140h13v13" fill="none" stroke="#996b00" stroke-width="2.5"/>'
+                : '<line x1="270" y1="35" x2="245" y2="238" stroke="#19835c" stroke-width="3"/>';
+            return `<svg ${common}><path d="${shape}" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
                 ${diagonal1}${diagonal2}
-                ${label(365,125,'d₁','#f9a8d4')}${label(282,75,'d₂','#34d399')}${type === 'quadrilateral' ? label(280,145,'θ','#ffd166') : ''}</svg>`;
+                ${label(365,125,'d₁','#e10a7f')}${label(282,75,'d₂','#19835c')}${type === 'quadrilateral' ? label(280,145,'θ','#996b00') : ''}</svg>`;
         }
         if (type === 'parallelogram' || type === 'trapezoid') {
             const path = type === 'trapezoid' ? 'M90 225 L430 225 L350 65 L165 65 Z' : 'M80 225 L395 225 L455 65 L140 65 Z';
-            return `<svg ${common}><path d="${path}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="${type === 'trapezoid' ? 165 : 140}" y1="65" x2="${type === 'trapezoid' ? 165 : 140}" y2="225" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                ${label(260,252,type === 'trapezoid' ? 'b' : 'a')}${label(177,150,'h','#ffd166')}${type === 'trapezoid' ? label(258,52,'a') : ''}</svg>`;
+            return `<svg ${common}><path d="${path}" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <line x1="${type === 'trapezoid' ? 165 : 140}" y1="65" x2="${type === 'trapezoid' ? 165 : 140}" y2="225" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                ${label(260,252,type === 'trapezoid' ? 'b' : 'a')}${label(177,150,'h','#996b00')}${type === 'trapezoid' ? label(258,52,'a') : ''}</svg>`;
         }
         if (['pentagon','pentagon-height','pentagon-diagonal','hexagon','regular-polygon','polygon-diagonals','polygon-angles'].includes(type)) {
             const sides = type === 'hexagon' ? 6 : type.startsWith('pentagon') ? 5 : ({27:8,28:7,29:4,30:6}[item.number] || 8);
@@ -115,118 +115,118 @@ const MathFormulaApp = (() => {
                 return { x: 260 + 100 * Math.cos(angle), y: 137 + 100 * Math.sin(angle) };
             });
             const points = vertices.map(point => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(' ');
-            const line = (from, to, color = '#f9a8d4', width = 3) =>
+            const line = (from, to, color = '#e10a7f', width = 3) =>
                 `<line x1="${from.x.toFixed(1)}" y1="${from.y.toFixed(1)}" x2="${to.x.toFixed(1)}" y2="${to.y.toFixed(1)}" stroke="${color}" stroke-width="${width}"/>`;
             let extras = '';
             if (type === 'pentagon-height') {
                 const oppositeMidpoint = { x: (vertices[2].x + vertices[3].x) / 2, y: (vertices[2].y + vertices[3].y) / 2 };
-                extras = `${line(vertices[0], oppositeMidpoint, '#ffd166')}<path d="M252 ${oppositeMidpoint.y.toFixed(1)}v-8h8" fill="none" stroke="#ffd166" stroke-width="2"/>${label(278,145,'h','#ffd166')}`;
+                extras = `${line(vertices[0], oppositeMidpoint, '#996b00')}<path d="M252 ${oppositeMidpoint.y.toFixed(1)}v-8h8" fill="none" stroke="#996b00" stroke-width="2"/>${label(278,145,'h','#996b00')}`;
             } else if (type === 'pentagon-diagonal') {
                 extras = vertices.map((point, index) => line(point, vertices[(index + 2) % sides])).join('');
             } else if (type === 'polygon-diagonals') {
-                extras = vertices.flatMap((point,i)=>vertices.map((other,j)=>j>i+1 && !(i===0&&j===sides-1)?line(point,other,'#f9a8d4',1.5):'')).join('');
+                extras = vertices.flatMap((point,i)=>vertices.map((other,j)=>j>i+1 && !(i===0&&j===sides-1)?line(point,other,'#e10a7f',1.5):'')).join('');
             } else if (type === 'polygon-angles') {
-                extras = vertices.slice(2, -1).map(point => line(vertices[0], point, '#ffd166', 2)).join('');
+                extras = vertices.slice(2, -1).map(point => line(vertices[0], point, '#996b00', 2)).join('');
             } else if (type === 'regular-polygon') {
-                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.6)).join('');
+                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#19835c', 1.6)).join('');
             } else if (type === 'hexagon') {
-                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#34d399', 1.8)).join('');
+                extras = vertices.map(point => line({ x: 260, y: 137 }, point, '#19835c', 1.8)).join('');
             }
-            return `<svg ${common}><polygon points="${points}" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>${extras}${label(260,260,type==='polygon-diagonals'?`대각선 ${sides*(sides-3)/2}개`:type==='polygon-angles'?`${sides}각형 → 삼각형 ${sides-2}개`:'정다각형')}</svg>`;
+            return `<svg ${common}><polygon points="${points}" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>${extras}${label(260,260,type==='polygon-diagonals'?`대각선 ${sides*(sides-3)/2}개`:type==='polygon-angles'?`${sides}각형 → 삼각형 ${sides-2}개`:'정다각형')}</svg>`;
         }
         if (type === 'vector' || type === 'coordinates' || type === 'centroid' || type === 'median') {
             if (type === 'vector') {
-                return `<svg ${common}><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#34d399"/></marker></defs>
-                    <path d="M95 225 L430 225 L275 45 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="3"/>
-                    <line x1="95" y1="225" x2="430" y2="225" stroke="#34d399" stroke-width="5" marker-end="url(#arrow)"/>
-                    <line x1="95" y1="225" x2="275" y2="45" stroke="#34d399" stroke-width="5" marker-end="url(#arrow)"/>
-                    ${label(260,250,'벡터 a','#34d399')}${label(155,120,'벡터 b','#34d399')}</svg>`;
+                return `<svg ${common}><defs><marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0 0L10 5L0 10Z" fill="#19835c"/></marker></defs>
+                    <path d="M95 225 L430 225 L275 45 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="3"/>
+                    <line x1="95" y1="225" x2="430" y2="225" stroke="#19835c" stroke-width="5" marker-end="url(#arrow)"/>
+                    <line x1="95" y1="225" x2="275" y2="45" stroke="#19835c" stroke-width="5" marker-end="url(#arrow)"/>
+                    ${label(260,250,'벡터 a','#19835c')}${label(155,120,'벡터 b','#19835c')}</svg>`;
             }
             if (type === 'coordinates') {
-                return `<svg ${common}><path d="M60 225 H470 M90 255 V25" stroke="#70839f" stroke-width="2"/>
-                    <path d="M90 225 L430 225 L220 55 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                    <circle cx="90" cy="225" r="5" fill="#ffd166"/><circle cx="430" cy="225" r="5" fill="#ffd166"/><circle cx="220" cy="55" r="5" fill="#ffd166"/>
+                return `<svg ${common}><path d="M60 225 H470 M90 255 V25" stroke="#6e6559" stroke-width="2"/>
+                    <path d="M90 225 L430 225 L220 55 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                    <circle cx="90" cy="225" r="5" fill="#996b00"/><circle cx="430" cy="225" r="5" fill="#996b00"/><circle cx="220" cy="55" r="5" fill="#996b00"/>
                     ${label(75,245,'A')}${label(445,245,'B')}${label(220,42,'C')}</svg>`;
             }
             const A = { x: 260, y: 38 }, B = { x: 75, y: 225 }, C = { x: 445, y: 225 };
             const Mbc = { x: 260, y: 225 }, Mac = { x: 352.5, y: 131.5 }, Mab = { x: 167.5, y: 131.5 };
             const medianLines = type === 'centroid'
-                ? `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#ffd166" stroke-width="2.5"/>
-                   <line x1="${B.x}" y1="${B.y}" x2="${Mac.x}" y2="${Mac.y}" stroke="#ffd166" stroke-width="2.5"/>
-                   <line x1="${C.x}" y1="${C.y}" x2="${Mab.x}" y2="${Mab.y}" stroke="#ffd166" stroke-width="2.5"/>
-                   <circle cx="260" cy="162.7" r="6" fill="#f9a8d4"/>${label(282,160,'G','#f9a8d4')}`
-                : `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#ffd166" stroke-width="3"/>
-                   <circle cx="${Mbc.x}" cy="${Mbc.y}" r="5" fill="#f9a8d4"/>${label(280,215,'M','#f9a8d4')}`;
-            return `<svg ${common}><path d="M${A.x} ${A.y} L${B.x} ${B.y} L${C.x} ${C.y} Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
+                ? `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#996b00" stroke-width="2.5"/>
+                   <line x1="${B.x}" y1="${B.y}" x2="${Mac.x}" y2="${Mac.y}" stroke="#996b00" stroke-width="2.5"/>
+                   <line x1="${C.x}" y1="${C.y}" x2="${Mab.x}" y2="${Mab.y}" stroke="#996b00" stroke-width="2.5"/>
+                   <circle cx="260" cy="162.7" r="6" fill="#e10a7f"/>${label(282,160,'G','#e10a7f')}`
+                : `<line x1="${A.x}" y1="${A.y}" x2="${Mbc.x}" y2="${Mbc.y}" stroke="#996b00" stroke-width="3"/>
+                   <circle cx="${Mbc.x}" cy="${Mbc.y}" r="5" fill="#e10a7f"/>${label(280,215,'M','#e10a7f')}`;
+            return `<svg ${common}><path d="M${A.x} ${A.y} L${B.x} ${B.y} L${C.x} ${C.y} Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
                 ${medianLines}${label(A.x,A.y-10,'A')}${label(B.x-12,B.y+20,'B')}${label(C.x+12,C.y+20,'C')}</svg>`;
         }
         if (type === 'isosceles' || type === 'heron') {
-            return `<svg ${common}><path d="M80 225 L440 225 L260 48 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="260" y1="48" x2="260" y2="225" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                <path d="M260 209h16v16" fill="none" stroke="#ffd166" stroke-width="2"/>
-                ${label(260,252,type==='heron'?'c':'a')}${label(154,128,type==='heron'?'b':'b')}${label(367,128,type==='heron'?'a':'b')}${label(279,143,'h','#ffd166')}</svg>`;
+            return `<svg ${common}><path d="M80 225 L440 225 L260 48 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <line x1="260" y1="48" x2="260" y2="225" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                <path d="M260 209h16v16" fill="none" stroke="#996b00" stroke-width="2"/>
+                ${label(260,252,type==='heron'?'c':'a')}${label(154,128,type==='heron'?'b':'b')}${label(367,128,type==='heron'?'a':'b')}${label(279,143,'h','#996b00')}</svg>`;
         }
         if (['circle','circle-coordinate','circle-angle','secant','tangent-chord','pi-series','sector'].includes(type)) {
-            if (type === 'sector') return `<svg ${common}><path d="M170 220 L170 55 A165 165 0 0 1 335 220 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <path d="M170 180 A40 40 0 0 1 210 220" fill="none" stroke="#f9a8d4" stroke-width="4"/>
-                ${label(218,205,'θ','#f9a8d4')}${label(151,139,'r')}${label(253,246,'r')}${label(285,94,'ℓ','#34d399')}</svg>`;
-            if (type === 'pi-series') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="155" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>
-                ${label(260,126,'d','#ffd166')}${label(260,258,'π = 둘레 ÷ 지름','#34d399')}</svg>`;
-            if(type==='circle-angle')return `<svg ${common}><circle cx="260" cy="137" r="100" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M173.397 87L260 137L346.603 87M173.397 87L260 237L346.603 87" fill="none" stroke="#f9a8d4" stroke-width="3"/>${label(260,116,'α = 120°')}${label(260,206,'β = 60°')}${label(156,78,'A')}${label(364,78,'B')}${label(260,264,'C')}${label(280,156,'O')}</svg>`;
-            if(type==='tangent-chord')return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M60 242H460" stroke="#34d399" stroke-width="4"/><path d="M260 242L365 137L155 137Z" fill="none" stroke="#f9a8d4" stroke-width="3"/><path d="M260 137V242" stroke="#ffd166" stroke-dasharray="5 5"/><path d="M260 230h12v12" fill="none" stroke="#ffd166"/>${label(320,229,'α = 45°')}${label(207,164,'β = 45°')}${label(254,265,'접점 P')}${label(379,133,'B')}${label(140,133,'C')}</svg>`;
+            if (type === 'sector') return `<svg ${common}><path d="M170 220 L170 55 A165 165 0 0 1 335 220 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <path d="M170 180 A40 40 0 0 1 210 220" fill="none" stroke="#e10a7f" stroke-width="4"/>
+                ${label(218,205,'θ','#e10a7f')}${label(151,139,'r')}${label(253,246,'r')}${label(285,94,'ℓ','#19835c')}</svg>`;
+            if (type === 'pi-series') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
+                <line x1="155" y1="137" x2="365" y2="137" stroke="#996b00" stroke-width="3"/>
+                ${label(260,126,'d','#996b00')}${label(260,258,'π = 둘레 ÷ 지름','#19835c')}</svg>`;
+            if(type==='circle-angle')return `<svg ${common}><circle cx="260" cy="137" r="100" fill="none" stroke="#23845c" stroke-width="3"/><path d="M173.397 87L260 137L346.603 87M173.397 87L260 237L346.603 87" fill="none" stroke="#e10a7f" stroke-width="3"/>${label(260,116,'α = 120°')}${label(260,206,'β = 60°')}${label(156,78,'A')}${label(364,78,'B')}${label(260,264,'C')}${label(280,156,'O')}</svg>`;
+            if(type==='tangent-chord')return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#23845c" stroke-width="3"/><path d="M60 242H460" stroke="#19835c" stroke-width="4"/><path d="M260 242L365 137L155 137Z" fill="none" stroke="#e10a7f" stroke-width="3"/><path d="M260 137V242" stroke="#996b00" stroke-dasharray="5 5"/><path d="M260 230h12v12" fill="none" stroke="#996b00"/>${label(320,229,'α = 45°')}${label(207,164,'β = 45°')}${label(254,265,'접점 P')}${label(379,133,'B')}${label(140,133,'C')}</svg>`;
             if(type==='secant'){
                 const angle=-.35,projection=210*Math.cos(angle),delta=Math.sqrt(105**2-(210*Math.sin(angle))**2);
                 const points=[projection-delta,projection+delta].map(t=>({x:50+t*Math.cos(angle),y:137+t*Math.sin(angle)}));
-                return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#77d9ff" stroke-width="3"/><path d="M50 137H425M50 137L${50+400*Math.cos(angle)} ${137+400*Math.sin(angle)}" stroke="#f9a8d4" stroke-width="3"/>${label(45,159,'P')}${label(155,162,'A')}${label(365,162,'B')}${points.map((v,i)=>`<circle cx="${v.x}" cy="${v.y}" r="4" fill="#ffd166"/>${label(v.x,v.y-12,i?'D':'C')}`).join('')}${label(260,269,'PA × PB = PC × PD')}</svg>`;
+                return `<svg ${common}><circle cx="260" cy="137" r="105" fill="none" stroke="#23845c" stroke-width="3"/><path d="M50 137H425M50 137L${50+400*Math.cos(angle)} ${137+400*Math.sin(angle)}" stroke="#e10a7f" stroke-width="3"/>${label(45,159,'P')}${label(155,162,'A')}${label(365,162,'B')}${points.map((v,i)=>`<circle cx="${v.x}" cy="${v.y}" r="4" fill="#996b00"/>${label(v.x,v.y-12,i?'D':'C')}`).join('')}${label(260,269,'PA × PB = PC × PD')}</svg>`;
             }
-            const extras=type==='circle-coordinate'?`<path d="M35 260H480M65 277V15" stroke="#718096" stroke-width="2"/><circle cx="260" cy="137" r="4" fill="#ffd166"/><circle cx="344" cy="74" r="4" fill="#f9a8d4"/><path d="M260 137L344 74" stroke="#ffd166" stroke-width="3"/>${label(243,165,'C(a,b)')}${label(369,60,'P(x,y)')}${label(309,128,'r')}`:`<line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(313,125,'r','#ffd166')}`;
-            return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe10" stroke="#77d9ff" stroke-width="4"/>${extras}</svg>`;
+            const extras=type==='circle-coordinate'?`<path d="M35 260H480M65 277V15" stroke="#6e6559" stroke-width="2"/><circle cx="260" cy="137" r="4" fill="#996b00"/><circle cx="344" cy="74" r="4" fill="#e10a7f"/><path d="M260 137L344 74" stroke="#996b00" stroke-width="3"/>${label(243,165,'C(a,b)')}${label(369,60,'P(x,y)')}${label(309,128,'r')}`:`<line x1="260" y1="137" x2="365" y2="137" stroke="#996b00" stroke-width="3"/>${label(313,125,'r','#996b00')}`;
+            return `<svg ${common}><circle cx="260" cy="137" r="105" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>${extras}</svg>`;
         }
         if (type === 'ellipse' || type === 'ellipse-coordinate') {
-            return `<svg ${common}><path d="M45 137 H475 M260 255 V18" stroke="#718096" stroke-width="2"/>
-                <ellipse cx="260" cy="137" rx="175" ry="88" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="260" y1="137" x2="435" y2="137" stroke="#ffd166" stroke-width="3"/>
-                <line x1="260" y1="137" x2="260" y2="49" stroke="#34d399" stroke-width="3"/>
-                ${label(350,126,'a','#ffd166')}${label(278,90,'b','#34d399')}</svg>`;
+            return `<svg ${common}><path d="M45 137 H475 M260 255 V18" stroke="#6e6559" stroke-width="2"/>
+                <ellipse cx="260" cy="137" rx="175" ry="88" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
+                <line x1="260" y1="137" x2="435" y2="137" stroke="#996b00" stroke-width="3"/>
+                <line x1="260" y1="137" x2="260" y2="49" stroke="#19835c" stroke-width="3"/>
+                ${label(350,126,'a','#996b00')}${label(278,90,'b','#19835c')}</svg>`;
         }
-        if(type==='cylinder-net')return `<svg ${common}><rect x="150" y="90" width="${40*Math.PI}" height="90" fill="#4facfe25" stroke="#77d9ff" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="70" r="20" fill="#f472b625" stroke="#f9a8d4" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="200" r="20" fill="#f472b625" stroke="#f9a8d4" stroke-width="3"/>${label(215,138,'2πrh')}${label(325,140,'높이 h')}${label(215,255,'원 2개 + 직사각형 옆면')}${label(370,70,'각 원의 넓이 πr²')}</svg>`;
-        if(type==='cube-net')return `<svg ${common}>${[[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]].map(([x,y])=>`<rect x="${130+x*55}" y="${35+y*55}" width="55" height="55" fill="#4facfe25" stroke="#77d9ff" stroke-width="2"/>${label(157.5+x*55,69+y*55,'a²')}`).join('')}${label(260,245,'정사각형 6장 → 6a²')}</svg>`;
+        if(type==='cylinder-net')return `<svg ${common}><rect x="150" y="90" width="${40*Math.PI}" height="90" fill="rgba(35,132,92,0.145)" stroke="#23845c" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="70" r="20" fill="rgba(245,71,162,0.145)" stroke="#e10a7f" stroke-width="3"/><circle cx="${150+20*Math.PI}" cy="200" r="20" fill="rgba(245,71,162,0.145)" stroke="#e10a7f" stroke-width="3"/>${label(215,138,'2πrh')}${label(325,140,'높이 h')}${label(215,255,'원 2개 + 직사각형 옆면')}${label(370,70,'각 원의 넓이 πr²')}</svg>`;
+        if(type==='cube-net')return `<svg ${common}>${[[1,0],[0,1],[1,1],[2,1],[3,1],[1,2]].map(([x,y])=>`<rect x="${130+x*55}" y="${35+y*55}" width="55" height="55" fill="rgba(35,132,92,0.145)" stroke="#23845c" stroke-width="2"/>${label(157.5+x*55,69+y*55,'a²')}`).join('')}${label(260,245,'정사각형 6장 → 6a²')}</svg>`;
         if (['sphere','cylinder','cylinder-net','cone','cone-net'].includes(type)) {
-            if (type === 'sphere') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
-                <ellipse cx="260" cy="137" rx="105" ry="30" fill="none" stroke="#34d399" stroke-width="2" stroke-dasharray="7 6"/>
-                <line x1="260" y1="137" x2="365" y2="137" stroke="#ffd166" stroke-width="3"/>${label(316,126,'r','#ffd166')}</svg>`;
-            if (type.startsWith('cylinder')) return `<svg ${common}><ellipse cx="260" cy="55" rx="115" ry="32" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <path d="M145 55 V215 M375 55 V215" stroke="#77d9ff" stroke-width="4"/>
-                <ellipse cx="260" cy="215" rx="115" ry="32" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="260" y1="55" x2="260" y2="215" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                <line x1="260" y1="215" x2="375" y2="215" stroke="#34d399" stroke-width="3"/>${label(278,140,'h','#ffd166')}${label(320,204,'r','#34d399')}</svg>`;
-            return `<svg ${common}><path d="M260 30 L110 220 M260 30 L410 220" stroke="#77d9ff" stroke-width="4"/>
-                <ellipse cx="260" cy="220" rx="150" ry="38" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="260" y1="30" x2="260" y2="220" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                <line x1="260" y1="220" x2="410" y2="220" stroke="#34d399" stroke-width="3"/>
-                ${label(278,130,'h','#ffd166')}${label(337,210,'r','#34d399')}${type==='cone-net'?label(350,112,'ℓ','#f9a8d4'):''}</svg>`;
+            if (type === 'sphere') return `<svg ${common}><circle cx="260" cy="137" r="105" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
+                <ellipse cx="260" cy="137" rx="105" ry="30" fill="none" stroke="#19835c" stroke-width="2" stroke-dasharray="7 6"/>
+                <line x1="260" y1="137" x2="365" y2="137" stroke="#996b00" stroke-width="3"/>${label(316,126,'r','#996b00')}</svg>`;
+            if (type.startsWith('cylinder')) return `<svg ${common}><ellipse cx="260" cy="55" rx="115" ry="32" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <path d="M145 55 V215 M375 55 V215" stroke="#23845c" stroke-width="4"/>
+                <ellipse cx="260" cy="215" rx="115" ry="32" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <line x1="260" y1="55" x2="260" y2="215" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                <line x1="260" y1="215" x2="375" y2="215" stroke="#19835c" stroke-width="3"/>${label(278,140,'h','#996b00')}${label(320,204,'r','#19835c')}</svg>`;
+            return `<svg ${common}><path d="M260 30 L110 220 M260 30 L410 220" stroke="#23845c" stroke-width="4"/>
+                <ellipse cx="260" cy="220" rx="150" ry="38" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+                <line x1="260" y1="30" x2="260" y2="220" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                <line x1="260" y1="220" x2="410" y2="220" stroke="#19835c" stroke-width="3"/>
+                ${label(278,130,'h','#996b00')}${label(337,210,'r','#19835c')}${type==='cone-net'?label(350,112,'ℓ','#e10a7f'):''}</svg>`;
         }
         if (['pyramid','square-pyramid','square-pyramid-height','tetrahedron','tetrahedron-height','cube','cube-net','cuboid'].includes(type)) {
             if (type === 'cube' || type === 'cube-net' || type === 'cuboid') {
                 const w=type==='cuboid'?250:180,h=145,x=135,y=85,dx=65,dy=-45;
-                return `<svg ${common}><path d="M${x} ${y} h${w} v${h} h-${w} Z M${x} ${y} l${dx} ${dy} h${w} l-${dx} ${-dy} M${x+w} ${y} l${dx} ${dy} v${h} l-${dx} ${-dy}" fill="#4facfe12" stroke="#77d9ff" stroke-width="4"/>
+                return `<svg ${common}><path d="M${x} ${y} h${w} v${h} h-${w} Z M${x} ${y} l${dx} ${dy} h${w} l-${dx} ${-dy} M${x+w} ${y} l${dx} ${dy} v${h} l-${dx} ${-dy}" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
                     ${label(x+w/2,y+h+26,'a')}${label(x+w+dx+18,y+h/2,type==='cuboid'?'c':'a')}${type==='cuboid'?label(x+w+30,y-10,'b'):''}</svg>`;
             }
             const tetra=type.startsWith('tetrahedron')||type==='pyramid';
             const base=tetra?'M115 220 L405 220 L330 120 Z':'M115 220 L405 220 L350 145 L60 145 Z';
             const apexX=tetra?850/3:232.5, footY=tetra?560/3:182.5;
-            return `<svg ${common}><path d="${base} M${apexX} 30L115 220 M${apexX} 30L405 220 M${apexX} 30L${tetra?'330 120':'350 145'} ${tetra?'':`M${apexX} 30L60 145`}" fill="#4facfe14" stroke="#77d9ff" stroke-width="4"/>
-                <line x1="${apexX}" y1="30" x2="${apexX}" y2="${footY}" stroke="#ffd166" stroke-width="3" stroke-dasharray="7 6"/>
-                ${label(apexX+18,112,'h','#ffd166')}${label(260,250,'a')}</svg>`;
+            return `<svg ${common}><path d="${base} M${apexX} 30L115 220 M${apexX} 30L405 220 M${apexX} 30L${tetra?'330 120':'350 145'} ${tetra?'':`M${apexX} 30L60 145`}" fill="rgba(35,132,92,0.08)" stroke="#23845c" stroke-width="4"/>
+                <line x1="${apexX}" y1="30" x2="${apexX}" y2="${footY}" stroke="#996b00" stroke-width="3" stroke-dasharray="7 6"/>
+                ${label(apexX+18,112,'h','#996b00')}${label(260,250,'a')}</svg>`;
         }
         const isHeight = type === 'equilateral-height';
         const isGeneral = type === 'triangle-area';
-        return `<svg ${common}><path d="M140 235 L380 235 L260 27 Z" fill="#4facfe18" stroke="#77d9ff" stroke-width="4"/>
-            <line x1="260" y1="27" x2="260" y2="235" stroke="#ffd166" stroke-width="3" ${isGeneral ? 'stroke-dasharray="7 6"' : ''}/>
-            <path d="M260 219h16v16" fill="none" stroke="#ffd166" stroke-width="2"/>
-            ${label(260,260,isGeneral?'b':'a')}${label(184,130,isGeneral?'':'a')}${label(337,130,isGeneral?'':'a')}${label(280,143,'h','#ffd166')}
-            ${isHeight ? label(363,72,'h = (√3/2)a','#34d399') : ''}</svg>`;
+        return `<svg ${common}><path d="M140 235 L380 235 L260 27 Z" fill="rgba(35,132,92,0.094)" stroke="#23845c" stroke-width="4"/>
+            <line x1="260" y1="27" x2="260" y2="235" stroke="#996b00" stroke-width="3" ${isGeneral ? 'stroke-dasharray="7 6"' : ''}/>
+            <path d="M260 219h16v16" fill="none" stroke="#996b00" stroke-width="2"/>
+            ${label(260,260,isGeneral?'b':'a')}${label(184,130,isGeneral?'':'a')}${label(337,130,isGeneral?'':'a')}${label(280,143,'h','#996b00')}
+            ${isHeight ? label(363,72,'h = (√3/2)a','#19835c') : ''}</svg>`;
     }
 
     function renderFilter() {

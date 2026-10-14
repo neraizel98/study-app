@@ -8,7 +8,7 @@
     const visual = {
         factorTree: {
             svg: `<svg viewBox="0 0 640 300" role="img" aria-label="60의 소인수분해 나무">
-                <style>.n{fill:#161b22;stroke:#58a6ff;stroke-width:3}.t{fill:#f0f6fc;font:700 22px sans-serif;text-anchor:middle}.p{stroke:#8b949e;stroke-width:3}.prime{fill:#1f6f46;stroke:#3fb950}</style>
+                <style>.n{fill:#ffffff;stroke:#23845c;stroke-width:3}.t{fill:#2b2620;font:700 22px sans-serif;text-anchor:middle}.p{stroke:#6e6559;stroke-width:3}.prime{fill:#ffffff;stroke:#2b8637}</style>
                 <line class="p" x1="320" y1="48" x2="220" y2="105"/><line class="p" x1="320" y1="48" x2="420" y2="105"/>
                 <line class="p" x1="420" y1="130" x2="365" y2="200"/><line class="p" x1="420" y1="130" x2="475" y2="200"/>
                 <circle class="n" cx="320" cy="40" r="30"/><text class="t" x="320" y="48">60</text>
@@ -16,13 +16,13 @@
                 <circle class="n" cx="420" cy="120" r="30"/><text class="t" x="420" y="128">30</text>
                 <circle class="n prime" cx="365" cy="215" r="28"/><text class="t" x="365" y="223">2</text>
                 <circle class="n" cx="475" cy="215" r="30"/><text class="t" x="475" y="223">15</text>
-                <text class="t" x="320" y="283" style="fill:#3fb950">60 = 2² × 3 × 5</text>
+                <text class="t" x="320" y="283" style="fill:#2b8637">60 = 2² × 3 × 5</text>
             </svg>`,
             caption: "합성수를 소수가 될 때까지 가지로 나누면 소인수분해가 보입니다."
         },
         venn: {
             svg: `<svg viewBox="0 0 640 260" role="img" aria-label="최대공약수와 최소공배수의 소인수 비교">
-                <style>.c{fill-opacity:.22;stroke-width:3}.a{fill:#58a6ff;stroke:#58a6ff}.b{fill:#f778ba;stroke:#f778ba}.t{fill:#f0f6fc;font:700 22px sans-serif;text-anchor:middle}.s{fill:#c9d1d9;font:18px sans-serif;text-anchor:middle}</style>
+                <style>.c{fill-opacity:.22;stroke-width:3}.a{fill:#23845c;stroke:#23845c}.b{fill:#e3087a;stroke:#e3087a}.t{fill:#2b2620;font:700 22px sans-serif;text-anchor:middle}.s{fill:#2b2620;font:18px sans-serif;text-anchor:middle}</style>
                 <circle class="c a" cx="270" cy="125" r="95"/><circle class="c b" cx="370" cy="125" r="95"/>
                 <text class="t" x="210" y="55">12 = 2²×3</text><text class="t" x="430" y="55">18 = 2×3²</text>
                 <text class="t" x="215" y="135">2</text><text class="t" x="320" y="118">2×3</text><text class="t" x="425" y="135">3</text>
@@ -32,8 +32,8 @@
         },
         numberLine: {
             svg: `<svg viewBox="0 0 700 230" role="img" aria-label="정수와 유리수의 수직선">
-                <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b949e"/></marker></defs>
-                <style>.axis{stroke:#8b949e;stroke-width:3}.tick{stroke:#c9d1d9;stroke-width:2}.t{fill:#f0f6fc;font:18px sans-serif;text-anchor:middle}.pos{fill:#3fb950}.neg{fill:#ff7b72}</style>
+                <defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6e6559"/></marker></defs>
+                <style>.axis{stroke:#6e6559;stroke-width:3}.tick{stroke:#2b2620;stroke-width:2}.t{fill:#2b2620;font:18px sans-serif;text-anchor:middle}.pos{fill:#2b8637}.neg{fill:#eb0f00}</style>
                 <line class="axis" x1="45" y1="115" x2="665" y2="115" marker-end="url(#arrow)"/>
                 ${[-3,-2,-1,0,1,2,3].map((n,i)=>`<line class="tick" x1="${100+i*85}" y1="100" x2="${100+i*85}" y2="130"/><text class="t" x="${100+i*85}" y="158">${n}</text>`).join('')}
                 <circle class="neg" cx="185" cy="115" r="8"/><text class="t neg" x="185" y="72">-2</text>
@@ -44,17 +44,17 @@
         },
         signRule: {
             svg: `<svg viewBox="0 0 680 250" role="img" aria-label="부호가 있는 수의 곱셈 규칙">
-                <style>.box{fill:#161b22;stroke-width:3;rx:18}.same{stroke:#3fb950}.diff{stroke:#ff7b72}.t{fill:#f0f6fc;font:700 23px sans-serif;text-anchor:middle}.r{fill:#8b949e;font:18px sans-serif;text-anchor:middle}</style>
+                <style>.box{fill:#ffffff;stroke-width:3;rx:18}.same{stroke:#2b8637}.diff{stroke:#eb0f00}.t{fill:#2b2620;font:700 23px sans-serif;text-anchor:middle}.r{fill:#6e6559;font:18px sans-serif;text-anchor:middle}</style>
                 <rect class="box same" x="60" y="45" width="250" height="145"/><rect class="box diff" x="370" y="45" width="250" height="145"/>
-                <text class="t" x="185" y="85">같은 부호</text><text class="t" x="185" y="125">(+)(+) 또는 (-)(-)</text><text class="t" x="185" y="165" style="fill:#3fb950">결과는 +</text>
-                <text class="t" x="495" y="85">다른 부호</text><text class="t" x="495" y="125">(+)(-) 또는 (-)(+)</text><text class="t" x="495" y="165" style="fill:#ff7b72">결과는 -</text>
+                <text class="t" x="185" y="85">같은 부호</text><text class="t" x="185" y="125">(+)(+) 또는 (-)(-)</text><text class="t" x="185" y="165" style="fill:#2b8637">결과는 +</text>
+                <text class="t" x="495" y="85">다른 부호</text><text class="t" x="495" y="125">(+)(-) 또는 (-)(+)</text><text class="t" x="495" y="165" style="fill:#eb0f00">결과는 -</text>
                 <text class="r" x="340" y="225">부호 결정 → 절댓값 계산</text>
             </svg>`,
             caption: "곱셈과 나눗셈은 먼저 부호를 정한 뒤 절댓값끼리 계산합니다."
         },
         tiles: {
             svg: `<svg viewBox="0 0 700 240" role="img" aria-label="대수 타일로 나타낸 동류항">
-                <style>.x{fill:#1f6feb;stroke:#58a6ff;stroke-width:2}.one{fill:#d29922;stroke:#f2cc60;stroke-width:2}.t{fill:white;font:700 25px sans-serif;text-anchor:middle}.eq{fill:#f0f6fc;font:700 26px sans-serif;text-anchor:middle}</style>
+                <style>.x{fill:#23845c;stroke:#23845c;stroke-width:2}.one{fill:#986d15;stroke:#967109;stroke-width:2}.t{fill:#2b2620;font:700 25px sans-serif;text-anchor:middle}.eq{fill:#2b2620;font:700 26px sans-serif;text-anchor:middle}</style>
                 <rect class="x" x="45" y="55" width="115" height="55" rx="8"/><text class="t" x="102" y="91">x</text>
                 <rect class="x" x="175" y="55" width="115" height="55" rx="8"/><text class="t" x="232" y="91">x</text>
                 <rect class="x" x="305" y="55" width="115" height="55" rx="8"/><text class="t" x="362" y="91">x</text>
@@ -66,7 +66,7 @@
         },
         balance: {
             svg: `<svg viewBox="0 0 700 280" role="img" aria-label="일차방정식의 저울 원리">
-                <style>.line{stroke:#8b949e;stroke-width:8;stroke-linecap:round}.pan{fill:#161b22;stroke:#58a6ff;stroke-width:3}.t{fill:#f0f6fc;font:700 24px sans-serif;text-anchor:middle}.sub{fill:#c9d1d9;font:18px sans-serif;text-anchor:middle}</style>
+                <style>.line{stroke:#6e6559;stroke-width:8;stroke-linecap:round}.pan{fill:#ffffff;stroke:#23845c;stroke-width:3}.t{fill:#2b2620;font:700 24px sans-serif;text-anchor:middle}.sub{fill:#2b2620;font:18px sans-serif;text-anchor:middle}</style>
                 <line class="line" x1="350" y1="55" x2="350" y2="205"/><line class="line" x1="165" y1="105" x2="535" y2="105"/>
                 <line class="line" x1="165" y1="105" x2="115" y2="190"/><line class="line" x1="535" y1="105" x2="585" y2="190"/>
                 <path class="pan" d="M55 190 Q115 245 175 190 Z"/><path class="pan" d="M525 190 Q585 245 645 190 Z"/>
@@ -77,19 +77,19 @@
         },
         coordinate: {
             svg: `<svg viewBox="0 0 640 360" role="img" aria-label="좌표평면과 점의 좌표">
-                <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#8b949e"/></marker></defs>
-                <style>.axis{stroke:#8b949e;stroke-width:3}.grid{stroke:#30363d;stroke-width:1}.t{fill:#c9d1d9;font:16px sans-serif}.p{fill:#f778ba}.label{fill:#f0f6fc;font:700 21px sans-serif}</style>
+                <defs><marker id="a2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L0,6 L7,3 z" fill="#6e6559"/></marker></defs>
+                <style>.axis{stroke:#6e6559;stroke-width:3}.grid{stroke:#ffffff;stroke-width:1}.t{fill:#2b2620;font:16px sans-serif}.p{fill:#e3087a}.label{fill:#2b2620;font:700 21px sans-serif}</style>
                 ${[80,140,200,260,320,380,440,500,560].map(x=>`<line class="grid" x1="${x}" y1="35" x2="${x}" y2="325"/>`).join('')}
                 ${[60,120,180,240,300].map(y=>`<line class="grid" x1="45" y1="${y}" x2="600" y2="${y}"/>`).join('')}
                 <line class="axis" x1="45" y1="180" x2="605" y2="180" marker-end="url(#a2)"/><line class="axis" x1="320" y1="325" x2="320" y2="30" marker-end="url(#a2)"/>
-                <circle class="p" cx="500" cy="60" r="9"/><line x1="500" y1="60" x2="500" y2="180" stroke="#f778ba" stroke-dasharray="7"/><line x1="320" y1="60" x2="500" y2="60" stroke="#f778ba" stroke-dasharray="7"/>
+                <circle class="p" cx="500" cy="60" r="9"/><line x1="500" y1="60" x2="500" y2="180" stroke="#e3087a" stroke-dasharray="7"/><line x1="320" y1="60" x2="500" y2="60" stroke="#e3087a" stroke-dasharray="7"/>
                 <text class="label" x="515" y="52">P(3, 2)</text><text class="t" x="610" y="173">x</text><text class="t" x="330" y="27">y</text>
             </svg>`,
             caption: "좌표는 항상 (x좌표, y좌표) 순서로 읽습니다. 먼저 가로, 다음 세로입니다."
         },
         graph: {
             svg: `<svg viewBox="0 0 660 360" role="img" aria-label="정비례와 반비례 그래프 비교">
-                <style>.axis{stroke:#8b949e;stroke-width:2}.direct{stroke:#58a6ff;stroke-width:5}.inverse{stroke:#f778ba;stroke-width:5;fill:none}.t{fill:#f0f6fc;font:18px sans-serif}</style>
+                <style>.axis{stroke:#6e6559;stroke-width:2}.direct{stroke:#23845c;stroke-width:5}.inverse{stroke:#e3087a;stroke-width:5;fill:none}.t{fill:#2b2620;font:18px sans-serif}</style>
                 <g transform="translate(10,0)"><line class="axis" x1="45" y1="180" x2="310" y2="180"/><line class="axis" x1="175" y1="320" x2="175" y2="35"/><line class="direct" x1="70" y1="285" x2="280" y2="75"/><text class="t" x="65" y="42">정비례 y=ax</text></g>
                 <g transform="translate(335,0)"><line class="axis" x1="0" y1="180" x2="290" y2="180"/><line class="axis" x1="145" y1="320" x2="145" y2="35"/><path class="inverse" d="M160 50 C175 90 205 130 280 160 M10 200 C85 230 115 270 130 315"/><text class="t" x="10" y="42">반비례 y=a/x</text></g>
             </svg>`,

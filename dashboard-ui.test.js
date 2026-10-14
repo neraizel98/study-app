@@ -51,7 +51,7 @@ assert(retryPosition >= 0 && listPosition >= 0 && retryPosition < listPosition,
     'Wrong-answer retry button must appear immediately before the wrong-answer list');
 
 const stats = read('stats.html');
-assert(stats.includes('📚 나의 학습 현황'), 'Learning status heading is required');
+assert(stats.includes('나의 학습 현황'), 'Learning status heading is required');
 assert(stats.includes('학습 내용 · ${levelShort}'), 'Learning content must be shown');
 assert(stats.includes('⏱ ${timeStr} · 📝 퀴즈 ${quizStatus}'), 'Study time and quiz status must be shown');
 assert(stats.includes('min: SCORE_FLOOR, max: 100'), 'Score chart must use a 50–100 range');

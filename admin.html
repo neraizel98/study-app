@@ -6,9 +6,9 @@
     <meta http-equiv="Pragma" content="no-cache">
     <meta http-equiv="Expires" content="0">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>관리자 대시보드 - Smart Study</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
@@ -40,15 +40,15 @@
             width:44px; height:44px; border-radius:14px;
             background:linear-gradient(135deg, var(--accent), var(--accent2));
             display:flex; align-items:center; justify-content:center;
-            font-size:1.3rem; font-weight:700; color:#fff; flex-shrink:0;
+            font-size:1.3rem; font-weight:700; color:#ffffff; flex-shrink:0;
         }
         .user-name { font-size:1.1rem; font-weight:700; }
         .user-level { font-size:0.78rem; color:var(--text-sub); margin-top:2px; }
         .user-stats { display:grid; grid-template-columns:1fr 1fr 1fr; gap:8px; }
-        .u-stat { text-align:center; background:rgba(255,255,255,0.04); border-radius:10px; padding:8px 4px; }
+        .u-stat { text-align:center; background:#ffffff; border-radius:10px; padding:8px 4px; }
         .u-stat-val { font-size:1rem; font-weight:700; }
         .u-stat-lbl { font-size:0.65rem; color:var(--text-sub); margin-top:2px; }
-        .user-last { font-size:0.74rem; color:var(--text-sub); margin-top:12px; border-top:1px solid rgba(255,255,255,0.06); padding-top:10px; }
+        .user-last { font-size:0.74rem; color:var(--text-sub); margin-top:12px; border-top:1px solid #ede5d6; padding-top:10px; }
 
         /* ── Detail view ── */
         #userDetailView { display:none; }
@@ -57,7 +57,7 @@
 
         /* detail header */
         .detail-header { display:flex; align-items:center; gap:16px; margin-bottom:24px; }
-        .detail-avatar { width:56px; height:56px; border-radius:18px; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; color:#fff; flex-shrink:0; }
+        .detail-avatar { width:56px; height:56px; border-radius:18px; background:linear-gradient(135deg, var(--accent), var(--accent2)); display:flex; align-items:center; justify-content:center; font-size:1.6rem; font-weight:700; color:#ffffff; flex-shrink:0; }
         .detail-name { font-size:1.4rem; font-weight:700; }
         .detail-sub  { font-size:0.85rem; color:var(--text-sub); margin-top:3px; }
 
@@ -72,8 +72,8 @@
         .detail-tabs { display:flex; gap:8px; margin-bottom:16px; overflow-x:auto; padding-bottom:4px; scrollbar-width:none; }
         .detail-tabs::-webkit-scrollbar { display:none; }
         .d-tab { padding:7px 18px; border-radius:20px; border:1px solid var(--card-border); background:transparent; color:var(--text-sub); cursor:pointer; font-size:0.88rem; font-family:var(--font); transition:all 0.2s; }
-        .d-tab:hover:not(.active) { border-color:rgba(79,172,254,0.5); color:var(--text); background:rgba(255,255,255,0.05); }
-        .d-tab.active { background:rgba(79,172,254,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
+        .d-tab:hover:not(.active) { border-color:rgba(35,132,92,0.65); color:var(--text); background:#ffffff; }
+        .d-tab.active { background:rgba(35,132,92,0.15); border-color:var(--accent); color:var(--accent); font-weight:700; }
 
         /* chart card */
         .chart-card { background:var(--card-bg); border:1px solid var(--card-border); border-radius:20px; padding:22px 24px; margin-bottom:16px; }
@@ -86,7 +86,7 @@
         .settings-fold-content { padding-top:16px; }
 
         /* quiz records */
-        .quiz-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .quiz-row { display:flex; align-items:center; gap:12px; padding:10px 0; border-bottom:1px solid #ede5d6; }
         .quiz-row:last-child { border-bottom:none; }
         .subj-badge { width:34px; height:34px; border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:0.95rem; flex-shrink:0; }
         .quiz-info { flex:1; min-width:0; }
@@ -96,34 +96,34 @@
         .quiz-time  { font-size:0.72rem; color:var(--text-sub); flex-shrink:0; }
 
         /* subject stats bar */
-        .subj-stat-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .subj-stat-row { display:flex; align-items:center; gap:14px; padding:12px 0; border-bottom:1px solid #ede5d6; }
         .subj-stat-row:last-child { border-bottom:none; }
         .subj-stat-name { width:60px; font-weight:600; font-size:0.9rem; flex-shrink:0; }
         .subj-bar-wrap { flex:1; }
-        .subj-bar-track { height:8px; background:rgba(255,255,255,0.07); border-radius:4px; overflow:hidden; }
+        .subj-bar-track { height:8px; background:#ece4d6; border-radius:4px; overflow:hidden; }
         .subj-bar-fill  { height:100%; border-radius:4px; transition:width 0.6s; }
         .subj-stat-pct  { width:40px; text-align:right; font-size:0.85rem; font-weight:700; flex-shrink:0; }
         .subj-stat-cnt  { font-size:0.75rem; color:var(--text-sub); flex-shrink:0; }
 
         /* wrong items */
-        .wrong-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid rgba(255,255,255,0.05); }
+        .wrong-row { display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #ede5d6; }
         .wrong-row:last-child { border-bottom:none; }
         .wrong-identifier { flex:1; font-size:0.88rem; }
-        .wrong-count { font-size:0.78rem; color:#f9826c; background:rgba(249,130,108,0.12); padding:2px 8px; border-radius:12px; flex-shrink:0; }
-        .mastered-badge { font-size:0.72rem; color:#56d364; background:rgba(86,211,100,0.12); padding:2px 8px; border-radius:12px; }
+        .wrong-count { font-size:0.78rem; color:#e22604; background:rgba(252,85,54,0.12); padding:2px 8px; border-radius:12px; flex-shrink:0; }
+        .mastered-badge { font-size:0.72rem; color:#20852b; background:rgba(38,162,52,0.12); padding:2px 8px; border-radius:12px; }
 
         .empty-msg { text-align:center; padding:36px; color:var(--text-sub); font-size:0.9rem; }
         .loading    { text-align:center; padding:60px; color:var(--text-sub); }
-        .error-msg  { text-align:center; padding:40px; color:#f9826c; font-size:0.9rem; }
+        .error-msg  { text-align:center; padding:40px; color:#e22604; font-size:0.9rem; }
 
         @media (max-width:600px) {
             .detail-summary { grid-template-columns:repeat(2,1fr); }
             .user-grid { grid-template-columns:1fr; }
             .settings-fold { padding:18px 16px; }
         }
-    #parentPlanSettingsList select{background:#132238;color:#edf4ff;border:1px solid #49637f;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#1b2b3f;color:#b5c5da}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ffffff12}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#213a54;color:#bfdcff;border-radius:6px;font-size:12px}
+    #parentPlanSettingsList select{background:#ffffff;color:#2b2620;border:1px solid #ddd2bf;border-radius:8px;padding:8px;min-height:40px}#parentPlanSettingsList select:disabled{opacity:.6;background:#ffffff;color:#6e6559}#parentPlanSettingsList .plan-scope-row{padding:10px 0;border-top:1px solid #ede5d6}#parentPlanSettingsList .plan-minute,#parentPlanSettingsList .plan-auto{padding:4px 8px;background:#ffffff;color:#23845c;border-radius:6px;font-size:12px}
 </style>
-<link rel="stylesheet" href="weekly-dashboard.css"></head>
+<link rel="stylesheet" href="weekly-dashboard.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body>
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -145,8 +145,8 @@
             <div class="settings-fold-content">
             <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:14px;margin-bottom:14px;" id="studyTimeInputs"></div>
             <div style="display:flex;align-items:center;gap:10px;">
-                <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#0d1117;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
-                <span id="stcSavedMsg" style="font-size:0.8rem;color:#56d364;display:none;">✅ 저장됨</span>
+                <button onclick="saveStudyTimeConfig()" style="flex:1;padding:9px;border-radius:10px;border:none;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#ffffff;font-weight:700;font-family:var(--font);cursor:pointer;">저장</button>
+                <span id="stcSavedMsg" style="font-size:0.8rem;color:#20852b;display:none;">✅ 저장됨</span>
             </div>
             <div style="font-size:0.75rem;color:var(--text-sub);margin-top:8px;">레벨별 기준시간과 최근 퀴즈 3회 평균에 따른 시간 중 더 긴 시간을 적용합니다. 평균 90점 이상은 면제되며, 0분은 점수 기록이 없을 때 바로 퀴즈가 가능합니다.</div>
             </div>
@@ -176,9 +176,9 @@
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js"></script><script src="MathDataMiddle1Semester2.js"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20260930-unified"></script>
+    <script src="ReadingData.js"></script><script src="VocabEng.js"></script><script src="EnglishReadingData.js?v=20260930-shared-subjects"></script><script src="MathData.js"></script><script src="MathDataMiddle1.js?v=20261014-redesign"></script><script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script><script src="EnglishGrammarData.js"></script><script src="VocabHanja.js"></script><script src="MathFormulaData.js"></script><script src="MathFormulaDataExtra.js"></script><script src="MathFormulaDataVolume2.js"></script><script src="MathFormulaDataVolume3.js"></script><script src="MathFormulaDataVolume4.js"></script><script src="EnglishCourse.js"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20260930-unified"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
-    <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
+    <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -189,8 +189,8 @@
     const SUBJECT_IDS = SUBJECTS.map(subject => subject.id);
     const SUBJ_NAMES = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.name]));
     const SUBJ_ICONS = Object.fromEntries(SUBJECTS.map(subject => [subject.id, subject.icon]));
-    const SUBJ_COLORS = { english:'#4facfe', english_reading:'#22c6a5', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
-    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLORS[subject]) SUBJ_COLORS[subject] = '#8b949e'; });
+    const SUBJ_COLORS = { english:'#23845c', english_reading:'#13836d', grammar:'#7041fb', hanja:'#e22604', math:'#20852b', reading:'#ea0123' };
+    SUBJECT_IDS.forEach(subject => { if (!SUBJ_COLORS[subject]) SUBJ_COLORS[subject] = '#6e6559'; });
 
     let db = null;
 
@@ -287,7 +287,7 @@
                             <div class="u-stat-lbl">퀴즈 횟수</div>
                         </div>
                         <div class="u-stat">
-                            <div class="u-stat-val" style="color:#56d364">${streak}🔥</div>
+                            <div class="u-stat-val" style="color:#20852b">${streak}🔥</div>
                             <div class="u-stat-lbl">연속 출석</div>
                         </div>
                         <div class="u-stat">
@@ -297,7 +297,7 @@
                     </div>
                     <div class="user-last">마지막 활동: ${lastStr}</div>
                     <div class="study-request" data-study-learner="${escapeAdmin(u.userId)}" onclick="event.stopPropagation()" style="margin-top:10px;padding-top:10px;border-top:1px solid var(--card-border);">
-                        <button type="button" data-study-request style="padding:7px 11px;border:0;border-radius:8px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">📣 공부 요청</button>
+                        <button type="button" data-study-request style="padding:7px 11px;border:0;border-radius:8px;background:var(--accent);color:#ffffff;font-weight:700;cursor:pointer;">📣 공부 요청</button>
                         <div data-study-request-status style="font-size:.7rem;color:var(--text-sub);margin-top:6px;line-height:1.5;">무료 앱 안 알림 상태 확인 중…</div>
                     </div>
                 </div>`;
@@ -421,8 +421,8 @@
         rows.forEach(({ learner, result }) => {
             if (result.error) {
                 const failed = document.createElement('section');
-                failed.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
-                failed.innerHTML = `<div style="font-weight:800;">${escapeAdmin(learner.id || learner.userId)}</div><p style="color:#ff7b72;font-size:.78rem;">설정을 불러오지 못했습니다. 기존 서버 값을 보호하기 위해 저장할 수 없습니다.</p><button type="button" class="detail-back" style="margin:0;">다시 시도</button>`;
+                failed.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:#fdfbf6;';
+                failed.innerHTML = `<div style="font-weight:800;">${escapeAdmin(learner.id || learner.userId)}</div><p style="color:#eb0f00;font-size:.78rem;">설정을 불러오지 못했습니다. 기존 서버 값을 보호하기 위해 저장할 수 없습니다.</p><button type="button" class="detail-back" style="margin:0;">다시 시도</button>`;
                 failed.querySelector('button').addEventListener('click',()=>renderParentPlanSettings(users));
                 container.append(failed); return;
             }
@@ -430,7 +430,7 @@
             const value = settings || { budgetMinutes:45, grade:6, semester:2, englishActivity:'vocabulary', scopes:{reading:{mode:'auto'},english:{mode:'auto'},english_reading:{mode:'auto'},math:{mode:'auto'}} };
             const card = document.createElement('section');
             card.dataset.learnerId = learner.userId;
-            card.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);';
+            card.style.cssText = 'padding:14px;border:1px solid var(--card-border);border-radius:12px;background:#fdfbf6;';
             card.innerHTML = `<div style="font-weight:800;margin-bottom:10px;">${escapeAdmin(learner.id || learner.userId)}</div>
                 <div style="display:flex;flex-wrap:wrap;gap:8px;align-items:end;">
                     <label style="font-size:.75rem;color:var(--text-sub);">하루 목표<select data-plan="budget" style="display:block;margin-top:4px;"><option value="30">30분</option><option value="45">45분</option><option value="60">60분</option></select></label>
@@ -438,7 +438,7 @@
                     <label style="font-size:.75rem;color:var(--text-sub);">학기<select data-plan="semester" style="display:block;margin-top:4px;"><option value="1">1학기</option><option value="2">2학기</option></select></label>
 
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
-                    <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#0d1117;font-weight:700;cursor:pointer;">저장</button>
+                    <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#ffffff;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
                 </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 위 7과목을 순서대로 진행합니다. 국어·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
@@ -491,9 +491,9 @@
                         scopes:scopeState,
                         weekly:SmartStudy.WeeklySchedule.normalize({...weeklySettings,mockSectionMinutes:Object.fromEntries([...card.querySelectorAll("[data-exam-minutes]")].map(input=>[input.dataset.examMinutes,Number(input.value)]))})
                     });
-                    message.style.color = '#56d364'; message.textContent = '✅ 서버에 저장됨';
+                    message.style.color = '#20852b'; message.textContent = '✅ 서버에 저장됨';
                 } catch (error) {
-                    message.style.color = '#ff7b72'; message.textContent = `저장 실패: ${error.message}`;
+                    message.style.color = '#eb0f00'; message.textContent = `저장 실패: ${error.message}`;
                 } finally { button.disabled = false; }
             });
             container.append(card);
@@ -591,8 +591,8 @@
             const min = Math.floor(sec / 60);
             const rem = sec % 60;
             const timeStr = min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
-            return `<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(255,255,255,0.05);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
-                ${info.icon} ${info.name} <strong style="color:${SUBJ_COLORS[s] || '#a78bfa'}">${timeStr}</strong>
+            return `<span style="display:inline-flex;align-items:center;gap:6px;background:#ffffff;border-radius:10px;padding:5px 12px;font-size:0.82rem;">
+                ${info.icon} ${info.name} <strong style="color:${SUBJ_COLORS[s] || '#7041fb'}">${timeStr}</strong>
                 ${(learningSec || quizSec) ? `<small style="color:var(--text-sub);">학습 ${formatStudySeconds(learningSec)} · 퀴즈 ${formatStudySeconds(quizSec)}</small>` : ''}
             </span>`;
         });
@@ -607,15 +607,15 @@
                     const rem = sec % 60;
                     return min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
                 };
-                items.push(`<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
-                    📐 수학 공식 사전 <strong style="color:#c4b5fd">${formatTime(totalSec)}</strong>
+                items.push(`<span style="display:inline-flex;align-items:center;gap:6px;background:rgba(112,65,251,0.1);border:1px solid rgba(112,65,251,0.26);border-radius:10px;padding:5px 12px;font-size:0.82rem;">
+                    📐 수학 공식 사전 <strong style="color:#663efe">${formatTime(totalSec)}</strong>
                     <small style="color:var(--text-sub);">학습 ${formatTime(studySec)} · 퀴즈 ${formatTime(quizSec)}</small>
                 </span>`);
             }
         }
         if (!items.length) return '';
 
-        return `<div style="background:rgba(79,172,254,0.06);border:1px solid rgba(79,172,254,0.2);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
+        return `<div style="background:rgba(35,132,92,0.08);border:1px solid rgba(35,132,92,0.26);border-radius:14px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;">
             <span style="font-size:0.78rem;font-weight:700;color:var(--text-sub);white-space:nowrap;">📅 ${label}</span>
             <div style="display:flex;gap:8px;flex-wrap:wrap;">${items.join('')}</div>
         </div>`;
@@ -637,11 +637,11 @@
             if (min) return `${min}분${rem ? ` ${rem}초` : ''}`;
             return `${rem}초`;
         };
-        return `<div style="background:rgba(167,139,250,0.08);border:1px solid rgba(167,139,250,0.25);border-radius:14px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
+        return `<div style="background:rgba(112,65,251,0.08);border:1px solid rgba(112,65,251,0.325);border-radius:14px;padding:13px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;">
             <div><strong>📐 수학 공식 사전 학습 시간</strong><div style="margin-top:5px;color:var(--text-sub);font-size:.78rem;">학습과 퀴즈 시간만 집계하며 미션에는 포함하지 않습니다.</div></div>
             <div style="display:flex;gap:16px;flex-wrap:wrap;font-size:.82rem;">
-                <span>오늘 <strong style="color:#c4b5fd">${formatTime(todayStudy + todayQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(todayStudy)} · 퀴즈 ${formatTime(todayQuiz)}</small></span>
-                <span>누적 <strong style="color:#c4b5fd">${formatTime(totalStudy + totalQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(totalStudy)} · 퀴즈 ${formatTime(totalQuiz)}</small></span>
+                <span>오늘 <strong style="color:#663efe">${formatTime(todayStudy + todayQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(todayStudy)} · 퀴즈 ${formatTime(todayQuiz)}</small></span>
+                <span>누적 <strong style="color:#663efe">${formatTime(totalStudy + totalQuiz)}</strong><small style="display:block;color:var(--text-sub);">학습 ${formatTime(totalStudy)} · 퀴즈 ${formatTime(totalQuiz)}</small></span>
             </div>
         </div>`;
     }
@@ -654,10 +654,10 @@
         if (rewards.weekly) entries.push({ category:'weekly', index:-1, label:'주간 목표', reward:rewards.weekly });
         if (rewards.monthly) entries.push({ category:'monthly', index:-1, label:'월간 목표', reward:rewards.monthly });
         if (!entries.length) return '';
-        return `<div style="background:rgba(255,193,7,0.07);border:1px solid rgba(255,193,7,0.25);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
+        return `<div style="background:rgba(180,135,0,0.08);border:1px solid rgba(185,139,0,0.325);border-radius:14px;padding:14px 16px;margin-bottom:16px;">
             <div style="font-weight:800;margin-bottom:10px;">🎁 획득 보상 관리</div>
             <div style="display:grid;gap:8px;">${entries.map(entry => `
-                <div style="display:flex;align-items:center;gap:10px;background:rgba(255,255,255,0.04);border-radius:10px;padding:9px 12px;">
+                <div style="display:flex;align-items:center;gap:10px;background:#ffffff;border-radius:10px;padding:9px 12px;">
                     <span style="font-size:0.78rem;color:var(--text-sub);min-width:62px;">${entry.label}</span>
                     <strong style="flex:1;">${entry.reward.icon || '🎁'} ${entry.reward.title}${entry.reward.note ? ` · ${entry.reward.note}` : ''}</strong>
                     <button onclick="markRewardUsed('${entry.category}',${entry.index},this)" ${entry.reward.used ? 'disabled' : ''}
@@ -736,8 +736,8 @@
         const sorted = [...reports].sort((a,b) => b.date - a.date);
         const rows = sorted.map((r, idx) => {
             const pct   = r.totalQuestions > 0 ? Math.round(r.initialScore / r.totalQuestions * 100) : 0;
-            const color = pct >= 80 ? '#56d364' : pct >= 50 ? '#f9826c' : '#ff5f6d';
-            const c     = SUBJ_COLORS[r.subject] || '#888';
+            const color = pct >= 80 ? '#20852b' : pct >= 50 ? '#e22604' : '#eb0015';
+            const c     = SUBJ_COLORS[r.subject] || '#6e6559';
             const d     = new Date(r.date);
             const ds    = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const sec   = r.timeSpentSeconds || 0;
@@ -745,7 +745,7 @@
             const lvlShort = (r.level||'-').length > 16 ? (r.level||'-').slice(0,16)+'…' : (r.level||'-');
             const round = r.round || 1;
             const roundBadge = round <= 2
-                ? `<span style="font-size:0.65rem;padding:1px 6px;border-radius:8px;background:${round===1?'rgba(79,172,254,0.15)':'rgba(249,130,108,0.15)'};color:${round===1?'#4facfe':'#f9826c'};margin-left:4px;">${round}회차</span>`
+                ? `<span style="font-size:0.65rem;padding:1px 6px;border-radius:8px;background:${round===1?'rgba(35,132,92,0.15)':'rgba(226,38,4,0.15)'};color:${round===1?'#23845c':'#e22604'};margin-left:4px;">${round}회차</span>`
                 : '';
 
             // 문제별 정답/오답 상세
@@ -769,9 +769,9 @@
                                 : (r.subject === 'reading' || r.subject === 'english_reading')
                                     ? `${item.skill || '독해'} · ${item.question || '?'}`
                                 : (item.word || item.identifier || '?');
-                        return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 8px;border-radius:10px;margin:2px;background:${ok?'rgba(86,211,100,0.12)':'rgba(255,95,109,0.12)'};color:${ok?'#56d364':'#ff5f6d'};">${ok?'✅':'❌'} ${label}</span>`;
+                        return `<span style="display:inline-flex;align-items:center;gap:4px;font-size:0.75rem;padding:3px 8px;border-radius:10px;margin:2px;background:${ok?'rgba(32,133,43,0.12)':'rgba(235,0,21,0.12)'};color:${ok?'#20852b':'#eb0015'};">${ok?'✅':'❌'} ${label}</span>`;
                     }).join('');
-                    detailBtn = `<button onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none';this.textContent=this.textContent==='▼ 문제 보기'?'▲ 닫기':'▼ 문제 보기';" style="font-size:0.7rem;padding:2px 8px;border-radius:8px;border:1px solid rgba(255,255,255,0.12);background:transparent;color:var(--text-sub);cursor:pointer;margin-top:4px;">▼ 문제 보기</button>`;
+                    detailBtn = `<button onclick="document.getElementById('${detailId}').style.display=document.getElementById('${detailId}').style.display==='none'?'block':'none';this.textContent=this.textContent==='▼ 문제 보기'?'▲ 닫기':'▼ 문제 보기';" style="font-size:0.7rem;padding:2px 8px;border-radius:8px;border:1px solid #ede5d6;background:transparent;color:var(--text-sub);cursor:pointer;margin-top:4px;">▼ 문제 보기</button>`;
                     detailDiv = `<div id="${detailId}" style="display:none;padding:10px 0 4px;flex-wrap:wrap;display:none;">${chips}</div>`;
                 }
             }
@@ -781,7 +781,7 @@
                 detailDiv = `<div id="lazy_quiz_${idx}"></div>`;
             }
             return `
-                <div style="border-bottom:1px solid rgba(255,255,255,0.05);padding:10px 0;">
+                <div style="border-bottom:1px solid #ede5d6;padding:10px 0;">
                     <div class="quiz-row" style="border:none;padding:0;">
                         <div class="subj-badge" style="background:${c}22; color:${c}">${SUBJ_ICONS[r.subject]||'📚'}</div>
                         <div class="quiz-info">
@@ -833,7 +833,7 @@
             const roundBars = byRound.map((arr, i) => {
                 if (!arr.length) return '';
                 const p = avg(arr, i === 0 ? 'initialScore' : 'finalScore');
-                const pctColor = p >= 80 ? '#56d364' : p >= 50 ? '#f9826c' : '#ff5f6d';
+                const pctColor = p >= 80 ? '#20852b' : p >= 50 ? '#e22604' : '#eb0015';
                 return `
                 <div style="margin-bottom:10px;">
                     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:4px;">
@@ -869,7 +869,7 @@
                     </div>
                 </div>
                 ${roundBars}
-                ${growthStr ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid rgba(255,255,255,0.06);">${growthStr}</div>` : ''}
+                ${growthStr ? `<div style="margin-top:10px;padding-top:10px;border-top:1px solid #ede5d6;">${growthStr}</div>` : ''}
             </div>`;
         }).filter(Boolean);
 
@@ -916,14 +916,14 @@
         if (!rows.length) return '';
         const weak = rows.filter(row => row.pct < 70).map(row => row.title);
         const strong = rows.filter(row => row.pct >= 80).map(row => row.title);
-        return `<div style="background:var(--card-bg);border:1px solid rgba(251,113,133,.35);border-radius:16px;padding:18px;margin-top:18px;">
+        return `<div style="background:var(--card-bg);border:1px solid rgba(254,62,90,0.455);border-radius:16px;padding:18px;margin-top:18px;">
             <div class="chart-title">📖 국어 독해 강점·약점 분석</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;font-size:.78rem;">
-                <span style="background:rgba(86,211,100,.12);color:#56d364;padding:5px 9px;border-radius:10px;">강점: ${strong.join(', ') || '데이터 축적 중'}</span>
-                <span style="background:rgba(255,95,109,.12);color:#ff5f6d;padding:5px 9px;border-radius:10px;">약점: ${weak.join(', ') || '뚜렷한 약점 없음'}</span>
+                <span style="background:rgba(38,162,52,0.12);color:#20852b;padding:5px 9px;border-radius:10px;">강점: ${strong.join(', ') || '데이터 축적 중'}</span>
+                <span style="background:rgba(255,61,78,0.12);color:#eb0015;padding:5px 9px;border-radius:10px;">약점: ${weak.join(', ') || '뚜렷한 약점 없음'}</span>
             </div>
             ${rows.map(row => {
-                const color = row.pct >= 80 ? '#56d364' : row.pct >= 70 ? '#f0c674' : '#ff5f6d';
+                const color = row.pct >= 80 ? '#20852b' : row.pct >= 70 ? '#9b6b0d' : '#eb0015';
                 return `<div style="margin-bottom:10px;"><div style="display:flex;justify-content:space-between;font-size:.8rem;margin-bottom:4px;"><span>${row.title}</span><strong style="color:${color}">${row.pct}% (${row.correct}/${row.total})</strong></div><div class="subj-bar-track"><div class="subj-bar-fill" style="width:${row.pct}%;background:${color}"></div></div></div>`;
             }).join('')}
         </div>`;
@@ -956,7 +956,7 @@
         const weak = rows.filter(r => r.pct < 70);
         const strong = rows.filter(r => r.pct >= 80);
         const list = rows.map(r => {
-            const color = r.pct >= 80 ? '#56d364' : r.pct >= 70 ? '#f0c674' : '#ff5f6d';
+            const color = r.pct >= 80 ? '#20852b' : r.pct >= 70 ? '#9b6b0d' : '#eb0015';
             const topWrong = Object.entries(r.wrongQuestions).sort((a,b) => b[1]-a[1])[0];
             return `<div style="margin-bottom:10px;">
                 <div style="display:flex;justify-content:space-between;font-size:0.8rem;margin-bottom:4px;"><span>${r.title}</span><strong style="color:${color}">${r.pct}% (${r.correct}/${r.total})</strong></div>
@@ -964,11 +964,11 @@
                 ${topWrong ? `<div style="font-size:0.7rem;color:var(--text-sub);margin-top:3px;">자주 틀림: ${topWrong[0]} (${topWrong[1]}회)</div>` : ''}
             </div>`;
         }).join('');
-        return `<div style="background:var(--card-bg);border:1px solid rgba(167,139,250,.35);border-radius:16px;padding:18px;margin-top:18px;">
+        return `<div style="background:var(--card-bg);border:1px solid rgba(112,65,251,0.455);border-radius:16px;padding:18px;margin-top:18px;">
             <div class="chart-title">📘 영어 문법 강점·약점 분석</div>
             <div style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0 16px;font-size:.78rem;">
-                <span style="background:rgba(86,211,100,.12);color:#56d364;padding:5px 9px;border-radius:10px;">강점: ${strong.map(r=>r.title).join(', ') || '데이터 축적 중'}</span>
-                <span style="background:rgba(255,95,109,.12);color:#ff5f6d;padding:5px 9px;border-radius:10px;">약점: ${weak.map(r=>r.title).join(', ') || '뚜렷한 약점 없음'}</span>
+                <span style="background:rgba(38,162,52,0.12);color:#20852b;padding:5px 9px;border-radius:10px;">강점: ${strong.map(r=>r.title).join(', ') || '데이터 축적 중'}</span>
+                <span style="background:rgba(255,61,78,0.12);color:#eb0015;padding:5px 9px;border-radius:10px;">약점: ${weak.map(r=>r.title).join(', ') || '뚜렷한 약점 없음'}</span>
             </div>${list}
         </div>`;
     }
@@ -1012,7 +1012,7 @@
                     const bestPct = Math.round(Math.max(...attempts.map(r => r.totalQuestions > 0 ? r.initialScore / r.totalQuestions * 100 : 0)));
                     const timeMin = Math.floor(totalTime / 60);
                     const timeSec = totalTime % 60;
-                    const pctColor = avgPct >= 80 ? '#56d364' : avgPct >= 50 ? '#f9826c' : '#ff5f6d';
+                    const pctColor = avgPct >= 80 ? '#20852b' : avgPct >= 50 ? '#e22604' : '#eb0015';
 
                     // Round breakdown
                     const rounds = {};
@@ -1028,16 +1028,16 @@
                             return `${rnd}회차 ${rPct}%`;
                         }).join(' · ');
 
-                    html += `<div style="background:rgba(255,255,255,0.03);border-radius:10px;padding:10px 12px;margin-bottom:6px;">
+                    html += `<div style="background:#fdfbf6;border-radius:10px;padding:10px 12px;margin-bottom:6px;">
                         <div style="display:flex;align-items:center;gap:8px;margin-bottom:6px;">
                             <span style="font-size:0.82rem;font-weight:600;flex:1;">${typeName}</span>
                             <span style="font-size:0.73rem;color:var(--text-sub);">${count}회 · ${timeMin}분${timeSec ? ' ' + timeSec + '초' : ''}</span>
                             <span style="font-size:0.9rem;font-weight:700;color:${pctColor};">${avgPct}%</span>
                         </div>
-                        <div style="height:5px;background:rgba(255,255,255,0.07);border-radius:3px;overflow:hidden;margin-bottom:5px;">
+                        <div style="height:5px;background:#ffffff;border-radius:3px;overflow:hidden;margin-bottom:5px;">
                             <div style="height:100%;width:${avgPct}%;background:${color};border-radius:3px;"></div>
                         </div>
-                        <div style="font-size:0.7rem;color:var(--text-sub);">${roundStr}${bestPct !== avgPct ? ` · 최고 <span style="color:#56d364">${bestPct}%</span>` : ''}</div>
+                        <div style="font-size:0.7rem;color:var(--text-sub);">${roundStr}${bestPct !== avgPct ? ` · 최고 <span style="color:#20852b">${bestPct}%</span>` : ''}</div>
                     </div>`;
                 });
                 html += `</div>`;
@@ -1137,29 +1137,29 @@
         <div style="font-size:0.95rem;font-weight:700;margin-bottom:14px;">주간 학습 통계</div>
 
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
-            <button onclick="window._navWeek(-1)" style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:var(--text-sub);padding:6px 16px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.82rem;">← 이전</button>
+            <button onclick="window._navWeek(-1)" style="background:#ffffff;border:1px solid var(--card-border);color:var(--text-sub);padding:6px 16px;border-radius:20px;cursor:pointer;font-family:inherit;font-size:0.82rem;">← 이전</button>
             <div style="text-align:center;">
                 <div style="font-size:0.92rem;font-weight:700;">${weekLabel}</div>
                 <div style="font-size:0.72rem;color:var(--text-sub);margin-top:2px;">${fmt(start)} ~ ${fmt(end)}</div>
             </div>
-            <button onclick="window._navWeek(1)" ${offset >= 0 ? 'disabled' : ''} style="background:rgba(255,255,255,0.06);border:1px solid var(--card-border);color:${offset >= 0 ? 'rgba(255,255,255,0.15)' : 'var(--text-sub)'};padding:6px 16px;border-radius:20px;cursor:${offset >= 0 ? 'default' : 'pointer'};font-family:inherit;font-size:0.82rem;">다음 →</button>
+            <button onclick="window._navWeek(1)" ${offset >= 0 ? 'disabled' : ''} style="background:#ffffff;border:1px solid var(--card-border);color:${offset >= 0 ? '#968c7e' : 'var(--text-sub)'};padding:6px 16px;border-radius:20px;cursor:${offset >= 0 ? 'default' : 'pointer'};font-family:inherit;font-size:0.82rem;">다음 →</button>
         </div>
 
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:16px;">
             ${summaries.map(c => `
-            <div style="background:rgba(255,255,255,0.04);border:1px solid rgba(255,255,255,0.07);border-radius:14px;padding:12px 6px;text-align:center;">
+            <div style="background:#ffffff;border:1px solid #ede5d6;border-radius:14px;padding:12px 6px;text-align:center;">
                 <div style="font-size:1.05rem;margin-bottom:4px;">${c.icon}</div>
                 <div style="font-size:0.95rem;font-weight:700;">${c.val}</div>
                 <div style="font-size:0.62rem;color:var(--text-sub);margin-top:3px;">${c.lbl}</div>
             </div>`).join('')}
         </div>
 
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;margin-bottom:12px;">
+        <div style="background:#fdfbf6;border:1px solid #ede5d6;border-radius:16px;padding:16px;margin-bottom:12px;">
             <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">일별 학습 시간 (분) · 빈 날짜는 미학습 확정이 아닌 기록 미확인입니다.</div>
             <canvas id="adminChartDaily" height="150"></canvas>
         </div>
 
-        <div style="background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.07);border-radius:16px;padding:16px;">
+        <div style="background:#fdfbf6;border:1px solid #ede5d6;border-radius:16px;padding:16px;">
             <div style="font-size:0.82rem;font-weight:700;margin-bottom:12px;">8주 정답률 추이</div>
             <canvas id="adminChartTrend" height="150"></canvas>
         </div>`;
@@ -1173,11 +1173,11 @@
 
         const SUBJ   = SUBJECT_IDS;
         const NAMES  = { english:'영어 단어', english_reading:'영어 독해', grammar:'영어 문법', hanja:'한자', math:'수학', reading:'국어 독해력' };
-        const COLORS = { english:'#4facfe', english_reading:'#22c6a5', grammar:'#a78bfa', hanja:'#f9826c', math:'#56d364', reading:'#fb7185' };
-        const FILL   = { english:'rgba(79,172,254,0.75)', english_reading:'rgba(34,198,165,0.75)', grammar:'rgba(167,139,250,0.75)', hanja:'rgba(249,130,108,0.75)', math:'rgba(86,211,100,0.75)', reading:'rgba(251,113,133,0.75)' };
-        const gridColor = 'rgba(255,255,255,0.06)';
-        const tickColor = '#8b949e';
-        const fontCfg   = { family:'Outfit', size:11 };
+        const COLORS = { english:'#23845c', english_reading:'#13836d', grammar:'#7041fb', hanja:'#e22604', math:'#20852b', reading:'#ea0123' };
+        const FILL   = { english:'rgba(35,132,92,0.75)', english_reading:'rgba(19,131,109,0.75)', grammar:'rgba(112,65,251,0.75)', hanja:'rgba(226,38,4,0.75)', math:'rgba(32,133,43,0.75)', reading:'rgba(234,1,35,0.75)' };
+        const gridColor = '#968c7e';
+        const tickColor = '#6e6559';
+        const fontCfg   = { family:'Pretendard Variable', size:11 };
 
         // ── Chart 1: 일별 학습 시간 (stacked bar) ──
         const { start, end } = _weekRange(offset);
@@ -1240,7 +1240,7 @@
             afterDatasetsDraw(chart) {
                 const { ctx } = chart;
                 ctx.save();
-                ctx.fillStyle = '#fca5a5';
+                ctx.fillStyle = '#ee0202';
                 ctx.font = '700 11px Outfit, sans-serif';
                 ctx.textAlign = 'center';
                 ctx.textBaseline = 'bottom';
@@ -1347,14 +1347,14 @@
         inputs.innerHTML = subjectOrder.map(subject => {
             const info = SubjectRegistry.get(subject);
             const levels = StudyTimer.LEVELS[subject] || [];
-            return `<section style="padding:14px;border:1px solid var(--card-border);border-radius:12px;background:rgba(255,255,255,.025);">
+            return `<section style="padding:14px;border:1px solid var(--card-border);border-radius:12px;background:#fdfbf6;">
                 <div style="font-size:.88rem;font-weight:800;margin-bottom:10px;">${info.icon} ${info.name}</div>
                 <div style="display:grid;gap:8px;">${levels.map(level => {
                     const value = cfg.levels?.[subject]?.[level.key] ?? cfg[subject] ?? StudyTimer.DEFAULTS[subject];
                     return `<label style="display:flex;align-items:center;justify-content:space-between;gap:10px;font-size:.78rem;color:var(--text-sub);">
                         <span>${level.label}</span>
                         <span style="display:flex;align-items:center;gap:5px;">
-                            <input type="number" min="0" max="60" value="${value}" data-study-subject="${subject}" data-study-level="${level.key}" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:rgba(255,255,255,.06);color:var(--text);text-align:center;font-family:var(--font);font-size:.9rem;">
+                            <input type="number" min="0" max="60" value="${value}" data-study-subject="${subject}" data-study-level="${level.key}" style="width:52px;padding:6px;border-radius:8px;border:1px solid var(--card-border);background:#ffffff;color:var(--text);text-align:center;font-family:var(--font);font-size:.9rem;">
                             <span>분</span>
                         </span>
                     </label>`;
@@ -1413,6 +1413,6 @@
         }
     });
     </script>
-<script src="mock-publication.js"></script><script src="mock-admin.js"></script><script src="version-check.js"></script>
+<script src="mock-publication.js"></script><script src="mock-admin.js?v=20261014-redesign"></script><script src="version-check.js?v=20261014-redesign"></script>
 </body>
 </html>

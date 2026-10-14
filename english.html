@@ -15,14 +15,14 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Smart Vocab - 나만의 단어장</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&family=Noto+Sans+KR:wght@300;400;700&display=swap"
         rel="stylesheet">
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui">    <style>.accent-listen-btn { min-width:44px; min-height:44px; font-size:1.2rem; }</style>
-</head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign">    <style>.accent-listen-btn { min-width:44px; min-height:44px; font-size:1.2rem; }</style>
+<link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 
 <body class="subject-study">
     <div class="bg-blobs">
@@ -233,7 +233,7 @@
                     </button>
                     <button id="retryBtn" class="nav-btn">다시 시작하기</button>
                     <button id="kakaoReportBtn" class="nav-btn" style="background: #FEE500; color: #3A1D1D; border: none; font-weight: bold; display: none;">💬 아빠에게 결과 전송하기 🏆</button>
-                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
+                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: #ffffff; border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
                     <button id="studyAgainBtn" class="nav-btn">학습 모드로 돌아가기</button>
                     <a href="index.html" class="nav-btn" style="text-decoration:none; text-align:center;">🏠 메인 페이지로</a>
                 </div>
@@ -246,8 +246,8 @@
     <script src="english-vocabulary-progress.js?v=20261014-ui-rollback"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20260923-notification-role"></script>
-    <script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -268,8 +268,8 @@
             }
         });
     </script>
-    <script src="english-speech.js?v=20261014-ui-rollback"></script>
-    <script src="main.js?v=20261014-ui-rollback"></script>
+    <script src="english-speech.js?v=20261014-redesign"></script>
+    <script src="main.js?v=20261014-redesign"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)
@@ -281,7 +281,8 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
-<script src="parent-scope-guard.js?v=20260930-shared-subjects"></script><a href="english_course.html" style="position:fixed;left:12px;bottom:12px;z-index:900;background:#193449;color:#c4edff;border:1px solid #6e9bb8;border-radius:22px;padding:10px 14px;text-decoration:none;font-size:13px;box-shadow:0 4px 12px #0006">← 영어 학습 순서</a><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script></body>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261014-redesign"></script><a href="english_course.html" style="position:fixed;left:12px;bottom:12px;z-index:900;background:#ffffff;color:#23845c;border:1px solid #6999b8;border-radius:22px;padding:10px 14px;text-decoration:none;font-size:13px;box-shadow:0 4px 12px rgba(43,38,32,0.105)">← 영어 학습 순서</a><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script><script src="celebrate.js?v=20261014-redesign"></script>
+</body>
 
 </html>

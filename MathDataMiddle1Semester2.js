@@ -8,7 +8,7 @@
     const visuals = {
         angle: {
             svg: `<svg viewBox="0 0 680 300" role="img" aria-label="맞꼭지각과 평행선의 각">
-                <style>.l{stroke:#58a6ff;stroke-width:5}.p{stroke:#f778ba;stroke-width:5}.arc{fill:none;stroke:#3fb950;stroke-width:5}.t{fill:#f0f6fc;font:700 22px sans-serif}</style>
+                <style>.l{stroke:#23845c;stroke-width:5}.p{stroke:#e3087a;stroke-width:5}.arc{fill:none;stroke:#2b8637;stroke-width:5}.t{fill:#2b2620;font:700 22px sans-serif}</style>
                 <line class="l" x1="70" y1="70" x2="610" y2="230"/><line class="l" x1="90" y1="245" x2="590" y2="55"/>
                 <path class="arc" d="M310 138 A45 45 0 0 1 360 125"/><path class="arc" d="M370 170 A45 45 0 0 1 320 183"/>
                 <text class="t" x="335" y="105">a</text><text class="t" x="350" y="220">a</text>
@@ -18,7 +18,7 @@
         },
         construction: {
             svg: `<svg viewBox="0 0 680 310" role="img" aria-label="삼각형 작도와 합동">
-                <style>.l{stroke:#58a6ff;stroke-width:4;fill:none}.c{stroke:#8b949e;stroke-width:2;fill:none;stroke-dasharray:8}.t{fill:#f0f6fc;font:700 21px sans-serif}.pt{fill:#f778ba}</style>
+                <style>.l{stroke:#23845c;stroke-width:4;fill:none}.c{stroke:#6e6559;stroke-width:2;fill:none;stroke-dasharray:8}.t{fill:#2b2620;font:700 21px sans-serif}.pt{fill:#e3087a}</style>
                 <line class="l" x1="150" y1="240" x2="520" y2="240"/><circle class="c" cx="150" cy="240" r="250"/><circle class="c" cx="520" cy="240" r="210"/>
                 <circle class="pt" cx="365" cy="112" r="8"/><line class="l" x1="150" y1="240" x2="365" y2="112"/><line class="l" x1="520" y1="240" x2="365" y2="112"/>
                 <text class="t" x="130" y="270">A</text><text class="t" x="525" y="270">B</text><text class="t" x="370" y="98">C</text>
@@ -28,7 +28,7 @@
         },
         polygon: {
             svg: `<svg viewBox="0 0 680 310" role="img" aria-label="다각형의 내각 분할">
-                <style>.shape{fill:#1f6feb33;stroke:#58a6ff;stroke-width:4}.diag{stroke:#f778ba;stroke-width:3;stroke-dasharray:8}.t{fill:#f0f6fc;font:700 21px sans-serif}</style>
+                <style>.shape{fill:rgba(35,132,92,0.18);stroke:#23845c;stroke-width:4}.diag{stroke:#e3087a;stroke-width:3;stroke-dasharray:8}.t{fill:#2b2620;font:700 21px sans-serif}</style>
                 <polygon class="shape" points="150,230 235,65 430,55 550,175 390,265"/><line class="diag" x1="150" y1="230" x2="430" y2="55"/><line class="diag" x1="150" y1="230" x2="550" y2="175"/>
                 <text class="t" x="265" y="150">삼각형 3개</text><text class="t" x="175" y="295">오각형 내각의 합 = (5-2)×180°</text>
             </svg>`,
@@ -36,7 +36,7 @@
         },
         circle: {
             svg: `<svg viewBox="0 0 680 310" role="img" aria-label="부채꼴의 중심각과 호">
-                <style>.sector{fill:#f778ba44;stroke:#f778ba;stroke-width:4}.circle{fill:none;stroke:#58a6ff;stroke-width:4}.r{stroke:#f778ba;stroke-width:4}.t{fill:#f0f6fc;font:700 21px sans-serif}</style>
+                <style>.sector{fill:rgba(248,68,162,0.18);stroke:#e3087a;stroke-width:4}.circle{fill:none;stroke:#23845c;stroke-width:4}.r{stroke:#e3087a;stroke-width:4}.t{fill:#2b2620;font:700 21px sans-serif}</style>
                 <circle class="circle" cx="340" cy="155" r="120"/><path class="sector" d="M340 155 L460 155 A120 120 0 0 1 280 259 Z"/>
                 <line class="r" x1="340" y1="155" x2="460" y2="155"/><line class="r" x1="340" y1="155" x2="280" y2="259"/>
                 <text class="t" x="385" y="220">120°</text><text class="t" x="85" y="285">부채꼴은 전체 원의 120/360</text>
@@ -45,7 +45,7 @@
         },
         solid: {
             svg: `<svg viewBox="0 0 700 330" role="img" aria-label="각기둥과 각뿔의 전개 개념">
-                <style>.f{fill:#1f6feb33;stroke:#58a6ff;stroke-width:4}.e{stroke:#f0f6fc;stroke-width:3}.t{fill:#f0f6fc;font:700 20px sans-serif}</style>
+                <style>.f{fill:rgba(35,132,92,0.18);stroke:#23845c;stroke-width:4}.e{stroke:#2b2620;stroke-width:3}.t{fill:#2b2620;font:700 20px sans-serif}</style>
                 <polygon class="f" points="150,90 310,70 365,125 205,145"/><polygon class="f" points="205,145 365,125 365,260 205,280"/><polygon class="f" points="150,90 205,145 205,280 150,220"/>
                 <line class="e" x1="150" y1="220" x2="310" y2="200"/><line class="e" x1="310" y1="70" x2="310" y2="200"/><line class="e" x1="310" y1="200" x2="365" y2="260"/>
                 <text class="t" x="430" y="100">각기둥</text><text class="t" x="430" y="140">부피 = 밑넓이×높이</text><text class="t" x="430" y="180">옆면은 직사각형</text>
@@ -54,7 +54,7 @@
         },
         statistics: {
             svg: `<svg viewBox="0 0 700 330" role="img" aria-label="줄기와 잎 그림 및 상대도수">
-                <style>.axis{stroke:#8b949e;stroke-width:3}.bar{fill:#58a6ff}.t{fill:#f0f6fc;font:18px sans-serif}.h{fill:#3fb950;font:700 21px sans-serif}</style>
+                <style>.axis{stroke:#6e6559;stroke-width:3}.bar{fill:#23845c}.t{fill:#2b2620;font:18px sans-serif}.h{fill:#2b8637;font:700 21px sans-serif}</style>
                 <text class="h" x="55" y="45">줄기 | 잎</text><text class="t" x="70" y="85">1 | 2 4 7 9</text><text class="t" x="70" y="120">2 | 0 2 2 5 8</text>
                 <line class="axis" x1="350" y1="270" x2="650" y2="270"/><line class="axis" x1="350" y1="270" x2="350" y2="55"/>
                 <rect class="bar" x="390" y="190" width="55" height="80"/><rect class="bar" x="480" y="110" width="55" height="160"/><rect class="bar" x="570" y="150" width="55" height="120"/>

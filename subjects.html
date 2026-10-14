@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="apple-touch-icon" href="icons/icon-152.png">
+    <meta name="theme-color" content="#fbf7ef">
+    <title>과목 · Smart Study</title>
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
+<link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
+<body class="ss-page" data-app-tabs>
+    <main class="ss-container">
+        <header class="ss-page-head">
+            <p class="ss-eyebrow">자유 학습</p>
+            <h1>과목</h1>
+            <p class="ss-sub">오늘 계획 밖에서 더 공부하고 싶을 때 골라요.</p>
+        </header>
+
+        <a href="english_course.html" class="ss-feature" data-tone="english">
+            <span class="ss-tile" data-icon="books"></span>
+            <span class="ss-feature-text"><strong>영어 통합 학습</strong><span>단어 → 문법 → 독해 · 내 기록에 맞춰 이어서</span></span>
+            <span class="ss-chevron" data-icon="chevron-right"></span>
+        </a>
+
+        <section class="ss-section" aria-labelledby="secLang">
+            <h2 id="secLang" class="ss-section-title">언어</h2>
+            <div class="ss-subject-grid">
+                <!-- Korean Reading -->
+                <a href="reading.html" class="ss-subject" data-tone="reading">
+                    <span class="ss-tile" data-icon="book"></span>
+                    <span class="ss-badge">중1 독해</span>
+                    <strong>국어 독해력</strong>
+                    <span class="ss-desc">문학·과학·고전을 근거로 정확하게 읽기</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('reading')" title="아들에게 국어 독해 학습 요청 보내기" aria-label="국어 독해 학습 요청 보내기">💬</button>
+                </a>
+                <!-- English Vocabulary -->
+                <a href="english.html" class="ss-subject" data-tone="english">
+                    <span class="ss-tile" data-icon="abc"></span>
+                    <span class="ss-badge">영단어</span>
+                    <strong>영어 단어</strong>
+                    <span class="ss-desc">의미와 시제를 한 번에</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('english')" title="아들에게 학습 요청 보내기" aria-label="영어 단어 학습 요청 보내기">💬</button>
+                </a>
+                <!-- English Reading -->
+                <a href="english_reading.html" class="ss-subject" data-tone="english">
+                    <span class="ss-tile" data-icon="language"></span>
+                    <span class="ss-badge">초6 독해</span>
+                    <strong>영어 독해</strong>
+                    <span class="ss-desc">지문 근거를 찾으며 어휘·문법·이해력 연습</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('english_reading')" title="아들에게 영어 독해 학습 요청 보내기" aria-label="영어 독해 학습 요청 보내기">💬</button>
+                </a>
+                <!-- English Grammar -->
+                <a href="english_grammar.html" class="ss-subject" data-tone="english">
+                    <span class="ss-tile" data-icon="notebook"></span>
+                    <span class="ss-badge">교과 문법</span>
+                    <strong>영어 문법</strong>
+                    <span class="ss-desc">초등 기초부터 중1 핵심 문법까지</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('grammar')" title="아들에게 문법 학습 요청 보내기" aria-label="영어 문법 학습 요청 보내기">💬</button>
+                </a>
+                <!-- Hanja -->
+                <a href="hanja.html" class="ss-subject" data-tone="hanja">
+                    <span class="ss-tile" data-icon="brush"></span>
+                    <span class="ss-badge">급수 한자</span>
+                    <strong>한자 마스터</strong>
+                    <span class="ss-desc">직접 쓰면서 익히는 한자</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('hanja')" title="아들에게 학습 요청 보내기" aria-label="한자 학습 요청 보내기">💬</button>
+                </a>
+            </div>
+        </section>
+
+        <section class="ss-section" aria-labelledby="secMath">
+            <h2 id="secMath" class="ss-section-title">수학</h2>
+            <div class="ss-subject-grid">
+                <!-- Math -->
+                <a href="math.html" class="ss-subject" data-tone="math">
+                    <span class="ss-tile" data-icon="math-function"></span>
+                    <span class="ss-badge">수학 연산</span>
+                    <strong>수학 정글</strong>
+                    <span class="ss-desc">핵심 원리를 꿰뚫는 수학 학습</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('math')" title="아들에게 학습 요청 보내기" aria-label="수학 학습 요청 보내기">💬</button>
+                </a>
+                <!-- Standalone Math Formula Encyclopedia: excluded from timers, stats, missions, and admin -->
+                <a href="math_formula.html" class="ss-subject" data-tone="formula">
+                    <span class="ss-tile" data-icon="math-symbols"></span>
+                    <span class="ss-badge">공식 120</span>
+                    <strong>수학 공식 사전</strong>
+                    <span class="ss-desc">기호부터 원리·풀이·랜덤 퀴즈까지</span>
+                </a>
+            </div>
+        </section>
+
+        <section class="ss-section" aria-labelledby="secCheck">
+            <h2 id="secCheck" class="ss-section-title">확인과 복습</h2>
+            <div class="ss-list">
+                <a href="weekly_assessment.html" class="ss-row"><span class="ss-tile ss-tile-sm" data-icon="file-pencil" data-tone="neutral"></span><span class="ss-row-text"><strong>주간 학습 확인</strong><span>최근 배운 범위의 문항만 확인</span></span><span class="ss-chevron" data-icon="chevron-right"></span></a>
+                <a href="mock-exam.html" class="ss-row"><span class="ss-tile ss-tile-sm" data-icon="alarm" data-tone="exam"></span><span class="ss-row-text"><strong>학습 모의고사</strong><span>4과목 55문항 · 시험 70분 + 휴식 5분</span></span><span class="ss-chevron" data-icon="chevron-right"></span></a>
+                <a href="wrong_note.html" class="ss-row"><span class="ss-tile ss-tile-sm" data-icon="refresh" data-tone="hanja"></span><span class="ss-row-text"><strong>오답노트</strong><span>틀린 문제를 다시 풀어 확실히 내 것으로</span></span><span class="ss-chevron" data-icon="chevron-right"></span></a>
+            </div>
+        </section>
+    </main>
+
+    <script src="kakao-share.js?v=20260928-record-reliability"></script>
+    <script src="storage-keys.js"></script>
+    <script src="storage-events.js"></script>
+    <script src="schema-migrations.js"></script>
+    <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script>
+    <script src="app-bootstrap.js"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
+    <script src="icons.js?v=20261014-redesign"></script>
+    <script src="app-shell.js?v=20261014-redesign"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', async () => {
+            await window.SmartStudy?.LocalRepository?.ready;
+            if (!UserSession.getActiveUser()) { location.href = 'index.html'; return; }
+            document.querySelectorAll('[data-icon]').forEach(el => { el.innerHTML = AppShell.icon(el.dataset.icon, { size: el.classList.contains('ss-tile') ? 24 : 20 }); });
+        });
+    </script>
+</body>
+</html>

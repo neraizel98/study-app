@@ -277,8 +277,9 @@
         stopSpeech(); if (wasPlaying) return;
         if (!window.speechSynthesis || !window.SpeechSynthesisUtterance) { alert('이 브라우저에서는 음성 재생을 지원하지 않습니다.'); return; }
         const utterance = new window.SpeechSynthesisUtterance(text);
-        utterance.lang = 'en-US'; utterance.rate = 0.85;
-        const voice = window.speechSynthesis.getVoices().find(v => /^en[-_]US$/i.test(v.lang));
+        utterance.lang = 'en-US'; utterance.rate = 0.95;
+        // Shared ranking prefers neural/premium voices; phones keep the system default unless one is installed.
+        const voice = window.EnglishSpeech?.bestVoice ? window.EnglishSpeech.bestVoice('us') : null;
         if (voice) utterance.voice = voice;
         speechButton = button; button.classList.add('playing'); button.setAttribute('aria-pressed','true');
         const finish = () => { if (speechButton === button) { button.classList.remove('playing'); button.setAttribute('aria-pressed','false'); speechButton = null; } };

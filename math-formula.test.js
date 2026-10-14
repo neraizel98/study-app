@@ -140,8 +140,9 @@ const timeTracker = fs.readFileSync('MathFormulaTime.js', 'utf8');
 assert(!timeTracker.includes('updateDailyStat'), 'Formula time must not enter normal subject or mission statistics');
 assert(!timeTracker.includes('totalStudyTime'), 'Formula time must remain separately identifiable in the admin');
 assert(sync.includes('formulaStudyTime: _mergeFormulaStudyTime'), 'Formula time needs cross-device merge support');
-assert(home.indexOf('math_formula.html') > home.indexOf('href="math.html"'), 'Formula encyclopedia must appear after the five subjects');
-assert(home.indexOf('math_formula.html') < home.indexOf('id="missionContainer"'), 'Formula encyclopedia must appear before missions');
+const subjectsPage = fs.readFileSync('subjects.html', 'utf8');
+assert(subjectsPage.indexOf('math_formula.html') > subjectsPage.indexOf('href="math.html"'), 'Formula encyclopedia must appear after the five subjects');
+assert(subjectsPage.indexOf('math_formula.html') < subjectsPage.indexOf('weekly_assessment.html'), 'Formula encyclopedia must appear before the review section');
 for (const asset of ['math_formula.html', 'MathFormulaData.js', 'MathFormulaDataExtra.js', 'MathFormulaDataVolume2.js', 'MathFormulaQuiz.js', 'MathFormulaQuizExtra.js', 'MathFormulaQuizVolume2.js', 'MathFormulaApp.js', 'MathFormulaTime.js', 'MathFormulaDataVolume3.js', 'MathFormulaQuizVolume3.js']) {
     assert(worker.includes(`'./${asset}'`), `Service worker missing ${asset}`);
 }

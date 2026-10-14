@@ -14,15 +14,15 @@
     <meta name="apple-mobile-web-app-title" content="스마트학습">
     <link rel="apple-touch-icon" href="icons/icon-152.png">
     <link rel="apple-touch-icon" sizes="192x192" href="icons/icon-192.png">
-    <meta name="theme-color" content="#0d1117">
+    <meta name="theme-color" content="#fbf7ef">
     <title>Smart Vocab - 한자 능력검정 학습</title>
-    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@700&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/hanzi-writer@3.5/dist/hanzi-writer.min.js"></script>
-<link rel="stylesheet" href="today-flow.css?v=20261007-flow-ui"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-redesign"></head>
 <body class="subject-study">
     <div class="background-blobs">
         <div class="blob blob-1"></div>
@@ -118,7 +118,7 @@
                     <div id="writingQuizContainer" class="writing-quiz-container"></div>
                     <div class="writing-controls">
                         <button id="writingHintBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem;">💡 힌트 보기</button>
-                        <button id="writingFinishBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem; background: var(--accent); color: white;">✅ 다 썼어요!</button>
+                        <button id="writingFinishBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem; background: var(--accent); color: #ffffff;">✅ 다 썼어요!</button>
                         <button id="writingResetBtn" class="nav-btn" style="padding: 8px 16px; font-size: 0.85rem;">🔄 다시 쓰기</button>
                     </div>
                 </div>
@@ -150,7 +150,7 @@
                     <button id="retryWrongBtn" class="nav-btn wrong-retry">❌ 틀린 문제 다시 풀기</button>
                     <button id="retryBtn" class="nav-btn">다시 시작하기</button>
                     <button id="kakaoReportBtn" class="nav-btn" style="background: #FEE500; color: #3A1D1D; border: none; font-weight: bold; display: none;">💬 아빠에게 결과 전송하기 🏆</button>
-                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: rgba(255,255,255,0.05); border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
+                    <a href="report.html" class="nav-btn" style="text-decoration:none; text-align:center; background: #ffffff; border: 1px solid var(--accent); color: var(--accent); font-weight: 700;">📊 통합 성적표</a>
                     <button id="studyAgainBtn" class="nav-btn">학습 모드로 돌아가기</button>
                     <a href="index.html" class="nav-btn" style="text-decoration:none; text-align:center;">🏠 메인 페이지로</a>
                 </div>
@@ -162,8 +162,8 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-ui-rollback"></script><script src="notification-client.js?v=20260924-notification-click"></script>
-    <script src="ui-core.js?v=20260917-storage2"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script><script src="firebase-sync.js?v=20261014-redesign"></script><script src="notification-client.js?v=20260924-notification-click"></script>
+    <script src="ui-core.js?v=20261014-redesign"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
@@ -185,7 +185,7 @@
     </script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script src="VocabHanja.js"></script>
-    <script src="hanja.js?v=20260930-unified"></script>
+    <script src="hanja.js?v=20261014-redesign"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)
@@ -197,6 +197,7 @@
             });
         }
     </script>
-<script src="version-check.js"></script>
-<script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script></body>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-ui-rollback"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="celebrate.js?v=20261014-redesign"></script>
+</body>
 </html>
