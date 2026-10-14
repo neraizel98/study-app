@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-scratchpad';
+    const APP_VERSION = '20261014-mock-admin';
 
     (async function () {
         try {

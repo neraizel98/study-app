@@ -507,3 +507,46 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
     .ss-pad-icon { width: 32px; height: 32px; }
     body.ss-pad-open #_firesync_badge { display: none !important; }
 }
+
+/* =====================================================================
+   Admin · 모의고사 통계 tab (mock-admin.js)
+   ===================================================================== */
+.mock-admin { display: grid; gap: 14px; font-family: var(--font); color: var(--text); }
+.mock-admin-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 12px; flex-wrap: wrap; }
+.mock-admin-head h2 { margin: 0; font-size: 1.25rem; letter-spacing: -.02em; }
+.mock-admin-sub { margin: 4px 0 0; font-size: .8rem; color: var(--text-sub); }
+.mock-admin-range { min-height: 38px; padding: 6px 30px 6px 12px; border: 1px solid #ddd2bf; border-radius: 10px; background: #fff; color: var(--text); font: 600 .85rem var(--font); cursor: pointer; }
+.mock-admin-chart { padding: 16px 16px 10px; border: 1px solid var(--card-border); border-radius: 16px; background: #fff; }
+.mock-admin-chart .weekly-score-chart { height: 260px; }
+.mock-admin-results { display: grid; gap: 12px; }
+.mock-admin .mock-result-card { margin: 0; padding: 16px; border: 1px solid var(--card-border); border-radius: 16px; background: #fff; box-shadow: var(--ss-shadow); }
+.mock-result-head { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 12px; }
+.mock-result-head h3 { margin: 0; font-size: 1rem; }
+.mock-status { padding: 4px 10px; border-radius: 999px; background: #fff0db; color: #9a4a12; font-size: .75rem; font-weight: 700; white-space: nowrap; }
+.mock-status.is-published { background: #e2f3e9; color: #1f7a55; }
+.mock-score-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.mock-score { display: grid; gap: 2px; padding: 10px 12px; border-radius: 12px; background: #faf6ee; border-top: 3px solid var(--subject); }
+.mock-score-name { font-size: .75rem; font-weight: 700; color: var(--subject); }
+.mock-score strong { font-size: 1.2rem; letter-spacing: -.02em; }
+.mock-score small { font-size: .72rem; color: var(--text-sub); }
+.mock-result-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+.mock-result-note { margin: 0; font-size: .75rem; color: var(--text-sub); }
+.mock-admin .mock-publish { min-height: 40px; margin: 0; padding: 8px 16px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 .88rem var(--font); cursor: pointer; }
+.mock-admin .mock-publish:disabled { background: #e2f3e9; color: #1f7a55; cursor: default; opacity: 1; }
+.mock-admin .mock-admin-error { margin: 0; font-size: .78rem; color: #c0392b; }
+.mock-answers { margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 10px; }
+.mock-answers summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--accent); }
+.mock-answers-english { margin: 8px 0; font-size: .78rem; color: var(--text-sub); }
+.mock-answer { margin-top: 8px; padding: 10px 12px; border-radius: 12px; background: #faf6ee; border-left: 4px solid #cfc4b0; }
+.mock-answer.is-correct { border-left-color: #2f68c8; }
+.mock-answer.is-wrong { border-left-color: #c0392b; background: #fdf3f1; }
+.mock-answer-meta { display: flex; gap: 6px; align-items: center; margin-bottom: 4px; }
+.mock-answer-badge { padding: 2px 8px; border-radius: 999px; font-size: .7rem; font-weight: 700; background: #efe7d8; color: var(--text-sub); }
+.mock-answer.is-correct .mock-answer-badge { background: #e7effb; color: #2f68c8; }
+.mock-answer.is-wrong .mock-answer-badge { background: #fde9e6; color: #c0392b; }
+.mock-answer-subject { font-size: .72rem; color: var(--text-sub); }
+.mock-answer-q { margin: 0 0 4px; font-size: .88rem; line-height: 1.55; white-space: pre-wrap; }
+.mock-answer-a { margin: 0; font-size: .8rem; font-weight: 600; color: var(--text); }
+.mock-answer-x { margin: 4px 0 0; font-size: .78rem; line-height: 1.55; color: var(--text-sub); white-space: pre-wrap; }
+.mock-admin-empty { margin: 0; padding: 16px; border: 1px dashed #ddd2bf; border-radius: 14px; background: #fffdf8; font-size: .85rem; color: var(--text-sub); text-align: center; }
+@media (max-width: 600px) { .mock-score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mock-admin-chart .weekly-score-chart { height: 220px; } }

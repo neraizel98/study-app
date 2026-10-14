@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-scratchpad';
+const CACHE_NAME = 'smart-study-20261014-mock-admin';
 
 try {
     importScripts('./firebase-config.js');
