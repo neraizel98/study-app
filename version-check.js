@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-login-hero';
+    const APP_VERSION = '20261014-login-center';
 
     (async function () {
         try {

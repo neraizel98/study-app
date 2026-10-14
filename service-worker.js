@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-login-hero';
+const CACHE_NAME = 'smart-study-20261014-login-center';
 
 try {
     importScripts('./firebase-config.js');

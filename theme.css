@@ -582,10 +582,11 @@ body a.ss-back + a:hover { color: var(--accent); border-color: #bfe0cc; }
 /* =====================================================================
    First screen (index.html, logged out): brand top · hero centre · login bottom
    ===================================================================== */
-body.home #login-section { flex: 1; flex-direction: column; min-height: calc(100dvh - 150px); width: 100%; max-width: 440px; margin: 0 auto; }
+/* Fill a phone screen, but never stretch past ~720px: on tall screens the whole group sits centred */
+body.home #login-section { flex-direction: column; min-height: min(calc(100dvh - 150px), 720px); width: 100%; max-width: 440px; margin: max(0px, calc((100dvh - 870px) / 2)) auto 0; }
 body.home #login-section .brand-logo { margin-bottom: 4px; }
 .login-hero { flex: 1; display: grid; place-items: center; padding: 10px 0 18px; min-height: 0; }
-.login-hero img { width: min(300px, 78vw); height: auto; animation: ss-hero-in .6s ease-out both; }
+.login-hero img { width: min(300px, 78vw, 38dvh); height: auto; animation: ss-hero-in .6s ease-out both; }
 body.home #login-section .login-box { width: 100%; box-sizing: border-box; padding: 20px !important; border-radius: 24px !important; box-shadow: var(--ss-shadow-hover); }
 body.home #login-section .login-box input { min-height: 50px; padding: 0 14px !important; margin-bottom: 10px !important; border-radius: 14px !important; font-size: 1rem !important; }
 body.home #login-section .login-box button { min-height: 48px; border-radius: 14px !important; }
