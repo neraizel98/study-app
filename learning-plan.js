@@ -180,11 +180,8 @@
             try{root.sessionStorage.setItem('SmartStudy_TodayFlow',JSON.stringify({user, date:plan.date, taskId:task.id}));}catch(_){}
             return task;
         },
+        // The English warm-up lives on the 영어 통합 학습 page (과목 tab); today's plan goes straight to the activity.
         entryUrl(user,task){
-            if(['english','grammar','english_reading'].includes(task.subject)&&task.status!=='completed'){
-                const warmup=local.getPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(user)}`,null)?.current;
-                if(warmup?.date!==today()||warmup.items?.length!==3||warmup.items.some(q=>q.response===undefined))return 'english_course.html#englishWarmup';
-            }
             return task.targetUrl;
         },
         refreshEvidence(user){

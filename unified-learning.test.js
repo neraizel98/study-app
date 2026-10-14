@@ -45,11 +45,7 @@ assert(p.catalog('math_formula',{grade:6,semester:2}).some(c=>c.context.unitId==
 assert(!p.catalog('math_formula',{grade:6,semester:2}).some(c=>['formula-91','formula-112','formula-115'].includes(c.context.unitId)),'advanced formulas excluded from elementary recommendations');
 assert(!p.catalog('math_formula',{grade:12,semester:2}).some(c=>c.context.unitId==='formula-112'),'enrichment remains voluntary');
 const flowUser='warmup-entry',flowPlan=p.createPlan(flowUser),flowTask=flowPlan.tasks.find(t=>t.subject==='english');
-assert.equal(p.entryUrl(flowUser,flowTask),'english_course.html#englishWarmup');
-local.setPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(flowUser)}`,{current:{date:p.today(),items:[{response:'a'},{response:'b'},{response:'c'}]}});
-assert.equal(p.entryUrl(flowUser,flowTask),flowTask.targetUrl);
-local.setPreference(`SmartStudy_EnglishWarmup_${encodeURIComponent(flowUser)}`,{current:{date:'yesterday',items:[{response:'a'},{response:'b'},{response:'c'}]}});
-assert.equal(p.entryUrl(flowUser,flowTask),'english_course.html#englishWarmup');
+assert.equal(p.entryUrl(flowUser,flowTask),flowTask.targetUrl,'today plan skips the English warm-up page');
 vm.runInContext(fs.readFileSync('today-journey.js','utf8'),ctx);
 const switchUser='journey-switch',switchPlan=p.createPlan(switchUser),switchTask=switchPlan.tasks.find(t=>t.subject==='reading');
 p.startTask(switchUser,switchTask.id);const switching=p.getPlan(switchUser);switching.tasks.find(t=>t.id===switchTask.id).studyConfirmed=true;p.savePlan(switching);
