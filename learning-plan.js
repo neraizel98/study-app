@@ -71,7 +71,7 @@
     function recommend(user,profile,subject){
         const available=new Set(catalog(subject,profile).map(item=>contextKey(subject,item.context)));
         const usable=context=>allowed(profile,subject,context)&&available.has(contextKey(subject,context));
-        const reports=local.listReports(user).filter(r=>r.subject===subject&&!r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
+        const reports=local.listReports(user).filter(r=>r.subject===subject&&!r.metadata?.assessment&&(!r.metadata?.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
             &&Number(r.date||0)>=Date.now()-30*86400000)
             .sort((a,b)=>Number(b.updatedAt||b.date||0)-Number(a.updatedAt||a.date||0));
         const wrong=(local.getWrongAnswers(user)[subject]||[]).filter(item=>!item.deleted&&!item.isMastered
@@ -194,7 +194,7 @@
             for(const task of plan.tasks){
                 if(task.status!=='in_progress'||!task.startedAt)continue;
                 const expected=contextKey(task.subject,task.context);
-                const report=reports.find(r=>r.subject===task.subject&&!r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
+                const report=reports.find(r=>r.subject===task.subject&&!r.metadata?.assessment&&(!r.metadata?.mockExam||r.metadata.resultVisibility==='published')&&r.metadata?.source!=='math-formula'
                     && Number(r.createdAt||r.date||0)>task.startedAt
                     && Number(r.metadata?.submittedAt||0)>task.startedAt
                     && (r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=Math.max(1,Number(r.totalQuestions)||0)

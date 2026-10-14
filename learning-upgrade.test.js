@@ -57,6 +57,9 @@ reports.push({sessionId:'math-recent',subject:'math',date:now,createdAt:now,tota
 reports.push({sessionId:'math-old',subject:'math',date:now-40*86400000,createdAt:now-40*86400000,totalQuestions:1,
     metadata:{levelId:'elementary-6',semesterId:'1',unitId:'e6-1-u1',initialAttempts:[{question:'옛 문항',correct:false}]}});
 plan.applyParentSettings('우준',{budgetMinutes:30,grade:6,semester:2,scopes:autoScopes});
+// Legacy quiz reports saved before metadata existed must not break today's plan (live crash 2026-10-14).
+reports.push({sessionId:'legacy-no-metadata',subject:'reading',date:now,createdAt:now,totalQuestions:5,finalScore:4});
+reports.push({sessionId:'legacy-no-metadata-math',subject:'math',date:now-1000,createdAt:now-1000,totalQuestions:5,finalScore:4});
 const daily=plan.createPlan('우준');
 assert.equal(daily.tasks[2].context.unitId,'e6-2-u1','recent current-semester weakness should win');
 assert.equal(daily.tasks[0].context.unitId,plan.catalog('reading',daily.profile)[0].context.unitId,'no-history auto mode must use the first verified catalog unit');

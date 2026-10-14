@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-redesign';
+    const APP_VERSION = '20261014-plan-fix';
 
     (async function () {
         try {

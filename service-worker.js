@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-redesign';
+const CACHE_NAME = 'smart-study-20261014-plan-fix';
 
 try {
     importScripts('./firebase-config.js');
