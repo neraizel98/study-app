@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-mock-admin';
+const CACHE_NAME = 'smart-study-20261014-learner-fold';
 
 try {
     importScripts('./firebase-config.js');
