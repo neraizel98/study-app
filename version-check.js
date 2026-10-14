@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-login-center';
+    const APP_VERSION = '20261014-quiz-result';
 
     (async function () {
         try {
