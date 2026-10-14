@@ -1,0 +1,41 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 260 230" role="img" aria-label="스탠드와 노트, 화분이 있는 공부 책상 엠블럼">
+  <!-- badge -->
+  <circle cx="130" cy="106" r="96" fill="#e4f3ea" stroke="#23845c" stroke-width="6"/>
+  <circle cx="130" cy="106" r="84" fill="none" stroke="#9fd3b6" stroke-width="2" stroke-dasharray="3 7" stroke-linecap="round"/>
+  <path d="M74 40 l3 7 7 3 -7 3 -3 7 -3 -7 -7 -3 7 -3z" fill="#f0b44c"/>
+  <path d="M188 34 l2.5 6 6 2.5 -6 2.5 -2.5 6 -2.5 -6 -6 -2.5 6 -2.5z" fill="#f0b44c"/>
+
+  <!-- lamp -->
+  <path d="M112 66 L84 50" stroke="#2b2620" stroke-width="4" stroke-linecap="round"/>
+  <path d="M84 50 L74 112" stroke="#2b2620" stroke-width="4" stroke-linecap="round"/>
+  <rect x="62" y="110" width="26" height="8" rx="4" fill="#2b2620"/>
+  <path d="M100 58 Q114 46 128 58 L122 76 L102 70 Z" fill="#f0b44c" stroke="#2b2620" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M106 74 L96 104 L146 104 L120 78 Z" fill="#fff4cc" opacity=".8"/>
+
+  <!-- desk -->
+  <rect x="44" y="118" width="172" height="10" rx="5" fill="#c2672f" stroke="#2b2620" stroke-width="3"/>
+
+  <!-- notebook with checks -->
+  <path d="M96 116 L106 84 L160 84 L150 116 Z" fill="#fffdf8" stroke="#2b2620" stroke-width="3" stroke-linejoin="round"/>
+  <g stroke="#2e9a6c" stroke-width="3" fill="none" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M110 94 l4 4 7 -8"/><path d="M106 106 l4 4 7 -8"/>
+  </g>
+  <g stroke="#d8cdb9" stroke-width="2.5" stroke-linecap="round"><path d="M126 94 H148"/><path d="M122 106 H144"/></g>
+
+  <!-- pencil cup -->
+  <path d="M168 88 L172 116 L192 116 L196 88 Z" fill="#2f68c8" stroke="#2b2620" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M174 88 L170 66" stroke="#f0b44c" stroke-width="5" stroke-linecap="round"/>
+  <path d="M182 88 L184 62" stroke="#a3324b" stroke-width="5" stroke-linecap="round"/>
+  <path d="M190 88 L196 70" stroke="#2e9a6c" stroke-width="5" stroke-linecap="round"/>
+
+  <!-- plant -->
+  <path d="M200 116 L203 102 L215 102 L218 116 Z" fill="#c2672f" stroke="#2b2620" stroke-width="2.5" stroke-linejoin="round"/>
+  <path d="M209 102 Q207 90 201 84 Q212 86 209 102 Z" fill="#4fbf8c" stroke="#2b2620" stroke-width="2"/>
+  <path d="M209 102 Q213 88 221 86 Q218 98 209 102 Z" fill="#2e9a6c" stroke="#2b2620" stroke-width="2"/>
+
+  <!-- ribbon -->
+  <path d="M40 160 L58 152 L58 186 L40 178 L48 169 Z" fill="#1d6f4d" stroke="#2b2620" stroke-width="3" stroke-linejoin="round"/>
+  <path d="M220 160 L202 152 L202 186 L220 178 L212 169 Z" fill="#1d6f4d" stroke="#2b2620" stroke-width="3" stroke-linejoin="round"/>
+  <rect x="54" y="148" width="152" height="34" rx="8" fill="#23845c" stroke="#2b2620" stroke-width="3"/>
+  <text x="130" y="171" text-anchor="middle" font-family="Pretendard Variable, Pretendard, sans-serif" font-weight="800" font-size="15" fill="#fff" letter-spacing="1">오늘도 한 걸음</text>
+</svg>

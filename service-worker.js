@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-page-shell';
+const CACHE_NAME = 'smart-study-20261014-login-hero';
 
 try {
     importScripts('./firebase-config.js');
@@ -59,6 +59,7 @@ const STATIC_ASSETS = [
     './app-shell.js',
     './celebrate.js',
     './scratchpad.js',
+    './images/login-hero.svg',
     './subjects.html',
     './goals.html',
     './goals.css',

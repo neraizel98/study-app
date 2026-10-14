@@ -224,7 +224,7 @@
         .mission-reward-chip small { margin-left:3px; color:var(--text-sub); font-size:0.68rem; }
     </style>
 <link rel="stylesheet" href="study-focus.css?v=20261014-redesign">    <link rel="stylesheet" href="goals.css?v=20261014-redesign">
-<link rel="stylesheet" href="theme.css?v=20261014-page-shell"></head>
+<link rel="stylesheet" href="theme.css?v=20261014-login-hero"></head>
 <body class="study-focus home" data-app-tabs>
 
     <div class="landing-container">
@@ -234,6 +234,7 @@
                 <h1>Smart Study</h1>
                 <p>당신만의 스마트한 학습 파트너, 시작해볼까요?</p>
             </div>
+            <div class="login-hero"><img src="images/login-hero.svg" alt="스탠드와 노트, 화분이 있는 공부 책상 엠블럼" width="300" height="265"></div>
             <div class="login-box" style="background: var(--card-bg); border: 1px solid var(--card-border); padding: 40px; border-radius: 30px; backdrop-filter: blur(20px); max-width: 400px; margin: 0 auto;">
                 <input type="text" id="userIdInput" placeholder="이름을 입력하세요 (예: 우준)" style="width: 100%; padding: 15px; border-radius: 12px; border: 1px solid var(--card-border); background: #ffffff; color: var(--text); font-size: 1.1rem; margin-bottom: 20px; outline: none; transition: border-color 0.2s;">
                 <button id="cloudLoginBtn" type="button" class="nav-btn" style="width:100%; justify-content:center; margin-bottom:12px;">🔐 Google로 계정 연결</button>
@@ -343,7 +344,7 @@
     <script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20260928-record-reliability"></script>
-    <script src="firebase-sync.js?v=20261014-page-shell"></script>
+    <script src="firebase-sync.js?v=20261014-login-hero"></script>
     <script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script><script src="parent-scope-guard.js?v=20261014-redesign"></script>
     <script src="missions.js?v=20261014-redesign"></script>
@@ -507,7 +508,7 @@
                             MissionManager.renderMissionList('missionContainer');
                         }
                     } else {
-                        loginSection.style.display = 'block';
+                        loginSection.style.display = 'flex';
                         dashboardSection.style.display = 'none';
                         window.AppShell?.mountTabs();
                     }
