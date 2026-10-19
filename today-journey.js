@@ -1,7 +1,7 @@
 (function(root){
  'use strict';
  const app=root.SmartStudy,api=app.LearningPlan,repo=app.LocalRepository;
- const names={reading:'국어',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+ const names={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
  const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
  function state(user,taskId){
@@ -15,7 +15,7 @@
   const alternative=task.required?null:sameDay.find(e=>api.catalog(task.subject,plan.profile).some(c=>api.contextKey(task.subject,c.context)===api.contextKey(task.subject,e.context)));
   return {plan,task,completed:plan.tasks.filter(t=>t.status==='completed').length,total:plan.tasks.length,index:plan.tasks.indexOf(task)+1,phase:task.status==='completed'?3:task.studyConfirmed?2:1,alternative};
  }
- const icons={reading:'📖',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮'};
+ const icons={reading:'📖',korean_vocab:'📚',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮'};
  function phases(phase){return `<ol class="journey-phases" aria-label="과목 진행"><li class="${phase>1?'done':'active'}">${phase>1?'✓':'1'} 📖 학습</li><li class="${phase>2?'done':phase===2?'active':''}">${phase>2?'✓':'2'} ✏️ 퀴즈</li><li class="${phase===3?'active':''}">✓ 완료</li></ol>`;}
  function openUnit(user,taskId,changed){
   const s=state(user,taskId);if(!s||repo.getActiveUser()!==user)return;
@@ -40,7 +40,7 @@
   if(s.alternative){text.textContent='오늘 다른 단원의 퀴즈를 제출했어요.';
    const use=document.createElement('button');use.className='journey-secondary';use.textContent='푼 단원으로 오늘 계획 연결';
    use.onclick=()=>{try{if(repo.getActiveUser()!==user)return;api.selectContext(s.plan.id,user,taskId,s.alternative.context);api.refreshEvidence(user);changed?.();}catch(error){text.textContent=error.message;}};box.append(use);
-  }else text.textContent=(s.task.required?'지정된 단원':'이 단원')+'의 퀴즈 완료 기록이 아직 없어요. '+(['english','hanja','reading','grammar','english_reading'].includes(s.task.subject)?'퀴즈를 끝까지 풀고 결과 화면까지 확인해 주세요.':'답을 모두 고른 뒤 채점·제출 버튼을 눌러 주세요.');
+  }else text.textContent=(s.task.required?'지정된 단원':'이 단원')+'의 퀴즈 완료 기록이 아직 없어요. '+(['english','hanja','reading','korean_vocab','grammar','english_reading'].includes(s.task.subject)?'퀴즈를 끝까지 풀고 결과 화면까지 확인해 주세요.':'답을 모두 고른 뒤 채점·제출 버튼을 눌러 주세요.');
  }
  function quiz(user,taskId,box,changed){
   const s=state(user,taskId);if(!s||repo.getActiveUser()!==user)return;

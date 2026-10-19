@@ -2,8 +2,9 @@
     'use strict';
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository, plan=app.LearningPlan;
     if(!plan)return;
-    const ids=['reading','english','grammar','english_reading','math','math_formula','hanja'];
-    const allocations={30:[7,3,3,4,8,2,3],45:[10,4,4,7,12,4,4],60:[13,5,5,10,16,6,5]};
+    const ids=['reading','korean_vocab','english','grammar','english_reading','math','math_formula','hanja'];
+    // 국어 어휘(두 번째)는 하루 목표 위에 더해지는 시간이다: 30분 +8, 45분 +10, 60분 +12.
+    const allocations={30:[7,8,3,3,4,8,2,3],45:[10,10,4,4,7,12,4,4],60:[13,12,5,5,10,16,6,5]};
     const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const subjectOf=r=>r.metadata?.source==='math-formula'?'math_formula':r.subject;
     const previousContext=plan.contextOf,previousCatalog=plan.catalog,previousTarget=plan.target;

@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261019-content-fix';
+    const APP_VERSION = '20261020-korean-vocab';
 
     (async function () {
         try {

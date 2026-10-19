@@ -1,7 +1,7 @@
 (function (root) {
     'use strict';
     const app = root.SmartStudy = root.SmartStudy || {};
-    const names = { reading: '국어', english: '영어 단어', grammar: '영어 문법', english_reading: '영어 독해', math: '수학', math_formula: '수학 공식', hanja: '한자' };
+    const names = { reading: '국어', korean_vocab: '국어 어휘', english: '영어 단어', grammar: '영어 문법', english_reading: '영어 독해', math: '수학', math_formula: '수학 공식', hanja: '한자' };
     const node = (tag, text, className) => { const el = document.createElement(tag); if (text != null) el.textContent = text; if (className) el.className = className; return el; };
     function setMathText(element, value) {
         element.replaceChildren(); const parts = String(value || '').split(/(\$[^$]+\$)/g);

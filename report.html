@@ -325,7 +325,7 @@
             .shared-notice{max-width:100%;overflow-wrap:anywhere}
         }
     </style>
-<link rel="stylesheet" href="theme.css?v=20261019-mock-v2"></head>
+<link rel="stylesheet" href="theme.css?v=20261020-korean-vocab"></head>
 <body>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -383,8 +383,8 @@
 
     <script src="utils.js?v=20261019-content-fix"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261019-content-fix"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-content-fix"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261020-korean-vocab"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261020-korean-vocab"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261020-korean-vocab"></script>
     <script src="report-subject-summary.js"></script><script src="shared-report-loader.js?v=20261014-ui-rollback"></script><script src="ui-core.js?v=20261014-redesign"></script>
     <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script>
@@ -765,6 +765,7 @@
                     function getLabel(item) {
                         if(item.sharedDisplay)return {id:item.sharedDisplay,sub:''};
                         if(subject==='english_reading')return {id:item.question||item.type||'독해 문제',sub:item.correctAnswer?'정답: '+item.correctAnswer:''};
+                        if(subject==='korean_vocab')return {id:item.word||item.question||'어휘 문제',sub:item.meaning||(item.correctAnswer?'정답: '+item.correctAnswer:'')};
                         if (subject === 'english') return { id: item.word || '', sub: item.meaning || '' };
                         if (subject === 'grammar') return { id: item.question || '문법 문제', sub: `${item.unitTitle || ''} · 정답: ${item.correctAnswer || item.answer || ''}` };
                         if (subject === 'hanja')   return { id: `${item.hanja || ''} (${item.eum || ''})`, sub: item.meaning || '' };

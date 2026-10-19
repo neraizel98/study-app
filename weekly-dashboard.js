@@ -1,5 +1,5 @@
 (function(){
- 'use strict';const app=window.SmartStudy,icons={reading:'📖',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮'},names=['월','화','수','목','금','토','일'];
+ 'use strict';const app=window.SmartStudy,icons={reading:'📖',korean_vocab:'📚',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮'},names=['월','화','수','목','금','토','일'];
  async function start(){await app.LocalRepository.ready;const user=app.LocalRepository.getActiveUser();if(!user)return;let offset=0,selected=app.WeeklySchedule.day(Date.now()),loadedMocks=[],state='checking';
   const hero=document.createElement('section');hero.className='week-card';hero.id='weeklySchedule';const detail=document.createElement('section');detail.className='week-day-detail';detail.id='selectedDayStatus';
   const host=document.querySelector('main.wrap');host.insertBefore(hero,document.getElementById('nextActivity'));hero.after(detail);

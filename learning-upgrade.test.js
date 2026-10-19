@@ -21,9 +21,10 @@ for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle
 const plan=context.SmartStudy.LearningPlan,session=context.SmartStudy.LearningSession,assessment=context.SmartStudy.WeeklyAssessment;
 const autoScopes={reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}};
 
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[30])),[8,10,12]);
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[45])),[12,15,18]);
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[60])),[15,20,25]);
+// 국어 독해, 국어 어휘(목표 시간에 더해짐), 영어, 수학
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[30])),[8,8,10,12]);
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[45])),[12,10,15,18]);
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[60])),[15,12,20,25]);
 assert.equal(plan.getProfile('우준').grade,6);
 assert.equal(plan.getSettings('우준').budgetMinutes,45,'the offline default must be 45 minutes');
 plan.applyParentSettings('다른학생',{budgetMinutes:45,grade:7,semester:1,scopes:autoScopes});
@@ -44,7 +45,7 @@ plan.savePlan({id:'untouched-2026-09-18',userId:'새학생',date:'2026-09-18',bu
 ]});
 const refreshedUntouched=plan.getPlan('새학생');
 assert.equal(refreshedUntouched.budget,45,'a completely untouched old plan may adopt the parent/default goal');
-assert.deepEqual(JSON.parse(JSON.stringify(refreshedUntouched.tasks.map(task=>task.minutes))),[12,15,18]);
+assert.deepEqual(JSON.parse(JSON.stringify(refreshedUntouched.tasks.map(task=>task.minutes))),[12,10,15,18]);
 plan.savePlan({id:'past',userId:'기존학생',date:'2026-09-17',budget:30,profile:{grade:5,semester:1,publisher:''},tasks:[
     {minutes:8,status:'completed'},{minutes:10,status:'completed'},{minutes:12,status:'completed'}
 ]});
@@ -61,10 +62,10 @@ plan.applyParentSettings('우준',{budgetMinutes:30,grade:6,semester:2,scopes:au
 reports.push({sessionId:'legacy-no-metadata',subject:'reading',date:now,createdAt:now,totalQuestions:5,finalScore:4});
 reports.push({sessionId:'legacy-no-metadata-math',subject:'math',date:now-1000,createdAt:now-1000,totalQuestions:5,finalScore:4});
 const daily=plan.createPlan('우준');
-assert.equal(daily.tasks[2].context.unitId,'e6-2-u1','recent current-semester weakness should win');
+assert.equal(daily.tasks[3].context.unitId,'e6-2-u1','recent current-semester weakness should win');
 assert.equal(daily.tasks[0].context.unitId,plan.catalog('reading',daily.profile)[0].context.unitId,'no-history auto mode must use the first verified catalog unit');
-assert.equal(daily.tasks[2].minutes,12);
-plan.startTask('우준',daily.tasks[2].id);
+assert.equal(daily.tasks[3].minutes,12);
+plan.startTask('우준',daily.tasks[3].id);
 const beforeSettingsChange=plan.getPlan('우준');
 beforeSettingsChange.tasks[0].context={levelId:'level1',unitId:'saved',title:'저장된 단원'};
 beforeSettingsChange.tasks[0].sessionId='draft-session';
@@ -73,19 +74,19 @@ plan.savePlan(beforeSettingsChange);
 plan.applyParentSettings('우준',{budgetMinutes:60,grade:6,semester:2,scopes:autoScopes});
 const migrated=plan.getPlan('우준');
 assert.equal(migrated.budget,30,'new parent settings must wait when any current task has started');
-assert.deepEqual(migrated.tasks.map(task=>task.minutes),[8,10,12]);
+assert.deepEqual(migrated.tasks.map(task=>task.minutes),[8,8,10,12]);
 assert.equal(migrated.tasks[0].context.unitId,'saved','a settings change must preserve the selected unit');
 assert.equal(migrated.tasks[0].sessionId,'draft-session','a settings change must preserve the draft session');
 assert.equal(migrated.tasks[0].startedAt,1234,'a settings change must preserve start evidence');
-assert.equal(migrated.tasks[2].status,'in_progress','a settings change must preserve task status');
-assert.equal(plan.refreshEvidence('우준').tasks[2].status,'in_progress','old report cannot finish a new task');
+assert.equal(migrated.tasks[3].status,'in_progress','a settings change must preserve task status');
+assert.equal(plan.refreshEvidence('우준').tasks[3].status,'in_progress','old report cannot finish a new task');
 reports.push({sessionId:'partial',subject:'math',date:Date.now()+10,createdAt:Date.now()+10,totalQuestions:3,
     metadata:{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u1',initialAttempts:[{question:'1',correct:true}]}});
-assert.equal(plan.refreshEvidence('우준').tasks[2].status,'in_progress','partial quiz cannot finish the task');
+assert.equal(plan.refreshEvidence('우준').tasks[3].status,'in_progress','partial quiz cannot finish the task');
 reports.push({sessionId:'full',subject:'math',date:Date.now()+20,createdAt:Date.now()+20,totalQuestions:2,
     metadata:{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u1',submittedAt:Date.now()+20,
         initialAttempts:[{question:'1',correct:false},{question:'2',correct:true}]}});
-assert.equal(plan.refreshEvidence('우준').tasks[2].sessionId,'full','complete submitted attempt confirms the task');
+assert.equal(plan.refreshEvidence('우준').tasks[3].sessionId,'full','complete submitted attempt confirms the task');
 
 const readingChoice=plan.catalog('reading',{grade:6,semester:2})[1];
 const englishChoice=plan.catalog('english',{grade:6,semester:2})[0];
@@ -97,7 +98,8 @@ const assignedScopes={
 };
 plan.applyParentSettings('지정학생',{budgetMinutes:45,grade:6,semester:2,scopes:assignedScopes});
 const assigned=plan.createPlan('지정학생');
-assert(assigned.tasks.every(task=>task.required&&task.assignmentMode==='assigned'));
+// 국어 어휘는 이 시나리오에서 지정하지 않았으므로 자동 추천으로 남는다.
+assert(assigned.tasks.filter(task=>task.subject!=='korean_vocab').every(task=>task.required&&task.assignmentMode==='assigned'));
 assert.equal(assigned.tasks[0].context.unitId,readingChoice.context.unitId);
 assert.throws(()=>plan.selectContext(assigned.id,'지정학생',assigned.tasks[0].id,plan.catalog('reading',assigned.profile)[0].context),/완료 전 변경/);
 plan.startTask('지정학생',assigned.tasks[0].id);
@@ -112,28 +114,28 @@ assert.equal(plan.getPlan('지정학생').tasks[0].context.unitId,readingChoice.
 
 plan.applyParentSettings('미지원학생',{budgetMinutes:45,grade:8,semester:1,scopes:autoScopes});
 const unsupported=plan.createPlan('미지원학생');
-assert.equal(unsupported.tasks[2].context,null,'unsupported grades must not invent a math range');
-assert.match(unsupported.tasks[2].reasonText,/사용할 수 있는 단원/);
+assert.equal(unsupported.tasks[3].context,null,'unsupported grades must not invent a math range');
+assert.match(unsupported.tasks[3].reasonText,/사용할 수 있는 단원/);
 
 const readingScopes={...autoScopes,english_reading:{mode:'assigned',levelId:'grade6',unitId:'er2'}};
 plan.applyParentSettings('영어독해학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:readingScopes});
 const englishReadingPlan=plan.createPlan('영어독해학생');
-assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.subject))),['reading','english_reading','math'],'the single English slot switches from vocabulary to reading');
-assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.minutes))),[12,15,18]);
-assert.equal(englishReadingPlan.tasks.reduce((sum,task)=>sum+task.minutes,0),45,'switching English activity must not duplicate the English minutes');
-assert.equal(englishReadingPlan.tasks[1].context.unitId,'er2');
-plan.startTask('영어독해학생',englishReadingPlan.tasks[1].id);
-const readingStart=plan.getPlan('영어독해학생').tasks[1].startedAt;
+assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.subject))),['reading','korean_vocab','english_reading','math'],'the single English slot switches from vocabulary to reading');
+assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.minutes))),[12,10,15,18]);
+assert.equal(englishReadingPlan.tasks.reduce((sum,task)=>sum+task.minutes,0),45+plan.vocabExtraMinutes[45],'switching English activity must not duplicate the English minutes');
+assert.equal(englishReadingPlan.tasks[2].context.unitId,'er2');
+plan.startTask('영어독해학생',englishReadingPlan.tasks[2].id);
+const readingStart=plan.getPlan('영어독해학생').tasks[2].startedAt;
 reports.push({sessionId:'english-reading-submitted',subject:'english_reading',createdAt:readingStart+1,totalQuestions:1,
     metadata:{levelId:'grade6',unitId:'er2',submittedAt:readingStart+1,initialAttempts:[{question:'evidence',correct:true}]}});
-assert.equal(plan.refreshEvidence('영어독해학생').tasks[1].status,'completed','the exact submitted English-reading unit completes its required task');
+assert.equal(plan.refreshEvidence('영어독해학생').tasks[2].status,'completed','the exact submitted English-reading unit completes its required task');
 
 plan.applyParentSettings('전환보존학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'vocabulary',scopes:autoScopes});
-const frozen=plan.createPlan('전환보존학생');plan.startTask('전환보존학생',frozen.tasks[1].id);
+const frozen=plan.createPlan('전환보존학생');plan.startTask('전환보존학생',frozen.tasks[2].id);
 plan.applyParentSettings('전환보존학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:readingScopes});
-assert.equal(plan.getPlan('전환보존학생').tasks[1].subject,'english','a started vocabulary task stays frozen when the next setting selects reading');
+assert.equal(plan.getPlan('전환보존학생').tasks[2].subject,'english','a started vocabulary task stays frozen when the next setting selects reading');
 plan.applyParentSettings('중등독해학생',{budgetMinutes:45,grade:7,semester:1,englishActivity:'reading',scopes:{...autoScopes,english_reading:{mode:'auto'}}});
-assert.equal(plan.createPlan('중등독해학생').tasks[1].context,null,'unsupported middle-school English reading must not invent content');
+assert.equal(plan.createPlan('중등독해학생').tasks[2].context,null,'unsupported middle-school English reading must not invent content');
 
 const draft={userId:'우준',sessionId:'weekly-test',planId:null,taskId:null,mode:'assessment',subject:'mixed',context:null,
     questions:[{id:'q1'}],responses:{q1:'A'},cursor:0,activeSeconds:3,updatedAt:0,submittedAt:null};

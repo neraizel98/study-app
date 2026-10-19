@@ -1,9 +1,11 @@
 (function(root){
     'use strict';
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository;
-    const minutesByBudget={30:[8,10,12],45:[12,15,18],60:[15,20,25]};
-    const subjects=['reading','english','english_reading','math'];
-    const urls={reading:'reading.html',english:'english.html',english_reading:'english_reading.html',math:'math.html'};
+    // Task order: 국어 독해, 국어 어휘(budget 위에 더해지는 시간), 영어, 수학.
+    const minutesByBudget={30:[8,8,10,12],45:[12,10,15,18],60:[15,12,20,25]};
+    const VOCAB_EXTRA_MINUTES={30:8,45:10,60:12};
+    const subjects=['reading','korean_vocab','english','english_reading','math'];
+    const urls={reading:'reading.html',korean_vocab:'korean_vocab.html',english:'english.html',english_reading:'english_reading.html',math:'math.html'};
     const key=(user,date)=>`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`;
     const settingsKey=user=>`SmartStudy_ParentPlanSettings_${encodeURIComponent(user)}`;
     const today=()=>root.StudyPeriods?.daily?.()||new Date().toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
@@ -32,6 +34,7 @@
         if(subject==='reading')return m.unitId?{levelId:m.levelId||'level1',unitId:m.unitId,title:m.passageTitle||m.unitTitle||''}:null;
         if(subject==='english')return m.unitId||m.level?{unitId:m.unitId||m.level,title:m.unitTitle||''}:null;
         if(subject==='english_reading')return m.levelId&&m.unitId?{levelId:m.levelId,unitId:m.unitId,title:m.unitTitle||m.passageTitle||''}:null;
+        if(subject==='korean_vocab')return m.levelId&&m.unitId?{levelId:m.levelId,unitId:m.unitId,title:m.unitTitle||''}:null;
         return null;
     };
     const contextKey=(subject,context)=>`${subject}:${context?.levelId||''}:${context?.semesterId||''}:${context?.unitId||''}`;
@@ -49,6 +52,11 @@
         if(subject==='reading')return Object.entries(root.ReadingData?.levels||{}).flatMap(([levelId,level])=>(level.units||[]).map(unit=>({
             label:`${level.title} · ${unit.title}`,context:{levelId,unitId:unit.id,title:unit.title}
         })));
+        if(subject==='korean_vocab'){
+            // 중학 이하는 레벨 1, 고등학생은 레벨 2. 단원 목록은 어휘 본문 없이도 쓸 수 있는 색인에서 읽는다.
+            const levelId=profile.grade>=10?'level2':'level1';
+            return (root.KoreanVocabData?.unitIndex?.[levelId]||[]).map(unit=>({label:`국어 어휘 ${unit.title}`,context:{levelId,unitId:unit.id,title:unit.title}}));
+        }
         if(subject==='english')return Object.keys(root.vocabData||{}).map((unitId,index)=>({label:`영어 단어 레벨 ${index+1}`,context:{unitId,title:`영어 단어 레벨 ${index+1}`}}));
         if(subject==='english_reading'){
             if(profile.grade!==6)return [];
@@ -65,6 +73,7 @@
             return `math.html?level=${encodeURIComponent(context.levelId)}&semester=${encodeURIComponent(context.semesterId)}&unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='reading'&&context?.unitId)return `reading.html?unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='english'&&context?.unitId)return `english.html?level=${encodeURIComponent(context.unitId)}`;
+        if(subject==='korean_vocab'&&context?.levelId&&context?.unitId)return `korean_vocab.html?level=${encodeURIComponent(context.levelId)}&unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='english_reading'&&context?.levelId&&context?.unitId)return `english_reading.html?level=${encodeURIComponent(context.levelId)}&unit=${encodeURIComponent(context.unitId)}`;
         return urls[subject];
     }
@@ -118,10 +127,10 @@
         return {id:`${date}-${subject}`,subject,context,minutes:minutesByBudget[settings.budgetMinutes][index],reasonText,
             targetUrl:target(subject,context),assignmentMode:scope.mode,required:scope.mode==='assigned',status:'ready',sessionId:null,startedAt:null,completedAt:null,submittedAt:null};
     }
-    const taskSubjects=settings=>['reading',settings.englishActivity==='reading'?'english_reading':'english','math'];
+    const taskSubjects=settings=>['reading','korean_vocab',settings.englishActivity==='reading'?'english_reading':'english','math'];
     const settingsSignature=settings=>JSON.stringify({budgetMinutes:settings.budgetMinutes,grade:settings.grade,semester:settings.semester,englishActivity:settings.englishActivity,scopes:settings.scopes,weekly:settings.weekly});
     const api={
-        budgets:minutesByBudget,subjects,contextOf,contextKey,target,today,catalog,settingsSignature,
+        budgets:minutesByBudget,vocabExtraMinutes:VOCAB_EXTRA_MINUTES,subjects,contextOf,contextKey,target,today,catalog,settingsSignature,
         getSettings(user){return normalizeSettings(user,local.getPreference(settingsKey(user),null));},
         applyParentSettings(user,settings){
             const value=normalizeSettings(user,{...settings,source:'parent'});

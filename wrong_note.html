@@ -177,7 +177,7 @@
         @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes slideDown { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
     </style>
-<link rel="stylesheet" href="theme.css?v=20261019-mock-v2"></head>
+<link rel="stylesheet" href="theme.css?v=20261020-korean-vocab"></head>
 <body data-app-tabs>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -205,8 +205,8 @@
     </div>
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261019-content-fix"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-content-fix"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261020-korean-vocab"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261020-korean-vocab"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261020-korean-vocab"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
@@ -289,6 +289,11 @@
                         subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
                         metaText = `${item.passageTitle || ''} · ${item.skill || '독해'}`;
                         explanation = item.explanation || '지문 근거 해설이 없습니다.';
+                    } else if (currentSubject === 'korean_vocab') {
+                        mainText = item.word || '국어 어휘';
+                        subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
+                        metaText = `${item.level || ''} · ${item.unitTitle || '국어 어휘'}`;
+                        explanation = item.explanation || item.meaning || '';
                     } else if (currentSubject === 'english_reading') {
                         mainText = item.question || '영어 독해 문제';
                         subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
@@ -373,6 +378,10 @@
                     }
                 }
                 else if (subject === 'reading') targetUrl = 'reading.html?mode=review';
+                else if (subject === 'korean_vocab') {
+                    const target = (WrongNote.getAll().korean_vocab || []).find(item => item.wrongNoteId === identifier);
+                    if (target) targetUrl = `korean_vocab.html?level=${encodeURIComponent(target.levelId || 'level1')}&mode=review`;
+                }
                 else if (subject === 'english_reading') {
                     const target = (WrongNote.getAll().english_reading || []).find(item => item.wrongNoteId === identifier || item.type === identifier);
                     if (target) targetUrl = `english_reading.html?level=${encodeURIComponent(target.levelId || 'grade6')}&unit=${encodeURIComponent(target.unitId || 'er1')}&passage=${encodeURIComponent(target.passageId || '')}&mode=review`;
@@ -409,6 +418,10 @@
                     }
                 }
                 else if (currentSubject === 'reading') targetUrl = 'reading.html?mode=review';
+                else if (currentSubject === 'korean_vocab') {
+                    const all = WrongNote.getAll(), first = (all.korean_vocab || []).find(item => !item.isMastered) || (all.korean_vocab || [])[0];
+                    if (first) targetUrl = `korean_vocab.html?level=${encodeURIComponent(first.levelId || 'level1')}&mode=review`;
+                }
                 else if (currentSubject === 'english_reading') {
                     const all = WrongNote.getAll(), first = (all.english_reading || []).find(item => !item.isMastered) || (all.english_reading || [])[0];
                     if (first) targetUrl = `english_reading.html?level=${encodeURIComponent(first.levelId || 'grade6')}&unit=${encodeURIComponent(first.unitId || 'er1')}&passage=${encodeURIComponent(first.passageId || '')}&mode=review`;

@@ -7,6 +7,7 @@ const LocalRepository = window.SmartStudy?.LocalRepository;
 const SubjectRegistry = {
     definitions: {
         reading: { name: '국어 독해력', icon: '📖', path: 'reading.html' },
+        korean_vocab: { name: '국어 어휘력', icon: '📚', path: 'korean_vocab.html' },
         english: { name: '영어 단어', icon: '🇬🇧', path: 'english.html' },
         english_reading: { name: '영어 독해', icon: '📗', path: 'english_reading.html' },
         grammar: { name: '영어 문법', icon: '📘', path: 'english_grammar.html' },
@@ -137,10 +138,10 @@ const UserSession = {
                 attendance: { totalDays: 0, currentStreak: 0, lastCheckIn: null },
                 dailyStats: {
                     date: StudyPeriods.daily(),
-                    studyTime: { reading: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
-                    learningTime: { reading: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
-                    quizTime: { reading: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
-                    quizScores: { reading: [], english: [], english_reading: [], grammar: [], hanja: [], math: [] },
+                    studyTime: { reading: 0, korean_vocab: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
+                    learningTime: { reading: 0, korean_vocab: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
+                    quizTime: { reading: 0, korean_vocab: 0, english: 0, english_reading: 0, grammar: 0, hanja: 0, math: 0 },
+                    quizScores: { reading: [], korean_vocab: [], english: [], english_reading: [], grammar: [], hanja: [], math: [] },
                     subjectsStudied: []
                 },
                 weeklyStats: { weekStart: StudyPeriods.weekly(), studyTime: 0, attendanceDays: 0, subjectsStudied: [], quizCount: 0 },
@@ -346,6 +347,7 @@ const LearningPolicy = {
         if (subject === 'math') return `${m.levelId}:${m.semesterId}:${m.unitId}`;
         if (subject === 'reading') return `reading:${m.levelId}:${m.unitId}`;
         if (subject === 'english_reading') return `english_reading:${m.levelId}:${m.unitId}`;
+        if (subject === 'korean_vocab') return `korean_vocab:${m.levelId}:${m.unitId}`;
         return m.unitId || 'default';
     },
     evaluate(reports, subject, context) {
@@ -423,9 +425,9 @@ const WrongNote = {
     getAll: function() {
         try {
             const userId = UserSession.getActiveUser();
-            if (!userId) return { english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [] };
+            if (!userId) return { english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [], korean_vocab: [] };
             const stored = LocalRepository.getWrongAnswers(userId);
-            const all = Object.assign({ english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [] }, stored);
+            const all = Object.assign({ english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [], korean_vocab: [] }, stored);
             for (const items of Object.values(all)) if (Array.isArray(items)) for (const item of items) {
                 if (item.reviewVersion !== LearningPolicy.version) {
                     item.legacyMasteryScore = item.masteryScore;
@@ -436,7 +438,7 @@ const WrongNote = {
             return all;
         } catch (e) {
             console.error('[WrongNote Error]', e);
-            return { english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [] };
+            return { english: [], english_reading: [], grammar: [], hanja: [], math: [], reading: [], korean_vocab: [] };
         }
     },
 

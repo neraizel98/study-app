@@ -3,7 +3,7 @@ const NOW=Date.parse('2026-10-13T12:00:00+09:00'),DAY=86400000;
 function setup(){
  const reports=[],c={console,Date,Set,Map,Math:Object.create(Math)};c.window=c;c.SmartStudy={LocalRepository:{listReports:()=>reports}};
  vm.createContext(c);
- for(const file of ['utils.js','VocabEng.js','MathQuizData.js','ReadingPassages.js','EnglishReadingData.js','EnglishGrammarData.js','EnglishGrammarQuiz.js','VocabHanja.js','MathFormulaData.js','MathFormulaDataExtra.js','quiz-registry.js','MathFormulaQuiz.js','MathFormulaQuizExtra.js','MathFormulaReview.js','learning-plan.js','unified-learning.js','mock-reading-content.js','mock-exam-bank.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+ for(const file of ['utils.js','VocabEng.js','MathQuizData.js','ReadingPassages.js','EnglishReadingData.js','EnglishGrammarData.js','EnglishGrammarQuiz.js','VocabHanja.js','MathFormulaData.js','MathFormulaDataExtra.js','quiz-registry.js','MathFormulaQuiz.js','MathFormulaQuizExtra.js','MathFormulaReview.js','KoreanVocabData.js','KoreanVocabLevel1a.js','KoreanVocabLevel1b.js','KoreanVocabLevel2a.js','KoreanVocabLevel2b.js','KoreanVocabQuiz.js','learning-plan.js','unified-learning.js','mock-reading-content.js','mock-exam-bank.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
  return {c,reports,api:c.SmartStudy.MockExamBank};
 }
 function report(subject,unitId,attempts,extra={}){return {subject,sessionId:`${subject}:${unitId}:${extra.date||NOW}`,date:NOW-18*DAY,totalQuestions:attempts.length,metadata:{unitId,initialAttempts:attempts.map(a=>({...a,correct:true})),...extra.metadata},...extra};}
@@ -20,9 +20,11 @@ function seed(s){
 }
 test('well evidenced corpus reaches all seven quotas and 55 valid questions',()=>{
  const s=seed(setup()),before=JSON.stringify(s.reports),result=s.api.build('우준',NOW);
- assert.equal(result.complete,true,JSON.stringify(result.shortages));assert.equal(result.items.length,55);assert.deepEqual({...result.quotas},{reading:15,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
+ assert.equal(result.complete,true,JSON.stringify(result.shortages));assert.equal(result.items.length,55);assert.deepEqual({...result.quotas},{reading:11,korean_vocab:4,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
  assert.equal(new Set(result.items.map(q=>q.id)).size,55);assert.equal(new Set(result.items.map(q=>q.fingerprint)).size,55);
- for(const [subject,count]of Object.entries(result.quotas))assert.equal(result.items.filter(q=>q.subject===subject).length,count,subject);
+ for(const [subject,count]of Object.entries(result.quotas))if(!['reading','korean_vocab'].includes(subject))assert.equal(result.items.filter(q=>q.subject===subject).length,count,subject);
+ // 어휘 학습 기록이 없으면 국어 15문항을 모두 독해로 채운다.
+ assert.equal(result.items.filter(q=>q.subject==='reading').length,15);assert.equal(result.items.filter(q=>q.subject==='korean_vocab').length,0);
  for(const q of result.items){assert.equal(q.choices.filter(v=>v===q.answer).length,1,q.question);assert.equal(new Set(q.choices).size,q.choices.length);assert.ok(q.evidenceReportIds.length);assert.equal(s.api.grade(q,q.answer).correct,true);if(['reading','english_reading'].includes(q.subject))assert.ok(q.passageLines.length);}
  assert.equal(JSON.stringify(s.reports),before);assert.equal(result.newQuestionCount+result.reexposureCount,55);
 });
@@ -98,4 +100,15 @@ test('reading options do not give the answer away by length or extreme wording',
  }
  const extreme=/반드시|항상|모든|언제나|절대|전혀|결코|숨기기 위해|없애기 위해|존재하지 않는다/;
  for(const q of content.korean.flatMap(p=>p.questions).filter(q=>q.skill!=='evidence'))for(const option of q.choices.filter(v=>v!==q.answer))assert.ok(!extreme.test(option),option);
+});
+test('studied Korean vocabulary fills four 국어 questions after reading',()=>{
+ const s=seed(setup()),unit=s.c.KoreanVocabData.levels.level1.units[0],studied=unit.words.slice(0,6);
+ const attempts=studied.map(w=>({wordId:w.id,type:'meaning',question:`‘${w.word}’의 뜻으로 알맞은 것은?`,correctAnswer:w.meaning,correct:true}));
+ s.reports.push(report('korean_vocab',unit.id,attempts,{metadata:{levelId:'level1',unitId:unit.id,unitTitle:unit.title,initialAttempts:attempts.map(a=>({...a,correct:true}))}}));
+ const result=s.api.build('우준',NOW),vocab=result.items.filter(q=>q.subject==='korean_vocab');
+ assert.equal(result.complete,true,JSON.stringify(result.shortages));assert.equal(result.items.length,55);
+ assert.equal(vocab.length,4);assert.equal(result.items.filter(q=>q.subject==='reading').length,11);
+ for(const q of vocab){assert.ok(studied.some(w=>`vocab:${w.id}`===q.conceptId),q.conceptId);assert.equal(s.api.grade(q,q.answer).correct,true);assert.equal(new Set(q.choices).size,4);}
+ const korean=Array.from(result.items.filter(q=>['reading','korean_vocab'].includes(q.subject)),q=>q.subject);
+ assert.deepEqual(korean,[...Array(11).fill('reading'),...Array(4).fill('korean_vocab')],'국어 영역: 독해 다음에 어휘');
 });

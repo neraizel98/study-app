@@ -3,12 +3,13 @@ const prefs=new Map(),reports=[], users={};
 const clone=x=>JSON.parse(JSON.stringify(x));
 const local={getPreference:(k,d)=>prefs.has(k)?clone(prefs.get(k)):d,setPreference:(k,v)=>prefs.set(k,clone(v)),listReports:u=>clone(reports.filter(r=>r.userId===u)),getWrongAnswers:()=>({}),getUser:u=>users[u]||{}};
 const ctx={console,Date,Math,Set,Map,URLSearchParams};ctx.window=ctx;ctx.SmartStudy={LocalRepository:local};vm.createContext(ctx);
-for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','EnglishCourse.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','EnglishCourse.js','KoreanVocabData.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const p=ctx.SmartStudy.LearningPlan,progress=ctx.SmartStudy.LearningProgress;
 for(const budget of [30,45,60]){
  const u='budget'+budget;p.applyParentSettings(u,{budgetMinutes:budget,grade:6,semester:2});const plan=p.createPlan(u);
- assert.deepEqual(clone(plan.tasks.map(t=>t.subject)),['reading','english','grammar','english_reading','math','math_formula','hanja']);
- assert.equal(plan.tasks.reduce((n,t)=>n+t.minutes,0),budget);assert(plan.tasks.every(t=>t.context));
+ assert.deepEqual(clone(plan.tasks.map(t=>t.subject)),['reading','korean_vocab','english','grammar','english_reading','math','math_formula','hanja']);
+ // 국어 어휘 시간은 하루 목표 위에 더해진다.
+ assert.equal(plan.tasks.reduce((n,t)=>n+t.minutes,0),budget+p.vocabExtraMinutes[budget]);assert(plan.tasks.every(t=>t.context));
  assert.deepEqual(clone(p.getPlan(u)),clone(plan),'reading the plan must not reset it');
  assert(p.catalog('math_formula',plan.profile).every(c=>ctx.MATH_FORMULAS.find(f=>`formula-${f.number}`===c.context.unitId).level==='초6'));
 }

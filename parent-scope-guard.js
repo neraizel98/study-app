@@ -8,15 +8,17 @@
         if(name==='reading.html')return'reading';
         if(name==='english.html')return'english';
         if(name==='english_reading.html')return'english_reading';
+        if(name==='korean_vocab.html')return'korean_vocab';
         if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';
         return null;
     };
-    function subjectForUrl(url){const name=url.pathname.split('/').pop();if(name==='reading.html')return'reading';if(name==='english.html')return'english';if(name==='english_reading.html')return'english_reading';if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';return null;}
+    function subjectForUrl(url){const name=url.pathname.split('/').pop();if(name==='reading.html')return'reading';if(name==='english.html')return'english';if(name==='english_reading.html')return'english_reading';if(name==='korean_vocab.html')return'korean_vocab';if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';return null;}
     function matchesUrl(task,url){
         const params=url.searchParams,context=task.context||{};
         if(task.subject==='reading')return params.get('unit')===String(context.unitId||'');
         if(task.subject==='english')return params.get('level')===String(context.unitId||'');
         if(task.subject==='english_reading')return params.get('level')===String(context.levelId||'')&&params.get('unit')===String(context.unitId||'');
+        if(task.subject==='korean_vocab')return params.get('level')===String(context.levelId||'')&&params.get('unit')===String(context.unitId||'');
         if(task.subject==='math')return params.get('level')===String(context.levelId||'')
             &&params.get('semester')===String(context.semesterId||'')&&params.get('unit')===String(context.unitId||'');
         return false;

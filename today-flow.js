@@ -2,7 +2,7 @@
     'use strict';
     const app=root.SmartStudy, api=app?.LearningPlan, repo=app?.LocalRepository;
     if(!api||!repo)return;
-    const names={reading:'국어 독해',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+    const names={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
     const contentHost=()=>document.querySelector('body > .container, body > .viewer-container, body > .quiz-container, body > main');
     const courseReturn=document.querySelector('body > a[href="english_course.html"]'),courseHost=contentHost();
     if(courseReturn?.tagName==='A'&&courseHost){courseReturn.removeAttribute('style');courseReturn.className='subject-course-return';courseHost.append(courseReturn);}

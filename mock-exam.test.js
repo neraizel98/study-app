@@ -49,17 +49,18 @@ test('다른 계정의 수정 차단·학습자별 초안 분리',()=>{
     assert.equal(h.api.get('다른학생',week),null); assert.equal(h.api.getById('다른학생',draft.assessmentId),null);
     const other=h.api.create('다른학생',h.bank,start); assert.notEqual(other.assessmentId,draft.assessmentId);
 });
-test('과목별 저장 재전송 7보고서 한 번, 공식 원본 과목 보존, 최초 점수 불변',async()=>{
+test('과목별 저장 재전송 8보고서 한 번, 공식 원본 과목 보존, 최초 점수 불변',async()=>{
     const h=harness(),draft=h.api.create('우준',h.bank,start),week=draft.scheduledWeekId;
     h.api.answer('우준',week,'reading:0','A',start+1000);
     h.api.finishSection('우준',week,start+2000); await h.api.saveReports('우준',week);
-    assert.equal(h.local.listReports('우준').length,1); assert.equal(h.local.listReports('우준')[0].metadata.examComplete,false);
+    // 국어 영역은 독해·어휘 두 보고서를 만든다.
+    assert.equal(h.local.listReports('우준').length,2); assert.equal(h.local.listReports('우준')[0].metadata.examComplete,false);
     h.api.reconcile('우준',week,start+90*60000); await h.api.saveReports('우준',week); await h.api.saveReports('우준',week);
-    const reports=h.local.listReports('우준'); assert.equal(reports.length,7); assert.equal(reports[0].initialScore,1);
+    const reports=h.local.listReports('우준'); assert.equal(reports.length,8); assert.equal(reports[0].initialScore,1);
     assert.ok(reports.every(r=>r.metadata.examComplete&&r.metadata.resultVisibility==='withheld'));
     const formula=reports.find(r=>r.metadata.assessmentSubject==='math_formula'); assert.equal(formula.subject,'math'); assert.equal(formula.metadata.source,'math-formula');
     h.api.answer('우준',week,'reading:0','B',start+100*60000); assert.equal(h.api.get('우준',week).responses['reading:0'],'A');
-    const snapshot=h.api.submissionSnapshot(h.api.get('우준',week)); assert.equal(snapshot.reports.length,7); assert.equal(snapshot.initialAttempts.length,55);
+    const snapshot=h.api.submissionSnapshot(h.api.get('우준',week)); assert.equal(snapshot.reports.length,8); assert.equal(snapshot.initialAttempts.length,55);
 });
 test('문항과 첫 채점 스냅샷은 원본 은행 수정 후에도 보존',()=>{
     const h=harness(),draft=h.api.create('우준',h.bank,start),week=draft.scheduledWeekId;
@@ -78,7 +79,7 @@ test('클라우드 실패는 제출을 보존하고 재시도는 동일 시험 I
     h.api.reconcile('우준',week,start+90*60000); h.app.MockPublication={submit:async()=>{throw new Error('offline');}};
     assert.equal((await h.api.sync('우준',week)).synced,false); assert.equal(h.api.get('우준',week).syncStatus,'pending');
     let sent; h.app.MockPublication={submit:async(user,snapshot)=>{sent=snapshot; return true;}};
-    assert.equal((await h.api.sync('우준',week)).synced,true); assert.equal(sent.assessmentId,draft.assessmentId); assert.equal(h.local.listReports('우준').length,7);
+    assert.equal((await h.api.sync('우준',week)).synced,true); assert.equal(sent.assessmentId,draft.assessmentId); assert.equal(h.local.listReports('우준').length,8);
 });
 test('엄격한 선택지와 시험 시작 후 시간설정 스냅샷',()=>{
     const h=harness(),draft=h.api.create('우준',h.bank,start,{sectionMinutes:{reading:25}}),week=draft.scheduledWeekId;

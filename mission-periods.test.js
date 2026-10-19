@@ -69,7 +69,7 @@ assert.strictEqual(user.monthlyStats.studyTime, 0);
 
 
 const subjects = MissionManager.registeredSubjects(user);
-assert.deepStrictEqual(Array.from(subjects), ['reading','english','english_reading','grammar','hanja','math']);
+assert.deepStrictEqual(Array.from(subjects), ['reading','korean_vocab','english','english_reading','grammar','hanja','math']);
 // Login alone, even with legacy attendance counters, must not earn new goals.
 user.weeklyStats.attendanceDays=7;user.monthlyStats.attendanceDays=30;
 UserSession.saveUserData(user);

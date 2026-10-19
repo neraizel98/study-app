@@ -27,7 +27,7 @@ const MissionManager = {
         weekly:[{icon:'🎲',title:'가족 활동 선택 제안권',note:'활동·시간·비용은 보호자와 상의해요'}],
         monthly:[{icon:'🎡',title:'체험·나들이 선택 제안권',note:'장소·일정·비용은 보호자가 최종 결정해요'}]
     },
-    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().map(s=>s.id):['reading','english','english_reading','grammar','hanja','math']; },
+    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().map(s=>s.id):['reading','korean_vocab','english','english_reading','grammar','hanja','math']; },
     get areas() { return [...new Set([...this.registeredSubjects(),'math_formula'])]; },
     budget(user) {
         const id=user?.id||UserSession.getActiveUser();
@@ -37,7 +37,7 @@ const MissionManager = {
         return [30,45,60].includes(Number(value?.budgetMinutes))?Number(value.budgetMinutes):45;
     },
     targetOf(mission,user) { return mission.target==='budget'?this.budget(user)*60:mission.target; },
-    family(subject) { return ['english','grammar','english_reading'].includes(subject)?'english':subject==='math_formula'?'math':subject; },
+    family(subject) { return ['english','grammar','english_reading'].includes(subject)?'english':subject==='math_formula'?'math':subject==='korean_vocab'?'reading':subject; },
     dailyTimes(user) {
         const daily=user.dailyStats||{}, f=user.formulaStudyTime||{};
         return Object.fromEntries(this.areas.map(subject=>[subject,subject==='math_formula'
@@ -193,7 +193,7 @@ const MissionManager = {
         const done=defs.filter(m=>map[m.id]?.completed).length;
         document.getElementById('goalSummary').textContent=`${this.periodKey(category)} 시작 · ${done}/4 완료 · 전체 달성 시 ${defs.reduce((s,m)=>s+m.exp,0)} EXP`;
         const entries=this.evidence(user).filter(e=>e.date>=this.periodKey(category));
-        const names={reading:'국어',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+        const names={reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
         container.innerHTML=defs.map(m=>{
             const p=map[m.id]||{}, target=this.targetOf(m,user), value=Math.min(target,Math.max(0,p.progress||0));
             const legacy=p.completed&&p.ruleVersion!==2;

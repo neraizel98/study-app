@@ -9,7 +9,7 @@
     <meta name="theme-color" content="#fbf7ef">
     <title>과목 · Smart Study</title>
     <link rel="stylesheet" href="styles.css?v=20261014-redesign">
-<link rel="stylesheet" href="theme.css?v=20261019-mock-v2"></head>
+<link rel="stylesheet" href="theme.css?v=20261020-korean-vocab"></head>
 <body class="ss-page" data-app-tabs>
     <main class="ss-container">
         <header class="ss-page-head">
@@ -34,6 +34,14 @@
                     <strong>국어 독해력</strong>
                     <span class="ss-desc">문학·과학·고전을 근거로 정확하게 읽기</span>
                     <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('reading')" title="아들에게 국어 독해 학습 요청 보내기" aria-label="국어 독해 학습 요청 보내기">💬</button>
+                </a>
+                <!-- Korean Vocabulary -->
+                <a href="korean_vocab.html" class="ss-subject" data-tone="reading">
+                    <span class="ss-tile" data-icon="books"></span>
+                    <span class="ss-badge">중·고 어휘</span>
+                    <strong>국어 어휘력</strong>
+                    <span class="ss-desc">순우리말·고전·문학 어휘를 뜻·유의어·반의어·지문으로 익히기</span>
+                    <button class="kakao-request-btn" onclick="event.preventDefault(); KakaoShare.sendRequest('korean_vocab')" title="아들에게 국어 어휘 학습 요청 보내기" aria-label="국어 어휘 학습 요청 보내기">💬</button>
                 </a>
                 <!-- English Vocabulary -->
                 <a href="english.html" class="ss-subject" data-tone="english">
@@ -107,7 +115,7 @@
     <script src="schema-migrations.js"></script>
     <script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script>
     <script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261019-content-fix"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261020-korean-vocab"></script>
     <script src="icons.js?v=20261014-scratchpad"></script>
     <script src="app-shell.js?v=20261014-redesign"></script>
     <script>

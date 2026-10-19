@@ -1,6 +1,6 @@
 (function(){
  'use strict';const app=window.SmartStudy,names={reading:'국어',english:'영어',math:'수학',hanja:'한자'},colors={reading:'#c2672f',english:'#23845c',math:'#2f68c8',hanja:'#a3324b'};
- const group=s=>['english','grammar','english_reading'].includes(s)?'english':['math','math_formula'].includes(s)?'math':s;
+ const group=s=>['english','grammar','english_reading'].includes(s)?'english':['math','math_formula'].includes(s)?'math':s==='korean_vocab'?'reading':s;
  const el=(tag,className,text)=>{const node=document.createElement(tag);if(className)node.className=className;if(text!=null)node.textContent=text;return node;};
  function scores(snapshot){const result=Object.fromEntries(Object.keys(names).map(s=>[s,{correct:0,total:0}]));for(const a of snapshot.initialAttempts||[]){const q=snapshot.questions?.find(q=>q.id===a.questionId),s=group(a.subject||q?.subject);if(!result[s]||typeof a.correct!=='boolean')continue;result[s].total++;if(a.correct)result[s].correct++;}return result;}
  function status(chip,published){chip.textContent=published?'공개 완료':'학생 공개 대기';chip.classList.toggle('is-published',!!published);}

@@ -45,7 +45,7 @@
             bank = app.MockExamBank.build(user, Date.now());
             $('bankStatus').textContent = api.validateBank(bank) ? '최근 실제로 학습한 범위에서 55문항을 준비했어요.' : '정규 55문항 시험 준비 중이에요. 부족한 영역을 먼저 학습해 주세요.';
             $('shortages').replaceChildren();
-            for (const [subject, shortage] of Object.entries(bank.shortages || {})) if (shortage.missing > 0) $('shortages').append(text('li', `${app.MockExamBank.subjectNames?.[subject] || ({reading:'국어',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[subject] || subject}: ${shortage.actual}/${shortage.required}문항 · ${shortage.missing}문항 부족`));
+            for (const [subject, shortage] of Object.entries(bank.shortages || {})) if (shortage.missing > 0) $('shortages').append(text('li', `${app.MockExamBank.subjectNames?.[subject] || ({reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[subject] || subject}: ${shortage.actual}/${shortage.required}문항 · ${shortage.missing}문항 부족`));
             if (!api.validateBank(bank) && !$('shortages').children.length) $('shortages').append(text('li', '문항 구성과 영역 배분 확인이 필요합니다.'));
             $('startExam').disabled = !api.validateBank(bank);
             const minutes = app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};

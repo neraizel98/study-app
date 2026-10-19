@@ -1,9 +1,11 @@
 (function (root) {
     'use strict';
     const app = root.SmartStudy = root.SmartStudy || {};
-    const areas = Object.freeze({ reading: 15, english: 4, grammar: 4, english_reading: 7, math: 12, math_formula: 3, hanja: 10 });
+    const areas = Object.freeze({ reading: 11, korean_vocab: 4, english: 4, grammar: 4, english_reading: 7, math: 12, math_formula: 3, hanja: 10 });
+    // 국어 영역은 독해와 어휘를 합쳐 15문항이다. 어휘 학습 기록이 모자라면 독해로 채운다.
+    const KOREAN = Object.freeze({ total: 15, vocabularyMax: 4 });
     const definitions = Object.freeze([
-        { id: 'reading', name: '국어', subjects: ['reading'], minutes: 20 },
+        { id: 'reading', name: '국어', subjects: ['reading', 'korean_vocab'], minutes: 20 },
         { id: 'english', name: '영어', subjects: ['english', 'grammar', 'english_reading'], minutes: 20 },
         { id: 'math', name: '수학', subjects: ['math', 'math_formula'], minutes: 20 },
         { id: 'hanja', name: '한자', subjects: ['hanja'], minutes: 10 }
@@ -43,7 +45,8 @@
         return bank?.complete === true && items.length === 55 && new Set(items.map(q => q.id)).size === 55
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
-            && Object.entries(areas).every(([subject, count]) => counts[subject] === count);
+            && Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count)
+            && counts.reading + counts.korean_vocab === KOREAN.total && counts.korean_vocab <= KOREAN.vocabularyMax;
     }
     function create(user, bank, now = Date.now(), options = {}) {
         assertUser(user);
@@ -60,7 +63,7 @@
         sections[0].deadline = now + sections[0].durationSeconds * 1000;
         return write({ schemaVersion: 1, assessmentId: `mock:${user}:${scheduledWeekId}:first`, userId: user, scheduledWeekId,
             scheduledDate: options.scheduledDate || new Date(now + 9 * 3600000).toISOString().slice(0, 10), scopeCutoffAt: bank.scopeCutoffAt || now,
-            kind: 'mock', attemptNo: 1, parentAttemptId: null, bankVersion: bank.version || 'unknown', quotas: clone(areas),
+            kind: 'mock', attemptNo: 1, parentAttemptId: null, bankVersion: bank.version || 'unknown', quotas: { ...clone(areas), reading: bank.items.filter(q => q.subject === 'reading').length, korean_vocab: bank.items.filter(q => q.subject === 'korean_vocab').length },
             evidenceWindowDays: bank.evidenceWindowDays || null, repeatAvoidanceDays: bank.repeatAvoidanceDays || null,
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
             scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false,
@@ -164,7 +167,7 @@
                     elapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
                     sectionElapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0), timeAccountingVersion: 'active-v1',
                     unansweredCount: attempts.filter(a => a.unanswered).length, initialAttempts: clone(attempts), attempts: clone(attempts),
-                    requestedCount: areas[subject], actualCount: attempts.length, repeatedCount: attempts.filter(a => a.repeated).length,
+                    requestedCount: ['reading', 'korean_vocab'].includes(subject) ? (draft.quotas?.[subject] ?? areas[subject]) : areas[subject], actualCount: attempts.length, repeatedCount: attempts.filter(a => a.repeated).length,
                     newQuestionCount: attempts.filter(a => !a.repeated).length, scopeComplete: true,
                     questionContexts: attempts.map(a => ({ questionId: a.questionId, context: a.context, sourceReportIds: a.sourceReportIds })) } };
         }));

@@ -1,8 +1,8 @@
 (function(root){
  'use strict';
  const app=root.SmartStudy=root.SmartStudy||{},DAY=86400000;
- const quotas=Object.freeze({reading:15,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
- const version='20261019-mock-bank-v2';
+ const quotas=Object.freeze({reading:11,korean_vocab:4,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
+ const version='20261019-mock-bank-v3';
  const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'').trim();
  // Choice order, case, and spacing are presentation, not a new question.
  function fingerprint(q){const lines=q.passageLines||q.passageText||q.sentences||[];return [q.subject,normalize(q.question||q.prompt),normalize(q.answer??q.correctAnswer),...(Array.isArray(lines)?lines:[lines]).map(normalize)].join('|');}
@@ -128,6 +128,19 @@
     }
     if(c.unitId==='e2'&&['am','is','are'].some(v=>learnedAnswers.has(v)))for(const item of [q('be','My sister ___ at school.','is',['am','are','be'],'단수 주어 my sister에는 is를 쓴다.'),q('be','You ___ my friend.','are',['am','is','be'],'you에는 are를 쓴다.'),q('be','I ___ ready for class.','am',['is','are','be'],'I에는 am을 쓴다.'),q('be','The two books ___ on the desk.','are',['am','is','be'],'복수 주어 the two books에는 are를 쓴다.')])add(g,{...item,conceptId:'be-present',sourceType:'학습한 be동사 개념의 새 예문'});
    }
+   if(g.subject==='korean_vocab'){
+    // 학습한 낱말만 출제한다. 같은 낱말이라도 아직 풀지 않은 유형은 새 문항으로 본다.
+    const vocab=root.KoreanVocabData,quiz=root.KoreanVocabQuiz,level=vocab?.levels?.[c.levelId];
+    if(vocab&&quiz&&level){
+     const levelPool=level.units.flatMap(u=>u.words.map(w=>({...w,levelId:level.id,unitId:u.id,unitTitle:u.title})));
+     const seenTypes=new Map();for(const a of attempts){const id=a.wordId||a.wrongNoteId;if(id)seenTypes.set(id,new Set([...(seenTypes.get(id)||[]),a.type]));}
+     for(const word of levelPool.filter(w=>seenTypes.has(w.id)))for(const type of quiz.available(word)){
+      const item=quiz.question(word,type,levelPool,rng);if(!item)continue;
+      add(g,{question:item.question,choices:item.choices,answer:item.answer,explanation:item.explanation,passageTitle:item.passage?.title||'',passageLines:item.passage?.lines||undefined,
+       conceptId:`vocab:${word.id}`,wordId:word.id,questionType:type,repeated:seenTypes.get(word.id).has(type),sourceType:'학습한 어휘 확인',difficulty:level.id==='level2'?'standard':'basic'});
+     }
+    }
+   }
    if(g.subject==='english_reading'){
     const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId);
     for(const p of unit?.passages||[]){if(!g.passageIds.has(p.id))continue;
@@ -182,10 +195,16 @@
    return shuffle(picked,rng);
   }
   const items=[],shortages={};
-  for(const [subject,required] of Object.entries(quotas)){
+  // 어휘를 먼저 뽑고, 모자란 만큼 국어 독해를 더 뽑아 국어 영역 15문항을 맞춘다.
+  const order=['korean_vocab',...Object.keys(quotas).filter(s=>s!=='korean_vocab')];
+  let vocabularyShort=0,vocabularyItems=[];
+  for(const subject of order){
+   const required=quotas[subject]+(subject==='reading'?vocabularyShort:0);
    const selected=select(subject,pools[subject],required);
+   if(subject==='korean_vocab'){vocabularyShort=required-selected.length;vocabularyItems=selected;continue;}
    if(subject==='math')selected.filter(writable).slice(0,WRITTEN_MATH).forEach(q=>Object.assign(q,{kind:'written',inputHint:'분수는 4/9처럼 쓰고, 단위는 빼도 돼요.'}));
    items.push(...selected);
+   if(subject==='reading')items.push(...vocabularyItems); // 국어 영역: 독해 다음에 어휘
    if(selected.length<required)shortages[subject]={required,actual:selected.length,missing:required-selected.length,reason:'최근 3주 실제 학습의 세부 근거 또는 최근 14일 미출제 문항이 부족합니다. 미학습 범위로 채우지 않았습니다.'};
   }
   return {items,quotas:{...quotas},shortages,complete:Object.keys(shortages).length===0,version,scopeCutoffAt:now,evidenceWindowDays:21,repeatAvoidanceDays:14,newQuestionCount:items.filter(q=>!q.repeated).length,reexposureCount:items.filter(q=>q.repeated).length};

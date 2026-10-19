@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>국어 어휘력</title>
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
+    <style>
+        :root{--vocab:#c2672f;--vocab2:#8f4a1f;--vocab-soft:rgba(194,103,47,.09)}
+        body{min-height:100vh;background:radial-gradient(circle at top,#ffffff 0,#ffffff 48%,#fbf7ef 100%);color:var(--text)}
+        .vocab-shell{width:min(1050px,94%);margin:0 auto;padding:28px 0 70px}.top-nav{display:flex;justify-content:space-between;align-items:center;margin-bottom:24px}.top-nav a{color:#2b2620;text-decoration:none}
+        .hero{padding:28px;border-radius:24px;background:linear-gradient(135deg,rgba(194,103,47,.16),rgba(240,180,76,.12));border:1px solid rgba(194,103,47,.32)}.hero h1{margin:0 0 8px;font-size:clamp(28px,5vw,46px)}.hero p{margin:0;color:#2b2620}.label{color:var(--vocab2);font-weight:900;letter-spacing:.04em}
+        .mode-toggle{display:flex;justify-content:center;gap:10px;margin:22px 0 8px}.mode-toggle .mode-btn{border:1px solid #ddd2bf;background:#ffffff;color:#2b2620;border-radius:14px;padding:13px 24px;font-weight:800;cursor:pointer}
+        .level-tabs,.unit-tabs{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;padding:12px 2px}.level-btn,.unit-btn{border:1px solid #ddd2bf;background:#ffffff;color:#2b2620;padding:11px 16px;border-radius:999px;cursor:pointer;font:inherit}.level-btn small{display:block;font-size:.72rem;color:#8a8070}.level-btn:disabled{opacity:.5;cursor:not-allowed}
+        .active{background:linear-gradient(135deg,var(--vocab),var(--vocab2))!important;color:#ffffff!important;border-color:transparent!important;font-weight:800}.active small{color:#ffe9d6!important}
+        .card{background:#ffffff;border:1px solid #ddd2bf;border-radius:22px;padding:clamp(20px,4vw,34px);line-height:1.75}.card h2{margin:0 0 8px;line-height:1.35}.unit-intro{margin:0 0 18px;color:#6e6559}
+        .word-list{display:grid;gap:12px}.word-card{border:1px solid #ece3d3;border-radius:16px;padding:16px 18px;background:#fffdf8}.word-head{display:flex;flex-wrap:wrap;align-items:baseline;gap:6px 10px}.word-head strong{font-size:1.25rem}.word-meta{font-size:.82rem;color:#8a8070}.word-meaning{margin:6px 0 8px;font-weight:600}
+        .relations{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}.chip{display:inline-block;padding:2px 10px;border-radius:999px;font-size:.82rem;font-weight:700}.chip.syn{background:#e4f3ea;color:#1d6f4d}.chip.ant{background:#fbe9dc;color:#9c4a1c}.chip.none{background:#f2ece1;color:#8a8070;font-weight:500}
+        .word-example{margin:8px 0 0;padding:10px 12px;border-radius:10px;background:var(--vocab-soft)}.word-card details{margin-top:8px}.word-card summary{cursor:pointer;color:var(--vocab2);font-weight:700}
+        .passage{margin:12px 0;padding:16px 18px;background:#ffffff;border:1px solid #ece3d3;border-radius:14px;line-height:1.9;font-family:Georgia,'Noto Serif KR',serif}.passage p{margin:0 0 6px}.word-card mark,.passage mark{background:#ffe2b8;color:inherit;padding:0 2px;border-radius:3px}.passage-title{font-weight:800;margin-bottom:6px;font-family:inherit}.source-note{font-size:.75rem;color:#968c7e;text-align:right}
+        .actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:22px}.actions button,.primary{border:0;border-radius:12px;padding:13px 18px;background:#f4eee3;color:#2b2620;font-weight:800;cursor:pointer;font:inherit;font-weight:800}.primary{background:linear-gradient(135deg,var(--vocab),var(--vocab2))!important;color:#ffffff!important}
+        .quiz-head{display:flex;justify-content:space-between;gap:12px;align-items:center}.type-badge{display:inline-block;padding:3px 10px;border-radius:999px;background:var(--vocab-soft);color:var(--vocab2);font-weight:800;font-size:.85rem}
+        .quiz-question{font-size:1.2rem;line-height:1.6;margin:18px 0 14px;white-space:pre-line}.choices{display:grid;gap:10px}.answer{display:flex;gap:12px;text-align:left;padding:14px;border:1px solid #ddd2bf;background:#ffffff;color:#2b2620;border-radius:13px;cursor:pointer;font:inherit;line-height:1.5}.answer span{display:grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:#f4eee3}.answer.correct{border-color:#20a574;background:rgba(10,160,111,.14)}.answer.wrong{border-color:#c0392b;background:rgba(192,57,43,.12)}
+        .feedback{margin-top:16px;padding:14px 16px;border-radius:12px;line-height:1.7}.feedback.good{background:rgba(10,160,111,.12)}.feedback.bad{background:rgba(192,57,43,.1)}
+        .locked{padding:26px;text-align:center;color:#8a8070}
+        [hidden]{display:none!important}@media(max-width:620px){.vocab-shell{width:92%}.hero{padding:22px}.unit-tabs{display:grid;grid-template-columns:1fr 1fr}.unit-btn{width:100%;padding:10px 8px}.actions button{flex:1}}
+    </style>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261020-korean-vocab"></head>
+<body>
+<main class="vocab-shell">
+    <nav class="top-nav"><a class="ss-back" href="subjects.html">← 과목 목록</a><a href="index.html">🏠 홈</a></nav>
+    <header class="hero"><div class="label">KOREAN VOCABULARY</div><h1>📚 국어 어휘력</h1><p id="heroLevel">뜻 · 유의어 · 반의어 · 관련 지문으로 낱말을 익혀요</p></header>
+    <div class="mode-toggle"><button id="studyModeBtn" class="mode-btn active" type="button">📚 학습 모드</button><button id="quizModeBtn" class="mode-btn" type="button">📝 퀴즈 모드</button></div>
+    <section id="levelTabs" class="level-tabs" aria-label="어휘 레벨"></section>
+    <section id="unitTabs" class="unit-tabs" aria-label="어휘 단원"></section>
+    <section id="studyPanel" class="card">
+        <div class="label" id="unitCategory"></div><h2 id="unitTitle"></h2><p id="unitIntro" class="unit-intro"></p>
+        <div id="wordList" class="word-list"></div>
+        <div class="actions"><button id="prevUnit" type="button">← 이전 단원</button><button id="nextUnit" type="button">다음 단원 →</button><button id="startQuiz" class="primary" type="button">이 단원 퀴즈 풀기</button></div>
+    </section>
+    <section id="quizPanel" class="card" hidden>
+        <div class="quiz-head"><span id="typeBadge" class="type-badge"></span><strong id="quizProgress"></strong></div>
+        <article id="quizPassage" class="passage" hidden></article>
+        <h3 id="quizQuestion" class="quiz-question" tabindex="-1"></h3><div id="quizChoices" class="choices"></div>
+        <div id="quizFeedback" class="feedback" hidden></div>
+        <div class="actions"><button id="backToStudy" type="button">학습으로 돌아가기</button><button id="nextQuestion" class="primary" type="button" hidden>다음 문제</button></div>
+    </section>
+</main>
+<section id="resultModal" class="result" hidden><div class="result-box"><div style="font-size:55px">🏆</div><h2>어휘 퀴즈 결과</h2><div id="resultScore" class="result-score"></div><p id="resultMessage"></p><div class="actions"><button id="retryQuiz" class="primary" type="button">다시 풀기</button><button id="resultStudy" type="button">학습으로</button><button id="shareResult" type="button">아빠에게 공유</button></div></div></section>
+<script src="utils.js?v=20261019-content-fix"></script>
+<script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
+<script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261020-korean-vocab"></script>
+<script src="study-timer.js?v=20261020-korean-vocab"></script>
+<script src="kakao-share.js?v=20260928-record-reliability"></script>
+<script src="KoreanVocabData.js?v=20261020-korean-vocab"></script>
+<script src="KoreanVocabLevel1a.js?v=20261020-korean-vocab"></script><script src="KoreanVocabLevel1b.js?v=20261020-korean-vocab"></script>
+<script src="KoreanVocabLevel2a.js?v=20261020-korean-vocab"></script><script src="KoreanVocabLevel2b.js?v=20261020-korean-vocab"></script>
+<script src="KoreanVocabQuiz.js?v=20261020-korean-vocab"></script>
+<script src="KoreanVocabApp.js?v=20261020-korean-vocab"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261020-korean-vocab"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261020-korean-vocab"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+<script src="version-check.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261020-korean-vocab"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261020-korean-vocab"></script><script src="unified-learning.js?v=20261020-korean-vocab"></script><script src="today-journey.js?v=20261020-korean-vocab"></script><script src="today-flow.js?v=20261020-korean-vocab"></script><script src="quiz-exposure.js"></script></body>
+</html>

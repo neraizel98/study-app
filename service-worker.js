@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261019-content-fix';
+const CACHE_NAME = 'smart-study-20261020-korean-vocab';
 
 try {
     importScripts('./firebase-config.js');
@@ -70,6 +70,14 @@ const STATIC_ASSETS = [
     './math_quiz.html',
     './english.html',
     './english_reading.html',
+    './korean_vocab.html',
+    './KoreanVocabData.js',
+    './KoreanVocabLevel1a.js',
+    './KoreanVocabLevel1b.js',
+    './KoreanVocabLevel2a.js',
+    './KoreanVocabLevel2b.js',
+    './KoreanVocabQuiz.js',
+    './KoreanVocabApp.js',
     './english_course.html',
     './EnglishCourse.js',
     './english-course-ui.js',

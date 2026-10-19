@@ -19,6 +19,10 @@
             const sound = (reading ? attempt.correctAnswer : (String(attempt.question).match(/“(.+?)”/) || [])[1] || '').trim().split(/\s+/);
             return ['hanja', { ...base, hanja, eum: sound.pop() || '', meaning: sound.join(' '), level: c.unitId }];
         }
+        if (attempt.subject === 'korean_vocab') {
+            const wordId = String(attempt.conceptId || '').replace(/^vocab:/, '');
+            return wordId ? ['korean_vocab', { ...base, wrongNoteId: wordId, wordId, levelId: c.levelId, unitId: c.unitId, unitTitle: c.title }] : null;
+        }
         return ['reading', 'grammar', 'english_reading'].includes(attempt.subject) ? [attempt.subject, { ...c, ...base, type: attempt.questionId }] : null;
     }
     function note(user, assessmentId, attempts) {
