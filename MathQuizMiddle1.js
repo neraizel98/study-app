@@ -156,11 +156,12 @@
                 `$${start}+${change}=${start + change}$이므로 낮 기온은 ${start + change}℃입니다.`, '℃');
         }
         if (kind === 1) {
-            const down = r(3, 12);
-            const basement = r(1, 12);
-            return numberQuiz(`엘리베이터가 지하 ${basement}층에서 ${change}개 층 올라갔다가 ${down}개 층 내려갔습니다. 현재 층은?`,
-                -basement + change - down,
-                `지하 ${basement}층을 $-${basement}$로 나타내면 $-${basement}+${change}-${down}=${-basement + change - down}$층입니다.`, '층');
+            // 실제 건물에는 0층이 없으므로 지하에서만 움직이도록 범위를 제한합니다.
+            const up = r(2, 6), down = r(1, 4);
+            const basement = r(up + 1, 10);
+            return numberQuiz(`엘리베이터가 지하 ${basement}층에서 ${up}개 층 올라갔다가 ${down}개 층 내려갔습니다. 지하 $n$층을 $-n$층으로 나타낼 때 현재 층은?`,
+                -basement + up - down,
+                `지하 ${basement}층을 $-${basement}$로 나타내면 $-${basement}+${up}-${down}=${-basement + up - down}$층, 즉 지하 ${basement - up + down}층입니다.`, '층');
         }
         const gain = r(5, 20), loss = r(3, 15);
         return numberQuiz(`게임에서 ${gain}점을 얻고 ${loss}점을 잃는 일을 2번 반복했습니다. 점수 변화는?`, 2 * (gain - loss),
@@ -237,7 +238,7 @@
         const kind = r(0, 2);
         if (kind === 0) {
             const x = r(4, 18), mult = r(2, 6), add = r(-8, 10), result = mult * x + add;
-            return numberQuiz(`어떤 수의 ${mult}배에 ${add >= 0 ? add + '을 더했더니' : Math.abs(add) + '을 뺐더니'} ${result}이 되었습니다. 어떤 수는?`, x,
+            return numberQuiz(`어떤 수의 ${mult}배에 ${add >= 0 ? add + Utils.josa(add, '을/를') + ' 더했더니' : Math.abs(add) + Utils.josa(Math.abs(add), '을/를') + ' 뺐더니'} ${result}${Utils.josa(result, '이/가')} 되었습니다. 어떤 수는?`, x,
                 `$${mult}x${add >= 0 ? '+' : ''}${add}=${result}$을 풀면 $x=${x}$입니다.`);
         }
         if (kind === 1) {
@@ -281,6 +282,7 @@
                 `$a=xy=${x}\\times${signed(y)}=${a}$입니다.`);
         }
         const p1 = [r(-5, 5), r(-5, 5)], p2 = [r(-5, 5), r(-5, 5)];
+        while (p1[0] === p2[0] && p1[1] === p2[1]) p2[0] = r(-5, 5);
         const dx = Math.abs(p1[0] - p2[0]), dy = Math.abs(p1[1] - p2[1]);
         return numberQuiz(`두 점 $A(${p1[0]},${p1[1]})$, $B(${p2[0]},${p2[1]})$의 x좌표 차와 y좌표 차의 합은?`, dx + dy,
             `$|${p1[0]}-${signed(p2[0])}|+|${p1[1]}-${signed(p2[1])}|=${dx}+${dy}=${dx + dy}$입니다.`);

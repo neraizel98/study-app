@@ -31,6 +31,25 @@ const Utils = {
     },
 
     // 랜덤 정수
+    // 받침 유무에 맞는 조사를 고릅니다(예: josa('우준', '이가/가') → '이가').
+    // 숫자·분수·단위는 읽는 소리 기준입니다: 3 → 삼, \frac{3}{4} → 4분의 3, L → 리터.
+    josa: function (word, pair) {
+        const [withFinal, withoutFinal] = pair.split('/');
+        return this.hasFinalConsonant(word) ? withFinal : withoutFinal;
+    },
+
+    hasFinalConsonant: function (word) {
+        let text = String(word).replace(/\$/g, '').trim();
+        const units = [['mL', '리터'], ['L', '리터'], ['kg', '그램'], ['km', '미터'], ['cm', '미터'], ['m', '미터'], ['g', '그램'], ['%', '퍼센트'], ['\\%', '퍼센트']];
+        for (const [unit, reading] of units) if (text.endsWith(unit)) { text = reading; break; }
+        const fraction = text.match(/\\frac\{([^{}]*)\}\{[^{}]*\}$/);
+        if (fraction) text = fraction[1];
+        const last = text.slice(-1);
+        if (/[가-힣]/.test(last)) return (last.charCodeAt(0) - 0xAC00) % 28 !== 0;
+        // 0(영·십·백·천…), 1 일, 3 삼, 6 육, 7 칠, 8 팔
+        return /[013678]/.test(last);
+    },
+
     randomInt: function (min, max) {
         return Math.floor(Math.random() * (max - min + 1)) + min;
     },
@@ -123,7 +142,9 @@ const Utils = {
                 ans = `$${this.formatFraction(ansNum, ansDen)}$`;
                 
                 let step1 = isMixed ? `$\\frac{${totalNum}}{${den}} \\div ${div}$` : `${fracStr} $\\div ${div}$`;
-                exp = `${fracStr} 를 가분수로 나타내면 ${step1} 입니다. 여기에 $\\frac{1}{${div}}$ 을 곱하면 $${this.formatFraction(ansNum, ansDen)}$ 가 됩니다.`;
+                exp = isMixed
+                    ? `${fracStr} 를 가분수로 나타내면 ${step1} 입니다. 여기에 $\\frac{1}{${div}}$ 을 곱하면 $${this.formatFraction(ansNum, ansDen)}$ 가 됩니다.`
+                    : `${step1} 는 ${fracStr} 에 $\\frac{1}{${div}}$ 을 곱한 것과 같으므로 $${this.formatFraction(ansNum, ansDen)}$ 가 됩니다.`;
 
                 wrong = [
                     `$${this.formatFraction(totalNum * div, den)}$`,
@@ -158,7 +179,7 @@ const Utils = {
                 }
 
                 ans = `${cNum}개`;
-                exp = `${sName}은 밑면이 ${n}각형인 ${s}입니다. 공식에 따라 ${pr}의 수는 ${cNum}개입니다.`;
+                exp = `${sName}${Utils.josa(sName, '이는/는')} 밑면이 ${n}각형인 ${s}입니다. 공식에 따라 ${pr}의 수는 ${cNum}개입니다.`;
 
                 while (wrong.length < 3) {
                     let w = r(cNum - 4, cNum + 5);
@@ -186,7 +207,7 @@ const Utils = {
                 if (r(0,1) === 0) { whole = 50; part = r(1, 4) * 10; }
                 else if (r(0,1) === 0) { whole = 200; part = r(1, 9) * 20; }
                 
-                q = `전체 ${whole} 중 ${part}가 차지하는 비율은 몇 $\\%$ 입니까?`;
+                q = `전체 ${whole} 중 ${part}${Utils.josa(part, '이/가')} 차지하는 비율은 몇 $\\%$ 입니까?`;
                 ans = `$${(part / whole * 100).toFixed(0)}\\%$`;
                 exp = `비율 = $\\frac{${part}}{${whole}} \\times 100 = ${(part/whole*100).toFixed(0)}\\%$ 입니다.`;
                 wrong = [`$${(part / whole * 10).toFixed(0)}\\%$`, `$${(part / whole * 100 + 10).toFixed(0)}\\%$`, `$${(part / whole * 50).toFixed(0)}\\%$`];
@@ -273,8 +294,8 @@ const Utils = {
             // [문장제] 공통 템플릿 (분수/소수 나눗셈)
             case 'math_word_problem':
                 let name = p(NAMES);
-                let item = p(ITEMS);
-                let unit = p(UNITS);
+                // 물건과 단위를 짝지어 '끈 3병', '사과 2.5L' 같은 어색한 조합을 막습니다.
+                let [item, unit] = p([["밀가루", "kg"], ["설탕", "kg"], ["우유", "L"], ["주스", "L"], ["끈", "m"], ["리본", "m"], ["철사", "m"], ["찰흙", "kg"]]);
                 let personCount = r(3, 6);
                 let totalAmount, perPerson;
 
@@ -285,17 +306,20 @@ const Utils = {
                     totalAmount = `$${this.formatMixedFraction(w2, n2, d2)}$${unit}`;
                     let tNum = (w2 * d2) + n2;
                     perPerson = `$${this.formatFraction(tNum, d2 * personCount)}$${unit}`;
-                    exp = `전체 양 ${totalAmount}를 ${personCount}명으로 나누면 $${this.formatMixedFraction(w2, n2, d2)} \\div ${personCount} = ${perPerson}$ 입니다.`;
-                } else { // 소수 유형
-                    let val = (r(50, 200) / 10).toFixed(1);
+                    exp = `전체 양 ${totalAmount}${Utils.josa(totalAmount, '을/를')} ${personCount}명으로 나누면 $${this.formatMixedFraction(w2, n2, d2)} \\div ${personCount} = ${this.formatFraction(tNum, d2 * personCount)}$${unit} 입니다.`;
+                    wrong = [`$${this.formatFraction(tNum * personCount, d2)}$${unit}`, `$${this.formatFraction(tNum, d2 * (personCount + 1))}$${unit}`, `0${unit}`];
+                } else { // 소수 유형 (나누어떨어지는 값만 사용)
+                    let perTenths = r(Math.ceil(50 / personCount), Math.floor(200 / personCount));
+                    let val = (perTenths * personCount / 10).toFixed(1);
+                    let perVal = perTenths / 10;
                     totalAmount = `$${val}$${unit}`;
-                    perPerson = `$${(val / personCount).toFixed(2)}$${unit}`;
-                    exp = `$${val} \\div ${personCount} = ${(val / personCount).toFixed(2)}$ 입니다.`;
+                    perPerson = `$${perVal.toFixed(1)}$${unit}`;
+                    exp = `$${val} \\div ${personCount} = ${perVal.toFixed(1)}$${unit} 입니다.`;
+                    wrong = [`$${(perVal * 1.2).toFixed(2)}$${unit}`, `$${(perVal / 2).toFixed(2)}$${unit}`, `0${unit}`];
                 }
 
-                q = `${name}는 ${item} ${totalAmount}를 가지고 있습니다. 이것을 친구 ${personCount}명에게 똑같이 나누어 준다면 한 명이 가지게 되는 ${item}의 양은?`;
+                q = `${name}${Utils.josa(name, '이는/는')} ${item} ${totalAmount}${Utils.josa(totalAmount, '을/를')} 가지고 있습니다. 이것을 친구 ${personCount}명에게 똑같이 나누어 준다면 한 명이 가지게 되는 ${item}의 양은?`;
                 ans = perPerson;
-                wrong = [`$${(parseFloat(perPerson.replace(/[^0-9.]/g, '')) * 1.2).toFixed(2)}$${unit}`, `$${(parseFloat(perPerson.replace(/[^0-9.]/g, '')) / 2).toFixed(2)}$${unit}`, `0${unit}`];
                 break;
 
             // [5단원] 그래프 관련
@@ -303,11 +327,12 @@ const Utils = {
                 let totalG = r(50, 500);
                 // 10의 배수로 맞춤 (계산 편의)
                 totalG = Math.round(totalG / 10) * 10;
-                let partG = p([0.1, 0.2, 0.25, 0.3, 0.4, 0.5]) * totalG;
+                // 25%는 전체가 20의 배수일 때만 사용 (학생 수가 소수가 되지 않도록)
+                let partG = p(totalG % 20 === 0 ? [10, 20, 25, 30, 40, 50] : [10, 20, 30, 40, 50]) * totalG / 100;
                 let pName = p(NAMES);
                 let pItem = p(["독서", "운동", "게임", "잠", "공부"]);
 
-                q = `전체 조사 대상 ${totalG}명 중 '${pItem}'를 좋아하는 학생이 ${partG}명입니다. 원 그래프에서 '${pItem}'가 차지하는 백분율은?`;
+                q = `전체 조사 대상 ${totalG}명 중 '${pItem}'${Utils.josa(pItem, '을/를')} 좋아하는 학생이 ${partG}명입니다. 원 그래프에서 '${pItem}'${Utils.josa(pItem, '이/가')} 차지하는 백분율은?`;
                 ans = `$${(partG / totalG * 100).toFixed(0)}\\%$`;
                 exp = `$\\frac{${partG}}{${totalG}} \\times 100 = ${(partG / totalG * 100).toFixed(0)}\\%$ 입니다.`;
                 wrong = [`$${(partG / totalG * 100 + 10).toFixed(0)}\\%$`, `$${(partG / totalG * 100 / 2).toFixed(0)}\\%$`, `$100\\%$` ];
@@ -318,10 +343,10 @@ const Utils = {
                 let percentV = p([10, 15, 20, 25, 30, 40, 50]);
                 let vItem = p(["축구", "야구", "농구", "배구"]);
 
-                q = `전체 학생 수 ${totalV}명인 원 그래프에서 '${vItem}'를 좋아하는 비율이 ${percentV}\\% 일 때, '${vItem}'를 좋아하는 학생은 몇 명입니까?`;
+                q = `전체 학생 수 ${totalV}명인 원 그래프에서 '${vItem}'${Utils.josa(vItem, '을/를')} 좋아하는 비율이 ${percentV}% 일 때, '${vItem}'${Utils.josa(vItem, '을/를')} 좋아하는 학생은 몇 명입니까?`;
                 let correctV = (totalV * percentV) / 100;
                 ans = `${correctV}명`;
-                exp = `${totalV}명의 ${percentV}\\%는 $${totalV} \\times \\frac{${percentV}}{100} = ${correctV}$명 입니다.`;
+                exp = `${totalV}명의 ${percentV}%는 $${totalV} \\times \\frac{${percentV}}{100} = ${correctV}$명 입니다.`;
                 wrong = [`${correctV + 10}명`, `${correctV - 5}명`, `${percentV}명` ];
                 break;
 
@@ -364,7 +389,7 @@ const Utils = {
                 let fNum = r(1, 7), fDen = r(2, 8), fDiv = r(2, 6);
                 let boxNum = fNum * fDiv;
                 let boxDen = fDen;
-                q = `$\\Box \\div ${fDiv} = ${this.formatFraction(fNum, fDen)}$ 에서 $\\Box$에 알맞은 분수는?`;
+                q = `$\\Box \\div ${fDiv} = ${this.formatFraction(fNum, fDen)}$ 에서 $\\Box$에 알맞은 수는?`;
                 ans = `$${this.formatFraction(boxNum, boxDen)}$`;
                 exp = `$\\Box = ${this.formatFraction(fNum, fDen)} \\times ${fDiv} = ${this.formatFraction(boxNum, boxDen)}$ 입니다.`;
                 wrong = [
@@ -393,11 +418,11 @@ const Utils = {
                     wrong = [aStr, bStr, `알 수 없습니다`];
                 } else if (aVal > bVal) {
                     ans = aStr;
-                    exp = `${aStr} $= ${this.formatFraction(aResN, aResD)}$, ${bStr} $= ${this.formatFraction(bResN, bResD)}$ 이므로 ${aStr}가 더 큽니다.`;
+                    exp = `${aStr} $= ${this.formatFraction(aResN, aResD)}$, ${bStr} $= ${this.formatFraction(bResN, bResD)}$ 이므로 더 큰 것은 ${aStr}입니다.`;
                     wrong = [bStr, `두 값이 같습니다`, `알 수 없습니다`];
                 } else {
                     ans = bStr;
-                    exp = `${aStr} $= ${this.formatFraction(aResN, aResD)}$, ${bStr} $= ${this.formatFraction(bResN, bResD)}$ 이므로 ${bStr}가 더 큽니다.`;
+                    exp = `${aStr} $= ${this.formatFraction(aResN, aResD)}$, ${bStr} $= ${this.formatFraction(bResN, bResD)}$ 이므로 더 큰 것은 ${bStr}입니다.`;
                     wrong = [aStr, `두 값이 같습니다`, `알 수 없습니다`];
                 }
                 break;
@@ -412,13 +437,13 @@ const Utils = {
                 let wTotal = `$${this.formatFraction(wN * wDiv, wD)}$`;
                 let wAns = `$${this.formatFraction(wN, wD)}$`;
                 if (wType === 0) {
-                    q = `${wName}이가 테이프 ${wTotal}m를 ${wDiv}도막으로 똑같이 자르면 한 도막은 몇 m입니까?`;
+                    q = `${wName}${Utils.josa(wName, '이가/가')} 테이프 ${wTotal}m를 ${wDiv}도막으로 똑같이 자르면 한 도막은 몇 m입니까?`;
                     exp = `$${this.formatFraction(wN * wDiv, wD)} \\div ${wDiv} = ${this.formatFraction(wN, wD)}$m 입니다.`;
                 } else if (wType === 1) {
                     q = `물 ${wTotal}L를 ${wDiv}개의 컵에 똑같이 나누면 컵 하나에 들어가는 물의 양은 몇 L입니까?`;
                     exp = `$${this.formatFraction(wN * wDiv, wD)} \\div ${wDiv} = ${this.formatFraction(wN, wD)}$L 입니다.`;
                 } else {
-                    q = `${wName}이가 ${wTotal}km를 ${wDiv}시간 동안 같은 빠르기로 걸었습니다. 1시간에 걷는 거리는 몇 km입니까?`;
+                    q = `${wName}${Utils.josa(wName, '이가/가')} ${wTotal}km를 ${wDiv}시간 동안 같은 빠르기로 걸었습니다. 1시간에 걷는 거리는 몇 km입니까?`;
                     exp = `$${this.formatFraction(wN * wDiv, wD)} \\div ${wDiv} = ${this.formatFraction(wN, wD)}$km 입니다.`;
                 }
                 ans = `${wAns}`;
@@ -508,7 +533,7 @@ const Utils = {
                 let rtA = r(1, 6), rtB = r(rtA + 1, rtA + 6);
                 q = `$${rtA} : ${rtB}$ 에서 $${rtA}$의 비율을 분수로 나타내면?`;
                 ans = `$${this.formatFraction(rtA, rtB)}$`;
-                exp = `기준량이 ${rtB}이고 비교하는 양이 ${rtA}이므로 비율 $= \\frac{${rtA}}{${rtB}}$ 입니다.`;
+                exp = `기준량이 ${rtB}이고 비교하는 양이 ${rtA}이므로 비율 $= \\frac{${rtA}}{${rtB}}${this.gcd(rtA, rtB) > 1 ? ` = ${this.formatFraction(rtA, rtB)}` : ''}$ 입니다.`;
                 wrong = [
                     `$${this.formatFraction(rtB, rtA)}$`,
                     `$${this.formatFraction(rtA, rtA + rtB)}$`,
@@ -528,7 +553,7 @@ const Utils = {
                 let opt2 = `$${this.formatFraction(rcA2, rcB2)}$`;
                 q = `${opt1} 과 ${opt2} 중 비율이 더 높은 것은?`;
                 ans = rcVal1 > rcVal2 ? opt1 : opt2;
-                exp = `${opt1} $= ${rcVal1.toFixed(3)}$, ${opt2} $= ${rcVal2.toFixed(3)}$ 이므로 ${ans}이 더 높습니다.`;
+                exp = `${opt1} $= ${rcVal1.toFixed(3)}$, ${opt2} $= ${rcVal2.toFixed(3)}$ 이므로 더 높은 것은 ${ans}입니다.`;
                 wrong = [rcVal1 > rcVal2 ? opt2 : opt1, `두 비율이 같습니다`, `비교할 수 없습니다`];
                 break;
             }
@@ -548,7 +573,7 @@ const Utils = {
                 else { knownA = vrW; knownB = vrH; hideVal = vrL; }
                 q = hideWhich === '높이'
                     ? `가로 ${knownA}cm, 세로 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 높이는 몇 cm입니까?`
-                    : `${hideWhich === '가로' ? '세로' : '가로'} ${knownA}cm, 높이 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 ${hideWhich}는 몇 cm입니까?`;
+                    : `${hideWhich === '가로' ? '세로' : '가로'} ${knownA}cm, 높이 ${knownB}cm, 부피가 ${vrVol}cm³인 직육면체의 ${hideWhich}${Utils.josa(hideWhich, '은/는')} 몇 cm입니까?`;
                 ans = `$${hideVal}$cm`;
                 exp = `부피 = 가로 × 세로 × 높이 이므로 ${hideWhich} $= ${vrVol} \\div (${knownA} \\times ${knownB}) = ${hideVal}$cm 입니다.`;
                 wrong = [`$${hideVal + 1}$cm`, `$${hideVal * 2}$cm`, `$${hideVal - 1}$cm`];
@@ -635,7 +660,7 @@ const Utils = {
                 // 속력 = 거리 ÷ 시간
                 let fwSpeedN = fwDistN * fwTimeD;
                 let fwSpeedD = fwDistD * fwTimeN;
-                q = `${fwName}이가 $${this.formatFraction(fwDistN, fwDistD)}$km를 $${this.formatFraction(fwTimeN, fwTimeD)}$시간 동안 걸었습니다. 1시간에 걷는 거리는 몇 km입니까?`;
+                q = `${fwName}${Utils.josa(fwName, '이가/가')} $${this.formatFraction(fwDistN, fwDistD)}$km를 $${this.formatFraction(fwTimeN, fwTimeD)}$시간 동안 걸었습니다. 1시간에 걷는 거리는 몇 km입니까?`;
                 ans = `$${this.formatFraction(fwSpeedN, fwSpeedD)}$km`;
                 exp = `속력 $= ${this.formatFraction(fwDistN, fwDistD)} \\div ${this.formatFraction(fwTimeN, fwTimeD)} = ${this.formatFraction(fwDistN, fwDistD)} \\times ${this.formatFraction(fwTimeD, fwTimeN)} = ${this.formatFraction(fwSpeedN, fwSpeedD)}$km/시간 입니다.`;
                 wrong = [
@@ -672,14 +697,15 @@ const Utils = {
             case 'decimal_div_decimal_compare': {
                 let dcQ1 = r(5, 25), dcD1 = r(2, 12);
                 let dcQ2 = r(5, 25), dcD2 = r(2, 12);
-                while (dcQ1 / dcD1 === dcQ2 / dcD2) dcQ2++;
-                let dcVal1 = dcQ1 / dcD1;
-                let dcVal2 = dcQ2 / dcD2;
+                // 계산 결과는 dcQ / 10 이므로 몫(dcQ)끼리 비교합니다.
+                while (dcQ1 === dcQ2) dcQ2 = r(5, 25);
+                let dcVal1 = dcQ1 / 10;
+                let dcVal2 = dcQ2 / 10;
                 let dc1str = `$${((dcD1 * dcQ1) / 100).toFixed(2)} \\div ${(dcD1 / 10).toFixed(1)}$`;
                 let dc2str = `$${((dcD2 * dcQ2) / 100).toFixed(2)} \\div ${(dcD2 / 10).toFixed(1)}$`;
                 q = `${dc1str} 와 ${dc2str} 중 계산 결과가 더 큰 것은?`;
                 ans = dcVal1 > dcVal2 ? dc1str : dc2str;
-                exp = `${dc1str} $= ${(dcQ1 / 10).toFixed(1)}$, ${dc2str} $= ${(dcQ2 / 10).toFixed(1)}$ 이므로 ${ans}이 더 큽니다.`;
+                exp = `${dc1str} $= ${(dcQ1 / 10).toFixed(1)}$, ${dc2str} $= ${(dcQ2 / 10).toFixed(1)}$ 이므로 더 큰 것은 ${ans}입니다.`;
                 wrong = [dcVal1 > dcVal2 ? dc2str : dc1str, `두 값이 같습니다`, `알 수 없습니다`];
                 break;
             }
@@ -700,9 +726,9 @@ const Utils = {
                 let pwPartB = pwTotal * pwB / pwSum;
                 let pwItem = p(ITEMS);
                 let pwName1 = p(NAMES), pwName2 = p(NAMES.filter(n => n !== pwName1));
-                q = `${pwItem} ${pwTotal}개를 ${pwName1}와 ${pwName2}가 ${pwA} : ${pwB}로 나눈다면, ${pwName1}는 몇 개를 가져갑니까?`;
+                q = `${pwItem} ${pwTotal}개를 ${pwName1}${Utils.josa(pwName1, '이와/와')} ${pwName2}${Utils.josa(pwName2, '이가/가')} ${pwA} : ${pwB}로 나눈다면, ${pwName1}${Utils.josa(pwName1, '이는/는')} 몇 개를 가져갑니까?`;
                 ans = `${pwPartA}개`;
-                exp = `전체 ${pwTotal}개를 ${pwA} : ${pwB}로 나누면 ${pwName1}는 $${pwTotal} \\times \\frac{${pwA}}{${pwSum}} = ${pwPartA}$개 입니다.`;
+                exp = `전체 ${pwTotal}개를 ${pwA} : ${pwB}로 나누면 ${pwName1}${Utils.josa(pwName1, '이는/는')} $${pwTotal} \\times \\frac{${pwA}}{${pwSum}} = ${pwPartA}$개 입니다.`;
                 wrong = [`${pwPartB}개`, `${pwTotal - 1}개`, `${pwA}개`];
                 break;
             }
@@ -790,7 +816,7 @@ const Utils = {
                 q = `밑면의 반지름이 ${ctsR}cm, 높이가 ${ctsH}cm인 원기둥의 겉넓이는 몇 cm²입니까? (원주율: ${ctsPi})`;
                 ans = `$${ctsTotal}$cm²`;
                 exp = `겉넓이 = 옆넓이 + 밑면 2개 $= ${ctsLat} + ${ctsBase} \\times 2 = ${ctsLat} + ${ctsBase * 2} = ${ctsTotal}$cm² 입니다.`;
-                wrong = [`$${(ctsTotal + ctsBase).toFixed(1)}$cm²`, `$${ctsLat}$cm²`, `$${(ctsBase * 2).toFixed(1)}$cm²`];
+                wrong = [`$${parseFloat((ctsTotal + ctsBase).toFixed(1))}$cm²`, `$${ctsLat}$cm²`, `$${parseFloat((ctsBase * 2).toFixed(1))}$cm²`];
                 break;
             }
 
@@ -799,14 +825,14 @@ const Utils = {
                 let cvcType = r(0, 2);
                 if (cvcType === 0) {
                     q = `원기둥과 원뿔에 대한 설명으로 **옳은** 것은?`;
-                    ans = `원기둥의 옆면은 직사각형 모양입니다`;
-                    exp = `원기둥을 펼치면 옆면이 직사각형이 됩니다. 원뿔의 꼭짓점은 1개이며, 원기둥과 원뿔 모두 밑면은 원입니다.`;
+                    ans = `원기둥의 전개도에서 옆면은 직사각형 모양입니다`;
+                    exp = `원기둥의 옆면은 굽은 면이지만, 펼치면(전개도) 직사각형이 됩니다. 원뿔의 꼭짓점은 1개이며, 원기둥과 원뿔 모두 밑면은 원입니다.`;
                     wrong = [`원뿔에는 꼭짓점이 없습니다`, `원기둥의 밑면은 삼각형입니다`, `원기둥과 원뿔의 면의 수는 같습니다`];
                 } else if (cvcType === 1) {
                     q = `원뿔에 대한 설명으로 **틀린** 것은?`;
                     ans = `원뿔의 밑면은 2개입니다`;
-                    exp = `원뿔의 밑면은 1개(원)이고, 옆면은 1개(부채꼴)입니다. 꼭짓점은 1개 있습니다.`;
-                    wrong = [`원뿔의 꼭짓점은 1개입니다`, `원뿔의 밑면은 원입니다`, `원뿔의 옆면은 부채꼴 모양입니다`];
+                    exp = `원뿔의 밑면은 1개(원)이고, 옆면은 굽은 면 1개로 전개도에서는 부채꼴입니다. 꼭짓점은 1개 있습니다.`;
+                    wrong = [`원뿔의 꼭짓점은 1개입니다`, `원뿔의 밑면은 원입니다`, `원뿔의 전개도에서 옆면은 부채꼴 모양입니다`];
                 } else {
                     q = `원기둥에 대한 설명으로 **옳은** 것은?`;
                     ans = `원기둥의 두 밑면은 서로 합동이고 평행합니다`;
@@ -826,7 +852,7 @@ const Utils = {
                 let gftPercent = p([10, 20, 25, 40, 50]);
                 let gftTotal = gftPart * 100 / gftPercent;
                 let gftItem = p(["독서", "운동", "게임", "공부", "음악"]);
-                q = `원 그래프에서 '${gftItem}'의 비율이 ${gftPercent}\\%이고, '${gftItem}'를 선택한 학생이 ${gftPart}명일 때, 전체 학생 수는 몇 명입니까?`;
+                q = `원 그래프에서 '${gftItem}'의 비율이 ${gftPercent}%이고, '${gftItem}'${Utils.josa(gftItem, '을/를')} 선택한 학생이 ${gftPart}명일 때, 전체 학생 수는 몇 명입니까?`;
                 ans = `${gftTotal}명`;
                 exp = `전체 $= ${gftPart} \\div \\frac{${gftPercent}}{100} = ${gftPart} \\times \\frac{100}{${gftPercent}} = ${gftTotal}$명 입니다.`;
                 wrong = [`${gftTotal + 10}명`, `${gftTotal / 2}명`, `${gftPart}명`];
@@ -850,14 +876,14 @@ const Utils = {
                 let grRanked = grItems.map((item, i) => ({ item, val: grVals[i] })).sort((a, b) => b.val - a.val);
                 let grType = r(0, 1);
                 if (grType === 0) {
-                    q = `어느 반 학생들이 좋아하는 것을 조사한 원 그래프에서 ${grItems[0]}이 ${grVals[0]}\\%, ${grItems[1]}이 ${grVals[1]}\\%, ${grItems[2]}이 ${grVals[2]}\\%, ${grItems[3]}이 ${grVals[3]}\\%일 때, 가장 좋아하는 것은?`;
+                    q = `어느 반 학생들이 좋아하는 것을 조사한 원 그래프에서 ${grItems[0]}${Utils.josa(grItems[0], '이/가')} ${grVals[0]}%, ${grItems[1]}${Utils.josa(grItems[1], '이/가')} ${grVals[1]}%, ${grItems[2]}${Utils.josa(grItems[2], '이/가')} ${grVals[2]}%, ${grItems[3]}${Utils.josa(grItems[3], '이/가')} ${grVals[3]}%일 때, 가장 좋아하는 것은?`;
                     ans = grRanked[0].item;
-                    exp = `비율이 가장 높은 것은 ${grRanked[0].val}\\%인 ${grRanked[0].item} 입니다.`;
+                    exp = `비율이 가장 높은 것은 ${grRanked[0].val}%인 ${grRanked[0].item} 입니다.`;
                     wrong = [grRanked[1].item, grRanked[2].item, grRanked[3].item];
                 } else {
-                    q = `원 그래프에서 ${grItems[0]}이 ${grVals[0]}\\%, ${grItems[1]}이 ${grVals[1]}\\%, ${grItems[2]}이 ${grVals[2]}\\%, ${grItems[3]}이 ${grVals[3]}\\%일 때, 두 번째로 좋아하는 것은?`;
+                    q = `원 그래프에서 ${grItems[0]}${Utils.josa(grItems[0], '이/가')} ${grVals[0]}%, ${grItems[1]}${Utils.josa(grItems[1], '이/가')} ${grVals[1]}%, ${grItems[2]}${Utils.josa(grItems[2], '이/가')} ${grVals[2]}%, ${grItems[3]}${Utils.josa(grItems[3], '이/가')} ${grVals[3]}%일 때, 두 번째로 좋아하는 것은?`;
                     ans = grRanked[1].item;
-                    exp = `두 번째로 비율이 높은 것은 ${grRanked[1].val}\\%인 ${grRanked[1].item} 입니다.`;
+                    exp = `두 번째로 비율이 높은 것은 ${grRanked[1].val}%인 ${grRanked[1].item} 입니다.`;
                     wrong = [grRanked[0].item, grRanked[2].item, grRanked[3].item];
                 }
                 break;
@@ -888,8 +914,11 @@ const Utils = {
 
             // 소수 2단계: a.b ÷ c + d.e (또는 빼기)
             case 'decimal_two_step': {
-                let dtQ1 = r(5, 45) / 10; // 0.5 ~ 4.5
                 let dtDiv = r(2, 6);
+                // 0.5 ~ 4.5 중 나누어떨어지는(소수 둘째 자리까지) 값만 사용
+                let dtQ1;
+                do { dtQ1 = r(5, 45); } while ((dtQ1 * 10) % dtDiv !== 0);
+                dtQ1 /= 10;
                 let dtStep1 = parseFloat((dtQ1 / dtDiv).toFixed(2));
                 let dtAdd = r(1, 9) / 10; // 0.1 ~ 0.9
                 let dtOp = r(0, 1) === 0 ? '+' : '-';
@@ -900,7 +929,7 @@ const Utils = {
                 exp = `먼저 $${dtQ1.toFixed(1)} \\div ${dtDiv} = ${dtStep1.toFixed(2)}$, 여기에 $${dtOp === '+' ? '+' : '-'} ${dtAdd.toFixed(1)}$ 하면 $${dtFinal.toFixed(2)}$ 입니다.`;
                 wrong = [
                     `$${(dtFinal + 0.1).toFixed(2)}$`,
-                    `$${parseFloat((dtQ1 / dtDiv).toFixed(2))}$`,
+                    `$${dtStep1.toFixed(2)}$`,
                     `$${(dtFinal * 2).toFixed(2)}$`
                 ];
                 break;
@@ -917,9 +946,9 @@ const Utils = {
                 let pdDiff = Math.abs(pdPartA - pdPartB);
                 let pdItem = p(ITEMS);
                 let pdName1 = p(NAMES), pdName2 = p(NAMES.filter(n => n !== pdName1));
-                q = `${pdItem} ${pdTotal}개를 ${pdName1}와 ${pdName2}가 ${pdA} : ${pdB}로 나눌 때, 두 사람이 받은 양의 차는 몇 개입니까?`;
+                q = `${pdItem} ${pdTotal}개를 ${pdName1}${Utils.josa(pdName1, '이와/와')} ${pdName2}${Utils.josa(pdName2, '이가/가')} ${pdA} : ${pdB}로 나눌 때, 두 사람이 받은 양의 차는 몇 개입니까?`;
                 ans = `${pdDiff}개`;
-                exp = `${pdName1}는 $${pdTotal} \\times \\frac{${pdA}}{${pdSum}} = ${pdPartA}$개, ${pdName2}는 $${pdPartB}$개이므로 차는 $|${pdPartA} - ${pdPartB}| = ${pdDiff}$개 입니다.`;
+                exp = `${pdName1}${Utils.josa(pdName1, '이는/는')} $${pdTotal} \\times \\frac{${pdA}}{${pdSum}} = ${pdPartA}$개, ${pdName2}${Utils.josa(pdName2, '이는/는')} $${pdPartB}$개이므로 차는 $|${pdPartA} - ${pdPartB}| = ${pdDiff}$개 입니다.`;
                 wrong = [`${pdDiff + pdSum}개`, `${Math.min(pdPartA, pdPartB)}개`, `${pdTotal}개`];
                 break;
             }

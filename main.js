@@ -194,11 +194,17 @@ function getVerbChoices(d, tenseIdx, exactCorrect) {
     return Utils.shuffle([exactCorrect, ...wrong.slice(0, 3)]);
 }
 
+// Same meaning or listed synonyms (altWords) would give a second correct option.
+function interchangeable(a, b) {
+    return a.word === b.word || a.meaning === b.meaning
+        || (a.altWords || []).includes(b.word) || (b.altWords || []).includes(a.word);
+}
+
 function getWordChoices(cur) {
-    const dataList = vocabularyPool();
-    const others = Utils.shuffle(dataList.filter(w => w.word !== cur.word && !isVerb(w))).slice(0, 3);
+    const dataList = vocabularyPool().filter(w => !interchangeable(w, cur));
+    const others = Utils.shuffle(dataList.filter(w => !isVerb(w))).slice(0, 3);
     if (others.length < 3) {
-        const fallback = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).slice(0, 3 - others.length);
+        const fallback = Utils.shuffle(dataList.filter(w => !others.includes(w))).slice(0, 3 - others.length);
         others.push(...fallback);
     }
     return Utils.shuffle([cur, ...others.slice(0, 3)]);
@@ -409,7 +415,7 @@ function showQuestion() {
             quizWordEl.textContent = cur.word;
             const dataList = vocabularyPool();
             const seenMeanings = new Set([cur.meaning]);
-            const wrong = Utils.shuffle(dataList.filter(w => w.word !== cur.word)).filter(w => {
+            const wrong = Utils.shuffle(dataList.filter(w => !interchangeable(w, cur))).filter(w => {
                 if (seenMeanings.has(w.meaning)) return false;
                 seenMeanings.add(w.meaning); return true;
             }).slice(0, 3);

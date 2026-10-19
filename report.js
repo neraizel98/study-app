@@ -574,19 +574,21 @@ const AdaptiveQuiz = {
     },
 
     mix(pool, wrongItems, idOfPool, idOfWrong, count, wrongRatio = 0.45) {
+        // Many pool items share one id (e.g. 20 math templates of one generator), so
+        // track the items themselves: one wrong type must not remove its siblings.
         const source = [...(pool || [])];
-        const byId = new Map(source.map(item => [idOfPool(item), item]));
-        const eligibleWrong = (wrongItems || []).filter(item => byId.has(idOfWrong(item)) && LearningPolicy.isDue(item));
+        const shuffle = items => typeof Utils !== 'undefined' ? Utils.shuffle(items) : items.sort(() => Math.random() - 0.5);
+        const eligibleWrong = (wrongItems || []).filter(item => source.some(entry => idOfPool(entry) === idOfWrong(item)) && LearningPolicy.isDue(item));
         const targetWrong = Math.min(eligibleWrong.length, Math.max(1, Math.round(count * wrongRatio)));
-        const priority = this.weightedWrongItems(eligibleWrong, targetWrong)
-            .map(item => byId.get(idOfWrong(item)))
-            .filter(Boolean);
-        const used = new Set(priority.map(idOfPool));
+        const used = new Set(), priority = [];
+        for (const wrong of this.weightedWrongItems(eligibleWrong, targetWrong)) {
+            const match = shuffle(source.filter(entry => !used.has(entry) && idOfPool(entry) === idOfWrong(wrong)))[0];
+            if (match) { used.add(match); priority.push(match); }
+        }
         const reviewIds = new Set((wrongItems || []).map(idOfWrong));
-        const fresh = typeof Utils !== 'undefined'
-            ? Utils.shuffle(source.filter(item => !used.has(idOfPool(item)) && !reviewIds.has(idOfPool(item))))
-            : source.filter(item => !used.has(idOfPool(item)) && !reviewIds.has(idOfPool(item))).sort(() => Math.random() - 0.5);
-        const fallback = source.filter(item => !used.has(idOfPool(item)) && reviewIds.has(idOfPool(item)));
+        const rest = source.filter(item => !used.has(item));
+        const fresh = shuffle(rest.filter(item => !reviewIds.has(idOfPool(item))));
+        const fallback = shuffle(rest.filter(item => reviewIds.has(idOfPool(item))));
         return [...priority, ...[...fresh, ...fallback].slice(0, Math.max(0, count - priority.length))]
             .sort(() => Math.random() - 0.5);
     }

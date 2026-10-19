@@ -222,18 +222,18 @@
     </div>
 
     <script src="kakao-share.js?v=20260928-record-reliability"></script>
-    <script src="utils.js?v=20260911-adaptive"></script>
+    <script src="utils.js?v=20261019-content-fix"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-mock-v2"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261019-content-fix"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-content-fix"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
-    <script src="MathData.js"></script>
-    <script src="MathDataMiddle1.js?v=20261014-redesign"></script>
-    <script src="MathDataMiddle1Semester2.js?v=20261014-redesign"></script>
-    <script src="MathQuizData.js"></script>
-    <script src="MathQuizMiddle1.js?v=20260727-m1quiz"></script>
-    <script src="MathQuizMiddle1Semester2.js?v=20260727-m1s2quiz"></script>
+    <script src="MathData.js?v=20261019-content-fix"></script>
+    <script src="MathDataMiddle1.js?v=20261019-content-fix"></script>
+    <script src="MathDataMiddle1Semester2.js?v=20261019-content-fix"></script>
+    <script src="MathQuizData.js?v=20261019-content-fix"></script>
+    <script src="MathQuizMiddle1.js?v=20261019-content-fix"></script>
+    <script src="MathQuizMiddle1Semester2.js?v=20261019-content-fix"></script>
     <script>
         document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
@@ -313,9 +313,11 @@
                 ];
                 
                 // 오답 노트에 기록된 type(generator 함수명)과 일치하는 템플릿 필터링
-                const reviewTemplates = wrongMath
-                    .map(w => fullPool.find(q => q.generator === w.type))
-                    .filter(x => x);
+                // Each wrong type gets a few number-varied siblings (at least 5 questions overall, at most 10).
+                const perType = Math.max(2, Math.ceil(5 / Math.max(1, wrongMath.length)));
+                const reviewTemplates = [...new Set(wrongMath.map(w => w.type))]
+                    .flatMap(type => Utils.shuffle(fullPool.filter(q => q.generator === type)).slice(0, perType))
+                    .slice(0, 10);
                 
                 if (reviewTemplates.length === 0) {
                     alert('복습할 오답 유형이 없습니다!');

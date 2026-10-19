@@ -19,7 +19,7 @@
         construction: {
             svg: `<svg viewBox="0 0 680 310" role="img" aria-label="삼각형 작도와 합동">
                 <style>.l{stroke:#23845c;stroke-width:4;fill:none}.c{stroke:#6e6559;stroke-width:2;fill:none;stroke-dasharray:8}.t{fill:#2b2620;font:700 21px sans-serif}.pt{fill:#e3087a}</style>
-                <line class="l" x1="150" y1="240" x2="520" y2="240"/><circle class="c" cx="150" cy="240" r="250"/><circle class="c" cx="520" cy="240" r="210"/>
+                <line class="l" x1="150" y1="240" x2="520" y2="240"/><circle class="c" cx="150" cy="240" r="250"/><circle class="c" cx="520" cy="240" r="201"/>
                 <circle class="pt" cx="365" cy="112" r="8"/><line class="l" x1="150" y1="240" x2="365" y2="112"/><line class="l" x1="520" y1="240" x2="365" y2="112"/>
                 <text class="t" x="130" y="270">A</text><text class="t" x="525" y="270">B</text><text class="t" x="370" y="98">C</text>
                 <text class="t" x="185" y="45">두 원의 교점이 세 번째 꼭짓점</text>
@@ -57,8 +57,8 @@
                 <style>.axis{stroke:#6e6559;stroke-width:3}.bar{fill:#23845c}.t{fill:#2b2620;font:18px sans-serif}.h{fill:#2b8637;font:700 21px sans-serif}</style>
                 <text class="h" x="55" y="45">줄기 | 잎</text><text class="t" x="70" y="85">1 | 2 4 7 9</text><text class="t" x="70" y="120">2 | 0 2 2 5 8</text>
                 <line class="axis" x1="350" y1="270" x2="650" y2="270"/><line class="axis" x1="350" y1="270" x2="350" y2="55"/>
-                <rect class="bar" x="390" y="190" width="55" height="80"/><rect class="bar" x="480" y="110" width="55" height="160"/><rect class="bar" x="570" y="150" width="55" height="120"/>
-                <text class="t" x="385" y="300">0~10</text><text class="t" x="475" y="300">10~20</text><text class="t" x="565" y="300">20~30</text>
+                <rect class="bar" x="390" y="142" width="100" height="128"/><rect class="bar" x="490" y="110" width="100" height="160"/>
+                <text class="t" x="410" y="300">10~20</text><text class="t" x="510" y="300">20~30</text><text class="t" x="425" y="132">4</text><text class="t" x="525" y="100">5</text>
             </svg>`,
             caption: "자료를 구간별로 묶으면 분포의 중심과 퍼진 정도를 한눈에 볼 수 있습니다."
         }
@@ -146,7 +146,7 @@
                 chapters: [
                     c("m1-2-u4-c1", "다면체와 회전체",
                         "평면도형으로 둘러싸인 입체는 다면체이고, 평면도형을 한 직선 둘레로 회전해 만든 입체는 회전체입니다.",
-                        ["n각기둥: 면 n+2개, 모서리 3n개, 꼭짓점 2n개", "n각뿔: 면 n+1개, 모서리 2n개, 꼭짓점 n+1개", "각뿔대는 각뿔을 밑면과 평행한 평면으로 자른 모양입니다.", "회전체를 회전축을 포함하는 평면으로 자르면 좌우 대칭 단면이 나옵니다."],
+                        ["n각기둥: 면 n+2개, 모서리 3n개, 꼭짓점 2n개", "n각뿔: 면 n+1개, 모서리 2n개, 꼭짓점 n+1개", "각뿔대는 각뿔을 밑면과 평행한 평면으로 잘랐을 때 생기는 두 입체 중 각뿔이 아닌 쪽입니다.", "회전체를 회전축을 포함하는 평면으로 자르면 좌우 대칭 단면이 나옵니다."],
                         [{text:"밑면의 모양과 개수를 확인합니다.",formula:"n각형"},{text:"기둥인지 뿔인지 분류합니다.",formula:"기둥:밑면2개\\quad뿔:밑면1개"},{text:"공식에 n을 대입합니다.",formula:"모서리=3n\\;또는\\;2n"}],
                         {problem:"오각기둥의 면, 모서리, 꼭짓점 수는?",solution:["n=5인 각기둥입니다.","면 7개, 모서리 15개, 꼭짓점 10개","오일러 관계 $V-E+F=2$도 만족합니다."]},
                         [q("육각뿔의 꼭짓점 수는?",["6개","7개","12개","14개"],1,"n각뿔의 꼭짓점은 n+1개입니다."),q("직사각형을 한 변을 축으로 회전하면?",["구","원뿔","원기둥","각뿔"],2,"직사각형을 회전하면 원기둥이 됩니다.")], visuals.solid),

@@ -54,14 +54,16 @@
     });
 
     Utils.registerMathQuizGenerator('m1s2_geometry_advanced', () => {
-        const a = r(25, 155), kind = r(0, 2);
+        let a = r(25, 155);
+        const kind = r(0, 2);
+        if (a === 90) a = 89; // 90°는 예각도 둔각도 아님
         if (kind === 0) return number(`평행선의 한 동위각이 ${a}°일 때 대응하는 동위각은?`, a,
             `평행선의 동위각은 같으므로 ${a}°입니다.`, '°');
         if (kind === 1) return number(`평행선에서 한 예각이 ${a < 90 ? a : 180 - a}°일 때 이웃한 둔각은?`,
-            a < 90 ? 180 - a : a, `이웃한 두 각의 합은 180°입니다.`, '°');
+            a < 90 ? 180 - a : a, `이웃한 두 각의 합은 180°이므로 $180-${a < 90 ? a : 180 - a}=${a < 90 ? 180 - a : a}$°입니다.`, '°');
         const x = r(20, 70), y = r(20, 70), answer = 180 - x - y;
-        return number(`한 점 주위에서 직선이 만든 세 연속 각이 ${x}°, ${y}°, 180°입니다. 남은 각은?`, answer,
-            `점 주위 각의 합 360°에서 빼면 $360-180-${x}-${y}=${answer}$°입니다.`, '°');
+        return number(`한 직선 위의 한 점에서 그은 두 반직선이 직선의 한쪽에 세 각을 만듭니다. 두 각이 ${x}°, ${y}°일 때 나머지 한 각은?`, answer,
+            `세 각의 합은 평각 180°이므로 $180-${x}-${y}=${answer}$°입니다.`, '°');
     });
 
     Utils.registerMathQuizGenerator('m1s2_geometry_word', () => {
@@ -125,7 +127,8 @@
             return number(`세 변의 길이가 모두 같은 삼각형의 둘레가 ${perimeter}cm입니다. 한 변은?`, side,
                 `$${perimeter}\\div3=${side}$cm입니다.`, 'cm');
         }
-        const a = r(3, 9), b = r(4, 10), c = r(5, 12);
+        // 삼각형의 세 변 조건(가장 긴 변 < 나머지 두 변의 합)을 만족하도록 c를 고릅니다.
+        const a = r(3, 9), b = r(4, 10), c = r(Math.max(5, Math.abs(a - b) + 1), Math.min(12, a + b - 1));
         return number(`SSS 합동인 삼각형 두 개가 있습니다. 첫 삼각형의 세 변이 ${a}, ${b}, ${c}cm일 때 두 번째 삼각형의 둘레는?`, a + b + c,
             `대응변이 모두 같으므로 둘레도 $${a}+${b}+${c}=${a + b + c}$cm입니다.`, 'cm');
     });
@@ -143,10 +146,11 @@
             return number(`정${n2}각형의 한 외각의 크기는?`, answer,
                 `외각의 합 360°를 ${n2}로 나누면 ${answer}°입니다.`, '°');
         }
-        const angle = pick([30, 45, 60, 90, 120, 180]), fraction = angle / 360;
-        return choice(`중심각이 ${angle}°인 부채꼴은 원 전체의 얼마인가요?`, `$\\frac{${angle}}{360}$`,
-            [`$\\frac{${360 - angle}}{360}$`, `$\\frac{${angle}}{180}$`, `$\\frac{1}{${Math.max(2, Math.round(360 / angle) + 1)}}$`],
-            `중심각의 비율은 $${angle}/360$입니다.`);
+        const angle = pick([30, 45, 60, 90, 120, 180]), den = 360 / angle;
+        const frac = (n, d) => { const g = Utils.gcd(n, d); return d / g === 1 ? `$${n / g}$` : `$\\frac{${n / g}}{${d / g}}$`; };
+        return choice(`중심각이 ${angle}°인 부채꼴은 원 전체의 얼마인가요?`, frac(1, den),
+            [frac(angle, 180), frac(1, den * 2), frac(1, den + 1)],
+            `중심각의 비율은 $\\frac{${angle}}{360}=\\frac{1}{${den}}$입니다.`);
     });
 
     Utils.registerMathQuizGenerator('m1s2_plane_advanced', () => {
@@ -156,7 +160,9 @@
             return number(`정${n}각형의 한 내각의 크기는?`, answer,
                 `내각의 합을 ${n}로 나누면 $(${n}-2)180/${n}=${answer}$°입니다.`, '°');
         }
-        const radius = r(2, 12), angle = pick([60, 90, 120, 180]);
+        const angle = pick([60, 90, 120, 180]);
+        // 60°·120°는 반지름이 3의 배수일 때만 k가 정확한 소수로 나옵니다.
+        const radius = angle === 60 || angle === 120 ? 3 * r(1, 4) : r(2, 12);
         if (kind === 1) {
             const coefficient = (2 * radius * angle) / 360;
             return number(`반지름 ${radius}cm, 중심각 ${angle}°인 부채꼴의 호의 길이를 $k\\pi cm$라 할 때 k는?`, coefficient,
@@ -238,7 +244,7 @@
             const stem = r(1, 8), leaves = Utils.shuffle([r(0, 3), r(4, 6), r(7, 9)]).sort();
             const answer = stem * 10 + Math.max(...leaves);
             return number(`줄기 ${stem}의 잎이 ${leaves.join(', ')}일 때 가장 큰 자료는?`, answer,
-                `가장 큰 잎 ${Math.max(...leaves)}를 붙이면 ${answer}입니다.`);
+                `가장 큰 잎 ${Math.max(...leaves)}${Utils.josa(Math.max(...leaves), '을/를')} 붙이면 ${answer}입니다.`);
         }
         if (kind === 1) {
             const frequencies = [r(2, 8), r(2, 8), r(2, 8), r(2, 8)];
@@ -260,12 +266,13 @@
                 `전체에서 알려진 도수의 합을 빼면 ${answer}입니다.`, '개');
         }
         if (kind === 1) {
-            const total = pick([40, 50, 80, 100]), percent = pick([10, 20, 25, 30, 40, 50]), answer = total * percent / 100;
+            const percent = pick([10, 20, 25, 30, 40, 50]);
+            const total = pick(percent === 25 ? [40, 80, 100] : [40, 50, 80, 100]), answer = total * percent / 100; // 50명의 25%=12.5명 방지
             return number(`전체 ${total}명에서 상대도수가 ${percent}%인 계급의 도수는?`, answer,
                 `$${total}\\times${percent}/100=${answer}$명입니다.`, '명');
         }
         const aTotal = pick([20, 40, 50]), bTotal = pick([30, 60, 100]);
-        const percent = pick([20, 25, 40, 50]), a = aTotal * percent / 100, b = bTotal * percent / 100;
+        const percent = pick([20, 40, 50]), a = aTotal * percent / 100, b = bTotal * percent / 100; // 25%는 30·50명에서 소수 명이 됨
         return number(`A집단 ${aTotal}명 중 ${a}명, B집단 ${bTotal}명 중 ${b}명이 같은 구간에 있습니다. 두 집단의 상대도수 차는?`, 0,
             `두 집단 모두 ${percent}%이므로 상대도수 차는 0입니다.`);
     });
@@ -273,16 +280,18 @@
     Utils.registerMathQuizGenerator('m1s2_stats_word', () => {
         const kind = r(0, 2);
         if (kind === 0) {
-            const total = pick([20, 25, 40, 50]), freq = pick([5, 10, 15, 20].filter(v => v < total));
+            // 상대도수가 소수 둘째 자리에서 정확히 끝나는 경우만 사용 (예: 5/40=0.125 제외)
+            const total = pick([20, 25, 40, 50]), freq = pick([5, 10, 15, 20].filter(v => v < total && (v * 100) % total === 0));
             return number(`학생 ${total}명 중 ${freq}명이 하루 2시간 이상 운동합니다. 이 구간의 상대도수는?`, freq / total,
                 `$${freq}\\div${total}=${fmt(freq / total)}$입니다.`);
         }
         if (kind === 1) {
             const values = [r(10, 19), r(20, 29), r(30, 39), r(40, 49)].sort((a,b)=>a-b);
-            return number(`자료 ${values.join(', ')}를 줄기와 잎 그림으로 나타낼 때 잎의 총개수는?`, values.length,
+            return number(`자료 ${values.join(', ')}${Utils.josa(values.join(', '), '을/를')} 줄기와 잎 그림으로 나타낼 때 잎의 총개수는?`, values.length,
                 `자료 하나가 잎 하나이므로 ${values.length}개입니다.`, '개');
         }
-        const total = pick([40, 50, 80, 100]), relative = pick([0.1, 0.2, 0.25, 0.4, 0.5]), answer = total * relative;
+        const relative = pick([0.1, 0.2, 0.25, 0.4, 0.5]);
+        const total = pick(relative === 0.25 ? [40, 80, 100] : [40, 50, 80, 100]), answer = Math.round(total * relative); // 50×0.25=12.5명 방지
         return number(`전체 ${total}명인 설문에서 한 항목의 상대도수가 ${relative}입니다. 이 항목을 선택한 사람은?`, answer,
             `$${total}\\times${relative}=${answer}$명입니다.`, '명');
     });

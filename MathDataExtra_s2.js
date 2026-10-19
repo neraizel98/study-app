@@ -31,9 +31,9 @@ var MathDataExtra_s2 = {
     },
     commonMistakes: [
       {
-        wrong: '(3/4) ÷ (1/4) = (3/4) × (4/1) = 3/1',
+        wrong: '(3/4) ÷ (1/4) = 3/4 (분자만 나누고 분모 4를 그대로 둠)',
         right: '(3/4) ÷ (1/4) = 3 (분자끼리 나누기: 3÷1=3)',
-        reason: '분모가 같은 경우 분자끼리 나누면 바로 답이 나옵니다. 역수 곱셈을 써도 되지만, 더 빠른 방법을 놓치지 마세요.'
+        reason: '분모가 같은 경우 분자끼리 나눈 값이 바로 답입니다. 분모를 그대로 남기면 안 됩니다. 역수 곱셈 (3/4)×(4/1)=3으로도 확인할 수 있습니다.'
       },
       {
         wrong: '(3/4) ÷ (1/4) = 3/1',
@@ -198,7 +198,7 @@ var MathDataExtra_s2 = {
         reason: '나눗셈에서 피제수와 제수에 같은 수를 곱해도 몫이 변하지 않습니다. 반드시 **양쪽 모두** 이동해야 합니다.'
       },
       {
-        wrong: '2.16 ÷ 0.08 → 216 ÷ 8 (×100이 아니라 ×10만 적용)',
+        wrong: '2.16 ÷ 0.08 → 21.6 ÷ 8 (제수는 ×100, 피제수는 ×10만 적용)',
         right: '2.16 ÷ 0.08 → 216 ÷ 8 (소수 둘째 자리이므로 ×100)',
         reason: '소수점 이동 횟수는 제수의 소수점 자릿수에 맞춥니다. 0.08은 소수 둘째 자리이므로 ×100 해야 합니다.'
       }
@@ -246,7 +246,7 @@ var MathDataExtra_s2 = {
     },
     commonMistakes: [
       {
-        wrong: '5.04 ÷ 0.12 → 504 ÷ 1.2 (×10만 적용, 자릿수 불일치)',
+        wrong: '5.04 ÷ 0.12 → 504 ÷ 1.2 (피제수는 ×100, 제수는 ×10만 적용)',
         right: '5.04 ÷ 0.12 → 504 ÷ 12 (×100 양쪽 모두)',
         reason: '제수 0.12는 소수 둘째 자리이므로 양쪽에 ×100을 해야 합니다. 자릿수가 다를 때는 더 긴 쪽(더 많은 자릿수)에 맞춥니다.'
       },
@@ -292,8 +292,8 @@ var MathDataExtra_s2 = {
   <line x1="220" y1="53" x2="220" y2="67" stroke="#008637" stroke-width="2"/>
   <text x="208" y="80" fill="#008637" font-size="11" font-family="Arial">2.34</text>
   <!-- 반올림 화살표 -->
-  <path d="M100,52 Q130,30 218,52" fill="none" stroke="#eb0000" stroke-width="1.5" marker-end="url(#rarrow)"/>
-  <text x="120" y="22" fill="#eb0000" font-size="11" font-family="Arial">반올림 →</text>
+  <path d="M162,48 Q190,30 218,52" fill="none" stroke="#eb0000" stroke-width="1.5" marker-end="url(#rarrow)"/>
+  <text x="165" y="22" fill="#eb0000" font-size="11" font-family="Arial">이상이면 올림 →</text>
   <defs>
     <marker id="rarrow" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
       <path d="M0,0 L0,6 L8,3 z" fill="#eb0000"/>
@@ -302,11 +302,11 @@ var MathDataExtra_s2 = {
   <!-- 설명 -->
   <text x="20" y="115" fill="#2b2620" font-size="11" font-family="Arial">2.335 이상 → 2.34 / 미만 → 2.33</text>
 </svg>`,
-      caption: '수직선의 2.335 기준으로 2.33...은 2.34로 반올림되는 과정'
+      caption: '2.335가 기준: 2.335 이상은 2.34로 올리고, 2.333...은 2.335보다 작으므로 2.33으로 버림'
     },
     commonMistakes: [
       {
-        wrong: '10÷3을 소수 둘째 자리에서 반올림 → 3.3 (자리 한 칸 밀림)',
+        wrong: '10÷3을 소수 셋째 자리에서 반올림 → 3.3 (자리 한 칸 밀림)',
         right: '10÷3≈3.333... → 소수 셋째 자리(3)에서 반올림 → 3.33',
         reason: '"소수 셋째 자리에서 반올림"은 소수 셋째 자리 숫자를 보고 올리거나 버려서 **소수 둘째 자리까지** 나타냅니다. 자리 혼동에 주의하세요.'
       },
@@ -354,11 +354,12 @@ var MathDataExtra_s2 = {
   <text x="60" y="78" fill="#8f7100" font-size="11" font-family="Arial">2</text>
   <text x="90" y="78" fill="#8f7100" font-size="11" font-family="Arial">1</text>
   <!-- 옆에서 본 모양 -->
-  <text x="160" y="22" fill="#2b2620" font-size="11" font-family="Arial">옆에서 본 모양</text>
+  <text x="160" y="22" fill="#2b2620" font-size="11" font-family="Arial">앞에서 본 모양</text>
   <rect x="160" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <rect x="190" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <rect x="220" y="58" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <rect x="160" y="28" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="190" y="28" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <rect x="220" y="28" width="30" height="30" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <!-- 총 개수 -->
   <text x="20" y="115" fill="#eb0000" font-size="12" font-family="Arial" font-weight="bold">총 개수: 2+1+2+1+2+1 = 9개</text>
@@ -416,6 +417,8 @@ var MathDataExtra_s2 = {
   <text x="180" y="18" fill="#23845c" font-size="10" font-family="Arial">측면도(옆)</text>
   <rect x="180" y="22" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <rect x="180" y="44" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="202" y="22" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
+  <rect x="202" y="44" width="22" height="22" fill="rgba(35,132,92,0.18)" stroke="#23845c" stroke-width="1.5"/>
   <!-- 화살표 및 방향 라벨 -->
   <text x="10" y="90" fill="#2b2620" font-size="11" font-family="Arial">↑ 위  ↗ 앞  → 옆</text>
   <!-- 설명 -->
@@ -445,7 +448,7 @@ var MathDataExtra_s2 = {
       ],
       examples: [
         {
-          problem: '위에서 보면 ㄱ자 모양(3칸), 앞과 옆에서 모두 1칸×1칸으로 보일 때, 가능한 쌓기나무 구조를 설명하세요.',
+          problem: '위에서 보면 ㄱ자 모양(3칸), 앞과 옆에서 모두 가로 2칸·높이 1층으로 보일 때, 가능한 쌓기나무 구조를 설명하세요.',
           solution: [
             '위 평면도가 ㄱ자 → 3개의 칸이 ㄱ형으로 배치',
             '앞·옆 모두 1층으로만 보임 → 모든 칸이 정확히 1층',
@@ -534,7 +537,7 @@ var MathDataExtra_s2 = {
         reason: '외항(outer terms)은 비례식의 바깥쪽 두 수(첫째·넷째), 내항(inner terms)은 안쪽 두 수(둘째·셋째)입니다.'
       },
       {
-        wrong: '5:□=15:9 → □=5×9÷15=3 (내항을 외항으로 혼동)',
+        wrong: '5:□=15:9 → □=15×9÷5=27 (내항을 외항으로 혼동)',
         right: '5:□=15:9 → 외항의 곱=내항의 곱 → 5×9=□×15 → □=3',
         reason: '□의 위치를 먼저 파악하세요. 내항에 있으면 (외항의 곱)÷(나머지 내항), 외항에 있으면 (내항의 곱)÷(나머지 외항)입니다.'
       }
@@ -645,7 +648,7 @@ var MathDataExtra_s2 = {
     deepDive: {
       content: [
         '**π의 역사**: 고대 이집트인들도 원주율을 사용했으며, 아르키메데스(기원전 3세기)는 다각형으로 원을 근사하여 $3\\frac{10}{71} < \\pi < 3\\frac{1}{7}$임을 증명했습니다.',
-        '**원주 공식 유도**: 원을 매우 잘게 자른 부채꼴을 이어 붙이면 직사각형에 가까워지고, 가로는 원주의 절반, 세로는 반지름이 됩니다. $C = 2\\pi r = \\pi d$',
+        '**원주 공식 유도**: 원주율은 (원주)÷(지름)이므로 원주 = 지름 × 원주율입니다. 지름은 반지름의 2배이므로 $C = \\pi d = 2\\pi r$',
         '**원주율의 정의**: $\\pi = \\frac{원주}{지름}$이며 모든 원에서 일정한 값입니다.'
       ],
       examples: [

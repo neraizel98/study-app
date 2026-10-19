@@ -105,3 +105,15 @@ for(const unit of readingSandbox.window.ReadingData.levels.level1.units)
  assert.ok(readingSandbox.window.ReadingPassages.some(p=>p.unitId===unit.id),`No passage for ${unit.id}`);
 assert.ok(fs.readFileSync('EnglishGrammarApp.js','utf8').includes('`grammar:${stageId}:${unit().id}`'));
 console.log('Writing completion gates and unit-scoped reading/grammar integration verified.');
+// A wrong generator must not collapse a quiz whose templates all share that generator
+// (소인수분해 basic: 20 templates of m1_factor_basic once produced a 1-question quiz).
+{
+    const A=sandbox.window.AdaptiveQuiz,templates=Array.from({length:20},(_,i)=>({generator:'m1_factor_basic',n:i}));
+    const wrongType={type:'m1_factor_basic',dueAt:0,history:[{status:'wrong',date:0}]};
+    const mixed=A.mix(templates,[wrongType],t=>t.generator,w=>w.type,10,.45);
+    assert.equal(mixed.length,10,'shared-generator pool still fills the quiz');
+    assert.equal(new Set(mixed).size,10,'no template repeats');
+    assert.equal(A.mix(templates,[],t=>t.generator,w=>w.type,10,.45).length,10);
+    const varied=[...templates.slice(0,5),...Array.from({length:8},(_,i)=>({generator:`other_${i}`}))];
+    assert.equal(A.mix(varied,[wrongType],t=>t.generator,w=>w.type,10,.45).length,10,'fresh types fill before repeated wrong types');
+}

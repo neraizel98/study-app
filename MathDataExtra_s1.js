@@ -144,7 +144,7 @@ var MathDataExtra_s1 = {
     },
     commonMistakes: [
       {
-        wrong: '2\\frac{1}{3} \\div 3 = \\frac{2}{3} + \\frac{1}{3}\\div3',
+        wrong: '2\\frac{1}{3} \\div 3 = \\frac{2}{3} + \\frac{1}{3}',
         right: '2\\frac{1}{3} \\div 3 = \\frac{7}{3} \\div 3 = \\frac{7}{9}',
         reason: '정수 부분만 따로 나누면 안 됩니다. 반드시 가분수로 변환 후 계산합니다.'
       },
@@ -156,7 +156,7 @@ var MathDataExtra_s1 = {
     ],
     deepDive: {
       content: [
-        '**반례**: $2\\frac{1}{3}\\div 3$에서 정수만 나누면 $\\frac{2}{3}+\\frac{1}{3}\\div 3=\\frac{2}{3}+\\frac{1}{9}=\\frac{7}{9}$이 아닌 $\\frac{7}{9}$…처럼 우연히 맞을 수도 있지만, $2\\frac{2}{3}\\div 2$에서는 $\\frac{1}{3}+\\frac{1}{3}=\\frac{2}{3}\\ne\\frac{4}{3}$으로 틀립니다.',
+        '**반례**: $2\\frac{1}{3}\\div 3$에서 정수 부분만 나누면 $\\frac{2}{3}+\\frac{1}{3}=1$이 되어 정답 $\\frac{7}{9}$과 다릅니다. $2\\frac{2}{3}\\div 2$도 정수 부분만 나누면 $1+\\frac{2}{3}=\\frac{5}{3}$이지만, 정답은 $\\frac{8}{3}\\div 2=\\frac{4}{3}$입니다.',
         '**중학 연계**: 대분수 나눗셈은 분수 방정식 $\\frac{a}{b}x=c$의 풀이와 직결됩니다.'
       ],
       examples: [
@@ -242,8 +242,8 @@ var MathDataExtra_s1 = {
   <rect x="180" y="70" width="70" height="70" fill="rgba(35,132,92,0.15)" stroke="#23845c" stroke-width="2"/>
   <text x="196" y="110" fill="#23845c" font-size="11" font-family="Arial">오른면</text>
   <!-- 뒷면 표시 -->
-  <rect x="105" y="70" width="70" height="70" fill="none" stroke="#eb0000" stroke-width="1" stroke-dasharray="4,3"/>
-  <text x="118" y="88" fill="#eb0000" font-size="9" font-family="Arial">(뒷면: 점선)</text>
+  <rect x="250" y="70" width="25" height="70" fill="none" stroke="#eb0000" stroke-width="1" stroke-dasharray="4,3"/>
+  <text x="252" y="108" fill="#eb0000" font-size="9" font-family="Arial">뒷면</text>
 </svg>`,
       caption: '사각기둥 전개도: 밑면 2개 + 옆면 4개 = 총 6면'
     },
@@ -477,8 +477,8 @@ var MathDataExtra_s1 = {
     },
     commonMistakes: [
       {
-        wrong: '소수 첫째 자리에서 반올림 → 소수 첫째 자리를 봄',
-        right: '소수 첫째 자리에서 반올림 → 소수 둘째 자리 숫자를 봄',
+        wrong: '소수 첫째 자리까지 나타내기 → 소수 첫째 자리를 봄',
+        right: '소수 첫째 자리까지 나타내기 → 소수 둘째 자리 숫자를 봄',
         reason: '반올림은 구하려는 자리의 바로 아래 자리를 보고 판단합니다.'
       },
       {
@@ -530,7 +530,7 @@ var MathDataExtra_s1 = {
       {
         wrong: '파란:빨간 = 5:3',
         right: '파란:빨간 = 3:5',
-        reason: '비는 순서가 중요합니다. "A:B"에서 기준이 되는 대상을 먼저 씁니다.'
+        reason: '비는 순서가 중요합니다. 문제에서 말한 순서대로 씁니다. "A:B"에서 기준량은 뒤에 쓴 B입니다.'
       },
       {
         wrong: '비 3:5와 비율 3/5은 같은 것',
@@ -725,13 +725,13 @@ var MathDataExtra_s1 = {
     svgDiagram: {
       svg: `<svg viewBox="0 0 280 200" xmlns="http://www.w3.org/2000/svg">
   <!-- 40% 섹터 (초록) -->
-  <path d="M140,100 L140,20 A80,80 0 0,1 211,140 Z" fill="#008637" opacity="0.8"/>
+  <path d="M140,100 L140,20 A80,80 0 0,1 187,165 Z" fill="#008637" opacity="0.8"/>
   <!-- 30% 섹터 (파랑) -->
-  <path d="M140,100 L211,140 A80,80 0 0,1 91,172 Z" fill="#23845c" opacity="0.8"/>
+  <path d="M140,100 L187,165 A80,80 0 0,1 64,125 Z" fill="#23845c" opacity="0.8"/>
   <!-- 20% 섹터 (노랑) -->
-  <path d="M140,100 L91,172 A80,80 0 0,1 68,60 Z" fill="#8f7100" opacity="0.8"/>
+  <path d="M140,100 L64,125 A80,80 0 0,1 93,35 Z" fill="#8f7100" opacity="0.8"/>
   <!-- 10% 섹터 (빨강) -->
-  <path d="M140,100 L68,60 A80,80 0 0,1 140,20 Z" fill="#eb0000" opacity="0.8"/>
+  <path d="M140,100 L93,35 A80,80 0 0,1 140,20 Z" fill="#eb0000" opacity="0.8"/>
   <!-- 범례 -->
   <rect x="230" y="50" width="12" height="12" fill="#008637"/>
   <text x="246" y="61" fill="#2b2620" font-size="10" font-family="Arial">40%</text>

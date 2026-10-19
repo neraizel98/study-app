@@ -16,7 +16,7 @@
                     lesson('be동사의 부정문과 의문문', '부정문은 be동사 뒤에 not, 의문문은 be동사를 문장 앞으로 보냅니다.', ['She is not tired.', 'Is she tired?', '대답: Yes, she is. / No, she is not.'], [['We are not late.', '우리는 늦지 않았다.'], ['Are you ready?', '너는 준비됐니?']], '일반동사처럼 do를 쓰지 않습니다.')
                 ]),
                 unit('e3', '3. 일반동사', '행동을 나타내는 동사의 현재형을 사용합니다.', [
-                    lesson('현재형과 3인칭 단수', '현재의 습관은 동사원형을 쓰되, he/she/it에는 -(e)s를 붙입니다.', ['I/you/we/they play', 'he/she/it plays', '자음+y는 y를 i로 바꾸고 -es: study→studies'], [['I walk to school.', '나는 학교에 걸어간다.'], ['He watches TV.', '그는 TV를 본다.']], 'I와 you를 제외한 3인칭 단수 주어인지 확인하세요.'),
+                    lesson('현재형과 3인칭 단수', '현재의 습관은 동사원형을 쓰되, he/she/it에는 -(e)s를 붙입니다.', ['I/you/we/they play', 'he/she/it plays', '자음+y는 y를 i로 바꾸고 -es: study→studies'], [['I walk to school.', '나는 학교에 걸어간다.'], ['He watches TV.', '그는 TV를 본다.']], '주어가 he, she, it, Mina처럼 3인칭 단수인지 확인하세요.'),
                     lesson('do와 does', '일반동사의 부정문·의문문에는 do/does가 필요합니다.', ['I/you/we/they + do', 'he/she/it + does', 'does 뒤의 본동사는 원형'], [['She does not like milk.', '그녀는 우유를 좋아하지 않는다.'], ['Does he run fast?', '그는 빨리 달리니?']], 'does가 이미 s 역할을 하므로 likes가 아니라 like입니다.')
                 ]),
                 unit('e4', '4. 시제의 기초', '현재·과거·미래의 시간을 구별합니다.', [
@@ -114,7 +114,7 @@
 
     data.middle.units.push(
         unit('m9', '9. 현재완료', '과거의 일이 현재와 어떻게 이어지는지 구분합니다.', [
-            lesson('경험·완료·결과', '현재완료는 have/has + 과거분사로 만들며, 과거의 경험이나 완료된 일이 현재에 남긴 결과를 나타냅니다.', ['경험: have ever + p.p.', '완료: have just/already + p.p.', '결과: 과거 행동의 결과가 현재에 남음', '명확한 과거 시점 표현과 함께 쓰지 않음'], [['I have visited Jeju twice.', '나는 제주도를 두 번 방문한 적이 있다.'], ['She has just finished her homework.', '그녀는 방금 숙제를 끝냈다.']], 'yesterday가 있으면 단순과거, ever·just·already가 있으면 현재완료를 먼저 생각하세요.'),
+            lesson('경험·완료·결과', '현재완료는 have/has + 과거분사로 만들며, 과거의 경험이나 완료된 일이 현재에 남긴 결과를 나타냅니다.', ['경험: Have you ever + p.p.? / have never + p.p.','완료: have just/already + p.p.', '결과: 과거 행동의 결과가 현재에 남음', '명확한 과거 시점 표현과 함께 쓰지 않음'], [['I have visited Jeju twice.', '나는 제주도를 두 번 방문한 적이 있다.'], ['She has just finished her homework.', '그녀는 방금 숙제를 끝냈다.']], 'yesterday가 있으면 단순과거, ever·just·already가 있으면 현재완료를 먼저 생각하세요.'),
             lesson('계속과 기간 표현', '과거에 시작한 상태가 현재까지 계속될 때 현재완료와 for 또는 since를 함께 사용합니다.', ['for + 기간', 'since + 시작 시점', 'How long + have/has + 주어 + p.p.?', '상태동사는 계속 용법에 자연스러움'], [['We have lived here for five years.', '우리는 이곳에서 5년 동안 살아왔다.'], ['He has known Mina since 2023.', '그는 2023년부터 미나를 알고 지냈다.']], 'for는 얼마나 오래인지, since는 언제부터인지를 알려 줍니다.')
         ]),
         unit('m10', '10. 수동태와 관계대명사 기초', '행동을 받는 대상과 명사를 꾸미는 절을 이해합니다.', [
