@@ -320,6 +320,24 @@ const MathFormulaApp = (() => {
         });
     }
 
+    // Perimeter and area were confused in the first mock exam (rectangle perimeter → A=ah),
+    // so plane-figure perimeter/area pages show both side by side.
+    // 직각삼각형·삼각형·정사각형·직사각형 넓이, 직사각형 둘레, 평행사변형 넓이 (elementary plane figures only).
+    const PERIMETER_AREA_FORMULAS = new Set([3, 6, 15, 16, 17, 20]);
+    function perimeterAreaCompare(item) {
+        if (!PERIMETER_AREA_FORMULAS.has(item.number)) return '';
+        const rows = [['직사각형', '2 × (가로 + 세로)', '가로 × 세로'], ['정사각형', '4 × 한 변', '한 변 × 한 변'],
+            ['평행사변형', '2 × (밑변 + 옆변)', '밑변 × 높이'], ['삼각형', '세 변의 길이의 합', '밑변 × 높이 ÷ 2']];
+        return `<section class="content-section compare-section">
+                    <h3>⚖️ 둘레와 넓이 구별하기</h3>
+                    <p>둘레(L)는 테두리를 한 바퀴 잰 <strong>길이</strong>라 단위가 cm, 넓이(A)는 안쪽을 채운 <strong>크기</strong>라 단위가 cm²예요.</p>
+                    <div class="compare-table-wrap"><table class="compare-table">
+                        <thead><tr><th>도형</th><th>둘레 L (cm)</th><th>넓이 A (cm²)</th></tr></thead>
+                        <tbody>${rows.map(([shape, perimeter, area]) => `<tr${item.title.includes(shape) ? ' class="current"' : ''}><th>${shape}</th><td>${perimeter}</td><td>${area}</td></tr>`).join('')}</tbody>
+                    </table></div>
+                </section>`;
+    }
+
     function renderStudy() {
         const item = formula();
         const refs = MATH_PREREQUISITE_REFS[item.number] || [];
@@ -383,6 +401,7 @@ const MathFormulaApp = (() => {
                     <div class="work-steps">${item.example.work.map((text, index) => `<p><span>${index + 1}</span>${text}</p>`).join('')}</div>
                 </section>
 
+                ${perimeterAreaCompare(item)}
                 <div class="tip-box">⚠️ <strong>꼭 기억하기</strong><p>${item.tip}</p></div>
                 <a class="video-link" href="https://www.youtube.com/results?search_query=${encodeURIComponent(item.videoQuery)}" target="_blank" rel="noopener noreferrer">
                     ▶ 깨봉수학에서 관련 영상 찾아보기 <small>(${item.videoQuery})</small>

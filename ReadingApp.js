@@ -10,6 +10,9 @@
     let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
     const reviewMode = params.get('mode') === 'review';
     let mode = 'study', timerController = null, passage = null, questions = [];
+    // A one-line summary before the first question makes the learner read the whole passage
+    // (the first mock exam showed answers chosen from the options alone).
+    let summaryPending = false;
     let questionIndex = 0, score = 0, answered = false, attempts = [], sessionId = '', startTime = 0, quizActiveTimer = null;
 
     const unit = () => level().units.find(item => item.id === unitId) || level().units[0];
@@ -155,6 +158,7 @@
         $('passageTitle').textContent = passage.title;
         $('passage').innerHTML = passage.lines.map((line, index) => `<p><span class="line-no">${index + 1}</span>${line}</p>`).join('');
         $('sourceNote').textContent = passage.sourceNote;
+        summaryPending = !reviewMode; $('passageSummary').value = ''; $('summaryDone').disabled = true;
         setUrl(); timerController?.stopTimer(); renderQuestion();
     }
 
@@ -162,6 +166,7 @@
         const item = questions[questionIndex];
         answered = false;
         $('quizProgress').textContent = `${questionIndex + 1} / ${questions.length} · ${score}점`;
+        $('summaryStep').hidden = !summaryPending; $('quizQuestion').hidden = summaryPending; $('quizChoices').hidden = summaryPending;
         $('quizQuestion').textContent = `[${item.skill}] ${item.question}`;
         const choices = Utils.shuffle([...item.choices]);
         item.renderedChoices = choices;
@@ -204,7 +209,7 @@
         const pct = Math.round(score / questions.length * 100);
         if (!reviewMode && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
-            category: 'reading', review: reviewMode, levelId, passageId: passage.id, passageTitle: passage.title,
+            category: 'reading', review: reviewMode, levelId, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
             unitId: passage.unitId, skills: attempts.map(item => item.skill), attempts
         });
         $('resultScore').textContent = `${score} / ${questions.length} (${pct}%)`;
@@ -224,6 +229,8 @@
             }
             renderSelectors(); renderStudy();
         });
+        $('passageSummary').addEventListener('input', () => { $('summaryDone').disabled = $('passageSummary').value.trim().length < 5; });
+        $('summaryDone').addEventListener('click', () => { summaryPending = false; renderQuestion(); $('quizQuestion').focus?.(); });
         $('startQuiz').addEventListener('click', startQuiz); $('quizModeBtn').addEventListener('click', startQuiz);
         $('studyModeBtn').addEventListener('click', renderStudy); $('backToStudy').addEventListener('click', renderStudy);
         $('quizChoices').addEventListener('click', event => { const button = event.target.closest('[data-index]'); if (button) answer(Number(button.dataset.index)); });

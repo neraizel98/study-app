@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261014-sync-reads';
+    const APP_VERSION = '20261019-mock-v2';
 
     (async function () {
         try {

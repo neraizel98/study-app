@@ -74,3 +74,28 @@ test('three consecutive weeks retain 15 fresh Korean and 7 fresh English questio
   }
  }
 });
+test('recent units lead, one unit cannot fill math, and two numeric answers are typed',()=>{
+ const s=seed(setup()),gens=['frac_div_frac_basic','frac_div_frac_fill','frac_div_frac_compare','frac_div_frac_word'];
+ s.reports.push(report('math','e6-2-u1',gens.map(generator=>({generator,question:generator,correctAnswer:'1'})),{date:NOW-2*DAY,metadata:{unitId:'e6-2-u1',levelId:'elementary-6',semesterId:'2',initialAttempts:gens.map(generator=>({generator,question:generator,correctAnswer:'1',correct:true}))}}));
+ const math=s.api.build('우준',NOW).items.filter(q=>q.subject==='math'),count=unit=>math.filter(q=>q.context.unitId===unit).length;
+ assert.equal(math.length,12);assert.ok(count('e6-2-u1')>=5,'most recent unit leads');assert.ok(count('e6-2-u5')>=5,'older unit still covered');
+ assert.ok(count('e6-2-u1')>=count('e6-2-u5'));
+ const written=math.filter(q=>q.kind==='written');assert.equal(written.length,2);
+ for(const q of written){assert.ok(s.api.writtenKey(q.answer).startsWith('number:'),q.question);assert.ok(!/ 중 |더 큰|더 작은/.test(q.question));assert.equal(s.api.grade(q,q.answer).correct,true);}
+ assert.ok(math.some(q=>q.difficulty==='challenge'),'a harder item is reserved');
+});
+test('typed answers compare values, not notation',()=>{
+ const {api}=setup(),B=String.fromCharCode(92),q={kind:'written',answer:`$${B}frac{4}{9}$km`};
+ for(const value of ['4/9',' 4 / 9 ',`$${B}frac{4}{9}$`])assert.equal(api.grade(q,value).correct,true,value);
+ assert.equal(api.grade({kind:'written',answer:'9개'},'9').correct,true);
+ assert.equal(api.grade(q,'5/9').status,'wrong');assert.equal(api.grade(q,'').status,'unanswered');
+});
+test('reading options do not give the answer away by length or extreme wording',()=>{
+ const {c}=setup(),content=c.MockReadingContent;
+ for(const language of ['korean','english']){
+  const items=content[language].flatMap(p=>p.questions),longest=items.filter(q=>{const lengths=q.choices.map(v=>v.length),max=Math.max(...lengths);return q.answer.length===max&&lengths.filter(v=>v===max).length===1;});
+  assert.ok(longest.length/items.length<=0.2,`${language}: ${longest.length}/${items.length} answers are the longest option`);
+ }
+ const extreme=/반드시|항상|모든|언제나|절대|전혀|결코|숨기기 위해|없애기 위해|존재하지 않는다/;
+ for(const q of content.korean.flatMap(p=>p.questions).filter(q=>q.skill!=='evidence'))for(const option of q.choices.filter(v=>v!==q.answer))assert.ok(!extreme.test(option),option);
+});

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261014-sync-reads';
+const CACHE_NAME = 'smart-study-20261019-mock-v2';
 
 try {
     importScripts('./firebase-config.js');
@@ -97,6 +97,7 @@ const STATIC_ASSETS = [
     './mock-exam.js',
     './mock-exam-ui.js',
     './mock-exam-results.js',
+    './mock-wrong-note.js',
     './mock-exam.css',
     './mock-publication.js',
     './mock-admin.js',

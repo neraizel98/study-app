@@ -187,7 +187,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-quiz-result"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261019-mock-v2"></head>
 <body>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -206,6 +206,7 @@
             </div>
 
             <div class="question-box" id="questionBox">문제가 로딩 중입니다...</div>
+            <p class="thinking-tip" id="thinkingTip" hidden></p>
 
             <div class="options-grid" id="optionsGrid">
                 <!-- 선택지가 여기에 생성됩니다 -->
@@ -224,7 +225,7 @@
     <script src="utils.js?v=20260911-adaptive"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20260917-storage2"></script><script src="local-repository.js?v=20260928-record-reliability"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261014-ui-rollback"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261014-sync-reads"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-mock-v2"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20260930-shared-subjects"></script>
     <script src="MathData.js"></script>
@@ -375,6 +376,16 @@
             let currentIdx = 0;
             let results = []; // { selected, correct, isOk }
 
+            // Mock-exam mistakes were in division comparisons and "find □" items:
+            // predict the result before calculating, and check □ by turning division into multiplication.
+            function thinkingTip(quiz) {
+                const generator = String(quiz.generator || '');
+                if (!/div/.test(generator)) return '';
+                if (/compare/.test(generator)) return '먼저 예측해 보세요 · 1보다 작은 수로 나누면 몫이 커지고, 1보다 큰 수로 나누면 작아져요.';
+                if (/fill/.test(generator)) return '거꾸로 확인해 보세요 · □ ÷ ▲ = ●이면 □ = ● × ▲예요.';
+                return '';
+            }
+
             function renderQuiz(idx) {
                 const quiz = quizzes[idx];
                 document.getElementById('quizIdx').innerText = `문항 ${idx + 1} / ${quizzes.length}`;
@@ -382,6 +393,8 @@
                 document.getElementById('unitIndicator').innerText = `${unit.title} - ${typeName}`;
                 
                 document.getElementById('questionBox').innerHTML = Utils.renderMath(quiz.question);
+                const tip = document.getElementById('thinkingTip'), tipText = thinkingTip(quiz);
+                tip.textContent = tipText; tip.hidden = !tipText;
 
                 const grid = document.getElementById('optionsGrid');
                 grid.innerHTML = '';

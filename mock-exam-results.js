@@ -23,6 +23,7 @@
             const local = app.MockExam.getById(user, assessmentId), snapshot = result.snapshot || result.payload || local;
             if (!snapshot || snapshot.userId !== user || snapshot.assessmentId !== assessmentId || !snapshot.submittedAt
                 || !snapshot.sections?.every(s => s.state === 'ended')) return { published: false, reason: 'incomplete' };
+            try { app.MockWrongNote?.note(user, snapshot.assessmentId, snapshot.initialAttempts || (snapshot.sections || []).flatMap(section => section.initialAttempts || [])); } catch (error) { console.warn('[Mock wrong note]', error); }
             return { published: true, publishedAt: result.publishedAt, snapshot };
         } catch (_) { return { published: false, reason: 'offline' }; }
     }

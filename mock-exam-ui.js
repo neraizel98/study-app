@@ -6,6 +6,8 @@
         const user = local.getActiveUser(); if (!user) { root.location.href = 'index.html'; return; }
         const $ = id => document.getElementById(id), params = new URLSearchParams(root.location.search);
         let draft = params.get('assessment') ? api.getById(user, params.get('assessment')) : api.get(user), bank = null, busy = false, error = '', timer, confirmingSection;
+        // Passages read in this visit; their options open only after the learner confirms reading.
+        const readPassages = new Set();
         let activityTracker = null, activitySectionId = null, activityWeek = null, recordedSeconds = 0, lastActivityPersistAt = Date.now();
         if (!draft && !params.has('assessment')) {
             $('readyPanel').hidden = false; $('startExam').disabled = true; $('bankStatus').textContent = '부모 설정과 시험 범위를 확인하고 있어요.';
@@ -74,8 +76,12 @@
             const lines = q.passageLines || q.passageText || []; for (const line of Array.isArray(lines) ? lines : [lines]) $('passage').append(text('p', line));
             $('passage').hidden = !$('passage').childNodes.length;
             $('choices').replaceChildren();
-            if (q.kind === 'written') {
-                const label = text('label', '답 입력'); label.htmlFor = 'writtenAnswer'; const input = document.createElement('input'); input.id = 'writtenAnswer'; input.type = 'text'; input.maxLength = 2000; input.autocomplete = 'off'; input.value = draft.responses[q.id] || '';
+            if (q.passageId && (q.passageLines || q.passageText) && !readPassages.has(q.passageId) && !draft.responses[q.id]) {
+                const open = text('button', '지문을 끝까지 읽었어요 · 보기 열기', 'choice passage-gate'); open.type = 'button';
+                open.onclick = () => { if (!guard()) return; readPassages.add(q.passageId); render(); $('question').focus(); };
+                $('choices').append(open);
+            } else if (q.kind === 'written') {
+                const label = text('label', '답 입력'); label.htmlFor = 'writtenAnswer'; const input = document.createElement('input'); input.id = 'writtenAnswer'; input.type = 'text'; input.maxLength = 2000; input.autocomplete = 'off'; input.value = draft.responses[q.id] || ''; input.placeholder = q.inputHint || '답을 입력하세요'; input.inputMode = 'text';
                 input.oninput = () => { if (!guard()) return; try { flushActivity(); draft = api.answer(user, draft.scheduledWeekId, q.id, input.value);
                     if (!draft.sections.find(s => s.state === 'active')?.subjects.includes(q.subject)) { render(); persistSections(); }
                     else $('position').textContent = `${draft.cursor + 1}/${questions.length}문항 · 답안 자동 저장`;
@@ -124,7 +130,9 @@
         $('nextQuestion').onclick = () => { if (guard()) { flushActivity(); draft = api.move(user, draft.scheduledWeekId, draft.cursor + 1); render(); $('question').focus(); } };
         $('finishSection').onclick = () => {
             if (!guard()) return; const section = draft.sections.find(s => s.state === 'active'), questions = api.questionsFor(draft, section), missing = questions.filter(q => !String(draft.responses[q.id] || '').trim()).length;
-            confirmingSection = section.id; $('submitMessage').textContent = missing ? `${missing}문항이 미응답입니다. 제출 후 이 과목 답안은 바꿀 수 없습니다.` : '제출 후 이 과목 답안은 바꿀 수 없습니다.'; $('submitDialog').showModal();
+            // Finishing in the first quarter of the time usually means the answers were not checked.
+            const minutesLeft = Math.ceil((section.deadline - Date.now()) / 60000), hurried = Date.now() - section.startedAt < section.durationSeconds * 250;
+            confirmingSection = section.id; $('submitMessage').textContent = (hurried ? `아직 ${minutesLeft}분이 남았어요. 1분만 답을 다시 확인해 보세요. ` : '') + (missing ? `${missing}문항이 미응답입니다. 제출 후 이 과목 답안은 바꿀 수 없습니다.` : '제출 후 이 과목 답안은 바꿀 수 없습니다.'); $('submitDialog').showModal();
         };
         $('continueExam').onclick = () => $('submitDialog').close();
         $('confirmSection').onclick = () => { $('submitDialog').close(); if (!guard()) return; try { flushActivity(); draft = api.finishSection(user, draft.scheduledWeekId, Date.now(), confirmingSection); render(); persistSections(); } catch (e) { error = e.message; render(); } };

@@ -19,7 +19,7 @@
         .result{position:fixed;inset:0;display:grid;place-items:center;background:#ffffff;z-index:50}.result[hidden]{display:none}.result-box{width:min(430px,90vw);padding:30px;border-radius:22px;background:#ffffff;border:1px solid #ddd2bf;text-align:center}.result-score{font-size:2.3rem;color:#eb001d;font-weight:900}
         [hidden]{display:none!important}@media(max-width:620px){.reading-shell{width:92%}.hero{padding:22px}.card h3{margin-top:24px}.principle{padding:17px;line-height:1.8}.rules{gap:10px}.study-examples{gap:14px}.study-example{padding:17px}.study-example-text{line-height:1.85}.passage-head{display:block}.actions button{flex:1}.passage{padding:16px}.unit-tabs{display:grid;grid-template-columns:1fr 1fr}.unit-btn{width:100%;padding:10px 7px}.lesson-tabs{justify-content:stretch}.lesson-btn{flex:1}}
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261014-quiz-result"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261019-mock-v2"></head>
 <body>
 <main class="reading-shell">
     <nav class="top-nav"><a class="ss-back" href="subjects.html">← 과목 목록</a><a href="index.html">🏠 홈</a></nav>
@@ -37,6 +37,7 @@
     <section id="quizPanel" class="card" hidden>
         <div class="passage-head"><div><div id="passageMeta" class="passage-meta"></div><h2 id="passageTitle"></h2></div><strong id="quizProgress"></strong></div>
         <article id="passage" class="passage"></article><div id="sourceNote" class="source-note"></div>
+        <div id="summaryStep" class="summary-step" hidden><label for="passageSummary">글을 끝까지 읽었다면, 한 줄로 요약해 보세요</label><textarea id="passageSummary" rows="2" maxlength="200" placeholder="누가 무엇을 왜 했는지 한 문장으로 써 보세요"></textarea><button id="summaryDone" type="button" class="summary-done" disabled>요약했어요 · 문제 풀기</button></div>
         <h3 id="quizQuestion" class="quiz-question"></h3><div id="quizChoices" class="choices"></div>
         <div id="quizFeedback" class="feedback" hidden></div>
         <div class="actions"><button id="backToStudy">학습으로 돌아가기</button><button id="nextQuestion" class="primary" hidden>다음 문제</button></div>
@@ -51,8 +52,8 @@
 <script src="ReadingData.js?v=20260728-examples"></script>
 <script src="ReadingPassages.js?v=20260728-lv1"></script>
 <script src="ReadingVocabulary.js?v=20260728-vocabulary"></script>
-<script src="ReadingApp.js?v=20261014-ui-rollback"></script>
-<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261014-sync-reads"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+<script src="ReadingApp.js?v=20261019-mock-v2"></script>
+<script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261014-ui-rollback"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261019-mock-v2"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
 <script src="version-check.js?v=20261014-redesign"></script>
 <script src="parent-scope-guard.js?v=20261014-redesign"></script><script src="weekly-schedule.js"></script><script src="learning-plan.js?v=20261014-today-english"></script><script src="unified-learning.js?v=20261007-flow"></script><script src="today-journey.js?v=20261012-journey"></script><script src="today-flow.js?v=20261007-flow"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script></body>
 </html>

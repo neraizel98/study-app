@@ -136,3 +136,26 @@ test('재접속 활동시간은 저장한 델타만 유지하며 종료 과목�
     assert.equal(h.api.recordActivity('우준',week,'reading',100,start+107000).sections[0].activeSeconds,10);
     h.switchUser('다른학생');assert.throws(()=>h.api.recordActivity('우준',week,'english',10,start+118000),/계정/);
 });
+test('공개된 모의고사의 첫 시도 오답은 과목별 오답노트에 한 번만 등록',async()=>{
+    const h=harness(),saved=[],context={SmartStudy:h.app,module:{exports:{}},Date,console,MATH_FORMULAS:[{number:17,level:'초등 4학년'}],WrongNote:{save:(...args)=>saved.push(args)}};context.window=context;
+    vm.runInNewContext(fs.readFileSync('mock-wrong-note.js','utf8'),context);
+    const attempt=(subject,extra)=>({subject,questionId:`${subject}:q`,question:'문항',correct:false,selectedAnswer:'x',correctAnswer:'y',choices:['x','y'],...extra});
+    const assessmentId='mock:우준:2026-10-12:first',attempts=[
+        attempt('math',{generator:'frac_div_frac_compare',context:{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u1',title:'1. 분수의 나눗셈'}}),
+        attempt('math_formula',{conceptId:'formula-recall',context:{unitId:'formula-17',title:'직사각형의 둘레 공식'}}),
+        attempt('hanja',{question:'題의 뜻과 음은?',correctAnswer:'제목 제',context:{unitId:'level6'}}),
+        attempt('english',{question:'“물고기”의 뜻을 가진 영어 단어는?',correctAnswer:'fish',context:{unitId:'level2'}}),
+        attempt('reading',{context:{unitId:'r7'}}),{...attempt('math',{}),correct:true}];
+    assert.equal(h.app.MockWrongNote.note('우준',assessmentId,attempts),5);
+    const bySubject=Object.fromEntries(saved.map(([subject,data])=>[subject+(data.levelId==='formula'?':formula':''),data]));
+    assert.deepEqual([bySubject.math.levelId,bySubject.math.semesterId,bySubject.math.unitId,bySubject.math.type],['elementary-6','2','e6-2-u1','frac_div_frac_compare']);
+    assert.deepEqual([bySubject['math:formula'].unitId,bySubject['math:formula'].semesterId,bySubject['math:formula'].type],['formula-17','초등 4학년','formula-recall']);
+    assert.deepEqual([bySubject.hanja.hanja,bySubject.hanja.meaning,bySubject.hanja.eum],['題','제목','제']);
+    assert.deepEqual([bySubject.english.word,bySubject.english.meaning],['fish','물고기']);
+    assert.ok(saved.every(([,,status,session,round])=>status==='wrong'&&session===assessmentId&&round===1));
+    assert.equal(h.app.MockWrongNote.note('우준',assessmentId,attempts),0,'a second load does not add the same exam again');
+    // A result published earlier is picked up from the device's reports; withheld results are not.
+    h.local.saveReports('우준',[{sessionId:'a:math',metadata:{mockExam:true,assessmentId:'mock:a',resultVisibility:'published',initialAttempts:attempts.slice(0,1)}},
+        {sessionId:'b:math',metadata:{mockExam:true,assessmentId:'mock:b',resultVisibility:'withheld',initialAttempts:attempts.slice(0,1)}}]);
+    saved.length=0;assert.equal(h.app.MockWrongNote.sweep('우준'),1);assert.equal(h.app.MockWrongNote.sweep('우준'),0);assert.equal(saved.length,1);
+});
