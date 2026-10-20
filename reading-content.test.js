@@ -4,7 +4,7 @@ const vm = require('node:vm');
 
 const sandbox = { window: {} };
 vm.createContext(sandbox);
-for (const file of ['ReadingData.js', 'ReadingPassages.js', 'ReadingVocabulary.js']) {
+for (const file of ['ReadingData.js', 'ReadingPassages.js', 'ReadingPassagesMore1.js', 'ReadingPassagesMore2.js', 'ReadingPassagesMore3.js', 'ReadingVocabulary.js']) {
     vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file });
 }
 
@@ -95,4 +95,15 @@ assert.ok(vocabulary.idioms.length >= 8, 'idiom variety');
 assert.ok(Object.keys(vocabulary.passageIdioms).length >= 8, 'passage-linked idiom variety');
 assert.deepEqual([...difficulties].sort(), ['challenge', 'foundation', 'standard']);
 assert.ok(categories.size >= 7);
+// Every unit offers at least six passages with two or more of each difficulty.
+for (const unit of level.units) {
+    const own = passages.filter(item => item.unitId === unit.id);
+    assert.ok(own.length >= 6, `${unit.id}: at least six passages (${own.length})`);
+    for (const difficulty of ['foundation', 'standard', 'challenge'])
+        assert.ok(own.filter(item => item.difficulty === difficulty).length >= 2, `${unit.id}: two ${difficulty} passages`);
+}
+// Newer passages: options must not give the answer away by length.
+const newer = passages.filter(item => item.contextVocab).flatMap(item => item.questions);
+const longest = newer.filter(q => { const lengths = q.choices.map(c => c.length), max = Math.max(...lengths); return q.answer.length === max && lengths.filter(l => l === max).length === 1; });
+assert.ok(newer.length === 0 || longest.length / newer.length <= 0.3, `answer is the longest option in ${longest.length}/${newer.length} newer questions`);
 console.log(`Reading content verified: ${passages.length} passages, ${questionIds.size} questions.`);

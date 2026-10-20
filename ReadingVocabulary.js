@@ -163,7 +163,8 @@
     const normalize = value => String(value).normalize('NFC').trim();
 
     function contextQuestion(passage) {
-        const item = contextItems[passage.id];
+        // Newer passages carry their own context word (`contextVocab`) instead of an entry here.
+        const item = contextItems[passage.id] || passage.contextVocab;
         if (!item) return null;
         const sourceLine = passage.lines.find(line => normalize(line).includes(normalize(item.word)));
         if (!sourceLine) return null;

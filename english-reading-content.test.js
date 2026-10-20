@@ -4,7 +4,7 @@ const vm = require('node:vm');
 
 const sandbox = { window: {} };
 vm.createContext(sandbox);
-vm.runInContext(fs.readFileSync('EnglishReadingData.js', 'utf8'), sandbox, { filename: 'EnglishReadingData.js' });
+for (const file of ['EnglishReadingData.js', 'EnglishReadingMore1.js', 'EnglishReadingMore2.js']) vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox, { filename: file });
 const data = sandbox.window.EnglishReadingData;
 const grammarUnitIds = new Set(['e1', 'e2', 'e3', 'e4', 'e5', 'e6']);
 
@@ -23,8 +23,9 @@ for (const unit of data.units) {
     assert.ok(!unitIds.has(unit.id), `duplicate unit id: ${unit.id}`);
     unitIds.add(unit.id);
     assert.ok(unit.title && unit.goal);
-    assert.equal(unit.passages.length, 4, `${unit.id}: four passages including one extension`);
-    assert.deepEqual(Array.from(unit.passages, passage => passage.band), [0, 1, 2, 2], `${unit.id}: supported/base/stretch bands`);
+    // 기초 2 · 표준 3 · 도전 3: the original four, then four more.
+    assert.equal(unit.passages.length, 8, `${unit.id}: eight passages`);
+    assert.deepEqual(Array.from(unit.passages, passage => passage.band), [0, 1, 2, 2, 0, 1, 1, 2], `${unit.id}: supported/base/stretch bands`);
     for (const passage of unit.passages) {
         assert.ok(!passageIds.has(passage.id), `duplicate passage id: ${passage.id}`);
         passageIds.add(passage.id);
@@ -65,7 +66,7 @@ for (const unit of data.units) {
         }
     }
 }
-assert.equal(passageIds.size, 16);
-assert.equal(questionIds.size, 80);
+assert.equal(passageIds.size, 32);
+assert.equal(questionIds.size, 160);
 assert.deepEqual([...answerPositions].sort(), [0, 1, 2, 3], 'answer positions are distributed');
-console.log('English reading content verified: 4 units, 16 passages, 80 questions.');
+console.log(`English reading content verified: ${data.units.length} units, ${passageIds.size} passages, ${questionIds.size} questions.`);
