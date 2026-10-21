@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261021-stabilization';
+const CACHE_NAME = 'smart-study-20261021-vocab-result';
 
 try {
     importScripts('./firebase-config.js');

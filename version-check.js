@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261021-stabilization';
+    const APP_VERSION = '20261021-vocab-result';
 
     (async function () {
         try {

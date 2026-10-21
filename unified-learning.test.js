@@ -65,3 +65,34 @@ const diagnosed=ctx.SmartStudy.TodayJourney.state(recoverUser,recoverTask.id);as
 p.selectContext(recover.id,recoverUser,recoverTask.id,diagnosed.alternative.context);assert.equal(ctx.SmartStudy.TodayJourney.state(recoverUser,recoverTask.id).phase,3,'submitted wrong answers also complete the task');
 const bothUser='parent-both-english';p.applyParentSettings(bothUser,{budgetMinutes:45,grade:6,semester:2,englishActivity:'vocabulary',scopes:{reading:{mode:'auto'},english:{mode:'assigned',unitId:'level2'},english_reading:{mode:'assigned',levelId:'grade6',unitId:'er2'},math:{mode:'auto'}}});
 const bothPlan=p.createPlan(bothUser);assert(bothPlan.tasks.find(t=>t.subject==='english').required);assert(bothPlan.tasks.find(t=>t.subject==='english_reading').required);assert.equal(bothPlan.tasks.find(t=>t.subject==='english_reading').context.unitId,'er2');assert.equal(bothPlan.tasks.find(t=>t.subject==='english').context.unitId,'level2');
+// Promotion: a level the learner keeps acing (first attempts) is no longer suggested; the next one is.
+{
+ const day=86400000,quiz=(user,unitId,ago,correct,total=10)=>reports.push({userId:user,sessionId:`${user}-${unitId}-${ago}`,subject:'hanja',date:Date.now()-ago*day,totalQuestions:total,
+  metadata:{unitId,initialAttempts:Array.from({length:total},(_,i)=>({correct:i<correct}))}});
+ const hanjaTask=user=>{p.applyParentSettings(user,{budgetMinutes:45,grade:6,semester:2});return p.createPlan(user).tasks.find(t=>t.subject==='hanja');};
+ // 한자 8급 100점 세 번 → 7급 제안, 이유에 8급과 평균을 밝힌다.
+ for(const ago of [3,2,1])quiz('promote-8',  'level8',ago,10);
+ let task=hanjaTask('promote-8');assert.equal(task.context.unitId,'level7');assert.match(task.reasonText,/한자 8급.*100%\(3회\).*한 단계 높은/);
+ // 두 번뿐이면 아직 근거가 부족해 8급을 이어 간다.
+ for(const ago of [2,1])quiz('two-only','level8',ago,10);
+ const grown=user=>progress.outgrown(progress.performance('hanja',{unitId:'level8'},progress.evidence(user)));
+ assert.equal(grown('two-only'),false);
+ // 평균은 높아도 가장 최근 퀴즈가 흔들리면(70%) 승급하지 않는다.
+ for(const [ago,c] of [[4,10],[3,10],[2,10],[1,7]])quiz('shaky','level8',ago,c);
+ assert.equal(grown('shaky'),false);
+ // 많이 풀었고 평균이 80% 이상이면(8회) 승급한다.
+ for(let ago=8;ago>=1;ago--)quiz('many','level8',ago,8);
+ assert.equal(grown('many'),true);assert.equal(hanjaTask('many').context.unitId,'level7');
+ // 30일이 지난 기록은 승급 근거가 아니다.
+ for(const ago of [40,39,38])quiz('old','level8',ago,10);
+ assert.equal(grown('old'),false);
+ // 8·7급을 모두 넘어서면 6급으로, 넘어선 단계의 오답이 남아 있어도 다시 끌어내리지 않는다.
+ for(const ago of [6,5,4])quiz('two-levels','level8',ago,10);
+ for(const ago of [3,2,1])quiz('two-levels','level7',ago,10);
+ const wrongBefore=local.getWrongAnswers;local.getWrongAnswers=()=>({hanja:[{hanja:'一',unitId:'level8',dueAt:0}]});
+ task=hanjaTask('two-levels');local.getWrongAnswers=wrongBefore;
+ assert.equal(task.context.unitId,'level6');assert.match(task.reasonText,/한자 7급/);
+ const stats=progress.performance('hanja',{unitId:'level8'},progress.evidence('promote-8'));
+ assert.deepEqual([stats.sessions,Math.round(stats.average*100),Math.round(stats.last*100)],[3,100,100]);
+}
+console.log('Promotion: aced levels step up (3×90%+ or 8×80%+, recent and steady), older or shaky evidence does not.');

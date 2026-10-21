@@ -24,7 +24,9 @@
 
     function renderSelectors() {
         $('levelTabs').innerHTML = Object.values(data.levels).map(item => `<button type="button" class="level-btn ${item.id === levelId ? 'active' : ''}" data-level="${item.id}" ${item.available && item.units.length ? '' : 'disabled'}>${escapeHTML(item.title)}<small>${escapeHTML(item.available ? item.grade : '준비 중')}</small></button>`).join('');
-        $('unitTabs').innerHTML = level().units.map(item => `<button type="button" class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${escapeHTML(item.title)}</button>`).join('');
+        // Tabs show the short name before " · " (순우리말 Ⅰ) so they fit one line on a phone; the full title stays in the heading.
+        const shortTitle = title => String(title).split(' · ')[0];
+        $('unitTabs').innerHTML = level().units.map(item => `<button type="button" class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}" title="${escapeHTML(item.title)}">${escapeHTML(shortTitle(item.title))}</button>`).join('');
         $('heroLevel').textContent = `${level().title} · ${level().grade} · ${level().description}`;
     }
 

@@ -58,15 +58,36 @@
         }
         return root.ConceptMastery.evaluate(local.listReports(user),rawSubject,root.LearningPolicy.context(rawSubject,metadata));
     }
+    // Promotion: a unit the learner has clearly outgrown (high first-attempt average over several
+    // quizzes, or many quizzes at a solid average) is no longer suggested; the next one is.
+    // Mastery checks with spaced reviews stay as they are; this only stops "100점이 뻔한" repeats.
+    const PROMOTION={windowDays:30,recent:5,minSessions:3,highAverage:.9,manySessions:8,solidAverage:.8,lastAtLeast:.8};
+    function performance(subject,context,entries){
+        const since=Date.now()-PROMOTION.windowDays*86400000;
+        const sessions=entries.filter(e=>e.subject===subject&&e.at>=since&&plan.contextKey(subject,e.context)===plan.contextKey(subject,context)
+            &&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed))
+            .sort((a,b)=>b.at-a.at);
+        const scores=sessions.map(e=>e.attempts.filter(a=>a.correct).length/e.attempts.length);
+        const recent=scores.slice(0,PROMOTION.recent),average=recent.length?recent.reduce((a,b)=>a+b,0)/recent.length:0;
+        return {sessions:sessions.length,average,last:scores[0]??0};
+    }
+    function outgrown(stats){
+        if(stats.last<PROMOTION.lastAtLeast)return false;
+        return (stats.sessions>=PROMOTION.minSessions&&stats.average>=PROMOTION.highAverage)
+            ||(stats.sessions>=PROMOTION.manySessions&&stats.average>=PROMOTION.solidAverage);
+    }
     function recommend(subject,profile,entries,user){
         const choices=catalog(subject,profile), same=(a,b)=>plan.contextKey(subject,a)===plan.contextKey(subject,b);
+        const stats=new Map(choices.map(c=>[plan.contextKey(subject,c.context),performance(subject,c.context,entries)]));
+        const statsOf=c=>stats.get(plan.contextKey(subject,c.context)),isOutgrown=c=>outgrown(statsOf(c));
         const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)));
         if(todayEntry)return {...choices.find(c=>same(c.context,todayEntry.context)),reason:'오늘 과목 화면에서 제출한 기록을 연결했어요.',todayEvidence:true};
         const wrong=local.getWrongAnswers(user)?.[subject==='math_formula'?'math':subject]||[];
         for(const item of wrong){
             if(item.deleted||item.invalid||item.quarantined||item.isMastered||Number(item.dueAt||0)>Date.now())continue;
             const choice=choices.find(c=>same(c.context,contextOf(subject,item)));
-            if(choice)return {...choice,reason:'복습할 오답이 있는 범위를 먼저 확인해요.'};
+            // An outgrown unit's wrong answers stay in the wrong-note review instead of pulling the plan back.
+            if(choice&&!isOutgrown(choice))return {...choice,reason:'복습할 오답이 있는 범위를 먼저 확인해요.'};
         }
         const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
         const assessed=new Set();
@@ -79,13 +100,21 @@
             const choice=choices.find(x=>same(x.context,c));
             if(choice&&!corrected)return {...choice,reason:'주간 평가에서 확인된 약점을 먼저 보충해요.'};
         }
-        const scheduled=choices.find(c=>mastery(user,subject,c.context)?.concepts.some(x=>x.reviewDue));
+        const scheduled=choices.find(c=>!isOutgrown(c)&&mastery(user,subject,c.context)?.concepts.some(x=>x.reviewDue));
         if(scheduled)return {...scheduled,reason:'시간을 두고 기억을 확인할 차례예요. 새 문제 실력과 복습 결과를 따로 기록해요.'};
         // Submission confirms today's activity; passing is only a provisional recommendation signal.
         const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)).sort((a,b)=>b.at-a.at)[0];
         const secure=c=>{const state=mastery(user,subject,c.context);if(state)return state.concepts.length>0&&state.concepts.every(x=>x.name!=='foundation');const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
-        const choice=choices.find(c=>!secure(c))||[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
-        return choice?{...choice,reason:'공통 학습 기록을 기준으로 다음 범위를 연결했어요. 숙달 확정은 아니에요.'}:null;
+        const open=choices.filter(c=>!isOutgrown(c));
+        const choice=open.find(c=>!secure(c))||open[0]||[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
+        if(!choice)return null;
+        // Name the level just outgrown so the step up is visible on the today page.
+        const before=choices.slice(0,choices.indexOf(choice)).filter(isOutgrown).at(-1);
+        if(before){
+            const s=statsOf(before);
+            return {...choice,reason:`${before.label}은(는) 최근 첫 시도 평균 ${Math.round(s.average*100)}%(${s.sessions}회)로 충분히 익혔어요. 한 단계 높은 범위를 제안해요.`,promotedFrom:before.context};
+        }
+        return {...choice,reason:'공통 학습 기록을 기준으로 다음 범위를 연결했어요. 숙달 확정은 아니에요.'};
     }
     function upgrade(p){
         if(!p||p.date!==plan.today())return p;
@@ -151,5 +180,5 @@
         const pending=(tasks||[]).filter(t=>t.status!=='completed'&&t.context);
         return pending.find(t=>t.required)||pending.find(t=>t.status==='in_progress')||pending[0]||null;
     }
-    app.LearningProgress={mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
+    app.LearningProgress={performance,outgrown,promotion:PROMOTION,mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
 })(window);
