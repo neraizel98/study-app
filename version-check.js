@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261021-vocab-grades';
+    const APP_VERSION = '20261021-reading-ui';
 
     (async function () {
         try {

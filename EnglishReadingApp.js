@@ -72,7 +72,7 @@
         $('unitTabs').innerHTML = data().units.map(item => `<button data-unit="${escapeHTML(item.id)}" class="${item.id === unitId ? 'active' : ''}">${escapeHTML(item.title)}</button>`).join('');
     }
     function renderPassageLines(item, translations) {
-        return item.sentences.map((sentence, index) => `<p><b>${index + 1}.</b> ${escapeHTML(sentence)}${translations ? `<span class="translation" ${translationVisible ? '' : 'hidden'}>${escapeHTML(item.translations[index])}</span>` : ''}</p>`).join('');
+        return item.sentences.map((sentence, index) => `<p class="passage-line"><span class="line-no">${index + 1}</span><span class="line-text">${escapeHTML(sentence)}${translations ? `<span class="translation" ${translationVisible ? '' : 'hidden'}>${escapeHTML(item.translations[index])}</span>` : ''}</span></p>`).join('');
     }
     function renderStudy() {
         const item = passage(); if (!item) return;
@@ -81,12 +81,12 @@
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
         $('passageMeta').textContent = `${level().title} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
         $('passageTitle').textContent = item.title; $('studyPassage').innerHTML = renderPassageLines(item, true);
-        $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls">${Object.values(window.vocabData || {}).some(words => words.some(word => word.word.toLowerCase() === entry.word.toLowerCase())) ? `<a href="english.html?word=${encodeURIComponent(entry.word)}"><b>${escapeHTML(entry.word)}</b></a>` : `<b class="reading-word">${escapeHTML(entry.word)}</b>`}<button type="button" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" class="audio-icon" data-pronounce="${index}" aria-pressed="false" title="발음 듣기 · 다시 누르면 정지" aria-label="${escapeHTML(entry.word)} 발음 듣기">${soundIcon}</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
+        $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls"><b class="reading-word">${escapeHTML(entry.word)}</b>${Object.values(window.vocabData || {}).some(words => words.some(word => word.word.toLowerCase() === entry.word.toLowerCase())) ? `<a class="word-book-link" href="english.html?word=${encodeURIComponent(entry.word)}" aria-label="${escapeHTML(entry.word)} 단어장에서 보기">단어장 ›</a>` : ''}<button type="button" class="meaning-btn" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" class="audio-icon" data-pronounce="${index}" aria-pressed="false" title="발음 듣기 · 다시 누르면 정지" aria-label="${escapeHTML(entry.word)} 발음 듣기">${soundIcon}</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
         $('grammarNotes').innerHTML = item.grammarNotes.map(note => `<p><b>${escapeHTML(note.title)}</b><br>${escapeHTML(note.text)}</p>`).join('');
         const grammarUnits = window.EnglishGrammarData?.elementary?.units || [];
         const grammarRefs = item.grammarRefs?.length ? item.grammarRefs : item.grammarTags.map(unitId => ({ stageId: 'elementary', unitId, lessonIndex: 0 }));
-        $('grammarLinks').innerHTML = grammarRefs.map(ref => { const target = (window.EnglishGrammarData?.[ref.stageId]?.units || grammarUnits).find(candidate => candidate.id === ref.unitId); return `<a href="english_grammar.html?stage=${encodeURIComponent(ref.stageId)}&unit=${encodeURIComponent(ref.unitId)}&lesson=${Number(ref.lessonIndex) || 0}">${escapeHTML(target?.title || ref.unitId)} 복습</a>`; }).join(' · ');
-        $('toggleTranslation').textContent = translationVisible ? '한국어 뜻 숨기기' : '한국어 뜻 보기';
+        $('grammarLinks').innerHTML = grammarRefs.map(ref => { const target = (window.EnglishGrammarData?.[ref.stageId]?.units || grammarUnits).find(candidate => candidate.id === ref.unitId); return `<a href="english_grammar.html?stage=${encodeURIComponent(ref.stageId)}&unit=${encodeURIComponent(ref.unitId)}&lesson=${Number(ref.lessonIndex) || 0}">${escapeHTML(target?.title || ref.unitId)} 복습</a>`; }).join('');
+        $('toggleTranslation').textContent = translationVisible ? '👁️ 한글 숨기기' : '🙈 한글 보기'; $('toggleTranslation').setAttribute('aria-pressed', String(translationVisible));
         $('prevPassage').disabled = passageIndex === 0; $('nextPassage').disabled = passageIndex >= passages().length - 1;
         expose(item.id, translationVisible ? 'study-with-translation' : 'study');
         const wrong = typeof WrongNote === 'undefined' ? {} : WrongNote.getAll();

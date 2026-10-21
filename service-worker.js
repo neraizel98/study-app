@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261021-vocab-grades';
+const CACHE_NAME = 'smart-study-20261021-reading-ui';
 
 try {
     importScripts('./firebase-config.js');
