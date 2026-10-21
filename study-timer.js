@@ -153,12 +153,12 @@ const StudyTimer = (() => {
     }
 
     function getReportScores(subject, aliases, context) {
-        if (!aliases || aliases.length === 0) return [];
+        if (!aliases?.length && !['grammar','english_reading'].includes(subject)) return [];
         const reports = repository.listReports(getUserId());
 
-        const targets = aliases.map(normalize).filter(Boolean);
+        const targets = (aliases || []).map(normalize).filter(Boolean);
         const matches = reports
-            .filter(r => r.subject === subject && r.totalQuestions > 0 && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
+            .filter(r => r.subject === subject && r.totalQuestions > 0 && Number.isFinite(Number(r.initialScore)) && Number(r.initialScore)>=0 && Number(r.initialScore)<=Number(r.totalQuestions) && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
             .filter(r => {
                 const recordedGrade = subject === 'grammar' ? r.metadata?.stageId : subject === 'english_reading' ? r.metadata?.levelId : null;
                 if (recordedGrade) return recordedGrade === getLevelKey(subject, context);
@@ -210,17 +210,18 @@ const StudyTimer = (() => {
 
     function getRequiredSeconds(subject, context = 'default', aliases = []) {
         const baseMinutes = getBaseMinutes(subject, context);
+        const score = getLatestScore(subject, context, aliases);
+        // Mastery exemption applies before daily-budget selection as well as free study.
+        if (score && score.pct >= 90) return 0;
         const dailyTask=window.SmartStudy.LearningBudgetPolicy?.activeTask(subject);
         if(dailyTask){
             const level=getLevelKey(subject,context),expected=dailyTask.context.levelId||dailyTask.context.unitId;
             if(subject==='math'||level===expected){
-                // Explicit saved settings are never reduced; defaults reserve time for the quiz.
+                // Below mastery, preserve explicit minima; defaults reserve time for the quiz.
                 const raw=repository.getTimerConfig(),specified=raw.levels?.[subject]?.[level] ?? raw[subject];
                 return (specified!=null&&specified!==''?baseMinutes:Math.min(baseMinutes,Math.max(1,Math.floor(dailyTask.minutes*.6))))*60;
             }
         }
-        const score = getLatestScore(subject, context, aliases);
-        if (score && score.pct >= 90) return 0;
 
         let adaptiveMinutes = 0;
         if (score) {

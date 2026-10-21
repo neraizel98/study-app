@@ -88,3 +88,24 @@ sandbox.SmartStudy.LocalRepository.listReports=()=>[
 ];
 assert.equal(timer.getRecentScores('grammar','grammar:middle3',['레벨 2'])[0].pct,20,'canonical grade metadata isolates shared visible levels and hidden mocks');
 assert.equal(timer.getRecentScores('english_reading','english_reading:high2',['레벨 3']).length,0);
+
+// The daily budget branch must not bypass the established mastery exemption.
+sandbox.SmartStudy.LearningBudgetPolicy={activeTask:subject=>({minutes:7,context:{levelId:subject==='grammar'?'high3':'high3'}})};
+const isolatedReports=[100,90,80].map((pct,index)=>({subject:'english_reading',sessionId:'daily-average-'+index,level:'고3',initialScore:pct,totalQuestions:100,date:1000+index,metadata:{levelId:'high3'}}));
+sandbox.SmartStudy.LocalRepository.listReports=()=>isolatedReports;
+timer.setConfig({english_reading:12});
+assert.equal(timer.getStatus('english_reading','english_reading:high3').score,90,'canonical metadata works without presentation aliases');
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),0,'daily recent-three average90 is exempt even with an explicit base');
+assert.equal(timer.isUnlocked('english_reading','english_reading:high3'),true);
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high2'),720,'other grades cannot inherit exemption');
+isolatedReports.push({subject:'english_reading',sessionId:'bad-score',level:'고3',initialScore:1000,totalQuestions:5,date:9000,metadata:{levelId:'high3'}});
+assert.equal(timer.getStatus('english_reading','english_reading:high3').score,90,'out-of-range reports cannot corrupt the average');
+isolatedReports.splice(0,3,...[80,80,80].map((pct,index)=>({subject:'english_reading',sessionId:'daily-average-'+index,level:'고3',initialScore:pct,totalQuestions:100,date:1000+index,metadata:{levelId:'high3'}})));
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),720,'below90 explicit parent minimum still applies');
+delete sandbox.SmartStudy.LearningBudgetPolicy;
+timer.setConfig({english_reading:0});
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),300,'free-study80% requires five minutes');
+isolatedReports.splice(0,3,...[70,70,70].map((pct,index)=>({subject:'english_reading',sessionId:'daily-average-'+index,initialScore:pct,totalQuestions:100,date:1000+index,metadata:{levelId:'high3'}})));
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),600,'free-study70% requires ten minutes');
+isolatedReports.splice(0,3,...[60,60,60].map((pct,index)=>({subject:'english_reading',sessionId:'daily-average-'+index,initialScore:pct,totalQuestions:100,date:1000+index,metadata:{levelId:'high3'}})));
+assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),900,'free-studybelow70% requires fifteen minutes');
