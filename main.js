@@ -31,6 +31,7 @@ let quizSessionData = { id: null, total: 0, initialScore: null, currentScore: 0,
 let quizActiveTimer = null;
 let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 let showKoEx = false;
+let showKoDef = false; // 영문 뜻 한글 풀이는 예문과 따로 켜고 끈다
 let studyVocabularyBand = null;
 let studyVocabularyKey = "";
 let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
@@ -40,7 +41,7 @@ let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
 // ============================================================
 // DOM 엘리먼트 참조 (AppEngine.initDOM에서 지연 초기화됨)
 let wordIndexEl, englishWordEl, pronunciationEl, posBadgeEl, koreanMeaningEl;
-let verbFormsSec, vPresentEl, vPastEl, vPPEl, englishDefEl, exSentEl, exKoEl, toggleKoBtn;
+let verbFormsSec, vPresentEl, vPastEl, vPPEl, englishDefEl, defKoEl, toggleDefKoBtn, exSentEl, exKoEl, toggleKoBtn;
 let phrasalSec, phrasalList, togglePhrasalBtn;
 let speakWordBtn, speakWordUkBtn, speakDefBtn, speakDefUkBtn, speakExBtn, speakExUkBtn;
 let prevBtn, nextBtn, levelBtns;
@@ -72,13 +73,17 @@ function updateCard() {
     const realIdx = shuffledStudyIndices[currentIndex];
     const d = dataList[realIdx];
     
-    wordIndexEl.textContent = `${currentIndex + 1} / ${shuffledStudyIndices.length}${currentLevel === "level3" ? " · 중" + EnglishVocabularyProgress.grade(studyVocabularyBand) + " 단계" : ""}`;
+    wordIndexEl.textContent = `${currentIndex + 1} / ${shuffledStudyIndices.length}${window.EnglishVocabularyProgress?.isGraded(currentLevel) ? " · " + EnglishVocabularyProgress.label(currentLevel, studyVocabularyBand) + " 단계" : ""}`;
     englishWordEl.textContent = d.word;
     pronunciationEl.textContent = d.pron || '';
     koreanMeaningEl.textContent = d.meaning;
     englishDefEl.textContent = d.def || '';
     exSentEl.textContent = d.ex || '';
     exKoEl.textContent = d.exKo || '';
+    const defKo = window.vocabDefKo?.[d.word] || '';
+    defKoEl.textContent = defKo;
+    toggleDefKoBtn.style.display = defKo ? '' : 'none';
+    applyDefKo();
 
     const showMeaningBtn = $('showMeaningBtn');
     const metaContent = $('metaContent');
@@ -133,9 +138,9 @@ function formatPhrase(p) {
 }
 
 function vocabularyBand() {
-    if (currentLevel === 'level3' && window.EnglishVocabularyProgress && typeof LearningPolicy !== 'undefined') {
+    if (window.EnglishVocabularyProgress?.isGraded(currentLevel) && typeof LearningPolicy !== 'undefined') { // 레벨 3 중1~3, 레벨 4 고1~3
         return EnglishVocabularyProgress.band(LocalRepository.listReports(UserSession.getActiveUser()),
-            (rows, subject, context) => LearningPolicy.evaluate(rows, subject, context));
+            (rows, subject, context) => LearningPolicy.evaluate(rows, subject, context), undefined, currentLevel);
     }
     return typeof LearningPolicy !== 'undefined' && typeof LocalRepository !== 'undefined'
         ? LearningPolicy.evaluate(LocalRepository.listReports(UserSession.getActiveUser()), 'english', currentLevel)
@@ -219,6 +224,11 @@ function thirdPersonVerb(base) {
     const inflected = ({ have: 'has', be: 'is' })[verb] ||
         (/[^aeiou]y$/.test(verb) ? verb.slice(0, -1) + 'ies' : /(?:s|sh|ch|x|z|o)$/.test(verb) ? verb + 'es' : verb + 's');
     return [inflected, ...rest].join(' ');
+}
+
+function applyDefKo() {
+    defKoEl.classList.toggle('hidden-text', !showKoDef);
+    toggleDefKoBtn.textContent = showKoDef ? '👁️ 한글 숨기기' : '🙈 한글 보기';
 }
 
 function blankVerbSentence(sentence, forms, tenseIdx = null) {
@@ -308,20 +318,20 @@ function startQuiz(wordList) {
                 quizWords = Utils.shuffle(quizWords);
             } else {
                 let challengeWords = [];
-                currentQuizBand = currentLevel === 'level3' ? vocabularyBand() : typeof AdaptiveQuiz !== 'undefined'
+                currentQuizBand = window.EnglishVocabularyProgress?.isGraded(currentLevel) ? vocabularyBand() : typeof AdaptiveQuiz !== 'undefined'
                     ? AdaptiveQuiz.getBand('english', currentLevel, [document.querySelector('.level-btn.active')?.textContent])
                     : { name: 'foundation', score: null, wrongRatio: 0.3 };
                 let dataList = window.EnglishVocabularyProgress
                     ? EnglishVocabularyProgress.focused(currentLevel, currentQuizBand, items => Utils.shuffle(items), Math.floor(QUIZ_COUNT * .3))
                     : vocabularyPool();
-                if (currentLevel === 'level3') {
+                if (window.EnglishVocabularyProgress?.isGraded(currentLevel)) {
                     let notice = document.getElementById('adaptiveNotice');
                     if (!notice) {
                         notice = document.createElement('p'); notice.id = 'adaptiveNotice';
                         notice.style.cssText = 'padding:12px;text-align:center;color:inherit;font-size:.9rem';
                         notice.setAttribute('role', 'status'); quizView.prepend(notice);
                     }
-                    notice.textContent = `중${EnglishVocabularyProgress.grade(currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
+                    notice.textContent = `${EnglishVocabularyProgress.label(currentLevel, currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
                 }
                 if (window.QuizExposure) dataList = QuizExposure.freshWords(dataList);
                 if (!dataList.length) {
@@ -1003,7 +1013,7 @@ window.AppEngine = {
         wordIndexEl = $('wordIndex'); englishWordEl = $('englishWord'); pronunciationEl = $('wordPronunciation');
         posBadgeEl = $('posBadge'); koreanMeaningEl = $('koreanMeaning');
         verbFormsSec = $('verbFormsSection'); vPresentEl = $('vPresent'); vPastEl = $('vPast'); vPPEl = $('vPP');
-        englishDefEl = $('englishDef'); exSentEl = $('exampleSentence'); exKoEl = $('exampleKorean');
+        englishDefEl = $('englishDef'); defKoEl = $('englishDefKorean'); toggleDefKoBtn = $('toggleDefKoBtn'); exSentEl = $('exampleSentence'); exKoEl = $('exampleKorean');
         toggleKoBtn = $('toggleKoBtn');
         phrasalSec = $('phrasalVerbsSection'); phrasalList = $('phrasalList'); togglePhrasalBtn = $('togglePhrasalBtn');
         speakWordBtn = $('speakWordBtn'); speakWordUkBtn = $('speakWordUkBtn'); speakDefBtn = $('speakDefBtn'); speakDefUkBtn = $('speakDefUkBtn'); speakExBtn = $('speakExBtn'); speakExUkBtn = $('speakExUkBtn');
@@ -1162,6 +1172,8 @@ window.AppEngine = {
 
         if (studyModeBtn) studyModeBtn.addEventListener('click', () => setMode('study'));
         if (quizModeBtn) quizModeBtn.addEventListener('click', () => setMode('quiz'));
+
+        if (toggleDefKoBtn) toggleDefKoBtn.addEventListener('click', () => { showKoDef = !showKoDef; applyDefKo(); });
 
         if (toggleKoBtn) toggleKoBtn.addEventListener('click', () => {
             showKoEx = !showKoEx;

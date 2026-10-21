@@ -6,20 +6,31 @@
  for(const entry of root.vocabData.level3){
   if(!entry.schoolGrade)entry.schoolGrade=middle3.has(entry.word)?3:middle2.has(entry.word)?2:1;
  }
+ // 레벨 4 is high school: schoolGrade 1~3 means 고1~고3. Newer entries carry it; the first 27 are mapped here.
+ const high2=new Set('accelerate alleviate articulate diminish facilitate inevitable'.split(' '));
+ const high3=new Set('comprehensive controversial persistence sophisticated transparent vulnerable'.split(' '));
+ for(const entry of root.vocabData.level4||[]){
+  if(!entry.schoolGrade)entry.schoolGrade=high3.has(entry.word)?3:high2.has(entry.word)?2:1;
+ }
+ // Levels whose words are banded by school grade, and the prefix the band shows (중1, 고2 …).
+ const GRADED={level3:'중',level4:'고'};
+ const isGraded=level=>Object.prototype.hasOwnProperty.call(GRADED,level);
+ const label=(level,band)=>isGraded(level)?`${GRADED[level]}${grade(band)}`:'';
  const grade=band=>({foundation:1,standard:2,challenge:3}[band?.name]||1);
- function band(reports,evaluate,now){
+ function band(reports,evaluate,now,level='level3'){
   // Vocabulary mastery is independent of which quiz format happens to be drawn.
   // Read old records through the same lens without rewriting saved history.
-  const evidence=(reports||[]).map(r=>r.subject==='english'&&r.metadata?.context==='level3'
-   ? {...r,metadata:{...r.metadata,initialAttempts:r.metadata.initialAttempts?.map(a=>({...a,conceptId:'middle-school-vocabulary'}))}}:r);
-  return evaluate(evidence,'english','level3',now);
+  const concept=level==='level4'?'high-school-vocabulary':'middle-school-vocabulary';
+  const evidence=(reports||[]).map(r=>r.subject==='english'&&r.metadata?.context===level
+   ? {...r,metadata:{...r.metadata,initialAttempts:r.metadata.initialAttempts?.map(a=>({...a,conceptId:concept}))}}:r);
+  return evaluate(evidence,'english',level,now);
  }
- function eligible(level,band){return (root.vocabData[level]||[]).filter(w=>level!=='level3'||w.schoolGrade<=grade(band));}
+ function eligible(level,band){return (root.vocabData[level]||[]).filter(w=>!isGraded(level)||w.schoolGrade<=grade(band));}
  function focused(level,band,shuffle,reviewLimit){
-  const all=eligible(level,band);if(level!=='level3')return shuffle([...all]);
+  const all=eligible(level,band);if(!isGraded(level))return shuffle([...all]);
   const target=all.filter(w=>w.schoolGrade===grade(band));
   const review=shuffle(all.filter(w=>w.schoolGrade<grade(band))).slice(0,reviewLimit??Math.floor(target.length*.3));
   return [...shuffle(target),...review];
  }
- root.EnglishVocabularyProgress={grade,eligible,focused,band};
+ root.EnglishVocabularyProgress={grade,eligible,focused,band,isGraded,label};
 })(typeof window!=='undefined'?window:globalThis);

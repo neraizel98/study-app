@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261021-vocab-result';
+const CACHE_NAME = 'smart-study-20261021-vocab-grades';
 
 try {
     importScripts('./firebase-config.js');
@@ -139,6 +139,16 @@ const STATIC_ASSETS = [
     './study-timer.js',
     './kakao-share.js',
     './VocabEng.js',
+    './VocabEngM1.js',
+    './VocabEngM2.js',
+    './VocabEngM3.js',
+    './VocabEngH1a.js',
+    './VocabEngH1b.js',
+    './VocabEngH2a.js',
+    './VocabEngH2b.js',
+    './VocabEngH3a.js',
+    './VocabEngH3b.js',
+    './VocabEngDefKo.js',
     './VocabHanja.js',
     './MathData.js',
     './MathQuizData.js',

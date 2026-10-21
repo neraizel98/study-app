@@ -2,11 +2,13 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
 
-const context = { window: {}, Math: Object.create(Math) };
+const context = { Math: Object.create(Math) };
+context.window = context; // VocabEng*.js grade files push into window.vocabData
 let seed = 9112026;
 context.Math.random = () => ((seed = (1664525 * seed + 1013904223) >>> 0) / 2 ** 32);
 vm.createContext(context);
-for (const file of ['EnglishGrammarData.js', 'EnglishGrammarQuiz.js', 'VocabEng.js']) {
+for (const file of ['EnglishGrammarData.js', 'EnglishGrammarQuiz.js', 'VocabEng.js',
+    'VocabEngM1.js', 'VocabEngM2.js', 'VocabEngM3.js', 'VocabEngH1a.js', 'VocabEngH1b.js', 'VocabEngH2a.js', 'VocabEngH2b.js', 'VocabEngH3a.js', 'VocabEngH3b.js']) {
     vm.runInContext(fs.readFileSync(file, 'utf8'), context);
 }
 const main = fs.readFileSync('main.js', 'utf8');

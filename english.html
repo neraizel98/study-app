@@ -92,9 +92,15 @@
                         </div>
                     </div>
                     <div class="detail-section">
-                        <div class="detail-label">영문 뜻</div>
+                        <div class="detail-header">
+                            <div class="detail-label">영문 뜻</div>
+                            <button id="toggleDefKoBtn" class="toggle-ko-btn">🙈 한글 보기</button>
+                        </div>
                         <div class="detail-row">
-                            <p id="englishDef" class="english-def"></p>
+                            <div>
+                                <p id="englishDef" class="english-def"></p>
+                                <p id="englishDefKorean" class="example-ko hidden-text"></p>
+                            </div>
                             <div class="accent-listen-group"><button id="speakDefBtn" class="accent-listen-btn" title="발음 듣기" aria-label="미국 영어 발음 듣기">🔊</button></div>
                             <!-- <button class="speak-btn speak-sm">
                                 <svg viewBox="0 0 24 24" width="18" height="18">
@@ -242,11 +248,12 @@
     </div>
     <script src="kakao-share.js?v=20260928-record-reliability"></script>
     <script src="utils.js?v=20261021-stabilization"></script>
-    <script src="VocabEng.js?v=20261019-content-fix"></script>
-    <script src="english-vocabulary-progress.js?v=20261014-ui-rollback"></script>
+    <script src="VocabEng.js?v=20261019-content-fix"></script><script src="VocabEngM1.js?v=20261021-vocab-grades"></script><script src="VocabEngM2.js?v=20261021-vocab-grades"></script><script src="VocabEngM3.js?v=20261021-vocab-grades"></script><script src="VocabEngH1a.js?v=20261021-vocab-grades"></script><script src="VocabEngH1b.js?v=20261021-vocab-grades"></script><script src="VocabEngH2a.js?v=20261021-vocab-grades"></script><script src="VocabEngH2b.js?v=20261021-vocab-grades"></script><script src="VocabEngH3a.js?v=20261021-vocab-grades"></script><script src="VocabEngH3b.js?v=20261021-vocab-grades"></script>
+    <script src="VocabEngDefKo.js?v=20261021-vocab-grades"></script>
+    <script src="english-vocabulary-progress.js?v=20261021-vocab-grades"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20260930-mastery"></script><script src="report.js?v=20261020-korean-vocab"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261020-korean-vocab"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261021-vocab-result"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261020-korean-vocab"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261021-vocab-grades"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="study-timer.js?v=20261021-stabilization"></script>
     <script>
@@ -269,7 +276,7 @@
         });
     </script>
     <script src="english-speech.js?v=20261014-redesign"></script>
-    <script src="main.js?v=20261019-content-fix"></script>
+    <script src="main.js?v=20261021-vocab-grades"></script>
 
     <script>
         // Service Worker 등록 (PWA 오프라인 지원)
@@ -282,7 +289,7 @@
         }
     </script>
 <script src="version-check.js?v=20261021-stabilization"></script>
-<script src="parent-scope-guard.js?v=20261020-korean-vocab"></script><a href="english_course.html" style="position:fixed;left:12px;bottom:12px;z-index:900;background:#ffffff;color:#23845c;border:1px solid #6999b8;border-radius:22px;padding:10px 14px;text-decoration:none;font-size:13px;box-shadow:0 4px 12px rgba(43,38,32,0.105)">← 영어 학습 순서</a><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261021-stabilization"></script><script src="unified-learning.js?v=20261021-vocab-result"></script><script src="today-journey.js?v=20261021-stabilization"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script><script src="celebrate.js?v=20261014-redesign"></script>
+<script src="parent-scope-guard.js?v=20261020-korean-vocab"></script><a href="english_course.html" style="position:fixed;left:12px;bottom:12px;z-index:900;background:#ffffff;color:#23845c;border:1px solid #6999b8;border-radius:22px;padding:10px 14px;text-decoration:none;font-size:13px;box-shadow:0 4px 12px rgba(43,38,32,0.105)">← 영어 학습 순서</a><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261021-stabilization"></script><script src="unified-learning.js?v=20261021-vocab-grades"></script><script src="today-journey.js?v=20261021-stabilization"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="answer-validation.js"></script><script src="quiz-exposure.js"></script><script src="celebrate.js?v=20261014-redesign"></script>
 </body>
 
 </html>
