@@ -45,7 +45,7 @@
                 ? sameKeys(scope, ['mode'])
                 : scope.mode === 'assigned' && validId(scope.unitId)
                     && (subject === 'english' ? sameKeys(scope, ['mode', 'unitId'])
-                        : subject === 'english_reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && scope.levelId === 'grade6' && ['er1','er2','er3','er4'].includes(scope.unitId)
+                        : subject === 'english_reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && (root.EnglishCurriculum?.validReadingScope(scope) ?? (scope.levelId === 'grade6' && /^er[1-6]$/.test(scope.unitId)))
                         : subject === 'korean_vocab' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && ['level1', 'level2'].includes(scope.levelId)
                         : subject === 'reading' ? sameKeys(scope, ['mode', 'levelId', 'unitId']) && validId(scope.levelId)
                             : sameKeys(scope, ['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId)

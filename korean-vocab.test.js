@@ -69,7 +69,7 @@ assert.deepEqual([...types].sort(), ['antonym', 'blank', 'context', 'meaning', '
 // Learning plan: 중학 이하는 레벨 1, 고등은 레벨 2 단원을 고른다.
 const store = new Map(), local = { getPreference: (k, f) => store.has(k) ? store.get(k) : f, setPreference: (k, v) => store.set(k, v), listReports: () => [], getWrongAnswers: () => ({}) };
 ctx.SmartStudy = { LocalRepository: local };
-for(const f of ['learning-budget-policy.js','learning-plan.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['english-curriculum.js','learning-budget-policy.js','learning-plan.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const plan = ctx.SmartStudy.LearningPlan;
 assert.deepEqual(Array.from(plan.catalog('korean_vocab', { grade: 6, semester: 2 }), c => c.context.levelId), Array(6).fill('level1'));
 assert.deepEqual(Array.from(plan.catalog('korean_vocab', { grade: 11, semester: 1 }), c => c.context.levelId), Array(6).fill('level2'));

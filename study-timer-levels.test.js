@@ -77,4 +77,14 @@ assert.equal(timer.getAccumulated('english_reading','english_reading:grade6'),21
 assert.equal(timer.getAccumulated('english_reading','english_reading:middle1'),90,'grades remain isolated');
 timer.recordResult('english_reading','english_reading:grade6',4,5,'reading-grade-test');
 assert.equal(timer.getAccumulated('english_reading','english_reading:grade6'),210,'quiz completion retains daily grade time');
-assert.equal(timer.LEVELS.english_reading.length,4);
+assert.equal(timer.LEVELS.english_reading.length,7);
+
+assert.equal(timer.LEVELS.grammar.length,7);
+sandbox.SmartStudy.LocalRepository.listReports=()=>[
+ {subject:'grammar',level:'레벨 2',initialScore:10,totalQuestions:10,date:400,metadata:{stageId:'middle2'}},
+ {subject:'grammar',level:'레벨 2',initialScore:2,totalQuestions:10,date:300,metadata:{stageId:'middle3'}},
+ {subject:'grammar',level:'레벨 2',initialScore:10,totalQuestions:10,date:500,metadata:{stageId:'middle3',assessment:true,mockExam:true}},
+ {subject:'english_reading',level:'레벨 3',initialScore:5,totalQuestions:5,date:100,metadata:{levelId:'high1'}}
+];
+assert.equal(timer.getRecentScores('grammar','grammar:middle3',['레벨 2'])[0].pct,20,'canonical grade metadata isolates shared visible levels and hidden mocks');
+assert.equal(timer.getRecentScores('english_reading','english_reading:high2',['레벨 3']).length,0);

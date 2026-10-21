@@ -59,10 +59,10 @@
         }
         if(subject==='english')return Object.keys(root.vocabData||{}).map((unitId,index)=>({label:`영어 단어 레벨 ${index+1}`,context:{unitId,title:`영어 단어 레벨 ${index+1}`}}));
         if(subject==='english_reading'){
-            if(profile.grade!==6)return [];
-            const level=(root.EnglishReadingData?.levels||[]).find(item=>item.id==='grade6'&&item.available!==false);
+            const id=root.EnglishCurriculum?.gradeForProfile(profile.grade)||'grade6';
+            const level=(root.EnglishReadingData?.levels||[]).find(item=>item.id===id&&item.available!==false);
             if(!level)return [];
-            return (root.EnglishReadingData?.units||[]).filter(unit=>/^er[1-4]$/.test(unit.id)).map(unit=>({label:`${level.title} · ${unit.title}`,context:{levelId:'grade6',unitId:unit.id,title:unit.title}}));
+            return (root.EnglishReadingData?.units||[]).filter(unit=>(unit.gradeId||'grade6')===id).map(unit=>({label:`${level.title} · ${unit.title}`,context:{levelId:id,unitId:unit.id,title:unit.title}}));
         }
         const levelId=profile.grade===6?'elementary-6':profile.grade===7?'middle-1':null,data=levelId&&root.MathData?.[levelId];
         if(!data)return [];

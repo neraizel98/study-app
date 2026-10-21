@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261021-reading-peek';
+const CACHE_NAME = 'smart-study-20261021-english-three-levels';
 
 try {
     importScripts('./firebase-config.js');
@@ -86,6 +86,10 @@ const STATIC_ASSETS = [
     './EnglishReadingData.js',
     './EnglishReadingMore1.js',
     './EnglishReadingMore2.js',
+    './english-curriculum.js',
+    './EnglishReadingSecondary.js',
+    './EnglishGrammarExpanded.js',
+    './EnglishGrammarAdvancedQuiz.js',
     './EnglishReadingPolicy.js',
     './EnglishReadingApp.js',
     './hanja.html',

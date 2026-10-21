@@ -1,15 +1,16 @@
 ﻿(function(root){
     'use strict';
     const day=86400000;
-    function build(data,vocabulary,reports,wrong,now=Date.now()){
+    function build(data,vocabulary,reports,wrong,now=Date.now(),options={}){
         const valid=(reports||[]).filter(r=>!r.metadata?.review&&!r.metadata?.assessment&&Number(r.totalQuestions)>0&&(r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=Number(r.totalQuestions));
         const passed=r=>Number(r.initialScore)/Number(r.totalQuestions)>=.8&&!r.metadata?.hintUsed;
         const latest=(subject,match)=>valid.filter(r=>r.subject===subject&&match(r)).sort((a,b)=>Number(b.date)-Number(a.date))[0];
-        const items=(data.units||[]).flatMap(unit=>unit.passages.map(passage=>({unit,passage}))).sort((a,b)=>a.passage.band-b.passage.band);
+        const gradeId=options.levelId||root.EnglishCurriculum?.gradeForProfile(options.grade||6)||'grade6';
+        const items=(data.units||[]).filter(u=>(u.gradeId||'grade6')===gradeId).flatMap(unit=>unit.passages.map(passage=>({unit,passage}))).sort((a,b)=>a.passage.band-b.passage.band);
         const readingReport=p=>latest('english_reading',r=>r.metadata?.passageId===p.id);
         const completed=items.filter(x=>passed(readingReport(x.passage)||{}));
         const eligibleItems=root.ConceptMastery?items.filter(x=>{
-            const context=`english_reading:grade6:${x.unit.id}`;
+            const context=`english_reading:${gradeId}:${x.unit.id}`;
             const state=root.ConceptMastery.evaluate(reports,'english_reading',context,now);
             return Number(x.passage.band)<=({foundation:1,standard:2,challenge:3}[state.name]);
         }):items;
@@ -24,13 +25,15 @@
         const grammarChecks=grammar.map(ref=>({...ref,report:latest('grammar',r=>r.metadata?.stageId===ref.stageId&&r.metadata?.unitId===ref.unitId)}));
         const due=[];
         for(const subject of ['english','grammar','english_reading'])for(const entry of wrong?.[subject]||[]){
+            if(subject==='english_reading'&&(entry.levelId||'grade6')!==gradeId)continue;
+            if(subject==='grammar'&&root.EnglishCurriculum&&entry.stageId!==root.EnglishCurriculum.grammarForProfile(options.grade||6))continue;
             if(entry.deleted||entry.invalid||entry.quarantined||Number(entry.dueAt||0)>now)continue;
             if(entry.isMastered&&!entry.dueAt)continue;
             due.push({subject,entry});
         }
         const wordPending=wordChecks.find(x=>!fresh(x.report));
         const grammarPending=grammarChecks.find(x=>!fresh(x.report));
-        const readingUrl=`english_reading.html?level=grade6&unit=${unit.id}&passage=${passage.id}`;
+        const readingUrl=`english_reading.html?level=${encodeURIComponent(gradeId)}&unit=${unit.id}&passage=${passage.id}`;
         const steps=[
             {id:'words',title:'단어 익히기',done:wordChecks.length>0&&wordChecks.every(x=>fresh(x.report)),href:wordPending?`english.html?level=${wordPending.level}`:readingUrl,description:'지문의 핵심 단어를 익히고 연결된 단어 레벨 퀴즈에서 최초 80% 이상을 확인해요.'},
             {id:'grammar',title:'문법 연결하기',done:grammarChecks.length>0&&grammarChecks.every(x=>fresh(x.report)),href:grammarPending?`english_grammar.html?stage=${grammarPending.stageId}&unit=${grammarPending.unitId}&lesson=${grammarPending.lessonIndex||0}`:readingUrl,description:'지문에 쓰인 문법을 복습하고 해당 단원 퀴즈에서 80% 이상을 확인해요.'},

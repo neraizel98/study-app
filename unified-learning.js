@@ -34,12 +34,11 @@
     }
     function catalog(subject,profile){
         if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${unitId.replace('level','')}급`,context:{unitId,title:`한자 ${unitId.replace('level','')}급`}}));
-        if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.grade>6||id==='elementary').flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
+        if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>id===(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary')).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
             const grades={'초6':6,'중1':7,'중2':8,'중3':9,'고1':10,'고2':11,'고3':12};
             return (root.MATH_FORMULAS||[]).filter(f=>!f.enrichment&&grades[f.level]<=profile.grade).map(f=>({label:`${f.level} · ${f.number}. ${f.title}`,context:{levelId:'formula',unitId:`formula-${f.number}`,title:`${f.number}. ${f.title}`}}));
         }
-        if(subject==='english_reading'&&profile.grade>6)return previousCatalog(subject,{...profile,grade:6});
         return previousCatalog(subject,profile);
     }
     function target(subject,context){
@@ -125,7 +124,7 @@
         }
         if(p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return p;
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
-        const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId));
+        const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId),Date.now(),{grade:p.profile.grade});
         p.tasks=ids.map((subject,index)=>{
             const existing=original.find(t=>t.subject===subject),scope=settings.scopes?.[subject];
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
@@ -134,7 +133,7 @@
             if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
                 const params=new URLSearchParams(step.href.split('?')[1]);
-                const linked=subject==='english'?{unitId:params.get('level')}:subject==='grammar'?{levelId:params.get('stage'),unitId:params.get('unit')}:{levelId:'grade6',unitId:course.unit.id};
+                const linked=subject==='english'?{unitId:params.get('level')}:subject==='grammar'?{levelId:params.get('stage'),unitId:params.get('unit')}:{levelId:course.unit.gradeId||'grade6',unitId:course.unit.id};
                 const found=catalog(subject,p.profile).find(c=>plan.contextKey(subject,c.context)===plan.contextKey(subject,linked));
                 if(found)rec={...found,reason:'영어 통합 과정과 같은 단어·문법·독해 범위예요.'};
             }

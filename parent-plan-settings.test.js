@@ -21,6 +21,7 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     context.firebase={firestore:{FieldValue:{serverTimestamp:()=>({serverTimestamp:true})}}};
     context.SmartStudy={FirebaseClient:{getDB:async()=>db,getCurrentUser:async()=>({uid:authUid})}};
     vm.createContext(context);
+    vm.runInContext(fs.readFileSync('english-curriculum.js','utf8'),context);
     vm.runInContext(fs.readFileSync('firestore-repository.js','utf8'),context);
     return { repository:context.SmartStudy.FirestoreRepository,writes };
 }
@@ -51,6 +52,12 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     await admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
         scopes:{...scopes,english_reading:{mode:'assigned',levelId:'grade6',unitId:'er4'}}});
     assert.equal(admin.writes.at(-1).value.scopes.english_reading.unitId,'er4');
+    for(const [levelId,unitId] of [['grade6','er6'],['middle1','mr1-unit1'],['high3','hr3-unit2']]){
+        await admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:{...scopes,english_reading:{mode:'assigned',levelId,unitId}}});
+        assert.equal(admin.writes.at(-1).value.scopes.english_reading.unitId,unitId);
+    }
+    await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,scopes:{...scopes,english_reading:{mode:'assigned',levelId:'high2',unitId:'hr3-unit1'}}}),/올바르지/);
+
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
         scopes:{...scopes,english_reading:{mode:'assigned',levelId:'middle1',unitId:'er1'}}}),/올바르지/);
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',
@@ -65,7 +72,8 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     assert.match(rules,/request\.resource\.data\.updatedAt == request\.time/);
     assert.match(rules,/allow delete: if false/);
     assert.match(rules,/scope\.keys\(\)\.hasOnly\(\['mode'\]\)/,'auto scopes must reject stale assigned fields');
-    assert.match(rules,/subject == 'english_reading'[\s\S]*scope\.levelId == 'grade6'[\s\S]*'er4'/,'English-reading assignments must be limited to the approved grade and units');
+    assert.match(rules,/function validEnglishReadingScope/);
+    assert.match(rules,/validEnglishReadingScope\(scope\)/,'English-reading assignments validate grade-unit pairs');
 
     const today=fs.readFileSync('today.html','utf8');
     assert(!today.includes('id="budget"'),'learners must not receive a budget selector');

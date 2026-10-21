@@ -1,11 +1,18 @@
 (function () {
     const $ = id => document.getElementById(id);
     const params = new URLSearchParams(location.search);
-    const allowedStages = ['elementary', 'middle', 'middle2', 'middle3'];
-    const levelLabels = { elementary: 'Lv. 1', middle: 'Lv. 2', middle2: 'Lv. 3', middle3: 'Lv. 4' };
+    const groups = window.EnglishCurriculum?.groups || [
+        { id: 'level1', label: '레벨 1 · 초6', grammarStages: ['elementary'] },
+        { id: 'level2', label: '레벨 2 · 중1~중3', grammarStages: ['middle', 'middle2', 'middle3'] },
+        { id: 'level3', label: '레벨 3 · 고1~고3', grammarStages: ['high1', 'high2', 'high3'] }
+    ];
+    const allowedStages = groups.flatMap(group => group.grammarStages).filter(id => EnglishGrammarData[id]);
+    // Historical labels are storage aliases only. Never reuse Lv. 3/4 as new learner-facing levels.
+    const legacyLabels = { elementary: 'Lv. 1', middle: 'Lv. 2', middle2: 'Lv. 3', middle3: 'Lv. 4' };
     let stageId = allowedStages.includes(params.get('stage')) ? params.get('stage') : 'elementary';
     let unitId = params.get('unit') || EnglishGrammarData[stageId].units[0].id;
-    let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
+    const requestedLesson = Number(params.get('lesson') || 0);
+    let lessonIndex = Number.isFinite(requestedLesson) ? Math.max(0, Math.floor(requestedLesson)) : 0;
     const requestedReview = params.get('mode') === 'review';
     const requestedQuiz = params.get('mode') === 'quiz' || requestedReview;
     let mode = requestedQuiz ? 'quiz' : 'study';
@@ -30,9 +37,12 @@
 
     const stage = () => EnglishGrammarData[stageId];
     const unit = () => stage().units.find(item => item.id === unitId) || stage().units[0];
-    const levelLabel = () => levelLabels[stageId];
+    const currentGroup = () => groups.find(group => group.grammarStages.includes(stageId));
+    const levelLabel = () => currentGroup().label.split(' · ')[0];
     const context = () => `grammar:${stageId}`;
-    const aliases = () => [`영문법 ${levelLabel()}`, `영어 문법 ${levelLabel()}`, stage().title];
+    const aliases = () => legacyLabels[stageId]
+        ? [`영문법 ${legacyLabels[stageId]}`, `영어 문법 ${legacyLabels[stageId]}`, stage().title]
+        : [stage().title];
     const hasNextLesson = () => lessonIndex < unit().lessons.length - 1
         || stage().units.findIndex(item => item.id === unit().id) < stage().units.length - 1;
 
@@ -43,8 +53,11 @@
     }
 
     function renderSelectors() {
-        $('stageTabs').innerHTML = allowedStages.map(id =>
-            `<button class="level-btn ${id === stageId ? 'active' : ''}" data-stage="${id}">${levelLabels[id]}</button>`
+        $('stageTabs').innerHTML = groups.map(group =>
+            `<button class="level-btn ${group.id === currentGroup().id ? 'active' : ''}" data-group="${group.id}" aria-pressed="${group.id === currentGroup().id}">${group.label}</button>`
+        ).join('');
+        $('gradeTabs').innerHTML = currentGroup().grammarStages.filter(id => EnglishGrammarData[id]).map(id =>
+            `<button class="lesson-chip ${id === stageId ? 'active' : ''}" data-stage="${id}" aria-pressed="${id === stageId}">${window.EnglishCurriculum?.grammarGrade(id)?.label || EnglishGrammarData[id].title.replace(' 문법', '')}</button>`
         ).join('');
         $('unitTabs').innerHTML = stage().units.map(item =>
             `<button class="unit-chip ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`
@@ -59,13 +72,23 @@
         const item = unit().lessons[lessonIndex] || unit().lessons[0];
         $('lessonTitle').textContent = item.title;
         $('principle').textContent = item.principle;
-        $('principleDetail').textContent = principleDetails[unit().id]
+        $('principleDetail').textContent = item.detail || principleDetails[unit().id]
             || `${item.principle} 먼저 문장의 주어와 동사를 찾고, 핵심 형태가 어떤 의미와 역할을 만드는지 확인하세요. 규칙을 외우는 데서 끝내지 말고 예문을 긍정문·부정문·의문문으로 바꾸어 보면 원리를 더 정확히 이해할 수 있습니다.`;
-        $('rules').innerHTML = item.rules.map((rule, i) => `<li><span>${i + 1}</span>${rule}</li>`).join('');
+        $('rules').innerHTML = (item.steps || item.rules).map((rule, i) => `<li><span>${i + 1}</span>${rule}</li>`).join('');
         $('examples').innerHTML = item.examples.map(([en, ko]) =>
             `<article><strong>${en}</strong><p>${ko}</p><div class="accent-listen"><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="us">🇺🇸 미국식 듣기</button><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="uk">🇬🇧 영국식 듣기</button></div></article>`
         ).join('');
         $('tip').textContent = item.tip;
+        const error = item.commonError;
+        $('commonError').hidden = !error;
+        if (error) {
+            $('errorWrong').textContent = `자주 하는 실수: ${error.wrong}`;
+            $('errorCorrect').textContent = `바른 표현: ${error.correct}`;
+            $('errorReason').textContent = error.reason;
+        }
+        $('lessonPractice').innerHTML = (item.practice || []).map((exercise, index) =>
+            `<article class="practice-item"><p>${index + 1}. ${exercise.question}</p><div class="practice-choices">${Utils.shuffle([exercise.answer, ...exercise.distractors]).map(choice => `<button type="button" class="lesson-chip" data-practice="${index}" data-practice-answer="${choice.replace(/"/g, '&quot;')}">${choice}</button>`).join('')}</div><p class="practice-feedback" id="practiceFeedback${index}" aria-live="polite" hidden></p></article>`
+        ).join('');
         $('prevLesson').disabled = lessonIndex === 0;
         $('nextLesson').disabled = !hasNextLesson();
         $('studyPanel').hidden = false;
@@ -130,11 +153,10 @@
             if (typeof Utils !== 'undefined') questions = Utils.shuffle(questions);
         }
         if (!questions.length) {
-            alert('이 단원에서 다시 풀 오답이 없습니다.');
-            location.href = 'wrong_note.html';
+            alert(requestedReview ? '이 단원에서 다시 풀 오답이 없습니다.' : '최근에 풀지 않은 새 문항이 부족해요. 다른 범위를 학습하거나 오답 복습을 선택해 주세요.');
+            if (requestedReview) location.href = 'wrong_note.html';
             return;
         }
-        if (!questions.length) { alert('최근에 풀지 않은 새 문항이 부족해요. 다른 범위를 학습하거나 오답 복습을 선택해 주세요.'); return; }
         questionIndex = 0; score = 0; answered = false; mode = 'quiz';
         sessionId = `grammar-${Date.now()}`; attempts = [];
         quizActiveTimer?.destroy();
@@ -218,6 +240,7 @@
             answer: q.answer || q.choices[q.answerIndex],
             choices: q.choices || [],
             tokens: q.tokens || [],
+            acceptedAnswers: q.acceptedAnswers || [],
             explanation: q.explanation,
             correct
         };
@@ -268,6 +291,13 @@
 
     function bind() {
         $('stageTabs').addEventListener('click', e => {
+            const groupButton = e.target.closest('[data-group]'); if (!groupButton) return;
+            const group = groups.find(item => item.id === groupButton.dataset.group);
+            if (!group || group.id === currentGroup().id) return;
+            stageId = group.grammarStages.find(id => EnglishGrammarData[id]); unitId = stage().units[0].id; lessonIndex = 0;
+            renderSelectors(); renderStudy();
+        });
+        $('gradeTabs').addEventListener('click', e => {
             const button = e.target.closest('[data-stage]'); if (!button) return;
             stageId = button.dataset.stage; unitId = stage().units[0].id; lessonIndex = 0;
             renderSelectors(); renderStudy();
@@ -284,6 +314,16 @@
         $('examples').addEventListener('click', e => {
             const button = e.target.closest('[data-speak]');
             if (button) window.EnglishSpeech?.speak(button.dataset.speak, button.dataset.accent);
+        });
+        $('lessonPractice').addEventListener('click', e => {
+            const button = e.target.closest('[data-practice]');
+            if (!button) return;
+            const exercise = unit().lessons[lessonIndex].practice[Number(button.dataset.practice)];
+            const correct = button.dataset.practiceAnswer === exercise.answer;
+            const feedback = $(`practiceFeedback${button.dataset.practice}`);
+            feedback.hidden = false;
+            feedback.textContent = `${correct ? '정답이에요.' : '다시 비교해 보세요.'} ${exercise.answer} — ${exercise.explanation}`;
+            feedback.className = `practice-feedback feedback ${correct ? 'good' : 'bad'}`;
         });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
         $('nextLesson').addEventListener('click', () => {

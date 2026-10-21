@@ -142,7 +142,7 @@
     }
    }
    if(g.subject==='english_reading'){
-    const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId);
+    const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId&&(u.gradeId||'grade6')===(c.levelId||'grade6'));
     for(const p of unit?.passages||[]){if(!g.passageIds.has(p.id))continue;
      const skills=new Set(attempts.map(a=>p.questions.find(q=>q.id===a.questionId||normalize(q.prompt)===normalize(a.question))?.type).filter(Boolean));
      for(const variant of [...englishPassages,...root.MockReadingContent?.english||[]].filter(v=>v.sourcePassageId===p.id)){

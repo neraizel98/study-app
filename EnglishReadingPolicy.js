@@ -13,9 +13,9 @@
         });
     };
 
-    function assessmentEvidence(reports, currentBand = 1) {
+    function assessmentEvidence(reports, currentBand = 1, levelId = null) {
         const eligible = (reports || [])
-            .filter(report => report?.subject === 'english_reading' && report.metadata?.isNovel === true
+            .filter(report => report?.subject === 'english_reading' && (!levelId || (report.metadata?.levelId||'grade6')===levelId) && !report.metadata?.assessment && !report.metadata?.mockExam && report.status!=='draft' && report.metadata?.status!=='draft' && report.metadata?.isNovel === true
                 && report.metadata?.readingAssessment === true && !report.metadata?.review
                 && !report.metadata?.familiarAttempt && !report.metadata?.hintUsed)
             .sort((a, b) => Number(b.date || b.createdAt || 0) - Number(a.date || a.createdAt || 0));

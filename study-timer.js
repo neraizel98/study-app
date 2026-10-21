@@ -32,13 +32,19 @@ const StudyTimer = (() => {
             { key: 'grade6', label: '초등 6학년 독해' },
             { key: 'middle1', label: '중1 독해' },
             { key: 'middle2', label: '중2 독해' },
-            { key: 'middle3', label: '중3 독해' }
+            { key: 'middle3', label: '레벨 2 · 중3 독해' },
+            { key: 'high1', label: '레벨 3 · 고1 독해' },
+            { key: 'high2', label: '레벨 3 · 고2 독해' },
+            { key: 'high3', label: '레벨 3 · 고3 독해' }
         ],
         grammar: [
             { key: 'elementary', label: 'Lv. 1 · 초등 문법' },
             { key: 'middle', label: 'Lv. 2 · 중1 문법' },
-            { key: 'middle2', label: 'Lv. 3 · 중2 문법' },
-            { key: 'middle3', label: 'Lv. 4 · 중3 문법' }
+            { key: 'middle2', label: '레벨 2 · 중2 문법' },
+            { key: 'middle3', label: '레벨 2 · 중3 문법' },
+            { key: 'high1', label: '레벨 3 · 고1 문법' },
+            { key: 'high2', label: '레벨 3 · 고2 문법' },
+            { key: 'high3', label: '레벨 3 · 고3 문법' }
         ],
         hanja: [
             { key: 'level8', label: '8급' },
@@ -146,14 +152,16 @@ const StudyTimer = (() => {
         return repository.getTimerScores(getUserId());
     }
 
-    function getReportScores(subject, aliases) {
+    function getReportScores(subject, aliases, context) {
         if (!aliases || aliases.length === 0) return [];
         const reports = repository.listReports(getUserId());
 
         const targets = aliases.map(normalize).filter(Boolean);
         const matches = reports
-            .filter(r => r.subject === subject && r.totalQuestions > 0 && !(r.metadata && r.metadata.review))
+            .filter(r => r.subject === subject && r.totalQuestions > 0 && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
             .filter(r => {
+                const recordedGrade = subject === 'grammar' ? r.metadata?.stageId : subject === 'english_reading' ? r.metadata?.levelId : null;
+                if (recordedGrade) return recordedGrade === getLevelKey(subject, context);
                 const level = normalize(r.level);
                 return targets.some(target => matchesAlias(level, target));
             })
@@ -175,7 +183,7 @@ const StudyTimer = (() => {
 
     function getRecentScores(subject, context = 'default', aliases = []) {
         const combined = [
-            ...getReportScores(subject, aliases),
+            ...getReportScores(subject, aliases, context),
             ...savedScoreHistory(subject, context)
         ].sort((a, b) => (b.date || 0) - (a.date || 0));
         const unique = [];

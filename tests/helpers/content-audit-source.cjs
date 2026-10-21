@@ -1,7 +1,7 @@
 const fs=require('node:fs'),vm=require('node:vm'),crypto=require('node:crypto');
 module.exports=function(){
  const c={};c.window=c;vm.createContext(c);
- for(const f of ['ReadingPassages.js','ReadingPassagesMore1.js','ReadingPassagesMore2.js','ReadingPassagesMore3.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','reading-question-variants.js','mock-reading-content.js'])
+ for(const f of ['ReadingPassages.js','ReadingPassagesMore1.js','ReadingPassagesMore2.js','ReadingPassagesMore3.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','reading-question-variants.js','mock-reading-content.js'])
   vm.runInContext(fs.readFileSync(f,'utf8'),c,{filename:f});
  const groups=[
   ['reading',c.ReadingPassages],['english_reading',c.EnglishReadingData.units.flatMap(u=>u.passages)],

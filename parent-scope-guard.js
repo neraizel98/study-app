@@ -69,8 +69,9 @@
         document.addEventListener('click',event=>{
             const link=event.target.closest?.('a[href]');
             if(link){const url=new URL(link.href,location.href);if(subjectForUrl(url)===task.subject&&!matchesUrl(task,url)){returnToTarget(event);return;}}
-            const control=event.target.closest?.('[data-unit],[data-level],[data-semester],#nextLesson');if(!control)return;
+            const control=event.target.closest?.('[data-unit],[data-level],[data-grade],[data-group],[data-semester],#nextLesson');if(!control)return;
             const context=task.context||{};
+            if(task.subject==='english_reading'&&(control.dataset.group||control.dataset.grade)){returnToTarget(event);return;}
             if(control.dataset.unit&&String(control.dataset.unit)!==String(context.unitId||'')){returnToTarget(event);return;}
             if(control.dataset.level){
                 const required=task.subject==='english'?context.unitId:context.levelId;

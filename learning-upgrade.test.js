@@ -16,7 +16,7 @@ context.SmartStudy={LocalRepository:local};
 context.StudyPeriods={daily:()=> '2026-09-18'};
 context.LearningPolicy={isDue:item=>Boolean(item.dueAt && item.dueAt<=Date.now())};
 vm.createContext(context);
-for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','EnglishReadingData.js','learning-budget-policy.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
+for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','EnglishReadingData.js','english-curriculum.js','learning-budget-policy.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
     vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 const plan=context.SmartStudy.LearningPlan,session=context.SmartStudy.LearningSession,assessment=context.SmartStudy.WeeklyAssessment;
 const autoScopes={reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}};

@@ -45,6 +45,15 @@ service cloud.firestore {
         && w.mockSectionMinutes.math is int && w.mockSectionMinutes.math >= 5 && w.mockSectionMinutes.math <= 60
         && w.mockSectionMinutes.hanja is int && w.mockSectionMinutes.hanja >= 5 && w.mockSectionMinutes.hanja <= 60;
     }
+    function validEnglishReadingScope(scope) {
+      return (scope.levelId == 'grade6' && scope.unitId in ['er1','er2','er3','er4','er5','er6'])
+        || (scope.levelId == 'middle1' && scope.unitId.matches('^mr1-unit[12]$'))
+        || (scope.levelId == 'middle2' && scope.unitId.matches('^mr2-unit[12]$'))
+        || (scope.levelId == 'middle3' && scope.unitId.matches('^mr3-unit[12]$'))
+        || (scope.levelId == 'high1' && scope.unitId.matches('^hr1-unit[12]$'))
+        || (scope.levelId == 'high2' && scope.unitId.matches('^hr2-unit[12]$'))
+        || (scope.levelId == 'high3' && scope.unitId.matches('^hr3-unit[12]$'));
+    }
     function validScope(scope, subject) {
       return scope is map
         && scope.keys().hasAll(['mode'])
@@ -56,7 +65,7 @@ service cloud.firestore {
             && ((subject == 'reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && validId(scope.levelId))
               || (subject == 'english' && scope.keys().hasAll(['mode', 'unitId']) && scope.keys().hasOnly(['mode', 'unitId']))
               || (subject == 'korean_vocab' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && scope.levelId in ['level1', 'level2'])
-              || (subject == 'english_reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && scope.levelId == 'grade6' && scope.unitId in ['er1', 'er2', 'er3', 'er4'])
+              || (subject == 'english_reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && validEnglishReadingScope(scope))
               || (subject == 'math' && scope.keys().hasAll(['mode', 'levelId', 'semesterId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId) && scope.semesterId in ['1', '2']))));
     }
     function validStudyRequest(userId) {

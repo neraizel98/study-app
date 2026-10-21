@@ -35,7 +35,7 @@
    seen.add(fingerprint);items.push({id:`${subject}:${key(subject,context)}:${fingerprint}`,subject,context,question,choices,answer,explanation:explanation||'',sourceType:'학습 범위 재확인',...extra});
   }
   if(subject==='grammar')for(const q of root.EnglishGrammarQuiz?.generate(context.unitId,count,'foundation')||[])add(q.question,q.choices,q.answer,q.explanation);
-  if(subject==='english_reading')for(const p of (root.EnglishReadingData?.units||[]).find(u=>u.id===context.unitId)?.passages||[]){
+  if(subject==='english_reading')for(const p of (root.EnglishReadingData?.units||[]).find(u=>u.id===context.unitId&&(u.gradeId||'grade6')===(context.levelId||'grade6'))?.passages||[]){
    if(!scope.passageIds.has(p.id))continue;
    for(const q of p.questions||[])add(q.prompt,q.choices,q.choices[q.answerIndex],q.explanation,{passageId:p.id,passageTitle:p.title,passageLines:p.sentences,sourceType:'학습한 지문 재확인'});
   }
