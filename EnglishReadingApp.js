@@ -9,7 +9,8 @@
     let unitId = params.get('unit') || 'er1';
     let passageIndex = 0;
     let mode = 'study';
-    let translationVisible = false;
+    // 지문 해석은 한꺼번에 열지 않고, 막힌 문장만 지문당 2문장까지 힌트로 본다. 본 문장은 계속 보인다.
+    const PEEK_LIMIT = 2;
     let timerController = null;
     let quizTimer = null;
     let quizTimerBase = 0;
@@ -44,6 +45,12 @@
     }
 
     function exposedIds() { return getPreference('exposed', []); }
+    function peekedLines(id) { return getPreference('translationPeeks', {})[id] || []; }
+    function peekLine(id, index) {
+        const all = getPreference('translationPeeks', {}), lines = all[id] || [];
+        if (lines.includes(index) || lines.length >= PEEK_LIMIT) return false;
+        all[id] = [...lines, index]; setPreference('translationPeeks', all); return true;
+    }
     function expose(id, reason) {
         const rows = getPreference('exposureLog', []);
         if (!rows.some(item => item.passageId === id)) rows.push({ passageId: id, reason, at: Date.now() });
@@ -72,7 +79,8 @@
         $('unitTabs').innerHTML = data().units.map(item => `<button data-unit="${escapeHTML(item.id)}" class="${item.id === unitId ? 'active' : ''}">${escapeHTML(item.title)}</button>`).join('');
     }
     function renderPassageLines(item, translations) {
-        return item.sentences.map((sentence, index) => `<p class="passage-line"><span class="line-no">${index + 1}</span><span class="line-text">${escapeHTML(sentence)}${translations ? `<span class="translation" ${translationVisible ? '' : 'hidden'}>${escapeHTML(item.translations[index])}</span>` : ''}</span></p>`).join('');
+        const peeked = translations ? peekedLines(item.id) : [], canPeek = peeked.length < PEEK_LIMIT;
+        return item.sentences.map((sentence, index) => `<p class="passage-line"><span class="line-no">${index + 1}</span><span class="line-text">${escapeHTML(sentence)}${peeked.includes(index) ? `<span class="translation">${escapeHTML(item.translations[index])}</span>` : ''}</span>${translations && !peeked.includes(index) ? `<button type="button" class="peek-btn" data-peek="${index}" ${canPeek ? '' : 'disabled'} aria-label="${index + 1}번 문장 해석 힌트 보기">힌트</button>` : ''}</p>`).join('');
     }
     function renderStudy() {
         const item = passage(); if (!item) return;
@@ -86,9 +94,10 @@
         const grammarUnits = window.EnglishGrammarData?.elementary?.units || [];
         const grammarRefs = item.grammarRefs?.length ? item.grammarRefs : item.grammarTags.map(unitId => ({ stageId: 'elementary', unitId, lessonIndex: 0 }));
         $('grammarLinks').innerHTML = grammarRefs.map(ref => { const target = (window.EnglishGrammarData?.[ref.stageId]?.units || grammarUnits).find(candidate => candidate.id === ref.unitId); return `<a href="english_grammar.html?stage=${encodeURIComponent(ref.stageId)}&unit=${encodeURIComponent(ref.unitId)}&lesson=${Number(ref.lessonIndex) || 0}">${escapeHTML(target?.title || ref.unitId)} 복습</a>`; }).join('');
-        $('toggleTranslation').textContent = translationVisible ? '👁️ 한글 숨기기' : '🙈 한글 보기'; $('toggleTranslation').setAttribute('aria-pressed', String(translationVisible));
+        const peekLeft = PEEK_LIMIT - peekedLines(item.id).length;
+        $('peekStatus').textContent = peekLeft > 0 ? `💡 해석 힌트 ${peekLeft}/${PEEK_LIMIT}` : '💡 해석 힌트 모두 사용';
         $('prevPassage').disabled = passageIndex === 0; $('nextPassage').disabled = passageIndex >= passages().length - 1;
-        expose(item.id, translationVisible ? 'study-with-translation' : 'study');
+        expose(item.id, peekedLines(item.id).length ? 'study-with-translation' : 'study');
         const wrong = typeof WrongNote === 'undefined' ? {} : WrongNote.getAll();
         const recommendation = EnglishReadingPolicy.recommendation([item], wrong, reports());
         $('recommendationNotice').textContent = `추천 근거: ${recommendation.reason}${recommendation.unknownCount == null ? '' : ` · 확인 ${recommendation.vocabularyKnownCount}개 / 보완 ${recommendation.vocabularyWeakCount}개 / 기록 없음 ${recommendation.unknownCount}개`}`;
@@ -321,7 +330,11 @@
             if (entry) playSpeech(entry.word, soundButton);
         });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button) return; unitId = button.dataset.unit; passageIndex = 0; renderSelectors(); renderStudy(); });
-        $('toggleTranslation').addEventListener('click', () => { translationVisible = !translationVisible; if (translationVisible) expose(passage().id, 'translation'); renderStudy(); });
+        $('studyPassage').addEventListener('click', event => {
+            const button = event.target.closest('[data-peek]');
+            if (!button || button.disabled) return;
+            if (peekLine(passage().id, Number(button.dataset.peek))) { expose(passage().id, 'translation'); renderStudy(); }
+        });
         $('prevPassage').addEventListener('click', () => { if (passageIndex > 0) { passageIndex--; renderStudy(); } });
         $('nextPassage').addEventListener('click', () => { if (passageIndex < passages().length - 1) { passageIndex++; renderStudy(); } });
         $('practiceQuiz').addEventListener('click', () => startQuiz('practice'));

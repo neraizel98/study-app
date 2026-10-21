@@ -55,7 +55,7 @@ class Element {
     get textContent() { return this._textContent || ''; }
 }
 function makeBrowser(sharedPreferences, sharedReports, options = {}) {
-    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','toggleTranslation','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
+    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','peekStatus','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
     const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
     const documentListeners = {};
     const document = { getElementById: id => elements[id], querySelector: () => new Element(), addEventListener: (name, callback) => { documentListeners[name] = callback; } };
@@ -126,3 +126,10 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     assert.equal(reviewReports[0].initialScore, 1, 'one due answer is recorded as 1/1, not 1/5');
     console.log('English reading policy, persisted reload, and retry score separation verified.');
 })().catch(error => { console.error(error); process.exitCode = 1; });
+
+// The study screen has no whole-passage translation switch: only per-sentence hints, at most two per passage.
+{
+    const page = fs.readFileSync('english_reading.html', 'utf8'), app = fs.readFileSync('EnglishReadingApp.js', 'utf8');
+    assert.ok(!page.includes('id="toggleTranslation"') && page.includes('id="peekStatus"'));
+    assert.ok(app.includes('const PEEK_LIMIT = 2;') && app.includes('data-peek='));
+}
