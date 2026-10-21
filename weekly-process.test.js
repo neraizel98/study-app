@@ -9,7 +9,7 @@ assert.equal(c.QuizExposure.fresh('grammar',[{question:'I _____ a student.',answ
 reports.push({subject:'english',date:T-86400000,metadata:{initialAttempts:[{word:'moon',question:'moon',correctAnswer:'달'}]}});assert.equal(c.QuizExposure.freshWords([{word:'moon'},{word:'star'}],T).length,1);
 const rules=fs.readFileSync('firestore.rules','utf8');assert(rules.includes("examId == request.resource.data.learnerId + '|' + request.resource.data.assessmentId"));assert(rules.includes("affectedKeys().hasOnly(['published','publishedAt','publishedBy'])"));assert(rules.includes('resource.data.published == false'));assert(rules.includes('payload.initialAttempts.size() == 55'));
 for(const file of ['report.js','stats.html','shared-report-loader.js'])assert(fs.readFileSync(file,'utf8').includes('!r.metadata?.mockExam')||fs.readFileSync(file,'utf8').includes('!report.metadata?.mockExam'),file+' hides dedicated exam results from generic learner pages');
-assert(fs.readFileSync('weekly-review.js','utf8').includes('q.choices.length>1'));assert(fs.readFileSync('weekly-review.js','utf8').includes('lines(a.passageText)'));
+assert(fs.readFileSync('weekly-review.js','utf8').includes('q.choices.length>1'));assert(fs.readFileSync('weekly-review-policy.js','utf8').includes('lines(a.passageText)'));
 console.log('Weekly process: Seoul dates, read-only history, safe answer validation, exposure filtering, publication rules and learner result privacy passed.');
 
 for(const file of ['learning-plan.js','unified-learning.js'])assert(fs.readFileSync(file,'utf8').includes("!r.metadata.mockExam||r.metadata.resultVisibility==='published'"),file+' must not reveal withheld assessment weaknesses');

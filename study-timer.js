@@ -53,6 +53,7 @@ const StudyTimer = (() => {
     };
     const ACTIVITY_LIMIT_MS = 45 * 1000;
     const ACTIVITY_EVENTS = ['click', 'keydown', 'touchstart', 'scroll'];
+    const activeStatuses = new Map();
 
     function getUserId() {
         return (typeof UserSession !== 'undefined' ? UserSession.getActiveUser() : null) || 'guest';
@@ -201,6 +202,15 @@ const StudyTimer = (() => {
 
     function getRequiredSeconds(subject, context = 'default', aliases = []) {
         const baseMinutes = getBaseMinutes(subject, context);
+        const dailyTask=window.SmartStudy.LearningBudgetPolicy?.activeTask(subject);
+        if(dailyTask){
+            const level=getLevelKey(subject,context),expected=dailyTask.context.levelId||dailyTask.context.unitId;
+            if(subject==='math'||level===expected){
+                // Explicit saved settings are never reduced; defaults reserve time for the quiz.
+                const raw=repository.getTimerConfig(),specified=raw.levels?.[subject]?.[level] ?? raw[subject];
+                return (specified!=null&&specified!==''?baseMinutes:Math.min(baseMinutes,Math.max(1,Math.floor(dailyTask.minutes*.6))))*60;
+            }
+        }
         const score = getLatestScore(subject, context, aliases);
         if (score && score.pct >= 90) return 0;
 
@@ -250,6 +260,8 @@ const StudyTimer = (() => {
             recentScores: score ? score.scores : [],
             requiredSeconds,
             accumulatedSeconds,
+            remainingSeconds: Math.max(0, requiredSeconds-accumulatedSeconds),
+            source: window.SmartStudy.LearningBudgetPolicy?.activeTask(subject)?'daily':'free',
             unlocked: requiredSeconds <= 0 || accumulatedSeconds >= requiredSeconds
         };
     }
@@ -269,6 +281,7 @@ const StudyTimer = (() => {
     }
 
     function initBar(subject, quizBtn, options = {}) {
+        activeStatuses.set(subject,()=>current().status);
         const getContext = options.getContext || (() => 'default');
         const getAliases = options.getAliases || (() => []);
         const getLabel = options.getLabel || (() => '현재 단원');
@@ -429,6 +442,7 @@ const StudyTimer = (() => {
         getLatestScore,
         getRequiredSeconds,
         getStatus,
+        getActiveStatus: subject=>activeStatuses.get(subject)?.(),
         isUnlocked,
         recordResult,
         resetAccumulated,

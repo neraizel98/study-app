@@ -1,7 +1,7 @@
 (function (root) {
     'use strict';
     const app = root.SmartStudy = root.SmartStudy || {};
-    const cache = new Map(), metadata = new Map();
+    const cache = new Map(), metadata = new Map(), committed = new Map(), states = new Map();
     let db, tail = Promise.resolve(), failure = null, pending = 0;
     const clone = value => JSON.parse(JSON.stringify(value));
     const kind = key => key.startsWith('SmartVocab_Reports_') ? 'reports'
@@ -21,13 +21,20 @@
             action(tx);
         });
     }
-    function queue(action) {
+    function queue(action, key) {
         pending++;
-        tail = tail.then(action).catch(error => {
-            failure = error;
+        const revision=(states.get(key)?.revision||0)+1;
+        states.set(key,{revision,persisted:false});
+        const result = tail.then(action).then(()=>{
+            if(states.get(key)?.revision===revision)states.set(key,{revision,persisted:true});
+            root.dispatchEvent?.(new CustomEvent('smartstudy:storage-committed', {detail:{key}}));
+        }).catch(error => {
+            if(states.get(key)?.revision===revision)states.set(key,{revision,persisted:false,error});
             root.dispatchEvent?.(new CustomEvent('smartstudy:storage-error', {detail:{message:error.message}}));
+            throw error;
         }).finally(()=>{pending--;});
-        return tail;
+        tail=result.catch(()=>{});
+        return result;
     }
     const store = {
         isReady: false, parts,
@@ -48,35 +55,56 @@
                 const parsed=typeof raw==='string'?JSON.parse(raw):raw;
                 const names=Object.keys(parsed.subjects||parsed);
                 metadata.set('subjects:'+key,names);
-                queue(()=>transaction(['meta'],tx=>tx.objectStore('meta').put({key:'subjects:'+key,value:names})));
             }
             const next = new Map(parts(key, raw).map(([id,value]) => [id,clone(value)]));
             if(kind(key)==='wrong')for(const [part,value]of rows)if(!next.has(part)){
                 next.set(part,value.item.deleted?value:{subject:value.subject,item:{...value.item,deleted:true,deletedAt:Date.now(),date:Date.now()}});
             }
-            const changed = [...next].filter(([id,value])=>JSON.stringify(rows.get(id))!==JSON.stringify(value));
-            const removed = [...rows.keys()].filter(id=>!next.has(id));
             cache.set(key,next);
-            return queue(()=>transaction(['records'],tx=>{
-                const table=tx.objectStore('records');
-                changed.forEach(([part,value])=>table.put({id:JSON.stringify([key,part]),key,part,value}));
-                removed.forEach(part=>table.delete(JSON.stringify([key,part])));
-            }));
+            const names=clone(metadata.get('subjects:'+key)||[]);
+            return queue(async()=>{
+                const previous=committed.get(key)||new Map();
+                const changed=[...next].filter(([id,value])=>JSON.stringify(previous.get(id))!==JSON.stringify(value));
+                const removed=[...previous.keys()].filter(id=>!next.has(id));
+                await transaction(['records','meta'],tx=>{
+                    const table=tx.objectStore('records');
+                    changed.forEach(([part,value])=>table.put({id:JSON.stringify([key,part]),key,part,value}));
+                    removed.forEach(part=>table.delete(JSON.stringify([key,part])));
+                    if(kind(key)==='wrong')tx.objectStore('meta').put({key:'subjects:'+key,value:names});
+                });
+                committed.set(key,new Map(next));
+            },key);
         },
         keys: ()=>[...cache.keys()],
         getMeta: key=>clone(metadata.get(key) ?? null),
         async setMeta(key,value) {
-            metadata.set(key,clone(value));
+            const snapshot=clone(value);
+            metadata.set(key,snapshot);
             await store.ready;
-            await queue(()=>transaction(['meta'],tx=>tx.objectStore('meta').put({key,value})));
-            if(failure) throw failure;
+            await queue(()=>transaction(['meta'],tx=>tx.objectStore('meta').put({key,value:snapshot})),'meta:'+key);
         },
         metaKeys: ()=>[...metadata.keys()],
-        async flush() { await store.ready; await tail; if(failure) throw failure; },
+        isPersisted: key=>!states.has(key)||states.get(key).persisted,
+        async flush() {
+            await store.ready;
+            let observed;do{observed=tail;await observed;}while(observed!==tail);
+            if(failure)throw failure;
+            const unresolved=[...states.values()].find(state=>!state.persisted);
+            if(unresolved)throw unresolved.error||new Error('학습 기록을 저장 중입니다.');
+        },
+        async retry() {
+            await store.ready;await tail;
+            const dirty=[...states].filter(([,s])=>!s.persisted).map(([key])=>key);
+            for(const key of dirty){
+                if(key.startsWith('meta:'))await store.setMeta(key.slice(5),store.getMeta(key.slice(5)));
+                else await store.write(key,store.read(key));
+            }
+            await store.flush();
+        },
         async clear() {
             await store.flush();
             await transaction(['records','meta'],tx=>{tx.objectStore('records').clear();tx.objectStore('meta').clear();});
-            cache.clear(); metadata.clear();
+            cache.clear(); metadata.clear();committed.clear();states.clear();
         }
     };
     store.ready = new Promise((resolve,reject)=>{
@@ -133,6 +161,7 @@
                     // Remove only after the transaction commits; original is preserved in archive.
                     localStorage.removeItem(key);
                 }
+                for(const [key,rows] of cache)committed.set(key,new Map(rows));
                 store.isReady=true;resolve();
             }catch(error){reject(error);}
         };
@@ -140,6 +169,9 @@
     store.ready.catch(error=>{failure=error;root.dispatchEvent?.(new CustomEvent('smartstudy:storage-error',{detail:{message:error.message}}));});
     app.DurableStore=store;
     root.addEventListener?.('beforeunload',event=>{
-        if(pending || failure){event.preventDefault();event.returnValue='';}
+        // A normal clock/cursor metadata write on pagehide must not block a saved quiz's next step.
+        // Pending answer records and any failed write still require the recovery warning.
+        const unsafe=[...states].some(([key,s])=>!s.persisted&&(!key.startsWith('meta:')||s.error));
+        if(failure || unsafe){event.preventDefault();event.returnValue='';}
     });
 })(window);

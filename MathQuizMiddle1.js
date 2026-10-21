@@ -37,7 +37,7 @@
         };
     }
 
-    function numberQuiz(question, answer, explanation, unit = '') {
+    function numberQuiz(question, answer, explanation, unit = '', verification = null) {
         const value = Number(answer);
         const offsets = Utils.shuffle([-5, -3, -2, -1, 1, 2, 3, 5, 10]);
         const distractors = [];
@@ -46,7 +46,9 @@
             if (candidate !== value && !distractors.includes(candidate)) distractors.push(candidate);
             if (distractors.length === 3) break;
         }
-        return shuffledQuiz(question, `${fmt(value)}${unit}`, distractors.map(v => `${fmt(v)}${unit}`), explanation);
+        const result = shuffledQuiz(question, `${fmt(value)}${unit}`, distractors.map(v => `${fmt(v)}${unit}`), explanation);
+        if (verification) result.verification = Object.assign(verification, { renderedQuestion: question });
+        return result;
     }
 
     function templates(generator, count, difficulty) {
@@ -61,19 +63,19 @@
             const p = pick(primes), q = pick(primes.filter(x => x !== p));
             const n = p * q;
             return numberQuiz(`$${n}$의 서로 다른 소인수의 개수는?`, 2,
-                `$${n}=${p}\\times${q}$이므로 서로 다른 소인수는 ${p}, ${q}의 2개입니다.`, '개');
+                `$${n}=${p}\\times${q}$이므로 서로 다른 소인수는 ${p}, ${q}의 2개입니다.`, '개', { kind: 'primeCount', operands: [n] });
         }
         if (kind === 1) {
             const p = pick([2, 3, 5]), exponent = r(2, 4);
             const other = pick([3, 5, 7].filter(x => x !== p));
             const n = (p ** exponent) * other;
             return numberQuiz(`$${n}=${p}^a\\times${other}$일 때 $a$의 값은?`, exponent,
-                `$${n}=${p}^{${exponent}}\\times${other}$이므로 $a=${exponent}$입니다.`);
+                `$${n}=${p}^{${exponent}}\\times${other}$이므로 $a=${exponent}$입니다.`, '', { kind: 'primeExponent', operands: [n, p] });
         }
         const a = r(2, 8), b = r(2, 8), g = r(2, 6);
         const x = a * g, y = b * g;
         return numberQuiz(`$${x}$와 $${y}$의 최대공약수는?`, gcd(x, y),
-            `두 수의 공통 소인수를 모으면 최대공약수는 $${gcd(x, y)}$입니다.`);
+            `두 수의 공통 소인수를 모으면 최대공약수는 $${gcd(x, y)}$입니다.`, '', { kind: 'gcd', operands: [x, y] });
     });
 
     Utils.registerMathQuizGenerator('m1_factor_advanced', () => {
@@ -83,18 +85,18 @@
             const a = r(1, 3), b = r(1, 3), n = (p ** a) * (q ** b);
             const count = (a + 1) * (b + 1);
             return numberQuiz(`$${n}=${p}^{${a}}\\times${q}^{${b}}$의 양의 약수의 개수는?`, count,
-                `약수의 개수는 지수에 1씩 더해 곱한 $(${a}+1)(${b}+1)=${count}$개입니다.`, '개');
+                `약수의 개수는 지수에 1씩 더해 곱한 $(${a}+1)(${b}+1)=${count}$개입니다.`, '개', { kind: 'divisorCount', operands: [n] });
         }
         if (kind === 1) {
             const a = r(3, 10), b = r(3, 10), g = r(2, 5);
             const x = a * g, y = b * g, answer = lcm(x, y);
             return numberQuiz(`$${x}$와 $${y}$의 최소공배수는?`, answer,
-                `각 소인수의 큰 지수를 선택하면 최소공배수는 $${answer}$입니다.`);
+                `각 소인수의 큰 지수를 선택하면 최소공배수는 $${answer}$입니다.`, '', { kind: 'lcm', operands: [x, y] });
         }
         const g = pick([2, 3, 5, 6]), left = g * r(2, 7), target = g * r(8, 14);
         const answer = lcm(left, target);
         return numberQuiz(`두 수 $${left}, ${target}$의 공배수 중 가장 작은 수는?`, answer,
-            `가장 작은 공배수는 최소공배수 $${answer}$입니다.`);
+            `가장 작은 공배수는 최소공배수 $${answer}$입니다.`, '', { kind: 'lcm', operands: [left, target] });
     });
 
     Utils.registerMathQuizGenerator('m1_factor_word', () => {
@@ -102,17 +104,17 @@
         if (kind === 0) {
             const a = pick([8, 12, 15, 18]), b = pick([10, 14, 20, 24]), answer = lcm(a, b);
             return numberQuiz(`${a}분마다 오는 버스와 ${b}분마다 오는 버스가 지금 함께 왔습니다. 다시 함께 오는 것은 몇 분 뒤인가요?`, answer,
-                `두 간격의 최소공배수 $\\operatorname{lcm}(${a},${b})=${answer}$분 뒤입니다.`, '분');
+                `두 간격의 최소공배수 $\\operatorname{lcm}(${a},${b})=${answer}$분 뒤입니다.`, '분', { kind: 'lcm', operands: [a, b] });
         }
         if (kind === 1) {
             const rows = r(4, 9), cols = r(6, 12), total = rows * cols;
             const group = gcd(rows, cols);
             return numberQuiz(`학생 ${total}명을 ${rows}명씩 또는 ${cols}명씩 남김없이 나눌 수 있습니다. 두 모둠 크기의 최대공약수는?`, group,
-                `$\\gcd(${rows},${cols})=${group}$입니다.`);
+                `$\\gcd(${rows},${cols})=${group}$입니다.`, '', { kind: 'gcd', operands: [rows, cols] });
         }
         const a = r(24, 48), b = r(30, 60), answer = gcd(a, b);
         return numberQuiz(`리본 ${a}cm와 ${b}cm를 남김없이 같은 길이로 가장 길게 자르려 합니다. 한 조각은 몇 cm인가요?`, answer,
-            `가능한 가장 긴 길이는 $\\gcd(${a},${b})=${answer}$cm입니다.`, 'cm');
+            `가능한 가장 긴 길이는 $\\gcd(${a},${b})=${answer}$cm입니다.`, 'cm', { kind: 'gcd', operands: [a, b] });
     });
 
     // 2단원: 정수와 유리수
@@ -120,13 +122,13 @@
         const kind = r(0, 3);
         if (kind === 0) {
             const n = r(-15, -2);
-            return numberQuiz(`$|${n}|$의 값은?`, Math.abs(n), `절댓값은 0에서의 거리이므로 $|${n}|=${Math.abs(n)}$입니다.`);
+            return numberQuiz(`$|${n}|$의 값은?`, Math.abs(n), `절댓값은 0에서의 거리이므로 $|${n}|=${Math.abs(n)}$입니다.`, '', { kind: 'absolute', operands: [n] });
         }
         const a = r(-12, 12), b = r(-12, 12);
-        if (kind === 1) return numberQuiz(`$${signed(a)}+${signed(b)}$의 값은?`, a + b, `수직선에서 이동하면 $${signed(a)}+${signed(b)}=${a + b}$입니다.`);
-        if (kind === 2) return numberQuiz(`$${signed(a)}-${signed(b)}$의 값은?`, a - b, `빼는 수의 부호를 바꾸면 $${signed(a)}+${signed(-b)}=${a - b}$입니다.`);
+        if (kind === 1) return numberQuiz(`$${signed(a)}+${signed(b)}$의 값은?`, a + b, `수직선에서 이동하면 $${signed(a)}+${signed(b)}=${a + b}$입니다.`, '', { kind: 'sum', operands: [a, b] });
+        if (kind === 2) return numberQuiz(`$${signed(a)}-${signed(b)}$의 값은?`, a - b, `빼는 수의 부호를 바꾸면 $${signed(a)}+${signed(-b)}=${a - b}$입니다.`, '', { kind: 'subtract', operands: [a, b] });
         return numberQuiz(`$${signed(a || 2)}\\times${signed(b || -3)}$의 값은?`, (a || 2) * (b || -3),
-            `부호를 먼저 정하고 절댓값을 곱하면 $${(a || 2) * (b || -3)}$입니다.`);
+            `부호를 먼저 정하고 절댓값을 곱하면 $${(a || 2) * (b || -3)}$입니다.`, '', { kind: 'product', operands: [a || 2, b || -3] });
     });
 
     Utils.registerMathQuizGenerator('m1_integer_advanced', () => {
@@ -135,17 +137,17 @@
         if (kind === 0) {
             const answer = a - b * c;
             return numberQuiz(`$${signed(a)}-${signed(b)}\\times${c}$의 값은?`, answer,
-                `곱셈을 먼저 계산하여 $${signed(a)}-${signed(b * c)}=${answer}$입니다.`);
+                `곱셈을 먼저 계산하여 $${signed(a)}-${signed(b * c)}=${answer}$입니다.`, '', { kind: 'subtractProduct', operands: [a, b, c] });
         }
         if (kind === 1) {
             const answer = (a - b) * c;
             return numberQuiz(`$(${signed(a)}-${signed(b)})\\times${c}$의 값은?`, answer,
-                `괄호 안을 먼저 계산하면 $${a - b}\\times${c}=${answer}$입니다.`);
+                `괄호 안을 먼저 계산하면 $${a - b}\\times${c}=${answer}$입니다.`, '', { kind: 'differenceProduct', operands: [a, b, c] });
         }
         const denominator = pick([2, 3, 4]), numerator = denominator * r(-8, 8);
         const answer = numerator / denominator;
         return numberQuiz(`$${numerator}\\div${denominator}$의 값은?`, answer,
-            `부호를 정한 뒤 절댓값을 나누면 $${answer}$입니다.`);
+            `부호를 정한 뒤 절댓값을 나누면 $${answer}$입니다.`, '', { kind: 'division', operands: [numerator, denominator] });
     });
 
     Utils.registerMathQuizGenerator('m1_integer_word', () => {
@@ -202,16 +204,16 @@
         if (kind === 0) {
             const price = r(700, 1800), fixed = r(200, 800), answer = price * x + fixed;
             return numberQuiz(`한 권에 ${price}원인 공책 $x$권과 ${fixed}원짜리 지우개를 샀습니다. $x=${x}$일 때 총금액은?`, answer,
-                `$${price}x+${fixed}$에 $x=${x}$를 대입하면 ${answer}원입니다.`, '원');
+                `$${price}x+${fixed}$에 $x=${x}$를 대입하면 ${answer}원입니다.`, '원', { kind: 'linearValue', operands: [price, x, fixed] });
         }
         if (kind === 1) {
-            const extra = r(1, 6), answer = 2 * (x + extra);
+            const extra = r(1, 6), answer = 2 * (2 * x + extra);
             return numberQuiz(`가로가 $x$cm, 세로가 가로보다 ${extra}cm 긴 직사각형이 있습니다. $x=${x}$일 때 둘레는?`, answer,
-                `둘레는 $2\\{x+(x+${extra})\\}$이고, 대입하면 ${answer}cm입니다.`, 'cm');
+                `둘레는 $2\\{x+(x+${extra})\\}$이고, 대입하면 ${answer}cm입니다.`, 'cm', { kind: 'rectanglePerimeter', operands: [x, x + extra] });
         }
         const per = r(3, 8), remaining = r(3, 15), start = per * x + remaining, answer = remaining;
         return numberQuiz(`용기에 물이 ${start}L 있고 매분 ${per}L씩 빠집니다. $x=${x}$분 뒤 물의 양은?`, answer,
-            `남은 물은 $${start}-${per}x$이고 $x=${x}$이면 ${answer}L입니다.`, 'L');
+            `남은 물은 $${start}-${per}x$이고 $x=${x}$이면 ${answer}L입니다.`, 'L', { kind: 'linearValue', operands: [-per, x, start] });
     });
 
     // 4단원: 일차방정식
@@ -219,7 +221,7 @@
         const x = r(-8, 12), a = pick([-5, -4, -3, 2, 3, 4, 5]), b = r(-12, 12);
         const c = a * x + b;
         return numberQuiz(`방정식 $${a}x${b >= 0 ? '+' : ''}${b}=${c}$의 해는?`, x,
-            `상수항을 이항하고 ${a}로 나누면 $x=${x}$입니다.`);
+            `상수항을 이항하고 ${a}로 나누면 $x=${x}$입니다.`, '', { kind: 'linearEquation', operands: [a, b, 0, c] });
     });
 
     Utils.registerMathQuizGenerator('m1_equation_advanced', () => {
@@ -227,11 +229,11 @@
         const d = (a - c) * x + b;
         if (r(0, 1) === 0) {
             return numberQuiz(`방정식 $${a}x${b >= 0 ? '+' : ''}${b}=${c}x${d >= 0 ? '+' : ''}${d}$의 해는?`, x,
-                `미지수항과 상수항을 각각 이항하면 $${a - c}x=${d - b}$이므로 $x=${x}$입니다.`);
+                `미지수항과 상수항을 각각 이항하면 $${a - c}x=${d - b}$이므로 $x=${x}$입니다.`, '', { kind: 'linearEquation', operands: [a, b, c, d] });
         }
         const m = r(2, 5), inside = r(-5, 6), right = m * (x + inside);
         return numberQuiz(`방정식 $${m}(x${inside >= 0 ? '+' : ''}${inside})=${right}$의 해는?`, x,
-            `양변을 ${m}로 나누면 $x${inside >= 0 ? '+' : ''}${inside}=${right / m}$이므로 $x=${x}$입니다.`);
+            `양변을 ${m}로 나누면 $x${inside >= 0 ? '+' : ''}${inside}=${right / m}$이므로 $x=${x}$입니다.`, '', { kind: 'linearEquation', operands: [m, m * inside, 0, right] });
     });
 
     Utils.registerMathQuizGenerator('m1_equation_word', () => {

@@ -36,6 +36,11 @@
   const s=state(user,taskId);if(!s)return;
   box.replaceChildren();
   const text=document.createElement('p');text.setAttribute('role','status');box.append(text);
+  if(repo.areReportsPersisted?.(user)===false){
+   text.textContent='답안을 아직 이 기기에 저장하지 못했어요. 창을 닫지 말고 다시 저장해 주세요.';
+   const retry=document.createElement('button');retry.textContent='다시 저장';
+   retry.onclick=async()=>{retry.disabled=true;try{await repo.retryPersistence();if(repo.getActiveUser()===user)changed?.();}catch(_){text.textContent='저장 공간을 확인한 뒤 다시 시도해 주세요. 답안은 유지 중이에요.';retry.disabled=false;}};box.append(retry);return;
+  }
   if(s.phase===3){text.textContent='퀴즈 제출을 확인했어요. 다음으로 갈 수 있어요.';changed?.();return;}
   if(s.alternative){text.textContent='오늘 다른 단원의 퀴즈를 제출했어요.';
    const use=document.createElement('button');use.className='journey-secondary';use.textContent='푼 단원으로 오늘 계획 연결';
@@ -44,11 +49,14 @@
  }
  function quiz(user,taskId,box,changed){
   const s=state(user,taskId);if(!s||repo.getActiveUser()!==user)return;
+  if(s.task.subject==='math'&&root.location.pathname.endsWith('math_quiz.html')){
+   document.querySelector('.quiz-card')?.scrollIntoView({block:'start',behavior:'smooth'});return;
+  }
   const active=document.querySelector('#quizModeBtn.active');
   if(active){document.querySelector('#quizView, #quizPanel, #content')?.scrollIntoView({block:'start',behavior:'smooth'});return;}
   const button=document.querySelector('#practiceQuiz, #startQuiz, #quizModeBtn');
-  const remain=document.querySelector('.stb-remain');
-  if(remain){box.textContent=`퀴즈 전 학습 시간이 남았어요. ${remain.textContent.trim()}`;return;}
+  const timer=typeof StudyTimer!=='undefined'?StudyTimer.getActiveStatus?.(s.task.subject):null;
+  if(timer&&!timer.unlocked){box.textContent=`퀴즈 전 학습이 ${Math.ceil(timer.remainingSeconds/60)}분 남았어요.`;return;}
   if(!button&&!root.location.pathname.endsWith('math_viewer.html')&&!root.location.pathname.endsWith('math.html')){root.location.href=s.task.targetUrl;return;}
   s.task.studyConfirmed=true;s.task.status='in_progress';s.task.startedAt=s.task.startedAt||Date.now();api.startTask(user,taskId);api.savePlan(s.plan);
   if(s.task.subject==='math'){

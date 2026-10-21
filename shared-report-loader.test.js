@@ -9,7 +9,7 @@ vm.createContext(context);
 vm.runInContext(fs.readFileSync('shared-report-loader.js', 'utf8'), context);
 const loader = context.SmartStudy.SharedReportLoader;
 const dateKey = date => new Date(date.getTime() + 9 * 60 * 60 * 1000).toISOString().slice(0, 10);
-const reportPage = fs.readFileSync('report.html', 'utf8');
+const reportPage = fs.readFileSync('report.html', 'utf8').replace(/\r\n/g, '\n');
 assert(reportPage.indexOf("panel.classList.add('open')") < reportPage.indexOf('await loadDetailPanel(icon)'),
     'detail panel must open and expose loading state before awaiting remote detail');
 assert(reportPage.includes('activeDetailRow !== panel || activeSubject !== subject'),

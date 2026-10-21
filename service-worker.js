@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261020-reading-more';
+const CACHE_NAME = 'smart-study-20261021-stabilization';
 
 try {
     importScripts('./firebase-config.js');
@@ -100,6 +100,8 @@ const STATIC_ASSETS = [
     './weekly-dashboard.css',
     './weekly-review.html',
     './weekly-review.js',
+    './weekly-review-policy.js',
+    './learning-budget-policy.js',
     './answer-validation.js',
     './quiz-exposure.js',
     './reading-question-variants.js',

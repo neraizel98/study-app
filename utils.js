@@ -108,7 +108,7 @@ const Utils = {
             }, generated);
         }
 
-        let q, ans, exp, wrong = [];
+        let q, ans, exp, wrong = [], verification = null;
         const r = this.randomInt.bind(this);
         const p = this.pick.bind(this);
 
@@ -134,6 +134,7 @@ const Utils = {
 
                 let div = r(2, 12);
                 let totalNum = (whole * den) + num;
+                verification = { kind: 'fractionDivision', operands: [whole * den + num, den, div, 1] };
                 let ansNum = totalNum;
                 let ansDen = den * div;
 
@@ -167,6 +168,7 @@ const Utils = {
 
                 q = `${sName}의 ${pr}의 수는 몇 개입니까?`;
 
+                verification = { kind: 'polyCount', operands: [s, pr, n] };
                 let cNum;
                 if (s === "각기둥") {
                     if (pr === "면") cNum = n + 2;
@@ -193,6 +195,7 @@ const Utils = {
                 let dDiv = r(2, 9);
                 let dDividend = dAns * dDiv;
                 
+                verification = { kind: 'division', operands: [dDividend.toFixed(1), String(dDiv)] };
                 q = `$${dDividend.toFixed(1)} \\div ${dDiv}$ 의 값은?`;
                 ans = `$${dAns.toFixed(1)}$`;
                 exp = `$${dDividend.toFixed(1)} \\div ${dDiv} = ${dAns.toFixed(1)}$ 입니다.`;
@@ -207,6 +210,7 @@ const Utils = {
                 if (r(0,1) === 0) { whole = 50; part = r(1, 4) * 10; }
                 else if (r(0,1) === 0) { whole = 200; part = r(1, 9) * 20; }
                 
+                verification = { kind: 'percentage', operands: [part, whole] };
                 q = `전체 ${whole} 중 ${part}${Utils.josa(part, '이/가')} 차지하는 비율은 몇 $\\%$ 입니까?`;
                 ans = `$${(part / whole * 100).toFixed(0)}\\%$`;
                 exp = `비율 = $\\frac{${part}}{${whole}} \\times 100 = ${(part/whole*100).toFixed(0)}\\%$ 입니다.`;
@@ -226,6 +230,7 @@ const Utils = {
                 if (n1 === n2 && d1 === d2) n2++;
 
                 q = `$${this.formatFraction(n1, d1)} \\div ${this.formatFraction(n2, d2)}$ 의 계산 결과는?`;
+                verification = { kind: 'fractionDivision', operands: [n1, d1, n2, d2] };
                 let resN = n1 * d2;
                 let resD = d1 * n2;
                 ans = `$${this.formatFraction(resN, resD)}$`;
@@ -241,6 +246,7 @@ const Utils = {
                 let dDivVal = dDiv2 / 10;
                 let dDividendVal = (dDiv2 * dQuot2) / 100;
 
+                verification = { kind: 'division', operands: [dDividendVal.toFixed(2), dDivVal.toFixed(1)] };
                 q = `$${dDividendVal.toFixed(2)} \\div ${dDivVal.toFixed(1)}$ 의 값은?`;
                 ans = `$${(dQuot2 / 10).toFixed(1)}$`;
                 exp = `소수점을 똑같이 오른쪽으로 한 칸 옮기면 $${(dDividendVal * 10).toFixed(1)} \\div ${dDiv2}$ 가 됩니다. 따라서 결과는 $${(dQuot2 / 10).toFixed(1)}$ 입니다.`;
@@ -260,6 +266,7 @@ const Utils = {
                 let displayArr = [...problemArr];
                 let correctVal = displayArr[unknownPos];
                 displayArr[unknownPos] = '\\Box';
+                verification = { kind: 'proportionMissing', operands: displayArr.slice(), missingIndex: unknownPos };
 
                 q = `비례식 $${displayArr[0]} : ${displayArr[1]} = ${displayArr[2]} : ${displayArr[3]}$ 에서 $\\Box$에 알맞은 수는?`;
                 ans = `$${correctVal}$`;
@@ -272,6 +279,7 @@ const Utils = {
                 let radius = r(3, 15);
                 let pi = 3.1;
                 q = `반지름이 ${radius}cm인 원의 넓이는 몇 $cm^2$입니까? (원주율: ${pi})`;
+                verification = { kind: 'circleArea', operands: [radius, pi] };
                 let area = radius * radius * pi;
                 ans = `$${area.toFixed(1)}cm^2$`;
                 exp = `원의 넓이 = 반지름 $\\times$ 반지름 $\\times$ 원주율 = $${radius} \\times ${radius} \\times ${pi} = ${area.toFixed(1)}cm^2$ 입니다.`;
@@ -284,6 +292,7 @@ const Utils = {
                 let cH = r(5, 20);
                 let cPi = 3;
                 q = `밑면의 반지름이 ${cR}cm이고 높이가 ${cH}cm인 원기둥의 부피는 몇 $cm^3$입니까? (원주율: ${cPi})`;
+                verification = { kind: 'cylinderVolume', operands: [cR, cH, cPi] };
                 let cVol = cR * cR * cPi * cH;
                 ans = `$${cVol}cm^3$`;
                 exp = `원기둥의 부피 = 밑넓이 $\\times$ 높이 = $(${cR} \\times ${cR} \\times ${cPi}) \\times ${cH} = ${cR * cR * cPi} \\times ${cH} = ${cVol}cm^3$ 입니다.`;
@@ -344,6 +353,7 @@ const Utils = {
                 let vItem = p(["축구", "야구", "농구", "배구"]);
 
                 q = `전체 학생 수 ${totalV}명인 원 그래프에서 '${vItem}'${Utils.josa(vItem, '을/를')} 좋아하는 비율이 ${percentV}% 일 때, '${vItem}'${Utils.josa(vItem, '을/를')} 좋아하는 학생은 몇 명입니까?`;
+                verification = { kind: 'percentPart', operands: [totalV, percentV] };
                 let correctV = (totalV * percentV) / 100;
                 ans = `${correctV}명`;
                 exp = `${totalV}명의 ${percentV}%는 $${totalV} \\times \\frac{${percentV}}{100} = ${correctV}$명 입니다.`;
@@ -359,6 +369,7 @@ const Utils = {
                 if (isCube) l = h = w;
 
                 q = isCube ? `한 모서리의 길이가 ${w}cm인 정육면체의 부피는?` : `가로 ${w}cm, 세로 ${l}cm, 높이 ${h}cm인 직육면체의 부피는?`;
+                verification = { kind: 'boxVolume', operands: [w, l, h] };
                 let vol = w * l * h;
                 ans = `$${vol}cm^3$`;
                 exp = isCube ? `$${w} \\times ${w} \\times ${w} = ${vol}cm^3$ 입니다.` : `$${w} \\times ${l} \\times ${h} = ${vol}cm^3$ 입니다.`;
@@ -373,6 +384,7 @@ const Utils = {
                 if (isCube2) l2 = h2 = w2;
 
                 q = isCube2 ? `한 모서리의 길이가 ${w2}cm인 정육면체의 겉넓이는?` : `가로 ${w2}cm, 세로 ${l2}cm, 높이 ${h2}cm인 직육면체의 겉넓이는?`;
+                verification = { kind: 'boxSurface', operands: [w2, l2, h2] };
                 let sa = isCube2 ? (6 * w2 * w2) : 2 * (w2 * l2 + l2 * h2 + h2 * w2);
                 ans = `$${sa}cm^2$`;
                 exp = isCube2 ? `한 면의 넓이가 $${w2} \\times ${w2} = ${w2 * w2}$이고 면이 6개이므로 $${w2 * w2} \\times 6 = ${sa}cm^2$입니다.` 
@@ -955,11 +967,7 @@ const Utils = {
 
             default:
                 if (!qTemplate.choices) {
-                    q = "이 유형의 문제는 아직 개발 중입니다. (임시 문제)";
-                    ans = "1";
-                    exp = "아직 개발 중인 문제입니다.";
-                    wrong = ["2", "3", "4"];
-                    break;
+                    throw new Error(`검증되지 않은 수학 생성기: ${qTemplate.generator}`);
                 }
                 return qTemplate;
         }
@@ -975,6 +983,7 @@ const Utils = {
 
         return {
             question: q,
+            verification: verification ? Object.assign(verification, { renderedQuestion: q }) : null,
             choices: choices,
             answer: ansIdx,
             explanation: exp,

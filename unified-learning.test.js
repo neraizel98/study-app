@@ -3,13 +3,14 @@ const prefs=new Map(),reports=[], users={};
 const clone=x=>JSON.parse(JSON.stringify(x));
 const local={getPreference:(k,d)=>prefs.has(k)?clone(prefs.get(k)):d,setPreference:(k,v)=>prefs.set(k,clone(v)),listReports:u=>clone(reports.filter(r=>r.userId===u)),getWrongAnswers:()=>({}),getUser:u=>users[u]||{}};
 const ctx={console,Date,Math,Set,Map,URLSearchParams};ctx.window=ctx;ctx.SmartStudy={LocalRepository:local};vm.createContext(ctx);
-for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','EnglishCourse.js','KoreanVocabData.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
+for(const f of ['ReadingData.js','VocabEng.js','EnglishReadingData.js','EnglishGrammarData.js','VocabHanja.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','EnglishCourse.js','KoreanVocabData.js','learning-budget-policy.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(f,'utf8'),ctx,{filename:f});
 const p=ctx.SmartStudy.LearningPlan,progress=ctx.SmartStudy.LearningProgress;
+local.areReportsPersisted=()=>true;
 for(const budget of [30,45,60]){
  const u='budget'+budget;p.applyParentSettings(u,{budgetMinutes:budget,grade:6,semester:2});const plan=p.createPlan(u);
  assert.deepEqual(clone(plan.tasks.map(t=>t.subject)),['reading','korean_vocab','english','grammar','english_reading','math','math_formula','hanja']);
- // 국어 어휘 시간은 하루 목표 위에 더해진다.
- assert.equal(plan.tasks.reduce((n,t)=>n+t.minutes,0),budget+p.vocabExtraMinutes[budget]);assert(plan.tasks.every(t=>t.context));
+ // 모든 과목의 배정 합계는 하루 목표 안에 포함된다.
+ assert.equal(plan.tasks.reduce((n,t)=>n+t.minutes,0),budget);assert(plan.tasks.every(t=>t.context));
  assert.deepEqual(clone(p.getPlan(u)),clone(plan),'reading the plan must not reset it');
  assert(p.catalog('math_formula',plan.profile).every(c=>ctx.MATH_FORMULAS.find(f=>`formula-${f.number}`===c.context.unitId).level==='초6'));
 }
@@ -21,6 +22,9 @@ const other=p.createPlan('other');assert(other.tasks.every(t=>t.status==='ready'
 const english=other.tasks.find(t=>t.subject==='english');
 reports.push({userId:'other',sessionId:'partial',subject:'english',date:now,totalQuestions:2,metadata:{...english.context,attempts:[{correct:true}]}});
 assert.equal(p.refreshEvidence('other').tasks.find(t=>t.subject==='english').status,'ready');
+local.areReportsPersisted=()=>false;
+assert.equal(progress.evidence('direct').length,0,'pending or failed report writes cannot complete daily tasks');
+local.areReportsPersisted=()=>true;
 reports.push({userId:'other',sessionId:'old',subject:'english',date:now-86400000,totalQuestions:1,metadata:{...english.context,attempts:[{correct:true}]}});
 assert.equal(p.refreshEvidence('other').tasks.find(t=>t.subject==='english').status,'ready');
 users[u]={dailyStats:{date:plan.date,learningTime:{english:10,grammar:20,english_reading:30,math:40,hanja:50},quizTime:{reading:60}},formulaStudyTime:{date:plan.date,studySeconds:70,quizSeconds:80}};

@@ -2,9 +2,8 @@
     'use strict';
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository, plan=app.LearningPlan;
     if(!plan)return;
-    const ids=['reading','korean_vocab','english','grammar','english_reading','math','math_formula','hanja'];
-    // 국어 어휘(두 번째)는 하루 목표 위에 더해지는 시간이다: 30분 +8, 45분 +10, 60분 +12.
-    const allocations={30:[7,8,3,3,4,8,2,3],45:[10,10,4,4,7,12,4,4],60:[13,12,5,5,10,16,6,5]};
+    const budgetPolicy=app.LearningBudgetPolicy;
+    const ids=budgetPolicy.subjects, allocations=budgetPolicy.allocations;
     const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const subjectOf=r=>r.metadata?.source==='math-formula'?'math_formula':r.subject;
     const previousContext=plan.contextOf,previousCatalog=plan.catalog,previousTarget=plan.target;
@@ -16,8 +15,10 @@
         return previousContext(subject,r);
     }
     function evidence(user){
+        if(local.areReportsPersisted?.(user)===false)return [];
         const unique=new Map();
         for(const r of local.listReports(user)||[]){
+            if((r.userId&&r.userId!==user)||(r.learnerId&&r.learnerId!==user))continue;
             const m=r.metadata||{}, attempts=m.initialAttempts||m.attempts||[], total=Number(r.totalQuestions);
             if(!r.sessionId||m.assessment||m.status==='draft'||!Number.isInteger(total)||total<1||attempts.length<total)continue;
             if(attempts.slice(0,total).some(a=>typeof a.correct!=='boolean'))continue;
@@ -87,7 +88,12 @@
         return choice?{...choice,reason:'공통 학습 기록을 기준으로 다음 범위를 연결했어요. 숙달 확정은 아니에요.'}:null;
     }
     function upgrade(p){
-        if(!p||p.date!==plan.today()||p.curriculumVersion===1)return p;
+        if(!p||p.date!==plan.today())return p;
+        if(p.curriculumVersion===1){
+            const submitted=evidence(p.userId).some(e=>day(e.at)===p.date&&p.tasks.some(t=>t.subject===e.subject&&plan.contextKey(t.subject,t.context)===plan.contextKey(e.subject,e.context)));
+            if(submitted)return p;
+            const before=p.allocationPolicyVersion;budgetPolicy.migrate(p);return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
+        }
         if(p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return p;
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
         const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId));
@@ -108,7 +114,7 @@
             return {...(existing||{}),id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage,
                 reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
         });
-        p.curriculumVersion=1;p.settingsSnapshot=plan.settingsSignature(settings);
+        p.curriculumVersion=1;p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);
     }
     const oldGet=plan.getPlan.bind(plan), oldCreate=plan.createPlan.bind(plan), oldRefresh=plan.refreshEvidence.bind(plan);

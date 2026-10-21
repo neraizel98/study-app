@@ -1,9 +1,9 @@
 (function(root){
     'use strict';
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository;
-    // Task order: 국어 독해, 국어 어휘(budget 위에 더해지는 시간), 영어, 수학.
-    const minutesByBudget={30:[8,8,10,12],45:[12,10,15,18],60:[15,12,20,25]};
-    const VOCAB_EXTRA_MINUTES={30:8,45:10,60:12};
+    // Legacy four-task fallback also stays within the selected budget.
+    const minutesByBudget={30:[6,4,9,11],45:[9,6,13,17],60:[12,8,18,22]};
+    const VOCAB_EXTRA_MINUTES={30:0,45:0,60:0};
     const subjects=['reading','korean_vocab','english','english_reading','math'];
     const urls={reading:'reading.html',korean_vocab:'korean_vocab.html',english:'english.html',english_reading:'english_reading.html',math:'math.html'};
     const key=(user,date)=>`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`;
@@ -148,11 +148,21 @@
             const settings=this.getSettings(user), minutes=minutesByBudget[settings.budgetMinutes];
             const profile={grade:settings.grade,semester:settings.semester},signature=settingsSignature(settings);
             if(plan.curriculumVersion===1&&plan.settingsSnapshot===signature)return plan;
-            const untouched=plan.tasks.every(task=>task.status==='ready'&&!task.startedAt&&!task.completedAt);
+            const submitted=root.SmartStudy.LearningProgress?.evidence?.(user)?.some(e=>new Date(e.at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'})===plan.date&&plan.tasks.some(t=>t.subject===e.subject&&contextKey(t.subject,t.context)===contextKey(e.subject,e.context)));
+            const untouched=!submitted&&plan.tasks.every(task=>task.status==='ready'&&!task.startedAt&&!task.completedAt);
             const needsUpdate=untouched&&(plan.settingsSnapshot!==signature||plan.budget!==settings.budgetMinutes
                 || plan.profile?.grade!==profile.grade || plan.profile?.semester!==profile.semester
                 || plan.tasks.some((task,index)=>task.minutes!==minutes[index]));
             if(needsUpdate){
+                let oldSettings;try{oldSettings=JSON.parse(plan.settingsSnapshot);}catch(_){}
+                if(plan.curriculumVersion===1&&oldSettings&&
+                    oldSettings.grade===settings.grade&&oldSettings.semester===settings.semester&&
+                    oldSettings.englishActivity===settings.englishActivity&&JSON.stringify(oldSettings.scopes)===JSON.stringify(settings.scopes)){
+                    plan.budget=settings.budgetMinutes;plan.settingsSnapshot=signature;
+                    delete plan.allocationPolicyVersion;
+                    root.SmartStudy.LearningBudgetPolicy.migrate(plan);
+                    local.setPreference(key(user,date),plan);return plan;
+                }
                 plan.budget=settings.budgetMinutes;plan.profile=profile;plan.settingsSnapshot=signature;
                 delete plan.curriculumVersion;
                 plan.tasks=taskSubjects(settings).map((subject,index)=>configuredTask(user,settings,profile,subject,index,date));
@@ -195,6 +205,7 @@
         },
         refreshEvidence(user){
             const plan=this.getPlan(user);if(!plan)return null;
+            if(local.areReportsPersisted?.(user)===false)return plan;
             const reports=local.listReports(user);
             let changed=false;
             for(const task of plan.tasks){

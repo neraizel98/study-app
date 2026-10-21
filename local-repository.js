@@ -50,7 +50,14 @@
     }
 
     function safeSetItem(key, value, { json = false } = {}) {
-        if (Durable?.isReady && Durable.handles(key)) { Durable.write(key, value); return true; }
+        if (Durable?.isReady && Durable.handles(key)) {
+            const pending=Durable.write(key, value);
+            // Ownership moves to the durable dirty cache only after write() accepts the snapshot.
+            // Replaying an old overflow copy later could otherwise overwrite a newer answer.
+            overflowMemory.delete(key);
+            pending.catch(()=>{});
+            return true;
+        }
         const serialize = candidate => json ? JSON.stringify(candidate) : String(candidate);
         try {
             localStorage.setItem(key, serialize(value));
@@ -126,7 +133,19 @@
 
     const Repository = {
         ready: Durable?.ready || Promise.resolve(),
-        flush: () => Durable?.flush() || Promise.resolve(),
+        async flush() {
+            await Durable?.flush();
+            if(overflowMemory.size)throw new Error('기기 저장 공간이 부족해 답안을 임시 보관 중입니다.');
+        },
+        areReportsPersisted(userId) {
+            const key=Keys.reports(userId);
+            return !overflowMemory.has(key)&&(!Durable||Durable.isReady&&Durable.isPersisted(key));
+        },
+        async retryPersistence() {
+            for(const [key,value] of [...overflowMemory])safeSetItem(key,value);
+            await Durable?.retry();
+            await Repository.flush();
+        },
         getDeviceId() {
             let id = rawValue(Keys.deviceId);
             if (!id) {

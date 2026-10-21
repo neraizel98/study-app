@@ -16,15 +16,15 @@ context.SmartStudy={LocalRepository:local};
 context.StudyPeriods={daily:()=> '2026-09-18'};
 context.LearningPolicy={isDue:item=>Boolean(item.dueAt && item.dueAt<=Date.now())};
 vm.createContext(context);
-for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','EnglishReadingData.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
+for(const file of ['utils.js','MathData.js','MathDataMiddle1.js','MathDataMiddle1Semester2.js','MathQuizData.js','ReadingData.js','ReadingPassages.js','VocabEng.js','EnglishReadingData.js','learning-budget-policy.js','learning-plan.js','learning-session.js','weekly-assessment.js'])
     vm.runInContext(fs.readFileSync(file,'utf8'),context,{filename:file});
 const plan=context.SmartStudy.LearningPlan,session=context.SmartStudy.LearningSession,assessment=context.SmartStudy.WeeklyAssessment;
 const autoScopes={reading:{mode:'auto'},english:{mode:'auto'},math:{mode:'auto'}};
 
 // 국어 독해, 국어 어휘(목표 시간에 더해짐), 영어, 수학
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[30])),[8,8,10,12]);
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[45])),[12,10,15,18]);
-assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[60])),[15,12,20,25]);
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[30])),[6,4,9,11]);
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[45])),[9,6,13,17]);
+assert.deepEqual(JSON.parse(JSON.stringify(plan.budgets[60])),[12,8,18,22]);
 assert.equal(plan.getProfile('우준').grade,6);
 assert.equal(plan.getSettings('우준').budgetMinutes,45,'the offline default must be 45 minutes');
 plan.applyParentSettings('다른학생',{budgetMinutes:45,grade:7,semester:1,scopes:autoScopes});
@@ -45,7 +45,7 @@ plan.savePlan({id:'untouched-2026-09-18',userId:'새학생',date:'2026-09-18',bu
 ]});
 const refreshedUntouched=plan.getPlan('새학생');
 assert.equal(refreshedUntouched.budget,45,'a completely untouched old plan may adopt the parent/default goal');
-assert.deepEqual(JSON.parse(JSON.stringify(refreshedUntouched.tasks.map(task=>task.minutes))),[12,10,15,18]);
+assert.deepEqual(JSON.parse(JSON.stringify(refreshedUntouched.tasks.map(task=>task.minutes))),[9,6,13,17]);
 plan.savePlan({id:'past',userId:'기존학생',date:'2026-09-17',budget:30,profile:{grade:5,semester:1,publisher:''},tasks:[
     {minutes:8,status:'completed'},{minutes:10,status:'completed'},{minutes:12,status:'completed'}
 ]});
@@ -64,7 +64,7 @@ reports.push({sessionId:'legacy-no-metadata-math',subject:'math',date:now-1000,c
 const daily=plan.createPlan('우준');
 assert.equal(daily.tasks[3].context.unitId,'e6-2-u1','recent current-semester weakness should win');
 assert.equal(daily.tasks[0].context.unitId,plan.catalog('reading',daily.profile)[0].context.unitId,'no-history auto mode must use the first verified catalog unit');
-assert.equal(daily.tasks[3].minutes,12);
+assert.equal(daily.tasks[3].minutes,11);
 plan.startTask('우준',daily.tasks[3].id);
 const beforeSettingsChange=plan.getPlan('우준');
 beforeSettingsChange.tasks[0].context={levelId:'level1',unitId:'saved',title:'저장된 단원'};
@@ -74,7 +74,7 @@ plan.savePlan(beforeSettingsChange);
 plan.applyParentSettings('우준',{budgetMinutes:60,grade:6,semester:2,scopes:autoScopes});
 const migrated=plan.getPlan('우준');
 assert.equal(migrated.budget,30,'new parent settings must wait when any current task has started');
-assert.deepEqual(migrated.tasks.map(task=>task.minutes),[8,8,10,12]);
+assert.deepEqual(migrated.tasks.map(task=>task.minutes),[6,4,9,11]);
 assert.equal(migrated.tasks[0].context.unitId,'saved','a settings change must preserve the selected unit');
 assert.equal(migrated.tasks[0].sessionId,'draft-session','a settings change must preserve the draft session');
 assert.equal(migrated.tasks[0].startedAt,1234,'a settings change must preserve start evidence');
@@ -121,7 +121,7 @@ const readingScopes={...autoScopes,english_reading:{mode:'assigned',levelId:'gra
 plan.applyParentSettings('영어독해학생',{budgetMinutes:45,grade:6,semester:2,englishActivity:'reading',scopes:readingScopes});
 const englishReadingPlan=plan.createPlan('영어독해학생');
 assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.subject))),['reading','korean_vocab','english_reading','math'],'the single English slot switches from vocabulary to reading');
-assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.minutes))),[12,10,15,18]);
+assert.deepEqual(JSON.parse(JSON.stringify(englishReadingPlan.tasks.map(task=>task.minutes))),[9,6,13,17]);
 assert.equal(englishReadingPlan.tasks.reduce((sum,task)=>sum+task.minutes,0),45+plan.vocabExtraMinutes[45],'switching English activity must not duplicate the English minutes');
 assert.equal(englishReadingPlan.tasks[2].context.unitId,'er2');
 plan.startTask('영어독해학생',englishReadingPlan.tasks[2].id);

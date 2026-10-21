@@ -22,6 +22,15 @@ for (const file of ['storage-keys.js', 'storage-events.js', 'schema-migrations.j
 vm.runInContext(`${fs.readFileSync('study-timer.js', 'utf8')}\nthis.timer = StudyTimer;`, sandbox);
 
 const timer = sandbox.timer;
+// A daily task uses explicit parent minima, never adaptive penalties.
+sandbox.SmartStudy.LearningBudgetPolicy={activeTask:()=>({minutes:4,context:{unitId:'level1'}})};
+timer.setConfig({});
+assert.equal(timer.getRequiredSeconds('english','level1'),120,'default leaves room for quiz in four-minute activity');
+timer.setConfig({english:10});
+assert.equal(timer.getRequiredSeconds('english','level1'),600,'explicit parent minimum preserved');
+timer.setConfig({english:0});
+assert.equal(timer.getRequiredSeconds('english','level1'),0,'explicit zero preserved');
+delete sandbox.SmartStudy.LearningBudgetPolicy;
 timer.setConfig({
     english: 5, grammar: 5, hanja: 5, math: 5, reading: 5,
     levels: {

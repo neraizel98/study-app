@@ -7,7 +7,7 @@
   const kind=index===5?'mock':index===6?'review':'learning';
   const submitted=reports.filter(r=>day(Number(r.metadata?.submittedAt||r.date||0))===date&&r.metadata?.status!=='draft'&&Number(r.totalQuestions)>0&&(r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=r.totalQuestions);
   const key=`SmartStudy_DailyPlan_${encodeURIComponent(user)}_${date}`,plan=local.getPreference(key,null);
-  const expected=plan?.tasks?.length||7,finished=plan?.tasks?.filter(t=>t.status==='completed').length||0;
+  const expected=plan?.tasks?.length||app.LearningBudgetPolicy?.subjects.length||8,finished=plan?.tasks?.filter(t=>t.status==='completed').length||0;
   const mock=submitted.filter(r=>r.metadata?.mockExam),review=local.getPreference(`SmartStudy_WeeklyReview_${encodeURIComponent(user)}_${date}`,null);
   const complete=kind==='learning'?Boolean(plan&&finished===expected):kind==='mock'?mock.some(r=>r.metadata?.examComplete===true):Boolean(review?.submittedAt);
   return {date,kind,plan,submitted,complete,finished,expected,status:complete?'completed':!plan&&submitted.length?'recorded':date>now?'scheduled':submitted.length||finished?'in_progress':date===now?'ready':'missing'};

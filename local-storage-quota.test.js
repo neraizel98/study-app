@@ -50,3 +50,6 @@ assert.equal(repository.listReports('우준')[0].finalScore, 20,
     'Overflow reports must remain available for cloud synchronization');
 
 console.log('Local storage quota recovery and non-blocking quiz writes verified.');
+
+assert.equal(repository.areReportsPersisted("우준"),false);
+assert.rejects(repository.flush(),/임시 보관/).catch(e=>{console.error(e);process.exitCode=1;});
