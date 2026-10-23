@@ -636,6 +636,13 @@ window.HanjaEngine = {
         const data = window.vocabHanja || {};
         if (Object.keys(data).length === 0) return false;
 
+        // A free-learning entry should open the recommended grade, not always level8.
+        if (!requestedLevel && !isReviewMode) {
+            const user = window.SmartStudy?.LocalRepository?.getActiveUser?.();
+            const recommended = user && window.SmartStudy?.LearningProgress?.recommendScope?.(user, 'hanja')?.context?.unitId;
+            if (recommended && data[recommended]) currentLevel = recommended;
+        }
+
         // 학습 타이머 초기화
         if (typeof StudyTimer !== 'undefined') {
             _hanjaTimerCtrl = StudyTimer.initBar('hanja', quizModeBtn, {

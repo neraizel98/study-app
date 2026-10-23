@@ -96,3 +96,17 @@ const bothPlan=p.createPlan(bothUser);assert(bothPlan.tasks.find(t=>t.subject===
  assert.deepEqual([stats.sessions,Math.round(stats.average*100),Math.round(stats.last*100)],[3,100,100]);
 }
 console.log('Promotion: aced levels step up (3×90%+ or 8×80%+, recent and steady), older or shaky evidence does not.');
+
+{
+ const user='downgrade-block',day=86400000;
+ for(let i=1;i<=3;i++)reports.push({userId:user,subject:'hanja',sessionId:'ace-'+i,date:Date.now()-i*day,totalQuestions:10,metadata:{unitId:'level8',initialAttempts:Array.from({length:10},()=>({correct:true}))}});
+ p.applyParentSettings(user,{budgetMinutes:45,grade:6,semester:2});
+ const plan=p.createPlan(user),task=plan.tasks.find(t=>t.subject==='hanja');
+ assert.equal(task.context.unitId,'level7');
+ assert.throws(()=>p.selectContext(plan.id,user,task.id,{unitId:'level8'}),/충분히 익힌/);
+ assert.equal(p.getPlan(user).tasks.find(t=>t.subject==='hanja').context.unitId,'level7');
+ const partial='one-question-reading';p.applyParentSettings(partial,{budgetMinutes:45,grade:6,semester:2});
+ const daily=p.createPlan(partial),reading=daily.tasks.find(t=>t.subject==='english_reading');
+ reports.push({userId:partial,subject:'english_reading',sessionId:'one',date:Date.now(),totalQuestions:1,metadata:{...reading.context,initialAttempts:[{correct:true}]}});
+ assert.equal(p.refreshEvidence(partial).tasks.find(t=>t.subject==='english_reading').status,'ready','single review answer cannot complete a full daily reading activity');
+}

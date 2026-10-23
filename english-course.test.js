@@ -13,3 +13,14 @@ assert.equal(build(data,vocab,[{...words,date:now-8*86400000}],{},now).next.id,'
 assert.equal(build(data,vocab,[],{english:[{dueAt:now+1},{dueAt:now-1},{deleted:true}]},now).due.length,1);
 assert.equal(build(data,vocab,[{...words,metadata:{...words.metadata,review:true}}],{},now).next.id,'words');
 console.log('English course sequence, first-score progression, and spaced review verified.');
+
+{
+ global.ConceptMastery={evaluate:()=>({name:'foundation'})};
+ const passages=[1,2,3].map(i=>({id:'standard-'+i,band:1,vocabulary:[],grammarRefs:[]}));
+ passages.push({id:'challenge-1',band:2,vocabulary:[],grammarRefs:[]});
+ const course={units:[{id:'test-unit',gradeId:'grade6',passages}]};
+ const records=[1,2,3].map(i=>report('english_reading',{levelId:'grade6',passageId:'standard-'+i,practiceAssessment:true},5));
+ assert.equal(build(course,{},records,{},now).passage.id,'challenge-1','three distinct first standard successes unlock challenge practice even if transfer mastery is still foundation');
+ assert.notEqual(build(course,{},records.map(r=>({...r,totalQuestions:1})),{},now).passage.id,'challenge-1');
+ delete global.ConceptMastery;
+}

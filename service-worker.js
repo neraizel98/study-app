@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261023-korean-reading';
+const CACHE_NAME = 'smart-study-20261023-progression';
 
 try {
     importScripts('./firebase-config.js');
@@ -169,6 +169,8 @@ const STATIC_ASSETS = [
     './KoreanReadingMiddle.js',
     './KoreanReadingHigh.js',
     './KoreanReadingCurriculum.js',
+    './answer-math-renderer.js',
+    './math-session-questions.js',
     './ReadingPassages.js',
     './ReadingPassagesMore1.js',
     './ReadingPassagesMore2.js',

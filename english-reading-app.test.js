@@ -63,11 +63,12 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
         ready: Promise.resolve(), getActiveUser: () => 'tester', getPreference: (key, fallback) => sharedPreferences.has(key) ? structuredClone(sharedPreferences.get(key)) : fallback,
         setPreference: (key, value) => sharedPreferences.set(key, structuredClone(value)), listReports: () => sharedReports
     };
-    const window = { document, location: { search: options.search || '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository },
+    const window = { QuizExposure: options.freshCount==null?undefined:{fresh:(subject,questions)=>questions.slice(0,options.freshCount)}, document, location: { search: options.search || '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository },
         UserSession: { getActiveUser: () => 'tester' }, EnglishReadingPolicy: Policy, alert() {} };
     window.window = window;
     const sandbox = { window, document, location: window.location, history: window.history, URLSearchParams, console, Date, Math, structuredClone,
         alert: window.alert, EnglishReadingPolicy: Policy,
+        QuizExposure: window.QuizExposure,
         WrongNote: options.wrongItems ? { getAll: () => ({ english_reading: options.wrongItems }), save() {} } : undefined,
         LearningPolicy: { isDue: () => true },
         saveQuizResult(sessionId, subject, level, totalQuestions, currentScore, initialScore, time, completed, metadata) {
@@ -84,6 +85,11 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
 }
 
 (async () => {
+    const nearlyUsed = makeBrowser(new Map(), [], {freshCount:1}); await nearlyUsed.init();
+    nearlyUsed.window.EnglishReadingApp.startQuiz('practice');
+    assert.equal(nearlyUsed.window.EnglishReadingApp.getSession().questions.length,5,'one fresh question cannot become a one-question regular quiz');
+    assert.equal(nearlyUsed.window.EnglishReadingApp.getSession().review,true,'reused questions are visibly classified as review');
+    assert.equal(nearlyUsed.window.EnglishReadingApp.getSession().practiceAssessment,false);
     const preferences = new Map(), reports = [];
     const first = makeBrowser(preferences, reports); await first.init();
     assert.equal(first.window.EnglishReadingApp.validateContent(), true);
@@ -132,4 +138,13 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     const page = fs.readFileSync('english_reading.html', 'utf8'), app = fs.readFileSync('EnglishReadingApp.js', 'utf8');
     assert.ok(!page.includes('id="toggleTranslation"') && page.includes('id="peekStatus"'));
     assert.ok(app.includes('const PEEK_LIMIT = 2;') && app.includes('data-peek='));
+}
+
+{
+ const practice=(id,band=0)=>report(id,5,{band,isNovel:false,readingAssessment:false,familiarAttempt:true,practiceAssessment:true,initialAttempts:Array.from({length:5},()=>({correct:true}))});
+ const rows=['first','second','third'].map(id=>practice(id));
+ assert.equal(Policy.assessmentEvidence(rows,0).band,1,'three complete first practice passages can advance practice difficulty');
+ assert.equal(Policy.assessmentEvidence(rows,1).samples,0,'lower-band scores cannot trigger a second promotion');
+ assert.equal(Policy.assessmentEvidence(rows.map(r=>({...r,totalQuestions:1})),0).samples,0,'single-question records do not qualify');
+ assert.equal(Policy.assessmentEvidence(rows.map(r=>({...r,metadata:{...r.metadata,review:true}})),0).samples,0,'review does not promote');
 }

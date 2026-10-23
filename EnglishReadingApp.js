@@ -150,14 +150,19 @@
         }
         const item = selectedPassage || passage();
         if (!item) { alert('풀 수 있는 지문이 없습니다.'); return; }
-        const questionPool = params.get('mode')==='review'?questionSnapshot(item):(window.QuizExposure?QuizExposure.fresh('english_reading',questionSnapshot(item)).slice(0,10):questionSnapshot(item));
+        const allQuestions = questionSnapshot(item);
+        const freshQuestions = window.QuizExposure ? QuizExposure.fresh(SUBJECT, allQuestions) : allQuestions;
+        const practiceReview = params.get('mode') === 'review' || freshQuestions.length < 5;
+        if (kind === 'assessment' && practiceReview) { alert('새 문제 5개가 있는 지문으로 평가해야 해요. 다른 지문을 선택해 주세요.'); return; }
+        const questionPool = (practiceReview ? allQuestions : freshQuestions).slice(0,10);
         if (!questionPool.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 선택하거나 오답 복습을 진행해 주세요.'); return; }
         const isNovel = kind === 'assessment' && !exposedIds().includes(item.id);
+        const practiceAssessment = !practiceReview && !peekedLines(item.id).length && !reports().some(r=>r.subject===SUBJECT&&r.metadata?.passageId===item.id&&r.metadata?.status!=='draft');
         const recommendation = EnglishReadingPolicy.recommendation([item], typeof WrongNote === 'undefined' ? {} : WrongNote.getAll(), reports());
         session = {
             schema: 1, sessionId: `english-reading-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             levelId, unitId: units().find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
-            passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', review: params.get('mode') === 'review',
+            passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', practiceAssessment, review: practiceReview,
             isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, status: 'active', activeSeconds: 0,
             questions: questionPool, roundQuestionIds: questionPool.map(question => question.id), questionIndex: 0, round: 1,
             answers: [], initialAttempts: [], attempts: [], initialScore: null, finalScore: 0, hintUsed: false, startedAt: Date.now()
@@ -240,7 +245,7 @@
         const total = session.questions.length;
         $('resultScore').textContent = `현재 ${session.finalScore} / ${total}점`;
         $('initialScoreNote').textContent = `최초 제출 점수 ${session.initialScore} / ${total}점 · 재도전 점수와 별도로 보존됩니다.`;
-        $('resultMessage').textContent = session.isNovel ? '미학습 지문 최초 평가로 기록했습니다.' : '연습·재도전 결과는 난이도 상승 근거에서 제외됩니다.';
+        $('resultMessage').textContent = session.isNovel ? '미학습 지문 최초 평가로 기록했습니다.' : session.practiceAssessment ? '이 지문의 첫 5문항 이상 풀이로 기록했습니다. 서로 다른 지문의 첫 풀이로 다음 난이도를 판단해요.' : '복습·재도전 결과입니다. 난이도 상승 근거와 구분해요.';
         $('retryWrong').hidden = session.finalScore >= total; $('resultModal').hidden = false;
     }
     function saveReport() {
@@ -249,14 +254,15 @@
         if (session.round === 1 && !session.review && typeof StudyTimer !== 'undefined') StudyTimer.recordResult(SUBJECT, context(), session.initialScore, total, session.sessionId);
         if (typeof saveQuizResult === 'function') saveQuizResult(session.sessionId, SUBJECT, `${level().title} · ${quizPassage().title}`, total, session.finalScore, session.initialScore, seconds, true, {
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
-            band: session.band, readingAssessment: session.assessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
+            band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
             hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts,
             vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason,
             submittedAt: Date.now()
         });
     }
     function updateDifficultyAfterSession() {
-        if (!session.assessment || !session.isNovel || session.hintUsed || session.round > 1) return;
+        if ((!session.assessment || !session.isNovel) && !session.practiceAssessment) return;
+        if (session.review || session.hintUsed || session.round > 1) return;
         const result = EnglishReadingPolicy.assessmentEvidence(reports(), currentBand(), levelId);
         const lastDecision = getPreference('lastBandDecision', null);
         if (result.samples >= 3 && result.windowKey && result.windowKey !== lastDecision?.windowKey) {

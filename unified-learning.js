@@ -26,6 +26,7 @@
             if(!Number.isFinite(at)||at<=0)continue;
             const subject=subjectOf(r),context=contextOf(subject,r);
             if(!context)continue;
+            if(subject==='english_reading'&&total<5)continue;
             const entry={subject,context,at,report:r,attempts:attempts.slice(0,total)};
             const key=`${subject}:${r.sessionId}`;
             if(!unique.has(key)||Number(r.updatedAt||r.date)>Number(unique.get(key).report.updatedAt||unique.get(key).report.date))unique.set(key,entry);
@@ -63,7 +64,7 @@
     const PROMOTION={windowDays:30,recent:5,minSessions:3,highAverage:.9,manySessions:8,solidAverage:.8,lastAtLeast:.8};
     function performance(subject,context,entries){
         const since=Date.now()-PROMOTION.windowDays*86400000;
-        const sessions=entries.filter(e=>e.subject===subject&&e.at>=since&&plan.contextKey(subject,e.context)===plan.contextKey(subject,context)
+        const sessions=entries.filter(e=>e.subject===subject&&Number(e.report.totalQuestions)>=5&&e.at>=since&&plan.contextKey(subject,e.context)===plan.contextKey(subject,context)
             &&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)
             &&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId)))
             .sort((a,b)=>b.at-a.at);
@@ -90,7 +91,7 @@
                 &&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8);
         };
         const isOutgrown=c=>readingPassed(c)||outgrown(statsOf(c));
-        const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)));
+        const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)&&!outgrown(statsOf(c))));
         if(todayEntry)return {...choices.find(c=>same(c.context,todayEntry.context)),reason:'오늘 과목 화면에서 제출한 기록을 연결했어요.',todayEvidence:true};
         const wrong=local.getWrongAnswers(user)?.[subject==='math_formula'?'math':subject]||[];
         for(const item of wrong){
@@ -132,7 +133,8 @@
         if(p.curriculumVersion===1){
             const submitted=evidence(p.userId).some(e=>day(e.at)===p.date&&p.tasks.some(t=>t.subject===e.subject&&plan.contextKey(t.subject,t.context)===plan.contextKey(e.subject,e.context)));
             if(submitted)return p;
-            const before=p.allocationPolicyVersion;budgetPolicy.migrate(p);return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
+            const before=p.allocationPolicyVersion;budgetPolicy.migrate(p);
+            if(p.recommendationVersion==='20261023-progression'||p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
         }
         if(p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return p;
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
@@ -142,7 +144,7 @@
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
             const assignedChoice=scope?.mode==='assigned'?catalog(subject,p.profile).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
             let rec=recommend(subject,p.profile,entries,p.userId);
-            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence){
+            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
                 const params=new URLSearchParams(step.href.split('?')[1]);
                 const linked=subject==='english'?{unitId:params.get('level')}:subject==='grammar'?{levelId:params.get('stage'),unitId:params.get('unit')}:{levelId:course.unit.gradeId||'grade6',unitId:course.unit.id};
@@ -150,11 +152,11 @@
                 if(found)rec={...found,reason:'영어 통합 과정과 같은 단어·문법·독해 범위예요.'};
             }
             const context=assigned?(assignedChoice?.context||existing?.context||null):rec?.context||null;
-            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
+            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
             return {...(existing||{}),id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage,
                 reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
         });
-        p.curriculumVersion=1;p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
+        p.curriculumVersion=1;p.recommendationVersion='20261023-progression';p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);
     }
     const oldGet=plan.getPlan.bind(plan), oldCreate=plan.createPlan.bind(plan), oldRefresh=plan.refreshEvidence.bind(plan);
@@ -168,6 +170,7 @@
         if(p.id!==planId||!task||task.required||task.status==='completed')throw Error('완료했거나 보호자가 지정한 과제는 변경할 수 없습니다.');
         const choice=catalog(task.subject,p.profile).find(c=>this.contextKey(task.subject,c.context)===this.contextKey(task.subject,context));
         if(!choice)throw Error('학습 자료에 없는 단원입니다.');
+        if(outgrown(performance(task.subject,choice.context,evidence(user))))throw Error('충분히 익힌 범위예요. 오늘 학습에서는 다음 범위를 선택하고, 이 범위는 자유 복습에서 풀어 주세요.');
         if(this.contextKey(task.subject,task.context)===this.contextKey(task.subject,choice.context))return p;
         task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.context=choice.context;task.targetUrl=target(task.subject,choice.context);task.status='ready';task.startedAt=null;task.studyConfirmed=false;task.sessionId=null;task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
     };
@@ -191,5 +194,5 @@
         const pending=(tasks||[]).filter(t=>t.status!=='completed'&&t.context);
         return pending.find(t=>t.required)||pending.find(t=>t.status==='in_progress')||pending[0]||null;
     }
-    app.LearningProgress={performance,outgrown,promotion:PROMOTION,mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
+    app.LearningProgress={recommendScope:(user,subject)=>recommend(subject,plan.getProfile(user),evidence(user),user),performance,outgrown,promotion:PROMOTION,mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
 })(window);

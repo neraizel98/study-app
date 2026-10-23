@@ -225,12 +225,13 @@
     <script src="utils.js?v=20261021-stabilization"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20261023-korean-reading"></script><script src="report.js?v=20261020-korean-vocab"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261021-english-three-levels"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261023-korean-reading"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261021-english-three-levels"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261023-progression"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="english-curriculum.js?v=20261021-english-three-levels"></script><script src="study-timer.js?v=20261023-korean-reading"></script>
     <script src="MathData.js?v=20261019-content-fix"></script>
     <script src="MathDataMiddle1.js?v=20261019-content-fix"></script>
     <script src="MathDataMiddle1Semester2.js?v=20261019-content-fix"></script>
+    <script src="math-session-questions.js?v=20261023-progression"></script>
     <script src="MathQuizData.js?v=20261019-content-fix"></script>
     <script src="MathQuizMiddle1.js?v=20261021-stabilization"></script>
     <script src="MathQuizMiddle1Semester2.js?v=20261019-content-fix"></script>
@@ -337,7 +338,7 @@
                     )
                     : [];
                 let adaptivePool = [...quizzes];
-                if (band.name === 'foundation') adaptivePool = [...(window.MathQuizData[unitId].basic || quizzes)];
+                if (band.name === 'foundation' && typeId === 'basic') adaptivePool = [...(window.MathQuizData[unitId].basic || quizzes)];
                 if (band.name === 'challenge' && typeId === 'basic') {
                     adaptivePool = [
                         ...adaptivePool,
@@ -362,7 +363,8 @@
             }
             
             // 모든 퀴즈에 대해 동적 생성기 실행 (템플릿일 경우에만) 및 셔플 (Utils 활용)
-            quizzes = quizzes.map(q => Utils.generateMathQuiz(q));
+            quizzes = isReviewMode ? quizzes.map(q => Utils.generateMathQuiz(q))
+                : MathSessionQuestions.build(quizzes, q => Utils.generateMathQuiz(q), Math.max(10, quizzes.length));
             quizzes = Utils.shuffle(quizzes);
 
             let quizSessionData = {
@@ -632,8 +634,8 @@
             });
         }
     </script>
-<script src="version-check.js?v=20261023-korean-reading"></script>
-<script src="parent-scope-guard.js?v=20261023-korean-reading"></script><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261023-korean-reading"></script><script src="unified-learning.js?v=20261023-korean-reading"></script><script src="today-journey.js?v=20261021-stabilization"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="celebrate.js?v=20261014-redesign"></script>
+<script src="version-check.js?v=20261023-progression"></script>
+<script src="parent-scope-guard.js?v=20261023-korean-reading"></script><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261023-korean-reading"></script><script src="unified-learning.js?v=20261023-progression"></script><script src="today-journey.js?v=20261021-stabilization"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="celebrate.js?v=20261014-redesign"></script>
 <script src="icons.js?v=20261014-scratchpad"></script><script src="scratchpad.js?v=20261014-scratchpad"></script>
 </body>
 </html>

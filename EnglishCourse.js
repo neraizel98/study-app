@@ -3,7 +3,7 @@
     const day=86400000;
     function build(data,vocabulary,reports,wrong,now=Date.now(),options={}){
         const valid=(reports||[]).filter(r=>!r.metadata?.review&&!r.metadata?.assessment&&Number(r.totalQuestions)>0&&(r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=Number(r.totalQuestions));
-        const passed=r=>Number(r.initialScore)/Number(r.totalQuestions)>=.8&&!r.metadata?.hintUsed;
+        const passed=r=>(r.subject!=='english_reading'||Number(r.totalQuestions)>=5)&&Number(r.initialScore)/Number(r.totalQuestions)>=.8&&!r.metadata?.hintUsed;
         const latest=(subject,match)=>valid.filter(r=>r.subject===subject&&match(r)).sort((a,b)=>Number(b.date)-Number(a.date))[0];
         const gradeId=options.levelId||root.EnglishCurriculum?.gradeForProfile(options.grade||6)||'grade6';
         const items=(data.units||[]).filter(u=>(u.gradeId||'grade6')===gradeId).flatMap(unit=>unit.passages.map(passage=>({unit,passage}))).sort((a,b)=>a.passage.band-b.passage.band);
@@ -12,7 +12,19 @@
         const eligibleItems=root.ConceptMastery?items.filter(x=>{
             const context=`english_reading:${gradeId}:${x.unit.id}`;
             const state=root.ConceptMastery.evaluate(reports,'english_reading',context,now);
-            return Number(x.passage.band)<=({foundation:1,standard:2,challenge:3}[state.name]);
+            const gradePassages=new Map(items.map(row=>[row.passage.id,row.passage]));
+            const checks=new Map();
+            for(const report of valid){
+                const passage=gradePassages.get(report.metadata?.passageId);
+                if(report.subject!=='english_reading'||!passage||Number(report.totalQuestions)<5||!passed(report)||Number(report.initialScore)/Number(report.totalQuestions)<.85||readingReport(passage)!==report)continue;
+                if(report.metadata?.levelId&&report.metadata.levelId!==gradeId)continue;
+                if(!(report.metadata?.practiceAssessment||report.metadata?.isNovel))continue;
+                const attempts=report.metadata?.initialAttempts||report.metadata?.attempts||[];
+                if(attempts.some(a=>a.hintUsed||a.assisted)||report.metadata?.familiarAttempt&&!report.metadata?.practiceAssessment)continue;
+                checks.set(passage.id,passage);
+            }
+            const practicedStandard=[...checks.values()].filter(p=>Number(p.band)===1).length>=3;
+            return Number(x.passage.band)<=Math.max(({foundation:1,standard:2,challenge:3}[state.name]||1),practicedStandard?2:1);
         }):items;
         const item=eligibleItems.find(x=>!passed(readingReport(x.passage)||{}))||[...eligibleItems].sort((a,b)=>Number(readingReport(a.passage)?.date||0)-Number(readingReport(b.passage)?.date||0))[0];
         if(!item)return null;

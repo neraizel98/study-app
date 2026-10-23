@@ -15,14 +15,15 @@
 
     function assessmentEvidence(reports, currentBand = 1, levelId = null) {
         const eligible = (reports || [])
-            .filter(report => report?.subject === 'english_reading' && (!levelId || (report.metadata?.levelId||'grade6')===levelId) && !report.metadata?.assessment && !report.metadata?.mockExam && report.status!=='draft' && report.metadata?.status!=='draft' && report.metadata?.isNovel === true
-                && report.metadata?.readingAssessment === true && !report.metadata?.review
-                && !report.metadata?.familiarAttempt && !report.metadata?.hintUsed)
+            .filter(report => report?.subject === 'english_reading' && (!levelId || (report.metadata?.levelId||'grade6')===levelId) && !report.metadata?.assessment && !report.metadata?.mockExam && report.status!=='draft' && report.metadata?.status!=='draft' && ((report.metadata?.isNovel === true && report.metadata?.readingAssessment === true && !report.metadata?.familiarAttempt)
+                    || (report.metadata?.practiceAssessment === true && Number(report.totalQuestions)>=5 && (report.metadata?.initialAttempts||[]).length>=Number(report.totalQuestions)))
+                && !report.metadata?.review && !report.metadata?.hintUsed
+                && (report.metadata?.band == null || Number(report.metadata.band) === clampBand(currentBand)))
             .sort((a, b) => Number(b.date || b.createdAt || 0) - Number(a.date || a.createdAt || 0));
         const recent = distinctBy(eligible, report => report.metadata?.passageId).slice(0, 3);
         if (recent.length < 3) {
             return { band: clampBand(currentBand), changed: false, samples: recent.length, scores: recent.map(scoreOf),
-                reason: `미학습 지문 최초 평가 ${recent.length}/3개를 모으는 중입니다.` };
+                reason: `서로 다른 지문 첫 풀이 ${recent.length}/3개를 모으는 중입니다.` };
         }
         const scores = recent.map(scoreOf);
         const average = Math.round(scores.reduce((sum, score) => sum + score, 0) / scores.length);
@@ -31,9 +32,9 @@
         else if (average <= 59) band = clampBand(band - 1);
         const windowKey = recent.map(report => report.metadata.passageId).sort().join('|');
         return { band, changed: band !== clampBand(currentBand), samples: 3, scores, average, windowKey,
-            reason: average >= 85 ? (band > clampBand(currentBand) ? `서로 다른 미학습 지문 3개의 최초 점수 평균이 ${average}점이라 난이도를 올렸습니다.` : `최근 3개 평균이 ${average}점이며 현재 최고 난이도입니다.`)
-                : average <= 59 ? (band < clampBand(currentBand) ? `서로 다른 미학습 지문 3개의 최초 점수 평균이 ${average}점이라 난이도를 낮췄습니다.` : `최근 3개 평균이 ${average}점이며 현재 기초 난이도입니다.`)
-                    : `최근 미학습 지문 3개의 최초 점수(${scores.join(', ')}점)를 바탕으로 난이도를 유지합니다.` };
+            reason: average >= 85 ? (band > clampBand(currentBand) ? `서로 다른 지문 3개의 최초 점수 평균이 ${average}점이라 난이도를 올렸습니다.` : `최근 3개 평균이 ${average}점이며 현재 최고 난이도입니다.`)
+                : average <= 59 ? (band < clampBand(currentBand) ? `서로 다른 지문 3개의 최초 점수 평균이 ${average}점이라 난이도를 낮췄습니다.` : `최근 3개 평균이 ${average}점이며 현재 기초 난이도입니다.`)
+                    : `최근 지문 3개의 최초 점수(${scores.join(', ')}점)를 바탕으로 난이도를 유지합니다.` };
     }
 
     function scoreOf(report) {
