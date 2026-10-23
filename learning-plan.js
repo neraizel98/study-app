@@ -49,7 +49,9 @@
         return true;
     }
     function catalog(subject,profile){
-        if(subject==='reading')return Object.entries(root.ReadingData?.levels||{}).flatMap(([levelId,level])=>(level.units||[]).filter(unit=>!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.gradeOfUnit(unit)===root.KoreanReadingCurriculum.gradeForProfile(profile.grade)).map(unit=>({
+        const progression=root.SmartStudy?.SubjectProgression;
+        const placement=progression&&profile.userId?progression.resolve(subject,progression.profileGroup(subject,profile.grade),profile.userId):null;
+        if(subject==='reading')return Object.entries(root.ReadingData?.levels||{}).flatMap(([levelId,level])=>(level.units||[]).filter(unit=>profile.allGrades||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.gradeOfUnit(unit)===(placement||root.KoreanReadingCurriculum.gradeForProfile(profile.grade))).map(unit=>({
             label:`${level.title} · ${unit.title}`,context:{levelId,unitId:unit.id,title:unit.title}
         })));
         if(subject==='korean_vocab'){
@@ -59,10 +61,10 @@
         }
         if(subject==='english')return Object.keys(root.vocabData||{}).map((unitId,index)=>({label:`영어 단어 레벨 ${index+1}`,context:{unitId,title:`영어 단어 레벨 ${index+1}`}}));
         if(subject==='english_reading'){
-            const id=root.EnglishCurriculum?.gradeForProfile(profile.grade)||'grade6';
+            const id=placement||root.EnglishCurriculum?.gradeForProfile(profile.grade)||'grade6';
             const level=(root.EnglishReadingData?.levels||[]).find(item=>item.id===id&&item.available!==false);
             if(!level)return [];
-            return (root.EnglishReadingData?.units||[]).filter(unit=>(unit.gradeId||'grade6')===id).map(unit=>({label:`${level.title} · ${unit.title}`,context:{levelId:id,unitId:unit.id,title:unit.title}}));
+            return (root.EnglishReadingData?.units||[]).filter(unit=>profile.allGrades||(unit.gradeId||'grade6')===id).map(unit=>({label:`${(root.EnglishReadingData.levels||[]).find(l=>l.id===(unit.gradeId||'grade6'))?.title||level.title} · ${unit.title}`,context:{levelId:unit.gradeId||'grade6',unitId:unit.id,title:unit.title}}));
         }
         const levelId=profile.grade===6?'elementary-6':profile.grade===7?'middle-1':null,data=levelId&&root.MathData?.[levelId];
         if(!data)return [];
@@ -71,7 +73,7 @@
     function target(subject,context){
         if(subject==='math'&&context?.levelId&&context.semesterId&&context.unitId)
             return `math.html?level=${encodeURIComponent(context.levelId)}&semester=${encodeURIComponent(context.semesterId)}&unit=${encodeURIComponent(context.unitId)}`;
-        if(subject==='reading'&&context?.unitId)return `reading.html?unit=${encodeURIComponent(context.unitId)}`;
+        if(subject==='reading'&&context?.unitId)return `reading.html?level=${encodeURIComponent(context.levelId||'level1')}&unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='english'&&context?.unitId)return `english.html?level=${encodeURIComponent(context.unitId)}`;
         if(subject==='korean_vocab'&&context?.levelId&&context?.unitId)return `korean_vocab.html?level=${encodeURIComponent(context.levelId)}&unit=${encodeURIComponent(context.unitId)}`;
         if(subject==='english_reading'&&context?.levelId&&context?.unitId)return `english_reading.html?level=${encodeURIComponent(context.levelId)}&unit=${encodeURIComponent(context.unitId)}`;
@@ -120,7 +122,7 @@
         const scope=settings.scopes[subject]||{mode:'auto'};
         let context=null,reasonText='';
         if(scope.mode==='assigned'){
-            const choice=catalog(subject,profile).find(item=>contextKey(subject,item.context)===contextKey(subject,scope));
+            const choice=catalog(subject,{...profile,allGrades:true}).find(item=>contextKey(subject,item.context)===contextKey(subject,scope));
             context=choice?.context||null;
             reasonText=context?'보호자가 지정한 필수 단원이에요. 같은 단원의 퀴즈를 제출하면 완료됩니다.':'보호자가 지정한 단원을 현재 자료에서 찾을 수 없습니다.';
         }else ({context,reasonText}=recommend(user,profile,subject));
@@ -140,7 +142,7 @@
         },
         getProfile(user){
             const settings=this.getSettings(user);
-            return {grade:settings.grade,semester:settings.semester};
+            return {grade:settings.grade,semester:settings.semester,userId:user};
         },
         getPlan(user,date=today()){
             const plan=local.getPreference(key(user,date),null);

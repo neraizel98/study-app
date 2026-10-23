@@ -38,7 +38,8 @@
     const stage = () => EnglishGrammarData[stageId];
     const unit = () => stage().units.find(item => item.id === unitId) || stage().units[0];
     const currentGroup = () => groups.find(group => group.grammarStages.includes(stageId));
-    const levelLabel = () => currentGroup().label.split(' · ')[0];
+    const levelLabel = () => window.SmartStudy?.SubjectProgression?.label?.('grammar', stageId) || ({level1:'레벨 1 · 초등',level2:'레벨 2 · 중학',level3:'레벨 3 · 고교'})[currentGroup().id];
+    const resolveGroup = group => window.SmartStudy?.SubjectProgression?.resolve?.('grammar', group.id, window.UserSession?.getActiveUser?.() || window.SmartStudy?.LocalRepository?.getActiveUser?.() || '') || group.grammarStages.find(id => EnglishGrammarData[id]);
     const context = () => `grammar:${stageId}`;
     const aliases = () => legacyLabels[stageId]
         ? [`영문법 ${legacyLabels[stageId]}`, `영어 문법 ${legacyLabels[stageId]}`, stage().title]
@@ -54,18 +55,16 @@
 
     function renderSelectors() {
         $('stageTabs').innerHTML = groups.map(group =>
-            `<button class="level-btn ${group.id === currentGroup().id ? 'active' : ''}" data-group="${group.id}" aria-pressed="${group.id === currentGroup().id}">${group.label}</button>`
+            `<button class="level-btn ${group.id === currentGroup().id ? 'active' : ''}" data-group="${group.id}" aria-pressed="${group.id === currentGroup().id}">${({level1:'레벨 1 · 초등',level2:'레벨 2 · 중학',level3:'레벨 3 · 고교'})[group.id]}</button>`
         ).join('');
-        $('gradeTabs').innerHTML = currentGroup().grammarStages.filter(id => EnglishGrammarData[id]).map(id =>
-            `<button class="lesson-chip ${id === stageId ? 'active' : ''}" data-stage="${id}" aria-pressed="${id === stageId}">${window.EnglishCurriculum?.grammarGrade(id)?.label || EnglishGrammarData[id].title.replace(' 문법', '')}</button>`
-        ).join('');
+        if ($('gradeTabs')) { $('gradeTabs').hidden = true; $('gradeTabs').innerHTML = ''; }
         $('unitTabs').innerHTML = stage().units.map(item =>
             `<button class="unit-chip ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`
         ).join('');
         $('lessonTabs').innerHTML = unit().lessons.map((item, index) =>
             `<button class="lesson-chip ${index === lessonIndex ? 'active' : ''}" data-lesson="${index}">${index + 1}. ${item.title}</button>`
         ).join('');
-        $('courseSubtitle').textContent = `${levelLabel()} · ${stage().title} · ${unit().goal}`;
+        $('courseSubtitle').textContent = `${levelLabel()} · ${unit().goal}`;
     }
 
     function renderStudy() {
@@ -271,7 +270,7 @@
         const activeQuizSeconds = quizActiveTimer?.getSeconds() || 0;
         if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
-            saveQuizResult(sessionId, 'grammar', `${stage().title} · ${unit().title}`, questions.length, initialScore, initialScore, activeQuizSeconds, true, {
+            saveQuizResult(sessionId, 'grammar', `${levelLabel()} · ${unit().title}`, questions.length, initialScore, initialScore, activeQuizSeconds, true, {
                 category: 'grammar',
                 review: requestedReview,
                 stageId,
@@ -285,7 +284,7 @@
         $('resultEmoji').textContent = score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚';
         $('resultTitle').textContent = score >= 90 ? '문법 마스터!' : score >= 70 ? '잘했어요!' : '조금 더 연습해요!';
         $('resultScore').textContent = `${initialScore} / ${questions.length}점`;
-        $('resultMessage').textContent = `${stage().title} · ${unit().title} 퀴즈를 완료했습니다.`;
+        $('resultMessage').textContent = `${levelLabel()} · ${unit().title} 퀴즈를 완료했습니다.`;
         $('resultModal').classList.remove('hidden');
     }
 
@@ -294,12 +293,7 @@
             const groupButton = e.target.closest('[data-group]'); if (!groupButton) return;
             const group = groups.find(item => item.id === groupButton.dataset.group);
             if (!group || group.id === currentGroup().id) return;
-            stageId = group.grammarStages.find(id => EnglishGrammarData[id]); unitId = stage().units[0].id; lessonIndex = 0;
-            renderSelectors(); renderStudy();
-        });
-        $('gradeTabs').addEventListener('click', e => {
-            const button = e.target.closest('[data-stage]'); if (!button) return;
-            stageId = button.dataset.stage; unitId = stage().units[0].id; lessonIndex = 0;
+            stageId = resolveGroup(group); unitId = stage().units[0].id; lessonIndex = 0;
             renderSelectors(); renderStudy();
         });
         $('unitTabs').addEventListener('click', e => {
@@ -361,6 +355,13 @@
 
     document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
+        const requestedUnit = allowedStages.flatMap(id => EnglishGrammarData[id].units.map(item => ({ stageId: id, unit: item }))).find(item => item.unit.id === params.get('unit'));
+        if (requestedUnit) stageId = requestedUnit.stageId;
+        else if (!params.has('stage') && !params.has('unit')) {
+            const user = window.UserSession?.getActiveUser?.() || window.SmartStudy?.LocalRepository?.getActiveUser?.() || '';
+            const grade = Number(window.SmartStudy?.LearningPlan?.getProfile?.(user)?.grade || 6);
+            stageId = resolveGroup(groups.find(item => item.id === (grade >= 10 ? 'level3' : grade >= 7 ? 'level2' : 'level1')));
+        }
         if (!stage().units.some(item => item.id === unitId)) unitId = stage().units[0].id;
         lessonIndex = Math.min(lessonIndex, unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();
@@ -368,7 +369,7 @@
             timerController = StudyTimer.initBar('grammar', $('startQuiz'), {
                 getContext: context,
                 getAliases: aliases,
-                getLabel: () => `영문법 · ${levelLabel()} (${stage().title})`,
+                getLabel: () => `영문법 · ${levelLabel()}`,
                 isLearningActive: () => mode === 'study' && !$('studyPanel').hidden,
                 isLockBypassed: () => requestedReview
             });

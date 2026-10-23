@@ -10,6 +10,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:
  const browser=await chromium.launch({channel:'chrome',headless:true}),page=await browser.newPage({viewport:{width:390,height:844}}),base=`http://127.0.0.1:${server.address().port}`,errors=[],user='영어학년브라우저검증';
  page.on('pageerror',error=>errors.push(error.stack||error.message));page.on('dialog',async d=>d.type()==='beforeunload'?d.accept():d.dismiss());
  try{
+  await page.clock.install({time:new Date('2026-10-23T08:00:00Z')});
   await page.route('**/firebase-sync.js*',r=>r.fulfill({contentType:'application/javascript',body:''}));
   await page.route('**/version-check.js*',r=>r.fulfill({contentType:'application/javascript',body:''}));
   await page.route('**/firestore-repository.js*',r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('firestore-repository.js','utf8')+';SmartStudy.FirestoreRepository.getLearnerPlanSettings=async()=>({budgetMinutes:45,grade:6,semester:2});SmartStudy.MockPublication.list=async()=>[];'}));

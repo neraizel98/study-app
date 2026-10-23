@@ -22,6 +22,12 @@
     let questionIndex = 0, score = 0, answered = false, attempts = [], sessionId = '', startTime = 0, quizActiveTimer = null;
 
     const unit = () => units().find(item => item.id === unitId) || units()[0];
+    const learnerLabel = () => window.SmartStudy?.SubjectProgression?.label?.('reading', grade) || (levelId === 'level2' ? '레벨 2 · 고교' : '레벨 1 · 중학');
+    const learnerTitle = value => String(value || '').replace(/^(?:중[123]|고[123])\s*[·.:-]\s*/, '');
+    const resolveGrade = group => {
+        const resolved = Number(window.SmartStudy?.SubjectProgression?.resolve?.('reading', group, userId()));
+        return (group === 'level2' ? [10, 11, 12] : [7, 8, 9]).includes(resolved) ? resolved : group === 'level2' ? 10 : 7;
+    };
     const gradeLabel = () => `${grade < 10 ? '중' : '고'}${grade < 10 ? grade - 6 : grade - 9}`;
     const context = () => `reading:${levelId}:grade${grade}`;
     const aliases = () => grade === 7 ? ['국어 독해력 Lv. 1', '중1 독해', level().title] : [];
@@ -33,17 +39,17 @@
     }
 
     function renderSelectors() {
-        $('heroLevel').textContent = `${level().title} · ${gradeLabel()} · 근거를 찾으며 정확하게 읽기`;
-        $('levelTabs').innerHTML = [['level1', 'Lv. 1 · 중1~3'], ['level2', 'Lv. 2 · 고1~3']].map(([id, label]) => `<button class="level-btn ${id === levelId ? 'active' : ''}" data-level="${id}" aria-pressed="${id === levelId}">${label}</button>`).join('');
-        $('gradeTabs').innerHTML = (levelId === 'level1' ? [7, 8, 9] : [10, 11, 12]).map(value => `<button class="grade-btn ${value === grade ? 'active' : ''}" data-grade="${value}" aria-pressed="${value === grade}">${value < 10 ? '중' + (value - 6) : '고' + (value - 9)}</button>`).join('');
-        $('unitTabs').innerHTML = units().map(item => `<button class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`).join('');
-        $('lessonTabs').innerHTML = unit().lessons.map((item, index) => `<button class="lesson-btn ${index === lessonIndex ? 'active' : ''}" data-lesson="${index}">${index + 1}. ${item.title}</button>`).join('');
+        $('heroLevel').textContent = `${learnerLabel()} · 근거를 찾으며 정확하게 읽기`;
+        $('levelTabs').innerHTML = [['level1', '레벨 1 · 중학'], ['level2', '레벨 2 · 고교']].map(([id, label]) => `<button class="level-btn ${id === levelId ? 'active' : ''}" data-level="${id}" aria-pressed="${id === levelId}">${label}</button>`).join('');
+        if ($('gradeTabs')) { $('gradeTabs').innerHTML = ''; $('gradeTabs').hidden = true; }
+        $('unitTabs').innerHTML = units().map(item => `<button class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${escapeHTML(learnerTitle(item.title))}</button>`).join('');
+        $('lessonTabs').innerHTML = unit().lessons.map((item, index) => `<button class="lesson-btn ${index === lessonIndex ? 'active' : ''}" data-lesson="${index}">${index + 1}. ${escapeHTML(learnerTitle(item.title))}</button>`).join('');
     }
 
     function renderStudy() {
         mode = 'study';
         const item = unit().lessons[lessonIndex] || unit().lessons[0];
-        $('lessonTitle').textContent = item.title;
+        $('lessonTitle').textContent = learnerTitle(item.title);
         $('principle').textContent = item.principle;
         $('rules').innerHTML = item.rules.map((rule, index) => `<li><strong>${index + 1}.</strong> ${rule}</li>`).join('');
         const examples = item.examples || [{ label: '적용 예문', text: item.example, analysis: item.tip }];
@@ -181,7 +187,7 @@
         quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         $('studyPanel').hidden = true; $('quizPanel').hidden = false;
         $('studyModeBtn').classList.remove('active'); $('quizModeBtn').classList.add('active');
-        $('passageMeta').textContent = `${level().title} · ${gradeLabel()} · ${passage.category} · ${band.name === 'foundation' ? '기초' : band.name === 'challenge' ? '심화' : '표준'}${practiceReexposure ? ' · 복습 퀴즈' : ''}`;
+        $('passageMeta').textContent = `${learnerLabel()} · ${passage.category} · ${band.name === 'foundation' ? '기초' : band.name === 'challenge' ? '심화' : '표준'}${practiceReexposure ? ' · 복습 퀴즈' : ''}`;
         $('passageTitle').textContent = passage.title;
         $('passage').innerHTML = passage.lines.map((line, index) => `<p><span class="line-no">${index + 1}</span>${line}</p>`).join('');
         $('sourceNote').textContent = passage.sourceNote;
@@ -236,7 +242,7 @@
     function finish() {
         const pct = Math.round(score / questions.length * 100);
         if (!reviewMode && !practiceReexposure && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
-        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${gradeLabel()} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
+        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${learnerLabel()} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
             category: 'reading', review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure, levelId, grade, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
             unitId: passage.unitId, skills: attempts.map(item => item.skill), attempts
         });
@@ -251,8 +257,7 @@
             grade = value; levelId = curriculum.levelForGrade(grade); unitId = units()[0].id; lessonIndex = 0;
             renderSelectors(); renderStudy();
         };
-        $('levelTabs').addEventListener('click', event => { const button = event.target.closest('[data-level]'); if (button) switchGrade(button.dataset.level === 'level2' ? 10 : 7); });
-        $('gradeTabs').addEventListener('click', event => { const button = event.target.closest('[data-grade]'); if (button) switchGrade(Number(button.dataset.grade)); });
+        $('levelTabs').addEventListener('click', event => { const button = event.target.closest('[data-level]'); if (button) switchGrade(resolveGrade(button.dataset.level)); });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button) return; unitId = button.dataset.unit; lessonIndex = 0; renderSelectors(); renderStudy(); });
         $('lessonTabs').addEventListener('click', event => { const button = event.target.closest('[data-lesson]'); if (!button) return; lessonIndex = Number(button.dataset.lesson); renderSelectors(); renderStudy(); });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
@@ -272,21 +277,23 @@
         $('nextQuestion').addEventListener('click', () => { if (questionIndex < questions.length - 1) { questionIndex++; renderQuestion(); } else finish(); });
         $('retryQuiz').addEventListener('click', () => { $('resultModal').hidden = true; startQuiz(); });
         $('resultStudy').addEventListener('click', () => { $('resultModal').hidden = true; renderStudy(); });
-        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: `${level().title} · ${gradeLabel()}`, startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
+        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: learnerLabel(), startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
-        if (!params.has('grade') && !params.has('unit') && !params.has('level')) {
+        if (!params.has('grade') && !params.has('unit')) {
             const profile = window.SmartStudy?.LearningPlan?.getProfile?.(userId())
                 || SmartStudy.LocalRepository.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(userId())}`, {});
-            grade = curriculum.gradeForProfile(profile?.grade); levelId = curriculum.levelForGrade(grade); unitId = units()[0].id;
+            const defaultGroup = params.get('level') === 'level2' ? 'level2' : params.get('level') === 'level1' ? 'level1' : curriculum.levelForGrade(curriculum.gradeForProfile(profile?.grade));
+            grade = window.SmartStudy?.SubjectProgression ? resolveGrade(defaultGroup) : params.has('level') ? (defaultGroup === 'level2' ? 10 : 7) : curriculum.gradeForProfile(profile?.grade);
+            levelId = curriculum.levelForGrade(grade); unitId = units()[0].id;
         }
         lessonIndex = Math.min(Math.floor(Number.isFinite(lessonIndex) ? lessonIndex : 0), unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();
         if (typeof StudyTimer !== 'undefined') {
             timerController = StudyTimer.initBar('reading', $('startQuiz'), {
-                getContext: context, getAliases: aliases, getLabel: () => `${level().title} · ${gradeLabel()}`,
+                getContext: context, getAliases: aliases, getLabel: learnerLabel,
                 isLearningActive: () => mode === 'study' && !$('studyPanel').hidden,
                 isLockBypassed: () => reviewMode
             });

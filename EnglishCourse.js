@@ -5,7 +5,10 @@
         const valid=(reports||[]).filter(r=>!r.metadata?.review&&!r.metadata?.assessment&&Number(r.totalQuestions)>0&&(r.metadata?.initialAttempts||r.metadata?.attempts||[]).length>=Number(r.totalQuestions));
         const passed=r=>(r.subject!=='english_reading'||Number(r.totalQuestions)>=5)&&Number(r.initialScore)/Number(r.totalQuestions)>=.8&&!r.metadata?.hintUsed;
         const latest=(subject,match)=>valid.filter(r=>r.subject===subject&&match(r)).sort((a,b)=>Number(b.date)-Number(a.date))[0];
-        const gradeId=options.levelId||root.EnglishCurriculum?.gradeForProfile(options.grade||6)||'grade6';
+        const progression=root.SmartStudy?.SubjectProgression;
+        const readingGroup=progression?.profileGroup('english_reading',options.grade||6);
+        const gradeId=options.levelId||(progression?progression.placement('english_reading',readingGroup,reports,options.userId).internal:null)||root.EnglishCurriculum?.gradeForProfile(options.grade||6)||'grade6';
+        const grammarStage=progression?progression.placement('grammar',progression.profileGroup('grammar',options.grade||6),reports,options.userId).internal:root.EnglishCurriculum?.grammarForProfile(options.grade||6);
         const items=(data.units||[]).filter(u=>(u.gradeId||'grade6')===gradeId).flatMap(unit=>unit.passages.map(passage=>({unit,passage}))).sort((a,b)=>a.passage.band-b.passage.band);
         const readingReport=p=>latest('english_reading',r=>r.metadata?.passageId===p.id);
         const completed=items.filter(x=>passed(readingReport(x.passage)||{}));
@@ -31,14 +34,18 @@
         const {passage,unit}=item;
         const linked=passage.vocabulary.map(word=>({ ...word,level:Object.keys(vocabulary).find(level=>vocabulary[level].some(v=>v.word.toLowerCase()===word.word.toLowerCase()))}));
         const levels=[...new Set(linked.map(w=>w.level).filter(Boolean))];
-        const grammar=passage.grammarRefs||[];
+        const grammar=(passage.grammarRefs||[]).filter(ref=>!progression||ref.stageId===grammarStage);
+        if(progression&&!grammar.length&&root.EnglishGrammarData?.[grammarStage]?.units?.length){
+            const unit=root.EnglishGrammarData[grammarStage].units.find(unit=>!passed(latest('grammar',r=>r.metadata?.stageId===grammarStage&&r.metadata?.unitId===unit.id)||{}))||root.EnglishGrammarData[grammarStage].units[0];
+            grammar.push({stageId:grammarStage,unitId:unit.id,lessonIndex:0});
+        }
         const fresh=r=>r&&passed(r)&&now-Number(r.date)<7*day;
         const wordChecks=levels.map(level=>({level,report:latest('english',r=>r.metadata?.unitId===level)}));
         const grammarChecks=grammar.map(ref=>({...ref,report:latest('grammar',r=>r.metadata?.stageId===ref.stageId&&r.metadata?.unitId===ref.unitId)}));
         const due=[];
         for(const subject of ['english','grammar','english_reading'])for(const entry of wrong?.[subject]||[]){
             if(subject==='english_reading'&&(entry.levelId||'grade6')!==gradeId)continue;
-            if(subject==='grammar'&&root.EnglishCurriculum&&entry.stageId!==root.EnglishCurriculum.grammarForProfile(options.grade||6))continue;
+            if(subject==='grammar'&&root.EnglishCurriculum&&entry.stageId!==grammarStage)continue;
             if(entry.deleted||entry.invalid||entry.quarantined||Number(entry.dueAt||0)>now)continue;
             if(entry.isMastered&&!entry.dueAt)continue;
             due.push({subject,entry});

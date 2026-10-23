@@ -5,6 +5,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:
  await new Promise(r=>server.listen(0,'127.0.0.1',r));const browser=await chromium.launch({channel:'chrome',headless:true}),page=await browser.newPage({viewport:{width:390,height:844}}),base=`http://127.0.0.1:${server.address().port}`,errors=[];
  page.on('pageerror',e=>errors.push(e.message));page.on('dialog',async d=>{console.log('Dialog:',d.type(),d.message());if(d.type()==='beforeunload')await d.accept();else await d.dismiss();});
  try{
+  await page.clock.install({time:new Date('2026-10-23T08:00:00Z')});
   await page.route('**/firebase-sync.js*',r=>r.fulfill({contentType:'application/javascript',body:''}));
   await page.route('**/version-check.js*',r=>r.fulfill({contentType:'application/javascript',body:''}));
   await page.route('**/firestore-repository.js*',r=>r.fulfill({contentType:'application/javascript',body:fs.readFileSync('firestore-repository.js','utf8')+';SmartStudy.FirestoreRepository.getLearnerPlanSettings=async()=>({budgetMinutes:45,grade:6,semester:2});SmartStudy.MockPublication.list=async()=>[];'}));

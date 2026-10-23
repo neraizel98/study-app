@@ -33,14 +33,23 @@
         }
         return [...unique.values()];
     }
-    function catalog(subject,profile){
+    function rawCatalog(subject,profile){
         if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${unitId.replace('level','')}급`,context:{unitId,title:`한자 ${unitId.replace('level','')}급`}}));
-        if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>id===(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary')).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
+        if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.allGrades||id===(root.SmartStudy?.SubjectProgression&&profile.userId?root.SmartStudy.SubjectProgression.resolve('grammar',root.SmartStudy.SubjectProgression.profileGroup('grammar',profile.grade),profile.userId):(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary'))).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
             const grades={'초6':6,'중1':7,'중2':8,'중3':9,'고1':10,'고2':11,'고3':12};
             return (root.MATH_FORMULAS||[]).filter(f=>!f.enrichment&&grades[f.level]<=profile.grade).map(f=>({label:`${f.level} · ${f.number}. ${f.title}`,context:{levelId:'formula',unitId:`formula-${f.number}`,title:`${f.number}. ${f.title}`}}));
         }
         return previousCatalog(subject,profile);
+    }
+    function catalog(subject,profile){
+        const rows=rawCatalog(subject,profile),progression=root.SmartStudy?.SubjectProgression;
+        if(!progression||!profile.userId||profile.allGrades||!['reading','grammar','english_reading'].includes(subject))return rows;
+        return rows.map(row=>{
+            const internal=subject==='reading'?root.KoreanReadingCurriculum?.gradeOfUnit(row.context.unitId):row.context.levelId;
+            const title=String(row.context.title||'').replace(/^(?:중|고)[1-3](?:학년)?\s*[·:.-]?\s*/, '');
+            return {...row,label:`${progression.label(subject,internal)} · ${title}`,context:{...row.context,title}};
+        });
     }
     function target(subject,context){
         if(subject==='math_formula')return `math_formula.html?formula=${encodeURIComponent((context?.unitId||'formula-1').replace('formula-',''))}&mode=study`;
@@ -134,15 +143,17 @@
             const submitted=evidence(p.userId).some(e=>day(e.at)===p.date&&p.tasks.some(t=>t.subject===e.subject&&plan.contextKey(t.subject,t.context)===plan.contextKey(e.subject,e.context)));
             if(submitted)return p;
             const before=p.allocationPolicyVersion;budgetPolicy.migrate(p);
-            if(p.recommendationVersion==='20261023-progression'||p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
+            const currentPlacement=root.SmartStudy?.SubjectProgression?JSON.stringify(['reading','grammar','english_reading'].map(subject=>root.SmartStudy.SubjectProgression.resolve(subject,root.SmartStudy.SubjectProgression.profileGroup(subject,p.profile.grade),p.userId))):null;
+            if((p.recommendationVersion==='20261024-internal-levels'&&p.placementSignature===currentPlacement)||p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
         }
         if(p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return p;
+        p.profile={...p.profile,userId:p.userId};
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
-        const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId),Date.now(),{grade:p.profile.grade});
+        const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId),Date.now(),{grade:p.profile.grade,userId:p.userId});
         p.tasks=ids.map((subject,index)=>{
             const existing=original.find(t=>t.subject===subject),scope=settings.scopes?.[subject];
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
-            const assignedChoice=scope?.mode==='assigned'?catalog(subject,p.profile).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
+            const assignedChoice=scope?.mode==='assigned'?catalog(subject,{...p.profile,allGrades:true}).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
             let rec=recommend(subject,p.profile,entries,p.userId);
             if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
@@ -156,7 +167,7 @@
             return {...(existing||{}),id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage,
                 reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
         });
-        p.curriculumVersion=1;p.recommendationVersion='20261023-progression';p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
+        p.curriculumVersion=1;p.recommendationVersion='20261024-internal-levels';p.placementSignature=root.SmartStudy?.SubjectProgression?JSON.stringify(['reading','grammar','english_reading'].map(subject=>root.SmartStudy.SubjectProgression.resolve(subject,root.SmartStudy.SubjectProgression.profileGroup(subject,p.profile.grade),p.userId))):null;p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);
     }
     const oldGet=plan.getPlan.bind(plan), oldCreate=plan.createPlan.bind(plan), oldRefresh=plan.refreshEvidence.bind(plan);

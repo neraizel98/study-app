@@ -48,14 +48,14 @@ assert.match(Policy.recommendation(passages, {}, []).reason, /데이터가 아�
 class Element {
     constructor() { this.hidden = false; this.disabled = false; this.children = []; this.dataset = {}; this.classList = { add() {}, remove() {} }; }
     setAttribute(name, value) { this[name] = value; }
-    addEventListener() {} closest() { return null; }
+    addEventListener(name, callback) { (this.listeners ||= {})[name] = callback; } closest() { return null; }
     set innerHTML(value) { this._innerHTML = value; this.children = []; }
     get innerHTML() { return this._innerHTML || ''; }
     set textContent(value) { this._textContent = String(value); }
     get textContent() { return this._textContent || ''; }
 }
 function makeBrowser(sharedPreferences, sharedReports, options = {}) {
-    const ids = ['levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','peekStatus','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
+    const ids = ['gradeTabs','levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','peekStatus','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
     const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
     const documentListeners = {};
     const document = { getElementById: id => elements[id], querySelector: () => new Element(), addEventListener: (name, callback) => { documentListeners[name] = callback; } };
@@ -63,7 +63,7 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
         ready: Promise.resolve(), getActiveUser: () => 'tester', getPreference: (key, fallback) => sharedPreferences.has(key) ? structuredClone(sharedPreferences.get(key)) : fallback,
         setPreference: (key, value) => sharedPreferences.set(key, structuredClone(value)), listReports: () => sharedReports
     };
-    const window = { QuizExposure: options.freshCount==null?undefined:{fresh:(subject,questions)=>questions.slice(0,options.freshCount)}, document, location: { search: options.search || '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository },
+    const window = { QuizExposure: options.freshCount==null?undefined:{fresh:(subject,questions)=>questions.slice(0,options.freshCount)}, document, location: { search: options.search ?? '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository, SubjectProgression: options.progression, LearningPlan: { getProfile: () => ({ grade: options.profileGrade || 6 }) } },
         UserSession: { getActiveUser: () => 'tester' }, EnglishReadingPolicy: Policy, alert() {} };
     window.window = window;
     const sandbox = { window, document, location: window.location, history: window.history, URLSearchParams, console, Date, Math, structuredClone,
@@ -80,11 +80,26 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     vm.createContext(sandbox);
     vm.runInContext(fs.readFileSync('EnglishGrammarData.js', 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync('EnglishReadingData.js', 'utf8'), sandbox);
+    if (options.secondary) vm.runInContext(fs.readFileSync('EnglishReadingSecondary.js', 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync('EnglishReadingApp.js', 'utf8'), sandbox);
     return { window, elements, init: documentListeners.DOMContentLoaded };
 }
 
 (async () => {
+    const progression = { resolve: (subject, group) => ({ group1: 'grade6', group2: 'middle3', group3: 'high2' })[group], label: () => '레벨 2 · 중학' };
+    const automatic = makeBrowser(new Map(), [], { search: '', secondary: true, profileGrade: 8, progression });
+    await automatic.init();
+    assert.equal(automatic.window.EnglishReadingApp.getLevelId(), 'middle3', 'score resolver selects hidden internal stage on ordinary entry');
+    assert.equal(automatic.elements.gradeTabs.hidden, true);
+    assert.equal(automatic.elements.gradeTabs.innerHTML, '');
+    assert.doesNotMatch(automatic.elements.levelTabs.innerHTML, /중[123]|고[123]/);
+    assert.doesNotMatch(automatic.elements.passageMeta.textContent, /중[123]|고[123]/);
+    automatic.elements.levelTabs.listeners.click({ target: { closest: () => ({ dataset: { group: 'group3' } }) } });
+    assert.equal(automatic.window.EnglishReadingApp.getLevelId(), 'high2', 'group selection uses resolver rather than first stage');
+    const explicit = makeBrowser(new Map(), [], { search: '?level=middle1&unit=erm1-1', secondary: true, profileGrade: 8, progression });
+    await explicit.init();
+    assert.equal(explicit.window.EnglishReadingApp.getLevelId(), 'middle1', 'explicit saved task stage stays unchanged');
+
     const nearlyUsed = makeBrowser(new Map(), [], {freshCount:1}); await nearlyUsed.init();
     nearlyUsed.window.EnglishReadingApp.startQuiz('practice');
     assert.equal(nearlyUsed.window.EnglishReadingApp.getSession().questions.length,5,'one fresh question cannot become a one-question regular quiz');

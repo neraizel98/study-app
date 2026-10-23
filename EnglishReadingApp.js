@@ -8,6 +8,8 @@
     let levelId = data().levels.some(item => item.id === params.get('level') && item.available) ? params.get('level') : 'grade6';
     const level = () => data().levels.find(item => item.id === levelId) || data().levels[0];
     const groupOf = id => id.startsWith('middle') ? 'group2' : id.startsWith('high') ? 'group3' : 'group1';
+    const learnerLabel = () => window.SmartStudy?.SubjectProgression?.label?.(SUBJECT, levelId) || ({ group1: '레벨 1 · 초등', group2: '레벨 2 · 중학', group3: '레벨 3 · 고교' })[groupOf(levelId)];
+    const resolveGroup = group => window.SmartStudy?.SubjectProgression?.resolve?.(SUBJECT, group, userId()) || ({ group1: 'grade6', group2: 'middle1', group3: 'high1' })[group];
     const units = () => data().units.filter(item => gradeOf(item) === levelId);
     let unitId = params.get('unit') || 'er1';
     let passageIndex = 0;
@@ -83,10 +85,10 @@
         history.replaceState(null, '', `?${query}`);
     }
     function renderSelectors() {
-        $('levelTabs').innerHTML = [['group1','레벨 1 · 초6'],['group2','레벨 2 · 중1~3'],['group3','레벨 3 · 고1~3']].map(([id,title]) => `<button data-group="${id}" aria-pressed="${groupOf(levelId) === id}" class="${groupOf(levelId) === id ? 'active' : ''}">${title}</button>`).join('');
+        $('levelTabs').innerHTML = [['group1','레벨 1 · 초등'],['group2','레벨 2 · 중학'],['group3','레벨 3 · 고교']].map(([id,title]) => `<button data-group="${id}" aria-pressed="${groupOf(levelId) === id}" class="${groupOf(levelId) === id ? 'active' : ''}">${title}</button>`).join('');
         if ($('gradeTabs')) {
-            $('gradeTabs').hidden = levelId === 'grade6';
-            $('gradeTabs').innerHTML = data().levels.filter(item => groupOf(item.id) === groupOf(levelId)).map(item => `<button data-grade="${item.id}" aria-pressed="${item.id === levelId}" class="${item.id === levelId ? 'active' : ''}">${escapeHTML(item.title)}</button>`).join('');
+            $('gradeTabs').hidden = true;
+            $('gradeTabs').innerHTML = '';
         }
         $('unitTabs').innerHTML = units().map(item => `<button data-unit="${escapeHTML(item.id)}" class="${item.id === unitId ? 'active' : ''}">${escapeHTML(item.title)}</button>`).join('');
         if ($('passageSelect')) $('passageSelect').innerHTML = passages().map((item,index) => `<option value="${item.id}" ${index === passageIndex ? 'selected' : ''}>${index + 1}. ${escapeHTML(item.title)} · ${['기초','표준','도전'][item.band]}</option>`).join('');
@@ -113,7 +115,7 @@
         mode = 'study'; session = null; clearSavedSession(); quizTimer?.destroy?.(); quizTimer = null;
         renderSelectors();
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
-        $('passageMeta').textContent = `${level().title} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
+        $('passageMeta').textContent = `${learnerLabel()} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
         $('passageTitle').textContent = item.title; $('studyPassage').innerHTML = renderPassageLines(item, true);
         $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls"><b class="reading-word">${escapeHTML(entry.word)}</b>${Object.values(window.vocabData || {}).some(words => words.some(word => word.word.toLowerCase() === entry.word.toLowerCase())) ? `<a class="word-book-link" href="english.html?word=${encodeURIComponent(entry.word)}" aria-label="${escapeHTML(entry.word)} 단어장에서 보기">단어장 ›</a>` : ''}<button type="button" class="meaning-btn" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" class="audio-icon" data-pronounce="${index}" aria-pressed="false" title="발음 듣기 · 다시 누르면 정지" aria-label="${escapeHTML(entry.word)} 발음 듣기">${soundIcon}</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
         $('grammarNotes').innerHTML = item.grammarNotes.map(note => `<p><b>${escapeHTML(note.title)}</b><br>${escapeHTML(note.text)}</p>`).join('');
@@ -252,7 +254,7 @@
         const seconds = quizTimerBase + (quizTimer?.getSeconds?.() || 0); session.activeSeconds = seconds;
         const total = session.questions.length;
         if (session.round === 1 && !session.review && typeof StudyTimer !== 'undefined') StudyTimer.recordResult(SUBJECT, context(), session.initialScore, total, session.sessionId);
-        if (typeof saveQuizResult === 'function') saveQuizResult(session.sessionId, SUBJECT, `${level().title} · ${quizPassage().title}`, total, session.finalScore, session.initialScore, seconds, true, {
+        if (typeof saveQuizResult === 'function') saveQuizResult(session.sessionId, SUBJECT, `${learnerLabel()} · ${quizPassage().title}`, total, session.finalScore, session.initialScore, seconds, true, {
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
             band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
             hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts,
@@ -366,8 +368,7 @@
             const entry = passage().vocabulary[Number(soundButton.dataset.pronounce)];
             if (entry) playSpeech(entry.word, soundButton);
         });
-        $('levelTabs').addEventListener('click', event => { const button = event.target.closest('[data-group]'); if (button) switchGrade(({group1:'grade6',group2:'middle1',group3:'high1'})[button.dataset.group]); });
-        $('gradeTabs')?.addEventListener('click', event => { const button = event.target.closest('[data-grade]'); if (button) switchGrade(button.dataset.grade); });
+        $('levelTabs').addEventListener('click', event => { const button = event.target.closest('[data-group]'); if (button) switchGrade(resolveGroup(button.dataset.group)); });
         $('passageSelect')?.addEventListener('change', event => { if (selectPassageById(event.target.value)) renderStudy(); });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button || !units().some(item => item.id === button.dataset.unit)) return; unitId = button.dataset.unit; passageIndex = 0; renderSelectors(); renderStudy(); });
         $('studyPassage').addEventListener('click', event => {
@@ -386,6 +387,11 @@
     async function init() {
         await window.SmartStudy?.LocalRepository?.ready;
         if (!userId()) { location.href = 'index.html'; return; }
+        if (!params.has('level') && !params.has('unit') && !params.has('passage')) {
+            const profile = window.SmartStudy?.LearningPlan?.getProfile?.(userId()) || {};
+            const grade = Number(profile.grade || 6);
+            levelId = resolveGroup(grade >= 10 ? 'group3' : grade >= 7 ? 'group2' : 'group1');
+        }
         if (!validateContent()) { document.querySelector('main').innerHTML = '<section class="card"><h1>영어 독해 콘텐츠를 확인할 수 없습니다.</h1><p>지문과 문제 데이터를 다시 확인해 주세요. 홈으로 돌아가 다시 열 수 있습니다.</p></section>'; return; }
         const requestedUnit = data().units.find(item => item.id === params.get('unit'));
         if (requestedUnit) { levelId = gradeOf(requestedUnit); unitId = requestedUnit.id; }
@@ -393,7 +399,7 @@
         const requestedPassage = params.get('passage'); if (requestedPassage) selectPassageById(requestedPassage);
         else if (!params.has('unit')) { const candidate = getRecommendation().passageId; if (candidate) selectPassageById(candidate); }
         renderSelectors(); bind(); updateBandNotice();
-        if (typeof StudyTimer !== 'undefined') timerController = StudyTimer.initBar(SUBJECT, $('practiceQuiz'), { getContext: context, getAliases: aliases, getLabel: () => `영어 독해 · ${level().title}`, isLearningActive: () => mode === 'study' && !$('studyPanel').hidden, isLockBypassed: () => params.get('mode') === 'review' });
+        if (typeof StudyTimer !== 'undefined') timerController = StudyTimer.initBar(SUBJECT, $('practiceQuiz'), { getContext: context, getAliases: aliases, getLabel: () => `영어 독해 · ${learnerLabel()}`, isLearningActive: () => mode === 'study' && !$('studyPanel').hidden, isLockBypassed: () => params.get('mode') === 'review' });
         if (!restoreSession()) { renderStudy(); if (params.get('mode') === 'review') startReview(); }
         const checkpoint = checkpointQuiz;
         window.addEventListener('pagehide', checkpoint);

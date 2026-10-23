@@ -58,6 +58,7 @@ function fixture(query = '', options = {}) {
         WrongNote: {getAll: () => ({reading: options.wrong || []}), save: (...args) => wrongWrites.push(args)},
         saveQuizResult: (...args) => reports.push(args), alert: value => alerts.push(value)
     };
+    if (options.progression) scope.SmartStudy.SubjectProgression = {resolve: (_subject, group) => options.progression[group], label: (_subject, grade) => grade < 10 ? '레벨 1 · 중학' : '레벨 2 · 고교'};
     if (options.freshCount != null) scope.QuizExposure = {fresh: (_subject, questions) => questions.slice(-options.freshCount || questions.length).filter((_question, index) => index < options.freshCount)};
     scope.window = scope;
     vm.runInNewContext(fs.readFileSync(path.join(root, 'ReadingApp.js'), 'utf8'), scope);
@@ -74,16 +75,23 @@ function fixture(query = '', options = {}) {
     const profile = fixture('', {profileGrade: 11});
     await profile.initialize();
     assert.match(profile.scope.url, /level=level2&grade=11/);
-    assert.match(profile.element('gradeTabs').innerHTML, /data-grade="11" aria-pressed="true"/);
+    assert.equal(profile.element('gradeTabs').hidden, true);
+    assert.equal(profile.element('gradeTabs').innerHTML, '');
 
-    const app = fixture('?level=level2&grade=11&unit=kr-h2-r7&mode=quiz');
+    const adaptive = fixture('?level=level2', {progression: {level1: 9, level2: 12}});
+    await adaptive.initialize();
+    assert.match(adaptive.scope.url, /level=level2&grade=12/);
+    assert.doesNotMatch(adaptive.element('heroLevel').textContent, /고[123]|중[123]/);
+    adaptive.click('levelTabs', {level: 'level1'});
+    assert.match(adaptive.scope.url, /level=level1&grade=9/);
+
+    const app = fixture('?level=level2&grade=11&unit=kr-h2-r7&mode=quiz', {progression: {level1: 8, level2: 12}});
     await app.initialize();
     assert.equal(app.element('passageTitle').textContent, '지문 11');
     assert(app.contexts.includes('reading:level2:grade11'));
     assert(app.contexts.includes('reading:level2:kr-h2-r7'));
     assert.deepEqual([...app.preferences.keys()], ['recent_learner-a_level2_grade11']);
     app.click('levelTabs', {level: 'level1'});
-    app.click('gradeTabs', {grade: '8'});
     app.click('startQuiz');
     assert.equal(app.element('passageTitle').textContent, '지문 8');
     assert.equal(app.element('summaryStep').hidden, false);

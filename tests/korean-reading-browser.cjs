@@ -21,7 +21,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:
    const level=grade<10?'level1':'level2',unit=grade===7?'r7':`kr-${grade<10?'m'+(grade-6):'h'+(grade-9)}-r7`;
    console.log('Korean reading grade',grade);
    await page.goto(`${base}/reading.html?level=${level}&grade=${grade}&unit=${unit}&lesson=1&mode=study`);await page.waitForSelector('#startQuiz');
-   assert.equal(await page.locator('#levelTabs button').count(),2);assert.equal(await page.locator('#gradeTabs button').count(),3);assert.equal(await page.locator('#unitTabs button').count(),8);
+   assert.equal(await page.locator('#levelTabs button').count(),2);assert.equal(await page.locator('#gradeTabs button').count(),0);assert.equal(await page.locator('#unitTabs button').count(),8);
    assert.equal(new URL(page.url()).searchParams.get('unit'),unit);
    assert(await page.evaluate(()=>document.documentElement.scrollWidth<=innerWidth+1),`${grade}: mobile overflow`);
    assert((await page.locator('#studyExamples').innerText()).length>100,`${grade}: worked study examples`);
@@ -48,11 +48,11 @@ const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:
   }
   await page.goto(base+'/reading.html?level=level1&unit=r7&lesson=1&mode=study');await page.waitForSelector('#lessonTitle');
   assert.equal(new URL(page.url()).searchParams.get('grade'),'7','legacy r7 link stays middle1');
-  await page.locator('#levelTabs [data-level="level2"]').click();await page.locator('#gradeTabs [data-grade="12"]').click();
-  assert.equal(new URL(page.url()).searchParams.get('grade'),'12');
+  await page.locator('#levelTabs [data-level="level2"]').click();
+  assert.equal(new URL(page.url()).searchParams.get('grade'),'10');
   assert.equal(errors.length,0,errors.join('\n'));
   await page.screenshot({path:'scratch/korean-reading-grade12-mobile.png',fullPage:true});
-  console.log('390px: six grades, worked study examples,18 five-question quiz submissions, exact grade metadata, repeated practice fallback, legacy r7 link and level/grade navigation passed.');
+  console.log('390px: six grades, worked study examples,18 five-question quiz submissions, exact grade metadata, repeated practice fallback, legacy r7 link and level navigation with hidden grades passed.');
  }catch(error){await page.screenshot({path:'scratch/korean-reading-browser-failure.png',fullPage:true});console.log(await page.locator('body').innerText());console.log(errors);throw error;}
  finally{await browser.close();server.close();}
 })().catch(error=>{console.error(error);process.exitCode=1;});
