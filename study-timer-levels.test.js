@@ -109,3 +109,13 @@ isolatedReports.splice(0,3,...[70,70,70].map((pct,index)=>({subject:'english_rea
 assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),600,'free-study70% requires ten minutes');
 isolatedReports.splice(0,3,...[60,60,60].map((pct,index)=>({subject:'english_reading',sessionId:'daily-average-'+index,initialScore:pct,totalQuestions:100,date:1000+index,metadata:{levelId:'high3'}})));
 assert.equal(timer.getRequiredSeconds('english_reading','english_reading:high3'),900,'free-studybelow70% requires fifteen minutes');
+
+// Existing middle1 timing/score evidence remains usable without leaking to middle2.
+sandbox.KoreanReadingCurriculum={gradeOfUnit:id=>id?.startsWith('kr-m2-')?8:7};
+sandbox.SmartStudy.LocalRepository.listReports=()=>[{subject:'reading',sessionId:'old-middle1',level:'국어 독해력 Lv. 1',initialScore:5,totalQuestions:5,date:10000,metadata:{levelId:'level1',unitId:'r7'}}];
+timer.setConfig({reading:5});
+assert.equal(timer.getRequiredSeconds('reading','reading:level1:grade7'),0);
+assert.equal(timer.getRequiredSeconds('reading','reading:level1:grade8'),300);
+store.set(timerKey('reading:reading:level1'),'90');
+assert.equal(timer.getAccumulated('reading','reading:level1:grade7'),90);
+assert.equal(timer.getAccumulated('reading','reading:level1:grade8'),0);

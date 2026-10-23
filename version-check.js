@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261021-english-three-levels';
+    const APP_VERSION = '20261023-korean-reading';
 
     (async function () {
         try {

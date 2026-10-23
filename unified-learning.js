@@ -64,7 +64,8 @@
     function performance(subject,context,entries){
         const since=Date.now()-PROMOTION.windowDays*86400000;
         const sessions=entries.filter(e=>e.subject===subject&&e.at>=since&&plan.contextKey(subject,e.context)===plan.contextKey(subject,context)
-            &&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed))
+            &&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)
+            &&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId)))
             .sort((a,b)=>b.at-a.at);
         const scores=sessions.map(e=>e.attempts.filter(a=>a.correct).length/e.attempts.length);
         const recent=scores.slice(0,PROMOTION.recent),average=recent.length?recent.reduce((a,b)=>a+b,0)/recent.length:0;
@@ -78,7 +79,17 @@
     function recommend(subject,profile,entries,user){
         const choices=catalog(subject,profile), same=(a,b)=>plan.contextKey(subject,a)===plan.contextKey(subject,b);
         const stats=new Map(choices.map(c=>[plan.contextKey(subject,c.context),performance(subject,c.context,entries)]));
-        const statsOf=c=>stats.get(plan.contextKey(subject,c.context)),isOutgrown=c=>outgrown(statsOf(c));
+        const statsOf=c=>stats.get(plan.contextKey(subject,c.context));
+        // A curriculum lesson may move on after successful practice. This is not mastery:
+        // repeated answers remain excluded from ConceptMastery and adaptive score evidence.
+        const readingPassed=c=>{
+            if(subject!=='reading'||!root.KoreanReadingCurriculum)return false;
+            const e=entries.filter(e=>e.subject==='reading'&&same(e.context,c.context)&&root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId))
+                .sort((a,b)=>b.at-a.at)[0];
+            return Boolean(e&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)
+                &&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8);
+        };
+        const isOutgrown=c=>readingPassed(c)||outgrown(statsOf(c));
         const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)));
         if(todayEntry)return {...choices.find(c=>same(c.context,todayEntry.context)),reason:'오늘 과목 화면에서 제출한 기록을 연결했어요.',todayEvidence:true};
         const wrong=local.getWrongAnswers(user)?.[subject==='math_formula'?'math':subject]||[];
@@ -102,7 +113,7 @@
         const scheduled=choices.find(c=>!isOutgrown(c)&&mastery(user,subject,c.context)?.concepts.some(x=>x.reviewDue));
         if(scheduled)return {...scheduled,reason:'시간을 두고 기억을 확인할 차례예요. 새 문제 실력과 복습 결과를 따로 기록해요.'};
         // Submission confirms today's activity; passing is only a provisional recommendation signal.
-        const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)).sort((a,b)=>b.at-a.at)[0];
+        const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)&&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId))).sort((a,b)=>b.at-a.at)[0];
         const secure=c=>{const state=mastery(user,subject,c.context);if(state)return state.concepts.length>0&&state.concepts.every(x=>x.name!=='foundation');const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
         const open=choices.filter(c=>!isOutgrown(c));
         const choice=open.find(c=>!secure(c))||open[0]||[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
@@ -110,6 +121,7 @@
         // Name the level just outgrown so the step up is visible on the today page.
         const before=choices.slice(0,choices.indexOf(choice)).filter(isOutgrown).at(-1);
         if(before){
+            if(readingPassed(before))return {...choice,reason:`${before.label}의 학습 퀴즈를 마쳐 다음 읽기 범위를 제안해요. 새로운 문제의 숙달 평가는 별도로 확인해요.`,promotedFrom:before.context};
             const s=statsOf(before);
             return {...choice,reason:`${before.label}은(는) 최근 첫 시도 평균 ${Math.round(s.average*100)}%(${s.sessions}회)로 충분히 익혔어요. 한 단계 높은 범위를 제안해요.`,promotedFrom:before.context};
         }

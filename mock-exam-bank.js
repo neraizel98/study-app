@@ -73,7 +73,7 @@
   }
   return {seen,ids};
  }
- const skillOf=skill=>/중심|주제|제목/.test(skill||'')?'main':/내용 확인|정보 확인|사실/.test(skill||'')?'fact':/근거|주장/.test(skill||'')?'evidence':/추론|관점|심리|의미|평가|갈등/.test(skill||'')?'inference':/구조|전개|역할|기능/.test(skill||'')?'structure':null;
+ const skillOf=skill=>/중심|주제|제목/.test(skill||'')?'main':/내용 확인|정보 확인|사실/.test(skill||'')?'fact':/근거|주장/.test(skill||'')?'evidence':/추론|관점|심리|의미|평가|갈등|태도|정서|화자|상징|비유|표현|시점/.test(skill||'')?'inference':/구조|전개|역할|기능|설명 방식/.test(skill||'')?'structure':null;
  const q=(skill,question,answer,wrong,explanation)=>({skill,question,answer,choices:[answer,...wrong],explanation});
  // All passages below are newly authored educational fiction/exposition.
  // They assess an evidenced reading skill; they do not expand a unit's factual syllabus.
@@ -103,10 +103,11 @@
   for(const g of scopes){
    const attempts=g.attempts,c=g.context;
    if(g.subject==='reading'){
+    const currentCourse=root.KoreanReadingCurriculum&&[...g.passageIds].some(id=>root.KoreanReadingCurriculum.isCurrentPassageId(id));
     const learnedSkills=new Set();
-    for(const a of attempts){const p=(root.ReadingPassages||[]).find(p=>p.unitId===c.unitId&&(g.passageIds.has(p.id)||(p.questions||[]).some(q=>q.id===a.questionId)));const original=p?.questions?.find(q=>q.id===a.questionId||normalize(q.question)===normalize(a.question));const skill=skillOf(a.skill||original?.skill);if(p&&original&&skill)learnedSkills.add(skill);}
-    for(const p of shuffle([...koreanPassages,...root.MockReadingContent?.korean||[]],rng))for(const [index,item] of p.questions.entries())if(learnedSkills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:`${p.id}:${index}`,sourceType:'자체 제작 새 지문 · 학습한 읽기 기능',conceptId:`reading:${item.skill}`,source:{kind:'original',note:'스마트 스터디 자체 제작'}});
-    for(const p of root.ReadingPassages||[])if(p.unitId===c.unitId&&g.passageIds.has(p.id))for(const item of p.questions||[])if(learnedSkills.has(skillOf(item.skill)))add(g,{...item,sourceQuestionId:item.id,explanation:item.evidence,passageId:p.id,passageLines:p.lines,passageTitle:p.title,repeated:true,sourceType:'학습한 지문 재확인'});
+    for(const a of attempts){const p=(root.ReadingPassages||[]).find(p=>p.unitId===c.unitId&&(p.levelId||'level1')===(c.levelId||'level1')&&(g.passageIds.has(p.id)||(p.questions||[]).some(q=>q.id===a.questionId)));const original=p?.questions?.find(q=>q.id===a.questionId||normalize(q.question)===normalize(a.question));const skill=skillOf(a.skill||original?.skill);if(p&&original&&skill)learnedSkills.add(skill);}
+    for(const p of shuffle([...koreanPassages,...root.MockReadingContent?.korean||[]],rng))for(const [index,item] of p.questions.entries())if(!currentCourse&&learnedSkills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:`${p.id}:${index}`,sourceType:'자체 제작 새 지문 · 학습한 읽기 기능',conceptId:`reading:${item.skill}`,source:{kind:'original',note:'스마트 스터디 자체 제작'}});
+    for(const p of root.ReadingPassages||[])if(p.unitId===c.unitId&&(p.levelId||'level1')===(c.levelId||'level1')&&g.passageIds.has(p.id)&&(!currentCourse||root.KoreanReadingCurriculum.isCurrentPassageId(p.id)))for(const item of p.questions||[])if(learnedSkills.has(skillOf(item.skill)))add(g,{...item,sourceQuestionId:item.id,explanation:item.evidence,passageId:p.id,passageLines:p.lines,passageTitle:p.title,repeated:true,sourceType:'학습한 지문 재확인'});
    }
    if(g.subject==='english'){
     const bank=root.vocabData?.[c.unitId]||[],learned=bank.filter(w=>attempts.some(a=>[a.word,a.correctAnswer,a.question].some(v=>normalize(v)===normalize(w.word))));

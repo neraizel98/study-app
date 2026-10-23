@@ -16,7 +16,8 @@ const StudyTimer = (() => {
     const DEFAULTS = { english: 5, english_reading: 5, grammar: 5, hanja: 5, math: 5, reading: 5, korean_vocab: 5 };
     const LEVELS = {
         reading: [
-            { key: 'level1', label: 'Lv. 1 · 중1 독해' }
+            { key: 'level1', label: '레벨 1 · 중학 독해' },
+            { key: 'level2', label: '레벨 2 · 고교 독해' }
         ],
         korean_vocab: [
             { key: 'level1', label: 'Lv. 1 · 중학 어휘' },
@@ -76,7 +77,7 @@ const StudyTimer = (() => {
     function getLevelKey(subject, context = 'default') {
         const value = String(context || 'default');
         if (subject === 'grammar') return value.replace(/^grammar:/, '');
-        if (subject === 'reading') return value.replace(/^reading:/, '');
+        if (subject === 'reading') return value.replace(/^reading:/, '').split(':')[0];
         if (subject === 'korean_vocab') return value.replace(/^korean_vocab:/, '').split(':')[0];
         if (subject === 'english_reading') return value.replace(/^english_reading:/, '').split(':')[0];
         if (subject === 'math') return value.split(':')[0];
@@ -119,6 +120,7 @@ const StudyTimer = (() => {
 
     function getAccumulated(subject, context = 'default') {
         const current = repository.getNumber(timeKey(subject, context));
+        if(subject==='reading' && context==='reading:level1:grade7')return current+repository.getNumber(timeKey('reading','reading:level1'));
         if (subject !== 'english_reading') return current;
         // Preserve legacy unit counters as separate contributions; never copy them
         // into the new counter, which would double-count on subsequent reads/sync.
@@ -146,6 +148,7 @@ const StudyTimer = (() => {
 
     function resetAccumulated(subject, context = 'default') {
         repository.setNumber(timeKey(subject, context), 0);
+        if(subject==='reading' && context==='reading:level1:grade7')repository.setNumber(timeKey('reading','reading:level1'),0);
     }
 
     function getScoreStore() {
@@ -153,13 +156,18 @@ const StudyTimer = (() => {
     }
 
     function getReportScores(subject, aliases, context) {
-        if (!aliases?.length && !['grammar','english_reading'].includes(subject)) return [];
+        if (!aliases?.length && !['grammar','english_reading','reading'].includes(subject)) return [];
         const reports = repository.listReports(getUserId());
 
         const targets = (aliases || []).map(normalize).filter(Boolean);
         const matches = reports
             .filter(r => r.subject === subject && r.totalQuestions > 0 && Number.isFinite(Number(r.initialScore)) && Number(r.initialScore)>=0 && Number(r.initialScore)<=Number(r.totalQuestions) && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
             .filter(r => {
+                if(subject==='reading' && /:grade[0-9]+$/.test(context)) {
+                    const expected=Number(context.match(/:grade([0-9]+)$/)[1]);
+                    const inferred=Number(r.metadata?.grade)||window.KoreanReadingCurriculum?.gradeOfUnit(r.metadata?.unitId)||7;
+                    return (r.metadata?.levelId||'level1')===getLevelKey(subject,context)&&inferred===expected;
+                }
                 const recordedGrade = subject === 'grammar' ? r.metadata?.stageId : subject === 'english_reading' ? r.metadata?.levelId : null;
                 if (recordedGrade) return recordedGrade === getLevelKey(subject, context);
                 const level = normalize(r.level);
@@ -184,7 +192,8 @@ const StudyTimer = (() => {
     function getRecentScores(subject, context = 'default', aliases = []) {
         const combined = [
             ...getReportScores(subject, aliases, context),
-            ...savedScoreHistory(subject, context)
+            ...savedScoreHistory(subject, context),
+            ...(subject==='reading'&&context==='reading:level1:grade7'?savedScoreHistory('reading','reading:level1'):[])
         ].sort((a, b) => (b.date || 0) - (a.date || 0));
         const unique = [];
         combined.forEach(score => {

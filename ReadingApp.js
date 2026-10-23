@@ -4,29 +4,39 @@
         '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
     })[character]);
     const params = new URLSearchParams(location.search);
-    const levelId = 'level1';
+    const curriculum = window.KoreanReadingCurriculum;
+    const requestedUnit = Object.values(ReadingData.levels).flatMap(item => item.units).find(item => item.id === params.get('unit'));
+    const requestedGrade = Number(params.get('grade'));
+    let grade = requestedGrade >= 7 && requestedGrade <= 12 && Number.isInteger(requestedGrade)
+        ? requestedGrade : requestedUnit ? curriculum.gradeOfUnit(requestedUnit) : params.get('level') === 'level2' ? 10 : 7;
+    let levelId = curriculum.levelForGrade(grade);
     const level = () => ReadingData.levels[levelId];
-    let unitId = params.get('unit') || level().units[0].id;
+    const units = () => level().units.filter(item => curriculum.gradeOfUnit(item) === grade);
+    let unitId = requestedUnit && curriculum.gradeOfUnit(requestedUnit) === grade ? requestedUnit.id : units()[0].id;
     let lessonIndex = Math.max(0, Number(params.get('lesson') || 0));
     const reviewMode = params.get('mode') === 'review';
     let mode = 'study', timerController = null, passage = null, questions = [];
     // A one-line summary before the first question makes the learner read the whole passage
     // (the first mock exam showed answers chosen from the options alone).
-    let summaryPending = false;
+    let summaryPending = false, practiceReexposure = false;
     let questionIndex = 0, score = 0, answered = false, attempts = [], sessionId = '', startTime = 0, quizActiveTimer = null;
 
-    const unit = () => level().units.find(item => item.id === unitId) || level().units[0];
-    const context = () => `reading:${levelId}`;
-    const aliases = () => ['국어 독해력 Lv. 1', '중1 독해', level().title];
+    const unit = () => units().find(item => item.id === unitId) || units()[0];
+    const gradeLabel = () => `${grade < 10 ? '중' : '고'}${grade < 10 ? grade - 6 : grade - 9}`;
+    const context = () => `reading:${levelId}:grade${grade}`;
+    const aliases = () => grade === 7 ? ['국어 독해력 Lv. 1', '중1 독해', level().title] : [];
     const hasNextLesson = () => lessonIndex < unit().lessons.length - 1
-        || level().units.findIndex(item => item.id === unit().id) < level().units.length - 1;
+        || units().findIndex(item => item.id === unit().id) < units().length - 1;
 
     function setUrl(nextMode = mode) {
-        history.replaceState(null, '', `?level=${levelId}&unit=${unit().id}&lesson=${lessonIndex}&mode=${reviewMode && nextMode === 'quiz' ? 'review' : nextMode}`);
+        history.replaceState(null, '', `?level=${levelId}&grade=${grade}&unit=${unit().id}&lesson=${lessonIndex}&mode=${reviewMode && nextMode === 'quiz' ? 'review' : nextMode}`);
     }
 
     function renderSelectors() {
-        $('unitTabs').innerHTML = level().units.map(item => `<button class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`).join('');
+        $('heroLevel').textContent = `${level().title} · ${gradeLabel()} · 근거를 찾으며 정확하게 읽기`;
+        $('levelTabs').innerHTML = [['level1', 'Lv. 1 · 중1~3'], ['level2', 'Lv. 2 · 고1~3']].map(([id, label]) => `<button class="level-btn ${id === levelId ? 'active' : ''}" data-level="${id}" aria-pressed="${id === levelId}">${label}</button>`).join('');
+        $('gradeTabs').innerHTML = (levelId === 'level1' ? [7, 8, 9] : [10, 11, 12]).map(value => `<button class="grade-btn ${value === grade ? 'active' : ''}" data-grade="${value}" aria-pressed="${value === grade}">${value < 10 ? '중' + (value - 6) : '고' + (value - 9)}</button>`).join('');
+        $('unitTabs').innerHTML = units().map(item => `<button class="unit-btn ${item.id === unit().id ? 'active' : ''}" data-unit="${item.id}">${item.title}</button>`).join('');
         $('lessonTabs').innerHTML = unit().lessons.map((item, index) => `<button class="lesson-btn ${index === lessonIndex ? 'active' : ''}" data-lesson="${index}">${index + 1}. ${item.title}</button>`).join('');
     }
 
@@ -52,27 +62,39 @@
         setUrl(); timerController?.startTimer();
     }
 
+    const userId = () => window.UserSession?.getActiveUser?.() || SmartStudy.LocalRepository.getActiveUser() || '';
+    const recentKey = () => SmartStudy.StorageKeys.recentPassages(`${encodeURIComponent(userId())}_${levelId}_grade${grade}`);
     function recentPassageIds() {
-        return SmartStudy.LocalRepository.getPreference(SmartStudy.StorageKeys.recentPassages(levelId), []);
+        return SmartStudy.LocalRepository.getPreference(recentKey(), []);
     }
 
     function rememberPassage(id) {
         const recent = [id, ...recentPassageIds().filter(item => item !== id)].slice(0, 4);
-        SmartStudy.LocalRepository.setPreference(SmartStudy.StorageKeys.recentPassages(levelId), recent);
+        SmartStudy.LocalRepository.setPreference(recentKey(), recent);
     }
 
     function activeWrongItems() {
-        return typeof WrongNote === 'undefined' ? [] : (WrongNote.getAll().reading || []).filter(item => (!item.isMastered || LearningPolicy.isDue(item)));
+        return typeof WrongNote === 'undefined' ? [] : (WrongNote.getAll().reading || []).filter(item => {
+            const source = ReadingPassages.find(candidate => candidate.id === item.passageId);
+            const itemGrade = Number(item.grade || (source ? curriculum.gradeOfPassage(source) : curriculum.gradeOfUnit(item.unitId)));
+            const itemLevel = item.levelId || source?.levelId || curriculum.levelForGrade(itemGrade);
+            return itemGrade === grade && itemLevel === levelId && (item.unitId || source?.unitId) === unit().id
+                && (!item.isMastered || LearningPolicy.isDue(item));
+        });
     }
 
     function selectPassage(band) {
         const wrong = activeWrongItems().filter(item => reviewMode || LearningPolicy.isDue(item));
         if (reviewMode && wrong.length) {
             const ids = [...new Set(wrong.map(item => item.passageId))];
-            return ReadingPassages.find(item => item.id === ids[Math.floor(Math.random() * ids.length)]);
+            const id = ids[Math.floor(Math.random() * ids.length)];
+            const reviewed = ReadingPassages.find(item => item.id === id && curriculum.gradeOfPassage(item) === grade
+                && (item.levelId || curriculum.levelForGrade(curriculum.gradeOfPassage(item))) === levelId && item.unitId === unit().id);
+            if (reviewed) return reviewed;
         }
         const wrongPassageIds = new Set(wrong.map(item => item.passageId));
-        const unitPassages = ReadingPassages.filter(item => item.unitId === unit().id);
+        const unitPassages = ReadingPassages.filter(item => !item.legacy && item.levelId === levelId
+            && curriculum.gradeOfPassage(item) === grade && item.unitId === unit().id);
         const matched = unitPassages.filter(item => {
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
             if (band.name === 'challenge') return item.difficulty !== 'foundation';
@@ -102,6 +124,7 @@
     }
 
     function startQuiz() {
+        practiceReexposure = false;
         if (!reviewMode && typeof StudyTimer !== 'undefined' && !StudyTimer.isUnlocked('reading', context(), aliases())) {
             const status = StudyTimer.getStatus('reading', context(), aliases());
             alert(`국어 독해력을 ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 더 학습해야 합니다.`);
@@ -110,6 +133,7 @@
         }
         const band = typeof AdaptiveQuiz !== 'undefined' ? AdaptiveQuiz.getBand('reading', `reading:${levelId}:${unit().id}`, aliases()) : { name: 'standard', wrongRatio: .45 };
         passage = selectPassage(band);
+        if (!passage) { alert('이 학년과 단원에 맞는 지문을 불러오지 못했습니다.'); return; }
         const vocabularyQuestions = typeof ReadingVocabulary !== 'undefined'
             ? ReadingVocabulary.getQuestions(passage)
             : [];
@@ -124,15 +148,18 @@
             if (band.name === 'foundation') return item.difficulty !== 'challenge';
             return true;
         });
+        let freshQuestions = [];
         if (!reviewMode && window.QuizExposure) {
-            const fresh=QuizExposure.fresh('reading',base);base=base.filter(q=>wrongIds.has(q.id)||fresh.includes(q));
-            if (!base.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 학습하거나 오답 복습을 선택해 주세요.'); return; }
+            freshQuestions = QuizExposure.fresh('reading', base);
+            practiceReexposure = freshQuestions.length < Math.min(5, base.length);
+            if (!practiceReexposure) base = base.filter(item => wrongIds.has(item.id) || freshQuestions.includes(item));
         }
         const priority = Utils.shuffle(base.filter(item => wrongIds.has(item.id)));
         const selected = [];
         const addUnique = item => {
             if (item && !selected.some(existing => existing.id === item.id)) selected.push(item);
         };
+        if (practiceReexposure) Utils.shuffle(freshQuestions).slice(0, 5).forEach(addUnique);
         priority.slice(0, reviewMode ? 5 : 1).forEach(addUnique);
         if (!reviewMode) {
             const vocabulary = Utils.shuffle(base.filter(item => item.vocabularyType));
@@ -154,7 +181,7 @@
         quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
         $('studyPanel').hidden = true; $('quizPanel').hidden = false;
         $('studyModeBtn').classList.remove('active'); $('quizModeBtn').classList.add('active');
-        $('passageMeta').textContent = `${level().title} · ${passage.category} · ${band.name === 'foundation' ? '기초' : band.name === 'challenge' ? '심화' : '표준'}`;
+        $('passageMeta').textContent = `${level().title} · ${gradeLabel()} · ${passage.category} · ${band.name === 'foundation' ? '기초' : band.name === 'challenge' ? '심화' : '표준'}${practiceReexposure ? ' · 복습 퀴즈' : ''}`;
         $('passageTitle').textContent = passage.title;
         $('passage').innerHTML = passage.lines.map((line, index) => `<p><span class="line-no">${index + 1}</span>${line}</p>`).join('');
         $('sourceNote').textContent = passage.sourceNote;
@@ -182,7 +209,8 @@
         const correct = selected === item.answer;
         if (correct) score += 1;
         const detail = {
-            type: `${passage.id}:${item.id}`, wrongNoteId: `${passage.id}:${item.id}`, category: 'reading', level: level().title,
+            type: `${passage.id}:${item.id}`, wrongNoteId: `${passage.id}:${item.id}`, category: 'reading', level: `${level().title} · ${gradeLabel()}`, levelId, grade,
+            review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure,
             unitId: passage.unitId, unitTitle: level().units.find(candidate => candidate.id === passage.unitId)?.title || '',
             passageId: passage.id, passageTitle: passage.title, passageText: passage.lines,
             questionId: item.id, snapshotId: item.snapshotId, skill: item.skill, question: item.question, choices: [...item.renderedChoices],
@@ -207,9 +235,9 @@
 
     function finish() {
         const pct = Math.round(score / questions.length * 100);
-        if (!reviewMode && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
-        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
-            category: 'reading', review: reviewMode, levelId, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
+        if (!reviewMode && !practiceReexposure && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
+        if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${level().title} · ${gradeLabel()} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
+            category: 'reading', review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure, levelId, grade, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
             unitId: passage.unitId, skills: attempts.map(item => item.skill), attempts
         });
         $('resultScore').textContent = `${score} / ${questions.length} (${pct}%)`;
@@ -218,13 +246,20 @@
     }
 
     function bind() {
+        const switchGrade = value => {
+            timerController?.stopTimer(); quizActiveTimer?.destroy(); quizActiveTimer = null;
+            grade = value; levelId = curriculum.levelForGrade(grade); unitId = units()[0].id; lessonIndex = 0;
+            renderSelectors(); renderStudy();
+        };
+        $('levelTabs').addEventListener('click', event => { const button = event.target.closest('[data-level]'); if (button) switchGrade(button.dataset.level === 'level2' ? 10 : 7); });
+        $('gradeTabs').addEventListener('click', event => { const button = event.target.closest('[data-grade]'); if (button) switchGrade(Number(button.dataset.grade)); });
         $('unitTabs').addEventListener('click', event => { const button = event.target.closest('[data-unit]'); if (!button) return; unitId = button.dataset.unit; lessonIndex = 0; renderSelectors(); renderStudy(); });
         $('lessonTabs').addEventListener('click', event => { const button = event.target.closest('[data-lesson]'); if (!button) return; lessonIndex = Number(button.dataset.lesson); renderSelectors(); renderStudy(); });
         $('prevLesson').addEventListener('click', () => { if (lessonIndex > 0) { lessonIndex--; renderSelectors(); renderStudy(); } });
         $('nextLesson').addEventListener('click', () => {
             if (lessonIndex < unit().lessons.length - 1) lessonIndex++;
             else {
-                const next = level().units[level().units.findIndex(item => item.id === unit().id) + 1];
+                const next = units()[units().findIndex(item => item.id === unit().id) + 1];
                 if (!next) return; unitId = next.id; lessonIndex = 0;
             }
             renderSelectors(); renderStudy();
@@ -237,15 +272,21 @@
         $('nextQuestion').addEventListener('click', () => { if (questionIndex < questions.length - 1) { questionIndex++; renderQuestion(); } else finish(); });
         $('retryQuiz').addEventListener('click', () => { $('resultModal').hidden = true; startQuiz(); });
         $('resultStudy').addEventListener('click', () => { $('resultModal').hidden = true; renderStudy(); });
-        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: level().title, startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
+        $('shareResult').addEventListener('click', () => KakaoShare?.sendReport('reading', score, questions.length, Math.round(score / questions.length * 100), score, 1, { sessionId, levelInfo: `${level().title} · ${gradeLabel()}`, startTime, endTime: Date.now(), timeSpentSeconds: quizActiveTimer?.getSeconds() || 0 }));
     }
 
     document.addEventListener('DOMContentLoaded', async () => {
             await window.SmartStudy?.LocalRepository?.ready;
+        if (!params.has('grade') && !params.has('unit') && !params.has('level')) {
+            const profile = window.SmartStudy?.LearningPlan?.getProfile?.(userId())
+                || SmartStudy.LocalRepository.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(userId())}`, {});
+            grade = curriculum.gradeForProfile(profile?.grade); levelId = curriculum.levelForGrade(grade); unitId = units()[0].id;
+        }
+        lessonIndex = Math.min(Math.floor(Number.isFinite(lessonIndex) ? lessonIndex : 0), unit().lessons.length - 1);
         renderSelectors(); bind(); renderStudy();
         if (typeof StudyTimer !== 'undefined') {
             timerController = StudyTimer.initBar('reading', $('startQuiz'), {
-                getContext: context, getAliases: aliases, getLabel: () => level().title,
+                getContext: context, getAliases: aliases, getLabel: () => `${level().title} · ${gradeLabel()}`,
                 isLearningActive: () => mode === 'study' && !$('studyPanel').hidden,
                 isLockBypassed: () => reviewMode
             });

@@ -50,7 +50,8 @@
                 }catch(error){console.warn('[Assessment math item]',error.message);}
             }
         }else if(subject==='reading'){
-            const passages=(root.ReadingPassages||[]).filter(p=>p.unitId===context?.unitId&&p.difficulty==='standard');
+            const currentCourse=root.KoreanReadingCurriculum&&[...(scope.passageIds||[])].some(id=>root.KoreanReadingCurriculum.isCurrentPassageId(id));
+            const passages=(root.ReadingPassages||[]).filter(p=>p.unitId===context?.unitId&&(p.levelId||'level1')===(context?.levelId||'level1')&&p.difficulty==='standard'&&(!currentCourse||root.KoreanReadingCurriculum.isCurrentPassageId(p.id)));
             for(const passage of passages){
                 for(const q of passage.questions||[]){
                     if(q.difficulty!=='standard'||!Array.isArray(q.choices)||!q.choices.length)continue;

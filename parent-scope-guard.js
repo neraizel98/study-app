@@ -15,7 +15,7 @@
     function subjectForUrl(url){const name=url.pathname.split('/').pop();if(name==='reading.html')return'reading';if(name==='english.html')return'english';if(name==='english_reading.html')return'english_reading';if(name==='korean_vocab.html')return'korean_vocab';if(['math.html','math_viewer.html','math_quiz.html'].includes(name))return'math';return null;}
     function matchesUrl(task,url){
         const params=url.searchParams,context=task.context||{};
-        if(task.subject==='reading')return params.get('unit')===String(context.unitId||'');
+        if(task.subject==='reading')return (params.get('level')||'level1')===String(context.levelId||'level1')&&params.get('unit')===String(context.unitId||'');
         if(task.subject==='english')return params.get('level')===String(context.unitId||'');
         if(task.subject==='english_reading')return params.get('level')===String(context.levelId||'')&&params.get('unit')===String(context.unitId||'');
         if(task.subject==='korean_vocab')return params.get('level')===String(context.levelId||'')&&params.get('unit')===String(context.unitId||'');
@@ -71,8 +71,9 @@
             if(link){const url=new URL(link.href,location.href);if(subjectForUrl(url)===task.subject&&!matchesUrl(task,url)){returnToTarget(event);return;}}
             const control=event.target.closest?.('[data-unit],[data-level],[data-grade],[data-group],[data-semester],#nextLesson');if(!control)return;
             const context=task.context||{};
-            if(task.subject==='english_reading'&&(control.dataset.group||control.dataset.grade)){returnToTarget(event);return;}
+            if(['reading','english_reading'].includes(task.subject)&&(control.dataset.group||control.dataset.grade)){returnToTarget(event);return;}
             if(control.dataset.unit&&String(control.dataset.unit)!==String(context.unitId||'')){returnToTarget(event);return;}
+            if(task.subject==='reading'&&control.dataset.level){returnToTarget(event);return;}
             if(control.dataset.level){
                 const required=task.subject==='english'?context.unitId:context.levelId;
                 if(String(control.dataset.level)!==String(required||'')){returnToTarget(event);return;}

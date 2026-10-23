@@ -49,7 +49,7 @@
         return true;
     }
     function catalog(subject,profile){
-        if(subject==='reading')return Object.entries(root.ReadingData?.levels||{}).flatMap(([levelId,level])=>(level.units||[]).map(unit=>({
+        if(subject==='reading')return Object.entries(root.ReadingData?.levels||{}).flatMap(([levelId,level])=>(level.units||[]).filter(unit=>!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.gradeOfUnit(unit)===root.KoreanReadingCurriculum.gradeForProfile(profile.grade)).map(unit=>({
             label:`${level.title} · ${unit.title}`,context:{levelId,unitId:unit.id,title:unit.title}
         })));
         if(subject==='korean_vocab'){
