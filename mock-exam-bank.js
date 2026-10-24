@@ -89,7 +89,7 @@
   {id:'mock-moon-observe',sourcePassageId:'er1-p0',title:'A Bright Part',lines:['Sora draws the moon on Monday.','The moon looks like a thin curve.','Three nights later, she looks at the moon again.','The bright part is wider, so she draws a new shape.','Her notebook shows the change over time.'],questions:[q('fact','When does Sora first draw the moon?','On Monday',['On Thursday','On Sunday','Every night'],'첫 문장에 Monday라고 제시한다.'),q('main','What does the notebook show?','A change in the moon over time',['A thin curve drawn on Monday','A moon shape that never changes','The days Sora goes to school'],'마지막 문장이 공책 기록의 의미를 정리한다.'),q('reference','Who does “she” in sentence 3 refer to?','Sora',['Monday','the moon','the bright part'],'앞 두 문장의 주인공 Sora를 가리킨다.'),q('evidence','Which sentence shows a different moon shape?','Sentence 4',['Sentence 1','Sentence 2','Sentence 3'],'4문장에서 밝은 부분이 더 넓어져 새 모양을 그린다.')]}
  ];
  function build(user,now=Date.now(),options={}){
-  const strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
+  const retake=Number(options.attemptNo)>1,strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
   now=Number(now);if(!Number.isFinite(now))now=Date.now();
   const reports=(app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user));
   let scopes=learnedScopes(reports,now);
@@ -107,8 +107,9 @@
    const draft=app.LocalRepository.getPreference(`SmartStudy_MockExam_${encodeURIComponent(user)}_${week}`,null);
    if(draft?.userId===user&&draft.questions?.length)history.push({date:draft.startedAt||now,metadata:{questions:draft.questions}});
   }
+  for(const r of options.history||[]){const d=r.payload||r.snapshot||r;if(d?.userId===user&&Array.isArray(d.questions))history.push({date:d.startedAt||d.submittedAt||now,metadata:{questions:d.questions}});}
   const recent=recentQuestions(history,now,strict);
-  const rng=random(`${user}:${Math.floor((now+9*3600000)/DAY)}:${buildVersion}`),pools=Object.fromEntries(Object.keys(quotas).map(s=>[s,[]])),used=new Set(),meta=new Map();
+  const rng=random(`${user}:${Math.floor((now+9*3600000)/DAY)}:${buildVersion}:${options.attemptNo||1}`),pools=Object.fromEntries(Object.keys(quotas).map(s=>[s,[]])),used=new Set(),meta=new Map();
   function generated(factory){const previous=root.Math.random;root.Math.random=rng;try{return factory();}finally{root.Math.random=previous;}}
   function add(g,item){
    const candidate={...item,subject:g.subject,context:{...g.context},kind:'choice',choices:(item.choices||[]).map(String),answer:String(item.answer??''),explanation:item.explanation||'',evidenceReportIds:[...g.reportIds],sourceType:item.sourceType||'학습 범위의 검증 문항',repeated:Boolean(item.repeated),difficulty:item.difficulty||'basic',noveltyKind:item.noveltyKind||(item.repeated?'reexposure':'recall'),cognitiveDemand:item.cognitiveDemand||'recall'};
@@ -127,13 +128,13 @@
     const skills=new Set(attempts.map(a=>{const p=(root.ReadingPassages||[]).find(p=>p.unitId===c.unitId&&(p.levelId||'level1')===(c.levelId||'level1')&&g.passageIds.has(p.id));const original=p?.questions?.find(q=>q.id===a.questionId||normalize(q.question)===normalize(a.question));return skillOf(a.skill||original?.skill);}).filter(Boolean));
     // Locating a stated fact is a prerequisite of the evidenced higher-order reading skills, not a new syllabus topic.
     if(skills.size)skills.add('fact');
-    for(const p of root.MockKoreanTransfer||[])if(p.grade===grade)for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:item.id,conceptId:`reading:${item.skill}`,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 지문 · 배운 읽기 기능 적용'});
+    for(const p of [...root.MockKoreanTransfer||[],...(retake?root.MockRetakeReading?.korean||[]:[])])if(p.grade===grade)for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:item.id,conceptId:`reading:${item.skill}`,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 지문 · 배운 읽기 기능 적용'});
     continue;
    }
    if(strict&&g.subject==='english_reading'){
     const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId&&(u.gradeId||'grade6')===(c.levelId||'grade6'));
     const skills=new Set();for(const p of unit?.passages||[])if(g.passageIds.has(p.id))for(const a of attempts){const q=p.questions.find(q=>q.id===a.questionId||normalize(q.prompt)===normalize(a.question));if(q)skills.add(q.type);}
-    for(const p of root.MockEnglishTransfer||[])if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
+    for(const p of [...root.MockEnglishTransfer||[],...(retake?root.MockRetakeReading?.english||[]:[])])if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
     continue;
    }
    if(strict&&g.subject==='math'){
@@ -158,16 +159,17 @@
    }
    if(g.subject==='english'){
     const bank=root.vocabData?.[c.unitId]||[],learned=bank.filter(w=>attempts.some(a=>[a.word,a.correctAnswer,a.question].some(v=>normalize(v)===normalize(w.word))));
-    for(const w of learned){const distractors=bank.filter(other=>normalize(other.word)!==normalize(w.word)&&normalize(other.meaning)!==normalize(w.meaning)&&!(w.altWords||[]).includes(other.word)).map(other=>other.word);if(new Set(distractors.map(normalize)).size<3)continue;
+    for(const w of learned){const distractors=bank.filter(other=>normalize(other.word)!==normalize(w.word)&&normalize(other.meaning)!==normalize(w.meaning)&&!(w.altWords||[]).includes(other.word)&&!(other.altWords||[]).includes(w.word)&&(!w.def||normalize(other.def)!==normalize(w.def))).map(other=>other.word);if(new Set(distractors.map(normalize)).size<3)continue;
      add(g,{question:`“${w.meaning}”의 뜻을 가진 영어 단어는?`,choices:[w.word,...shuffle([...new Set(distractors)],rng).slice(0,3)],answer:w.word,explanation:`${w.word}: ${w.meaning}`,conceptId:`word:${w.word}`,sourceType:'학습한 단어 뜻 확인'});
-     const expression=new RegExp(`\\b${w.word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'i'),sentence=String(w.ex||'');if(expression.test(sentence))add(g,{question:`${sentence.replace(expression,'_____')} (뜻: ${w.meaning})`,choices:[w.word,...shuffle([...new Set(distractors)],rng).slice(0,3)],answer:w.word,explanation:sentence,conceptId:`word:${w.word}`,repeated:true,sourceType:'학습한 예문 빈칸 재확인'});
+     if(retake&&w.def&&!String(w.def).toLowerCase().split(/\W+/).includes(w.word.toLowerCase()))add(g,{question:`Which word matches this definition?\n${w.def}`,choices:[w.word,...shuffle([...new Set(distractors)],rng).slice(0,3)],answer:w.word,explanation:`${w.word}: ${w.meaning}\n${w.def}`,conceptId:`word-definition:${w.word}`,sourceType:'학습한 단어 · 영어 뜻 해석',noveltyKind:'definition-interpretation',cognitiveDemand:'recall',difficulty:'standard'});
+     const expression=new RegExp(`\\b${w.word.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\b`,'i'),sentence=String(w.ex||'');if(expression.test(sentence))add(g,{question:`${sentence.replace(expression,'_____')} (뜻: ${w.meaning})`,choices:[w.word,...shuffle([...new Set(distractors)],rng).slice(0,3)],answer:w.word,explanation:sentence,conceptId:`word:${w.word}`,repeated:!retake,sourceType:retake?'학습한 단어 · 미출제 예문 빈칸':'학습한 예문 빈칸 재확인'});
     }
    }
    if(g.subject==='grammar'){
     const unit=root.EnglishGrammarData?.[c.levelId]?.units?.find(u=>u.id===c.unitId);const lessons=new Set();
     for(const [index,lesson] of (unit?.lessons||[]).entries())if(attempts.some(a=>Number.isInteger(a.lessonIndex)&&a.lessonIndex===index||(lesson.examples||[]).some(pair=>pair.some(part=>[a.answer,a.correctAnswer,a.question].some(v=>normalize(v)&&normalize(part)&&(normalize(v)===normalize(part)||normalize(v).includes(normalize(part))))))))lessons.add(index);
     for(const [index,lesson] of (unit?.lessons||[]).entries())if(attempts.some(a=>[lesson.title,lesson.principle].some(rule=>rule&&rule.length>8&&normalize(a.explanation).includes(normalize(rule)))))lessons.add(index);
-    if(strict){for(const item of root.MockGrammarTransfer||[])if(item.stageId===c.levelId&&item.unitId===c.unitId&&lessons.has(item.lessonIndex))add(g,{...item,templateFamily:`grammar:${c.levelId}:${c.unitId}:${item.lessonIndex}:${item.noveltyKind}`,conceptId:`lesson:${item.lessonIndex}`,cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceQuestionId:item.id,sourceType:'새 상황 문법 적용 · 오류 분석'});continue;}
+    if(strict){if(retake)for(const item of root.MockRetakeGrammar?.create(g,rng)||[])add(g,item);for(const item of root.MockGrammarTransfer||[])if(item.stageId===c.levelId&&item.unitId===c.unitId&&lessons.has(item.lessonIndex))add(g,{...item,templateFamily:`grammar:${c.levelId}:${c.unitId}:${item.lessonIndex}:${item.noveltyKind}`,conceptId:`lesson:${item.lessonIndex}`,cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceQuestionId:item.id,sourceType:'새 상황 문법 적용 · 오류 분석'});continue;}
     const learnedAnswers=new Set(attempts.map(a=>normalize(a.correctAnswer??a.answer)));
     for(const item of generated(()=>root.EnglishGrammarQuiz?.generate(c.unitId,250,'foundation'))||[]){
      const exact=attempts.some(a=>normalize(a.question)===normalize(item.question));
@@ -235,10 +237,10 @@
   // and a small share of harder items is reserved. Caps are a preference: a learner who
   // studied only one unit still receives a complete exam.
   function select(subject,pool,required){
-   if(strict&&subject==='english_reading'){
+   if(strict&&['reading','english_reading'].includes(subject)&&required>0){
     const texts=new Map();for(const q of pool){const rows=texts.get(q.passageId)||[];rows.push(q);texts.set(q.passageId,rows);}
     const full=shuffle([...texts.values()].filter(rows=>rows.length>=required),rng).sort((a,b)=>b.filter(q=>q.cognitiveDemand==='reasoning').length-a.filter(q=>q.cognitiveDemand==='reasoning').length);
-    if(full.length)pool=full[0];
+    if(full.length)pool=full[0];else{const ordered=shuffle([...texts.values()],rng).sort((a,b)=>b.length-a.length);let bundled=[];for(const rows of ordered){bundled.push(...rows);if(bundled.length>=required)break;}if(bundled.length>=required)pool=bundled;}
    }
    const order=list=>shuffle(list,rng).sort((a,b)=>(strict?(Number(['application','reasoning'].includes(b.cognitiveDemand))-Number(['application','reasoning'].includes(a.cognitiveDemand))):0)||(meta.get(b)?.recency||0)-(meta.get(a)?.recency||0));
    const ranked=[...order(pool.filter(q=>!q.repeated)),...order(pool.filter(q=>q.repeated))];

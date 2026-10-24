@@ -25,7 +25,7 @@
         }
         return ['reading', 'grammar', 'english_reading'].includes(attempt.subject) ? [attempt.subject, { ...c, ...base, type: attempt.questionId }] : null;
     }
-    function note(user, assessmentId, attempts) {
+    function note(user, assessmentId, attempts, attemptNo = 1) {
         const local = app.LocalRepository, key = `SmartStudy_MockWrongNoted_${encodeURIComponent(user)}_${assessmentId}`;
         if (!assessmentId || !root.WrongNote?.save || local.getActiveUser() !== user || local.getPreference(key, false)) return 0;
         // Formula mistakes need the formula catalogue; wait for a page that loads it rather than skip them.
@@ -34,7 +34,7 @@
         for (const attempt of attempts) {
             if (attempt.correct) continue;
             const entry = wrongNoteData(attempt); if (!entry) continue;
-            root.WrongNote.save(entry[0], entry[1], 'wrong', assessmentId, 1); saved++;
+            root.WrongNote.save(entry[0], entry[1], 'wrong', assessmentId, Math.max(1,Number(attemptNo)||1)); saved++;
         }
         local.setPreference(key, true);
         return saved;
@@ -43,13 +43,14 @@
     // feature) are noted when the learner next opens the home or today page.
     function sweep(user) {
         const local = app.LocalRepository; if (!user || local?.getActiveUser?.() !== user) return 0;
-        const exams = new Map();
+        const exams = new Map(), rounds = new Map();
         for (const report of local.listReports(user)) {
             const m = report.metadata || {};
             if (!m.mockExam || m.resultVisibility !== 'published' || !m.assessmentId) continue;
+            rounds.set(m.assessmentId,m.attemptNo||report.round||1);
             exams.set(m.assessmentId, [...(exams.get(m.assessmentId) || []), ...(m.initialAttempts || [])]);
         }
-        let saved = 0; for (const [assessmentId, attempts] of exams) saved += note(user, assessmentId, attempts);
+        let saved = 0; for (const [assessmentId, attempts] of exams) saved += note(user, assessmentId, attempts,rounds.get(assessmentId));
         return saved;
     }
     app.MockWrongNote = { note, sweep, wrongNoteData };

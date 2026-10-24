@@ -204,8 +204,10 @@
   const count=Math.max(1,Math.min(12,Number(options.weeks)||1)),dates=[];
   for(let i=0;i<count;i++){const k=new Date(Date.now()+9*3600000-i*7*86400000);k.setUTCDate(k.getUTCDate()-(k.getUTCDay()+6)%7);dates.push(k.toISOString().slice(0,10));}
   if(options.week&&/^\d{4}-\d{2}-\d{2}$/.test(options.week))dates.splice(0,dates.length,options.week);
-  const rows=await timed(Promise.all(dates.map(async week=>{const assessment='mock:'+user+':'+week+':first',doc=await (await ref(user,assessment)).get({source:'server'});if(!doc.exists)return null;const data=doc.data();if(data.learnerId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);return {...data,documentId:doc.id};})));
-  return rows.filter(Boolean).sort((a,b)=>Number(b.payload.submittedAt)-Number(a.payload.submittedAt));
+  const db=await client.getDB();
+  const pages=await timed(Promise.all(dates.map(week=>db.collection('mockExamResults').where('learnerId','==',user).where('payload.scheduledWeekId','==',week).get({source:'server'}))));
+  const rows=[];for(const page of pages)for(const doc of page.docs){const data=doc.data();if(data.learnerId!==user||data.payload?.userId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);rows.push({...data,documentId:doc.id});}
+  return rows.sort((a,b)=>Number(b.payload.submittedAt)-Number(a.payload.submittedAt));
  }
  async function publish(user,assessment){const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');const r=await ref(user,assessment),db=await client.getDB();await timed(db.runTransaction(async tx=>{const doc=await tx.get(r);if(!doc.exists)throw new Error('저장된 시험이 없습니다.');if(doc.data().published)return;tx.update(r,{published:true,publishedAt:root.firebase.firestore.FieldValue.serverTimestamp(),publishedBy:auth.uid});}));return get(user,assessment);}
  app.MockPublication={get,submit,list,publish,id};

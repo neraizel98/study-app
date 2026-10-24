@@ -23,7 +23,7 @@
             const local = app.MockExam.getById(user, assessmentId), snapshot = result.snapshot || result.payload || local;
             if (!snapshot || snapshot.userId !== user || snapshot.assessmentId !== assessmentId || !snapshot.submittedAt
                 || !snapshot.sections?.every(s => s.state === 'ended')) return { published: false, reason: 'incomplete' };
-            try { app.MockWrongNote?.note(user, snapshot.assessmentId, snapshot.initialAttempts || (snapshot.sections || []).flatMap(section => section.initialAttempts || [])); } catch (error) { console.warn('[Mock wrong note]', error); }
+            try { app.MockWrongNote?.note(user, snapshot.assessmentId, snapshot.initialAttempts || (snapshot.sections || []).flatMap(section => section.initialAttempts || []),snapshot.attemptNo||1); } catch (error) { console.warn('[Mock wrong note]', error); }
             return { published: true, publishedAt: result.publishedAt, snapshot };
         } catch (_) { return { published: false, reason: 'offline' }; }
     }
@@ -33,7 +33,7 @@
             const waiting=node('div',null,'released-waiting');waiting.append(node('span','🔒','assessment-icon'),node('h2','결과를 확인하고 있어요'),node('p',result?.reason==='offline'?'인터넷 연결 후 공개 상태를 다시 확인해 주세요.':'선생님·보호자가 공개하면 점수와 해설을 볼 수 있어요.'));container.append(waiting);return;
         }
         const draft = result.snapshot;
-        const heading=node('div',null,'released-heading'),titles=node('div');titles.append(node('span','MY LEARNING REPORT','assessment-eyebrow'),node('h2','나의 모의고사 결과'));heading.append(titles,node('span','결과 공개 완료','assessment-tag'));container.append(heading);
+        const heading=node('div',null,'released-heading'),titles=node('div');titles.append(node('span','MY LEARNING REPORT','assessment-eyebrow'),node('h2',`나의 모의고사 · ${draft.attemptNo||1}회차`));heading.append(titles,node('span','결과 공개 완료','assessment-tag'));container.append(heading);
         const all=draft.sections.flatMap(s=>s.initialAttempts||[]),correctAll=all.filter(a=>a.correct).length;
         const overview=node('div',null,'released-overview'),description=node('div');description.append(node('span','전체 정답'),node('p',`${all.length}문항 중 ${correctAll}문항을 맞혔어요`));
         const overall=node('strong',all.length?String(Math.round(correctAll/all.length*100)):'—');overall.append(node('small','점'));overview.append(description,overall);container.append(overview);
@@ -47,7 +47,7 @@
             if(parts.length>1)for(const part of parts)card.append(node('p',`${names[part.subject]} ${part.attempts.filter(a=>a.correct).length}/${part.attempts.length}`));
             grid.append(card);
         }
-        container.append(grid, node('p', '첫 제출 점수입니다. 같은 문제를 다시 확인해도 이 점수는 바뀌지 않습니다.', 'released-first-note'));
+        container.append(grid, node('p', '이 회차의 제출 점수입니다. 다시 응시한 결과는 별도 회차에 기록됩니다.', 'released-first-note'));
         for (const section of draft.sections) {
             const detail = node('details',null,'released-details'), summary = node('summary', `${section.name} · 답안과 해설`); detail.append(summary);
             (section.initialAttempts || []).forEach((attempt, index) => {

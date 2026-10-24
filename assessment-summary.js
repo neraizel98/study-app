@@ -9,7 +9,7 @@
         panel.replaceChildren();panel.classList.add('assessment-summary');
         const header=el('div','assessment-heading'),titles=el('div'),label=el('span','assessment-eyebrow','LEARNING REPORT');
         titles.append(label,el('h3',null,'최근 학습 평가'));
-        const badge=el('span','assessment-tag',rows.some(r=>r.metadata?.examTraining)?'학습 모의고사':'주간 학습 확인');header.append(titles,badge);
+        const badge=el('span','assessment-tag',rows.some(r=>r.metadata?.examTraining)?`학습 모의고사 · ${rows[0]?.metadata?.attemptNo||1}회차`:'주간 학습 확인');header.append(titles,badge);
         const overview=el('div','assessment-overview');overview.append(el('span',null,'전체 정답'),el('strong',null,`${correct} / ${total}`),el('span','assessment-percent',total?`${Math.round(correct/total*100)}%`:'—'));
         const grid=el('div','assessment-subjects'),supplements=new Set();
         for(const report of rows){
