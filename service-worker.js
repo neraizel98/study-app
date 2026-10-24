@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261024-internal-levels';
+const CACHE_NAME = 'smart-study-20261024-mock-transfer';
 
 try {
     importScripts('./firebase-config.js');
@@ -117,6 +117,12 @@ const STATIC_ASSETS = [
     './mock-exam.css',
     './mock-publication.js',
     './mock-admin.js',
+    './MockKoreanTransfer.js',
+    './MockEnglishTransfer.js',
+    './MockGrammarTransfer.js',
+    './mock-math-transfer.js',
+    './mock-hanja-transfer.js',
+    './mock-exam-quality.js',
     './mock-exam-bank.js',
     './mock-reading-content.js',
     './english-speech.js',

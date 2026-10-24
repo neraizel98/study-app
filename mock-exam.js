@@ -42,7 +42,7 @@
     }
     function validateBank(bank) {
         const items = bank?.items || [], counts = Object.fromEntries(Object.keys(areas).map(subject => [subject, items.filter(q => q.subject === subject).length]));
-        return bank?.complete === true && items.length === 55 && new Set(items.map(q => q.id)).size === 55
+        return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === 55 && new Set(items.map(q => q.id)).size === 55
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
             && Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count)
@@ -65,6 +65,7 @@
             scheduledDate: options.scheduledDate || new Date(now + 9 * 3600000).toISOString().slice(0, 10), scopeCutoffAt: bank.scopeCutoffAt || now,
             kind: 'mock', attemptNo: 1, parentAttemptId: null, bankVersion: bank.version || 'unknown', quotas: { ...clone(areas), reading: bank.items.filter(q => q.subject === 'reading').length, korean_vocab: bank.items.filter(q => q.subject === 'korean_vocab').length },
             evidenceWindowDays: bank.evidenceWindowDays || null, repeatAvoidanceDays: bank.repeatAvoidanceDays || null,
+            repeatPolicy:bank.repeatPolicy||null,quality:bank.quality?clone(bank.quality):null,policyId:bank.policyId||null,
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
             scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false,
             questions: clone(bank.items), sections, cursor: 0, responses: {}, startedAt: now, submittedAt: null,
@@ -91,7 +92,8 @@
                 passageId: q.passageId || null, passageTitle: q.passageTitle || '', passageText: q.passageLines || q.passageText || [],
                 sourceType: q.sourceType || '', sourceReportIds: q.sourceReportIds || q.evidenceReportIds || [],
                 conceptId: q.conceptId || null, sourceQuestionId: q.sourceQuestionId || null,
-                repeated: !!q.repeated, assisted: false, generator: q.generator || null };
+                repeated: !!q.repeated, assisted: false, generator: q.generator || null,
+                fingerprint:q.fingerprint||null,templateFamily:q.templateFamily||null,noveltyKind:q.noveltyKind||null,cognitiveDemand:q.cognitiveDemand||null,difficulty:q.difficulty||null };
         });
         if (index === 1) draft.break = { startedAt: now, deadline: now + 5 * 60000, endedAt: null };
         else activate(draft, index + 1, now);

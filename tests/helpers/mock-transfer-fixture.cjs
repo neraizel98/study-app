@@ -1,0 +1,17 @@
+const fs=require('node:fs'),vm=require('node:vm');
+const files=['utils.js','ReadingData.js','ReadingPassages.js','KoreanReadingMiddle.js','KoreanReadingHigh.js','KoreanReadingCurriculum.js','VocabEng.js','EnglishGrammarData.js','EnglishGrammarExpanded.js','EnglishGrammarQuiz.js','english-curriculum.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','VocabHanja.js','MathQuizData.js','MathData.js','MathDataMiddle1.js','MathQuizMiddle1.js','MathFormulaData.js','MathFormulaDataExtra.js','MathFormulaDataVolume2.js','MathFormulaDataVolume3.js','MathFormulaDataVolume4.js','quiz-registry.js','MathFormulaQuiz.js','MathFormulaQuizExtra.js','MathFormulaReview.js','KoreanVocabData.js','KoreanVocabLevel1a.js','KoreanVocabLevel1b.js','KoreanVocabQuiz.js','learning-budget-policy.js','learning-plan.js','unified-learning.js','MockKoreanTransfer.js','MockEnglishTransfer.js','MockGrammarTransfer.js','mock-math-transfer.js','mock-hanja-transfer.js','mock-exam-quality.js','mock-exam-bank.js','mock-exam.js'];
+function setup(now=Date.parse('2026-10-25T10:00:00+09:00')){
+ const reports=[],prefs=new Map(),c={console,Date,Set,Map,URLSearchParams,Math:Object.create(Math)};c.window=c;
+ c.SmartStudy={LocalRepository:{getActiveUser:()=> 'learner',listReports:()=>reports,getPreference:(k,d)=>prefs.get(k)??d,setPreference:(k,v)=>prefs.set(k,v),getWrongAnswers:()=>({}),getUser:()=>({})}};
+ vm.createContext(c);for(const file of files)vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+ let id=0;const add=(subject,metadata,attempts)=>reports.push({userId:'learner',subject,sessionId:'evidence-'+id++,date:now-86400000,totalQuestions:attempts.length,initialScore:attempts.length,metadata:{...metadata,initialAttempts:attempts.map(a=>({...a,correct:true}))}});
+ for(const p of c.ReadingPassages.filter(p=>p.grade===7).slice(0,3))add('reading',{levelId:'level1',unitId:p.unitId,passageId:p.id,grade:7},p.questions.map(q=>({questionId:q.id,question:q.question,correctAnswer:q.answer,skill:q.skill,passageId:p.id})));
+ const wordUnit=Object.keys(c.vocabData)[0];add('english',{unitId:wordUnit},c.vocabData[wordUnit].slice(0,8).map(w=>({word:w.word,question:w.word,correctAnswer:w.word})));
+ const grammar=c.EnglishGrammarData.middle.units.find(u=>u.id==='m2');add('grammar',{stageId:'middle',unitId:'m2'},grammar.lessons.flatMap((lesson,lessonIndex)=>lesson.examples.map(pair=>({lessonIndex,question:pair[0],correctAnswer:pair[1],explanation:lesson.principle}))));
+ const p=c.EnglishReadingData.units.find(u=>u.gradeId==='middle1').passages[0];add('english_reading',{levelId:'middle1',unitId:'mr1-unit1',passageId:p.id},p.questions.map(q=>({questionId:q.id,question:q.prompt,correctAnswer:q.choices[q.answerIndex],passageId:p.id})));
+ const generators=['circle_area_basic','circle_circumference','circle_reverse_radius','circle_diameter_from_circumference'];add('math',{levelId:'elementary-6',semesterId:'2',unitId:'e6-2-u5'},generators.map(generator=>({generator,question:generator,correctAnswer:'1'})));
+ add('math',{source:'math-formula',formulaNumber:16,unitId:'formula-16'},[{questionId:'formula-16-guided-calculation',question:'가로 5, 세로 4인 직사각형의 넓이는?',correctAnswer:'20',type:'guided-calculation'}]);
+ add('hanja',{unitId:'level8'},c.vocabHanja.level8.slice(0,10).map(w=>({hanja:w.hanja,question:w.hanja,correctAnswer:`${w.meaning} ${w.eum}`})));
+ return {c,reports,prefs,now,api:c.SmartStudy.MockExamBank};
+}
+module.exports={setup,files};

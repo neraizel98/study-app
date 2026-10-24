@@ -228,6 +228,7 @@
         const detail = {
             type: `${unit().id}:${q.question}`,
             quizType: q.type || 'choice',
+            lessonIndex: q.lessonIndex,
             category: 'grammar',
             stageId,
             stageTitle: stage().title,

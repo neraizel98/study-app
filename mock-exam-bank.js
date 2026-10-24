@@ -2,7 +2,7 @@
  'use strict';
  const app=root.SmartStudy=root.SmartStudy||{},DAY=86400000;
  const quotas=Object.freeze({reading:11,korean_vocab:4,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
- const version='20261019-mock-bank-v3';
+ const version='20261024-mock-transfer-v4';
  const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'').trim();
  // Choice order, case, and spacing are presentation, not a new question.
  function fingerprint(q){const lines=q.passageLines||q.passageText||q.sentences||[];return [q.subject,normalize(q.question||q.prompt),normalize(q.answer??q.correctAnswer),...(Array.isArray(lines)?lines:[lines]).map(normalize)].join('|');}
@@ -64,14 +64,15 @@
   }
   return [...groups.values()];
  }
- function recentQuestions(reports,now){
-  const seen=new Set(),ids=new Set();
-  for(const r of reports){if(!r||typeof r!=='object')continue;const at=Number(r.metadata?.submittedAt||r.createdAt||r.date);if(!Number.isFinite(at)||at>now||at<now-14*DAY)continue;
+ function core(subject,question,answer){return [subject,normalize(question).replace(/\$/g,''),normalize(answer).replace(/\$/g,'')].join('|');}
+ function recentQuestions(reports,now,strict=false){
+  const seen=new Set(),ids=new Set(),cores=new Set(),passageIds=new Set();
+  for(const r of reports){if(!r||typeof r!=='object')continue;const at=Number(r.metadata?.submittedAt||r.createdAt||r.date);if(!Number.isFinite(at)||at>now||(!strict&&at<now-14*DAY))continue;
    const attempts=r.metadata?.initialAttempts||r.metadata?.attempts||[],questions=r.metadata?.questions||r.metadata?.questionSnapshot||[];
-   for(const a of Array.isArray(attempts)?attempts:[]){if(!a)continue;const subject=a.subject||a.assessmentSubject||(r.metadata?.source==='math-formula'?'math_formula':r.subject);seen.add(fingerprint({...a,subject,answer:a.correctAnswer??a.answer}));if(a.questionId)ids.add(String(a.questionId));}
-   for(const q of Array.isArray(questions)?questions:[]){if(!q)continue;seen.add(fingerprint(q));if(q.id)ids.add(String(q.id));}
+   for(const a of Array.isArray(attempts)?attempts:[]){if(!a)continue;const subject=a.subject||a.assessmentSubject||(r.metadata?.source==='math-formula'?'math_formula':r.subject);seen.add(fingerprint({...a,subject,answer:a.correctAnswer??a.answer}));cores.add(core(subject,a.question||a.prompt,a.correctAnswer??a.answer));if(a.fingerprint)seen.add(a.fingerprint);if(a.passageId)passageIds.add(String(a.passageId));if(a.questionId)ids.add(String(a.questionId));}
+   for(const q of Array.isArray(questions)?questions:[]){if(!q)continue;seen.add(fingerprint(q));cores.add(core(q.subject,q.question||q.prompt,q.answer??q.correctAnswer));if(q.fingerprint)seen.add(q.fingerprint);if(q.passageId)passageIds.add(String(q.passageId));if(q.id)ids.add(String(q.id));}
   }
-  return {seen,ids};
+  return {seen,ids,cores,passageIds};
  }
  const skillOf=skill=>/중심|주제|제목/.test(skill||'')?'main':/내용 확인|정보 확인|사실/.test(skill||'')?'fact':/근거|주장/.test(skill||'')?'evidence':/추론|관점|심리|의미|평가|갈등|태도|정서|화자|상징|비유|표현|시점/.test(skill||'')?'inference':/구조|전개|역할|기능|설명 방식/.test(skill||'')?'structure':null;
  const q=(skill,question,answer,wrong,explanation)=>({skill,question,answer,choices:[answer,...wrong],explanation});
@@ -87,21 +88,46 @@
   {id:'mock-moon-picture',sourcePassageId:'er1-p0',title:'Two Moon Pictures',lines:['Jin looks at two pictures of the moon.','The first picture shows a thin curve.','The second picture shows a wider bright part.','Jin draws the two shapes in his notebook.','He learns that the pictures show a change in the moon.'],questions:[q('fact','What does Jin look at?','Two pictures of the moon',['Three pictures of the moon','Two pictures of the sun','The notebook of a friend'],'첫 문장에 달 사진 두 장을 본다고 나온다.'),q('main','What is the passage mainly about?','Jin compares two moon shapes.',['Jin draws a thin curve only.','Jin takes two moon pictures.','The moon stops changing its shape.'],'서로 다른 달 모양을 보고 기록하는 내용이다.'),q('reference','Who does “He” in sentence 5 refer to?','Jin',['the moon','the notebook','the first picture'],'앞 문장에서 그림을 그린 사람 Jin을 가리킨다.'),q('evidence','Which sentence shows that Jin keeps a record?','Sentence 4',['Sentence 1','Sentence 2','Sentence 3'],'4문장의 공책 그림이 기록의 근거이다.')]},
   {id:'mock-moon-observe',sourcePassageId:'er1-p0',title:'A Bright Part',lines:['Sora draws the moon on Monday.','The moon looks like a thin curve.','Three nights later, she looks at the moon again.','The bright part is wider, so she draws a new shape.','Her notebook shows the change over time.'],questions:[q('fact','When does Sora first draw the moon?','On Monday',['On Thursday','On Sunday','Every night'],'첫 문장에 Monday라고 제시한다.'),q('main','What does the notebook show?','A change in the moon over time',['A thin curve drawn on Monday','A moon shape that never changes','The days Sora goes to school'],'마지막 문장이 공책 기록의 의미를 정리한다.'),q('reference','Who does “she” in sentence 3 refer to?','Sora',['Monday','the moon','the bright part'],'앞 두 문장의 주인공 Sora를 가리킨다.'),q('evidence','Which sentence shows a different moon shape?','Sentence 4',['Sentence 1','Sentence 2','Sentence 3'],'4문장에서 밝은 부분이 더 넓어져 새 모양을 그린다.')]}
  ];
- function build(user,now=Date.now()){
+ function build(user,now=Date.now(),options={}){
+  const strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
   now=Number(now);if(!Number.isFinite(now))now=Date.now();
-  const reports=app.LocalRepository?.listReports(user)||[],scopes=learnedScopes(reports,now),recent=recentQuestions(reports,now);
-  const rng=random(`${user}:${Math.floor((now+9*3600000)/DAY)}:${version}`),pools=Object.fromEntries(Object.keys(quotas).map(s=>[s,[]])),used=new Set(),meta=new Map();
+  const reports=(app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user)),scopes=learnedScopes(reports,now);
+  const history=[...reports];
+  if(strict)for(const week of app.LocalRepository?.getPreference?.(`SmartStudy_MockExam_Index_${encodeURIComponent(user)}`,[])||[]){
+   const draft=app.LocalRepository.getPreference(`SmartStudy_MockExam_${encodeURIComponent(user)}_${week}`,null);
+   if(draft?.userId===user&&draft.questions?.length)history.push({date:draft.startedAt||now,metadata:{questions:draft.questions}});
+  }
+  const recent=recentQuestions(history,now,strict);
+  const rng=random(`${user}:${Math.floor((now+9*3600000)/DAY)}:${buildVersion}`),pools=Object.fromEntries(Object.keys(quotas).map(s=>[s,[]])),used=new Set(),meta=new Map();
   function generated(factory){const previous=root.Math.random;root.Math.random=rng;try{return factory();}finally{root.Math.random=previous;}}
   function add(g,item){
-   const candidate={...item,subject:g.subject,context:{...g.context},kind:'choice',choices:(item.choices||[]).map(String),answer:String(item.answer??''),explanation:item.explanation||'',evidenceReportIds:[...g.reportIds],sourceType:item.sourceType||'학습 범위의 검증 문항',repeated:Boolean(item.repeated)};
+   const candidate={...item,subject:g.subject,context:{...g.context},kind:'choice',choices:(item.choices||[]).map(String),answer:String(item.answer??''),explanation:item.explanation||'',evidenceReportIds:[...g.reportIds],sourceType:item.sourceType||'학습 범위의 검증 문항',repeated:Boolean(item.repeated),difficulty:item.difficulty||'basic',noveltyKind:item.noveltyKind||(item.repeated?'reexposure':'recall'),cognitiveDemand:item.cognitiveDemand||'recall'};
+   if(strict&&(candidate.repeated||candidate.passageId&&recent.passageIds.has(String(candidate.passageId))))return;
    if(!valid(candidate))return;
    const fp=fingerprint(candidate);candidate.id=`mock:${g.subject}:${hash(fp).toString(36)}`;
+   if(strict&&recent.cores.has(core(candidate.subject,candidate.question,candidate.answer)))return;
    if(used.has(fp)||recent.seen.has(fp)||recent.ids.has(candidate.id)||candidate.sourceQuestionId&&recent.ids.has(String(candidate.sourceQuestionId)))return;
    candidate.fingerprint=fp;candidate.choices=shuffle(candidate.choices,rng);used.add(fp);pools[g.subject].push(candidate);
    meta.set(candidate,{recency:g.lastAt||0,unit:[g.subject,g.context.levelId||'',g.context.semesterId||'',g.context.unitId||''].join(':')});
   }
   for(const g of scopes){
    const attempts=g.attempts,c=g.context;
+   if(strict&&g.subject==='reading'){
+    const grade=root.KoreanReadingCurriculum?.gradeOfUnit(c.unitId)||7;
+    const skills=new Set(attempts.map(a=>{const p=(root.ReadingPassages||[]).find(p=>p.unitId===c.unitId&&(p.levelId||'level1')===(c.levelId||'level1')&&g.passageIds.has(p.id));const original=p?.questions?.find(q=>q.id===a.questionId||normalize(q.question)===normalize(a.question));return skillOf(a.skill||original?.skill);}).filter(Boolean));
+    // Locating a stated fact is a prerequisite of the evidenced higher-order reading skills, not a new syllabus topic.
+    if(skills.size)skills.add('fact');
+    for(const p of root.MockKoreanTransfer||[])if(p.grade===grade)for(const item of p.questions)if(skills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:item.id,conceptId:`reading:${item.skill}`,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 지문 · 배운 읽기 기능 적용'});
+    continue;
+   }
+   if(strict&&g.subject==='english_reading'){
+    const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId&&(u.gradeId||'grade6')===(c.levelId||'grade6'));
+    const skills=new Set();for(const p of unit?.passages||[])if(g.passageIds.has(p.id))for(const a of attempts){const q=p.questions.find(q=>q.id===a.questionId||normalize(q.prompt)===normalize(a.question));if(q)skills.add(q.type);}
+    for(const p of root.MockEnglishTransfer||[])if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
+    continue;
+   }
+   if(strict&&g.subject==='math'){for(const item of root.MockMathTransfer?.create(g,rng)||[])add(g,item);continue;}
+   if(strict&&g.subject==='math_formula'){for(const item of generated(()=>root.MockMathTransfer?.createFormula(g,rng))||[])add(g,item);continue;}
    if(g.subject==='reading'){
     const currentCourse=root.KoreanReadingCurriculum&&[...g.passageIds].some(id=>root.KoreanReadingCurriculum.isCurrentPassageId(id));
     const learnedSkills=new Set();
@@ -119,6 +145,8 @@
    if(g.subject==='grammar'){
     const unit=root.EnglishGrammarData?.[c.levelId]?.units?.find(u=>u.id===c.unitId);const lessons=new Set();
     for(const [index,lesson] of (unit?.lessons||[]).entries())if(attempts.some(a=>Number.isInteger(a.lessonIndex)&&a.lessonIndex===index||(lesson.examples||[]).some(pair=>pair.some(part=>[a.answer,a.correctAnswer,a.question].some(v=>normalize(v)&&normalize(part)&&(normalize(v)===normalize(part)||normalize(v).includes(normalize(part))))))))lessons.add(index);
+    for(const [index,lesson] of (unit?.lessons||[]).entries())if(attempts.some(a=>[lesson.title,lesson.principle].some(rule=>rule&&rule.length>8&&normalize(a.explanation).includes(normalize(rule)))))lessons.add(index);
+    if(strict){for(const item of root.MockGrammarTransfer||[])if(item.stageId===c.levelId&&item.unitId===c.unitId&&lessons.has(item.lessonIndex))add(g,{...item,templateFamily:`grammar:${c.levelId}:${c.unitId}:${item.lessonIndex}:${item.noveltyKind}`,conceptId:`lesson:${item.lessonIndex}`,cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceQuestionId:item.id,sourceType:'새 상황 문법 적용 · 오류 분석'});continue;}
     const learnedAnswers=new Set(attempts.map(a=>normalize(a.correctAnswer??a.answer)));
     for(const item of generated(()=>root.EnglishGrammarQuiz?.generate(c.unitId,250,'foundation'))||[]){
      const exact=attempts.some(a=>normalize(a.question)===normalize(item.question));
@@ -138,7 +166,7 @@
      for(const word of levelPool.filter(w=>seenTypes.has(w.id)))for(const type of quiz.available(word)){
       const item=quiz.question(word,type,levelPool,rng);if(!item)continue;
       add(g,{question:item.question,choices:item.choices,answer:item.answer,explanation:item.explanation,passageTitle:item.passage?.title||'',passageLines:item.passage?.lines||undefined,
-       conceptId:`vocab:${word.id}`,wordId:word.id,questionType:type,repeated:seenTypes.get(word.id).has(type),sourceType:'학습한 어휘 확인',difficulty:level.id==='level2'?'standard':'basic'});
+       noveltyKind:'recall',cognitiveDemand:'recall',conceptId:`vocab:${word.id}`,wordId:word.id,questionType:type,repeated:seenTypes.get(word.id).has(type),sourceType:'학습한 어휘 확인',difficulty:level.id==='level2'?'standard':'basic'});
      }
     }
    }
@@ -174,6 +202,7 @@
     }
    }
    if(g.subject==='hanja'){
+    if(strict){for(const item of root.MockHanjaTransfer?.create(g,root.vocabHanja?.[c.unitId]||[],rng)||[])add(g,item);continue;}
     const bank=root.vocabHanja?.[c.unitId]||[],level=Number(String(c.unitId).replace(/\D/g,'')),difficulty=level>=7?'basic':level===6?'standard':'challenge';
     for(const w of bank)if(attempts.some(a=>[a.hanja,a.word,a.question,a.correctAnswer].some(v=>normalize(v)===normalize(w.hanja))||String(a.question||'').includes(w.hanja))){
      const answer=`${w.meaning} ${w.eum}`,other=[...new Set(bank.map(x=>`${x.meaning} ${x.eum}`))].filter(v=>v!==answer);if(other.length>=3)add(g,{question:`${w.hanja}의 뜻과 음은?`,choices:[answer,...shuffle(other,rng).slice(0,3)],answer,explanation:`${w.hanja}: ${answer}`,conceptId:`hanja:${w.hanja}`,difficulty,sourceType:'학습한 한자 뜻·음 확인'});
@@ -185,14 +214,19 @@
   // and a small share of harder items is reserved. Caps are a preference: a learner who
   // studied only one unit still receives a complete exam.
   function select(subject,pool,required){
+   if(strict&&subject==='english_reading'){
+    const texts=new Map();for(const q of pool){const rows=texts.get(q.passageId)||[];rows.push(q);texts.set(q.passageId,rows);}
+    const full=shuffle([...texts.values()].filter(rows=>rows.length>=required),rng).sort((a,b)=>b.filter(q=>q.cognitiveDemand==='reasoning').length-a.filter(q=>q.cognitiveDemand==='reasoning').length);
+    if(full.length)pool=full[0];
+   }
    const order=list=>shuffle(list,rng).sort((a,b)=>(meta.get(b)?.recency||0)-(meta.get(a)?.recency||0));
    const ranked=[...order(pool.filter(q=>!q.repeated)),...order(pool.filter(q=>q.repeated))];
    const cap=CAPS[subject]||{},picked=[],units=new Map(),concepts=new Map();
    const fits=q=>(!cap.unit||(units.get(meta.get(q)?.unit)||0)<cap.unit)&&(!cap.concept||(concepts.get(q.conceptId)||0)<cap.concept);
    const take=q=>{picked.push(q);const unit=meta.get(q)?.unit;units.set(unit,(units.get(unit)||0)+1);concepts.set(q.conceptId,(concepts.get(q.conceptId)||0)+1);};
-   for(const [tier,share] of Object.entries(MIX[subject]||{})){let left=Math.round(required*share);for(const q of ranked)if(left>0&&q.difficulty===tier&&!picked.includes(q)&&fits(q)){take(q);left--;}}
+   for(const [tier,share] of Object.entries(strict?{challenge:.25,standard:.6}:(MIX[subject]||{}))){let left=Math.round(required*share);for(const q of ranked)if(left>0&&q.difficulty===tier&&!picked.includes(q)&&fits(q)){take(q);left--;}}
    for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&fits(q))take(q);
-   for(const q of ranked)if(picked.length<required&&!picked.includes(q))take(q);
+   for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&(!strict||!cap.concept||(concepts.get(q.conceptId)||0)<cap.concept))take(q);
    return shuffle(picked,rng);
   }
   const items=[],shortages={};
@@ -206,9 +240,10 @@
    if(subject==='math')selected.filter(writable).slice(0,WRITTEN_MATH).forEach(q=>Object.assign(q,{kind:'written',inputHint:'분수는 4/9처럼 쓰고, 단위는 빼도 돼요.'}));
    items.push(...selected);
    if(subject==='reading')items.push(...vocabularyItems); // 국어 영역: 독해 다음에 어휘
-   if(selected.length<required)shortages[subject]={required,actual:selected.length,missing:required-selected.length,reason:'최근 3주 실제 학습의 세부 근거 또는 최근 14일 미출제 문항이 부족합니다. 미학습 범위로 채우지 않았습니다.'};
+   if(selected.length<required)shortages[subject]={required,actual:selected.length,missing:required-selected.length,reason:strict?'학습한 범위에서 아직 풀지 않은 적용·추론 문항이 부족합니다. 이미 푼 문제로 채우지 않았습니다.':'최근 3주 실제 학습의 세부 근거 또는 최근 14일 미출제 문항이 부족합니다.'};
   }
-  return {items,quotas:{...quotas},shortages,complete:Object.keys(shortages).length===0,version,scopeCutoffAt:now,evidenceWindowDays:21,repeatAvoidanceDays:14,newQuestionCount:items.filter(q=>!q.repeated).length,reexposureCount:items.filter(q=>q.repeated).length};
+  const quality=strict?(root.MockExamQuality?.evaluate(items)||{complete:false,deficits:{dependency:{reason:'시험 품질 검사 준비가 필요합니다.'}}}):null;
+  return {items,quotas:{...quotas},shortages,quality,complete:Object.keys(shortages).length===0&&(!strict||quality.complete),version:buildVersion,policyId:strict?root.MockExamQuality?.policyId:null,scopeCutoffAt:now,evidenceWindowDays:21,repeatAvoidanceDays:strict?null:14,repeatPolicy:strict?'all-stored-history':'14-days',newQuestionCount:items.filter(q=>!q.repeated).length,reexposureCount:items.filter(q=>q.repeated).length};
  }
  app.MockExamBank={build,grade,quotas,version,fingerprint,learnedScopes,writtenKey};
 })(window);

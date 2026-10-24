@@ -4,7 +4,8 @@ function setup(){
  const reports=[],c={console,Date,Set,Map,Math:Object.create(Math)};c.window=c;c.SmartStudy={LocalRepository:{listReports:()=>reports}};
  vm.createContext(c);
  for(const file of ['utils.js','VocabEng.js','MathQuizData.js','ReadingPassages.js','EnglishReadingData.js','EnglishGrammarData.js','EnglishGrammarQuiz.js','VocabHanja.js','MathFormulaData.js','MathFormulaDataExtra.js','quiz-registry.js','MathFormulaQuiz.js','MathFormulaQuizExtra.js','MathFormulaReview.js','KoreanVocabData.js','KoreanVocabLevel1a.js','KoreanVocabLevel1b.js','KoreanVocabLevel2a.js','KoreanVocabLevel2b.js','KoreanVocabQuiz.js','english-curriculum.js','learning-budget-policy.js','learning-plan.js','unified-learning.js','mock-reading-content.js','mock-exam-bank.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
- return {c,reports,api:c.SmartStudy.MockExamBank};
+ // Preserve the archived generator contract; strict defaults are covered with the real current curriculum in mock-transfer-bank.test.js.
+ return {c,reports,api:{...c.SmartStudy.MockExamBank,build:(user,now)=>c.SmartStudy.MockExamBank.build(user,now,{profile:'legacy'})}};
 }
 function report(subject,unitId,attempts,extra={}){return {subject,sessionId:`${subject}:${unitId}:${extra.date||NOW}`,date:NOW-18*DAY,totalQuestions:attempts.length,metadata:{unitId,initialAttempts:attempts.map(a=>({...a,correct:true})),...extra.metadata},...extra};}
 function seed(s){

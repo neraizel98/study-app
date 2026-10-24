@@ -43,9 +43,10 @@
             clear(); $('readyPanel').hidden = false;
             if (params.has('assessment')) { $('bankStatus').textContent = '이 기기에 시험이 없습니다. 공개된 결과를 서버에서 확인합니다.'; $('startExam').hidden = true; $('remoteResult').hidden = false; return; }
             bank = app.MockExamBank.build(user, Date.now());
-            $('bankStatus').textContent = api.validateBank(bank) ? '최근 실제로 학습한 범위에서 55문항을 준비했어요.' : '정규 55문항 시험 준비 중이에요. 부족한 영역을 먼저 학습해 주세요.';
+            $('bankStatus').textContent = api.validateBank(bank) ? '학습한 범위의 새 지문·응용 문제로 55문항을 준비했어요. 기존 풀이 기록과 중복을 확인했어요.' : '정규 55문항 시험 준비 중이에요. 부족한 영역을 먼저 학습해 주세요.';
             $('shortages').replaceChildren();
             for (const [subject, shortage] of Object.entries(bank.shortages || {})) if (shortage.missing > 0) $('shortages').append(text('li', `${app.MockExamBank.subjectNames?.[subject] || ({reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[subject] || subject}: ${shortage.actual}/${shortage.required}문항 · ${shortage.missing}문항 부족`));
+            for(const [area,deficit] of Object.entries(bank.quality?.deficits||{}))$('shortages').append(text('li',`${({reading:'국어',english:'영어',math:'수학',hanja:'한자'})[area]||area}: 적용·추론 문항 준비가 더 필요해요. 이미 푼 문제로 대체하지 않습니다.`));
             if (!api.validateBank(bank) && !$('shortages').children.length) $('shortages').append(text('li', '문항 구성과 영역 배분 확인이 필요합니다.'));
             $('startExam').disabled = !api.validateBank(bank);
             const minutes = app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};
@@ -74,6 +75,7 @@
             $('passage').replaceChildren();
             if (q.passageTitle) $('passage').append(text('h3', q.passageTitle));
             const lines = q.passageLines || q.passageText || []; for (const line of Array.isArray(lines) ? lines : [lines]) $('passage').append(text('p', line));
+            if(q.glossary?.length)$('passage').append(text('p','낱말·구문 도움: '+q.glossary.map(item=>`${item.word}: ${item.meaning}`).join(' · ')));
             $('passage').hidden = !$('passage').childNodes.length;
             $('choices').replaceChildren();
             if (q.passageId && (q.passageLines || q.passageText) && !readPassages.has(q.passageId) && !draft.responses[q.id]) {
