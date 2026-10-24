@@ -167,7 +167,9 @@ service cloud.firestore {
         && request.resource.data.payload.questions is list && request.resource.data.payload.initialAttempts is list && request.resource.data.payload.reports is list
         && request.resource.data.payload.questions.size() == 55
         && request.resource.data.payload.initialAttempts.size() == 55
-        && request.resource.data.payload.reports.size() == 7;
+        // Four areas, with only the studied component subjects represented (up to eight).
+        && request.resource.data.payload.reports.size() >= 4
+        && request.resource.data.payload.reports.size() <= 8;
       allow update: if isAdmin() && canUse(resource.data.learnerId)
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['published','publishedAt','publishedBy'])
         && resource.data.published == false && request.resource.data.published == true

@@ -45,8 +45,10 @@
         return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === 55 && new Set(items.map(q => q.id)).size === 55
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
-            && Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count)
-            && counts.reading + counts.korean_vocab === KOREAN.total && counts.korean_vocab <= KOREAN.vocabularyMax;
+            && (bank.policyId==='weekly-transfer-20261024'
+                ? items.every(q=>!q.repeated)&&Object.entries(areas).every(([subject])=>Number.isInteger(bank.quotas?.[subject])&&bank.quotas[subject]>=0&&counts[subject]===bank.quotas[subject])&&counts.english+counts.grammar+counts.english_reading===15&&counts.math+counts.math_formula===15&&counts.hanja===10
+                : Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count))
+            && counts.reading + counts.korean_vocab === KOREAN.total && (bank.policyId==='weekly-transfer-20261024'||counts.korean_vocab <= KOREAN.vocabularyMax);
     }
     function create(user, bank, now = Date.now(), options = {}) {
         assertUser(user);
@@ -63,9 +65,9 @@
         sections[0].deadline = now + sections[0].durationSeconds * 1000;
         return write({ schemaVersion: 1, assessmentId: `mock:${user}:${scheduledWeekId}:first`, userId: user, scheduledWeekId,
             scheduledDate: options.scheduledDate || new Date(now + 9 * 3600000).toISOString().slice(0, 10), scopeCutoffAt: bank.scopeCutoffAt || now,
-            kind: 'mock', attemptNo: 1, parentAttemptId: null, bankVersion: bank.version || 'unknown', quotas: { ...clone(areas), reading: bank.items.filter(q => q.subject === 'reading').length, korean_vocab: bank.items.filter(q => q.subject === 'korean_vocab').length },
+            kind: 'mock', attemptNo: 1, parentAttemptId: null, bankVersion: bank.version || 'unknown', quotas: Object.fromEntries(Object.keys(areas).map(subject=>[subject,bank.items.filter(q=>q.subject===subject).length])),
             evidenceWindowDays: bank.evidenceWindowDays || null, repeatAvoidanceDays: bank.repeatAvoidanceDays || null,
-            repeatPolicy:bank.repeatPolicy||null,quality:bank.quality?clone(bank.quality):null,policyId:bank.policyId||null,
+            repeatPolicy:bank.repeatPolicy||null,quality:bank.quality?clone(bank.quality):null,policyId:bank.policyId||null,weeklyCoverage:bank.weeklyCoverage?clone(bank.weeklyCoverage):null,
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
             scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false,
             questions: clone(bank.items), sections, cursor: 0, responses: {}, startedAt: now, submittedAt: null,
@@ -154,7 +156,7 @@
         return draft;
     }
     function reportsFor(draft) {
-        return draft.sections.filter(s => s.state === 'ended').flatMap(section => section.subjects.map(subject => {
+        return draft.sections.filter(s => s.state === 'ended').flatMap(section => section.subjects.filter(subject=>section.initialAttempts.some(a=>a.subject===subject)).map(subject => {
             const attempts = section.initialAttempts.filter(a => a.subject === subject);
             const score = attempts.filter(a => a.correct).length, context = attempts[0]?.context || {}, formula = subject === 'math_formula';
             return { sessionId: `${draft.assessmentId}:${subject}`, subject: formula ? 'math' : subject, level: `${section.name} 종합 모의고사`,
@@ -169,7 +171,7 @@
                     elapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
                     sectionElapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0), timeAccountingVersion: 'active-v1',
                     unansweredCount: attempts.filter(a => a.unanswered).length, initialAttempts: clone(attempts), attempts: clone(attempts),
-                    requestedCount: ['reading', 'korean_vocab'].includes(subject) ? (draft.quotas?.[subject] ?? areas[subject]) : areas[subject], actualCount: attempts.length, repeatedCount: attempts.filter(a => a.repeated).length,
+                    requestedCount: draft.quotas?.[subject] ?? areas[subject], actualCount: attempts.length, repeatedCount: attempts.filter(a => a.repeated).length,
                     newQuestionCount: attempts.filter(a => !a.repeated).length, scopeComplete: true,
                     questionContexts: attempts.map(a => ({ questionId: a.questionId, context: a.context, sourceReportIds: a.sourceReportIds })) } };
         }));

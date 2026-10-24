@@ -2,7 +2,7 @@
  'use strict';
  const app=root.SmartStudy=root.SmartStudy||{},DAY=86400000;
  const quotas=Object.freeze({reading:11,korean_vocab:4,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
- const version='20261024-mock-transfer-v4';
+ const version='20261024-weekly-ready-v5';
  const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'').trim();
  // Choice order, case, and spacing are presentation, not a new question.
  function fingerprint(q){const lines=q.passageLines||q.passageText||q.sentences||[];return [q.subject,normalize(q.question||q.prompt),normalize(q.answer??q.correctAnswer),...(Array.isArray(lines)?lines:[lines]).map(normalize)].join('|');}
@@ -91,7 +91,17 @@
  function build(user,now=Date.now(),options={}){
   const strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
   now=Number(now);if(!Number.isFinite(now))now=Date.now();
-  const reports=(app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user)),scopes=learnedScopes(reports,now);
+  const reports=(app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user));
+  let scopes=learnedScopes(reports,now);
+  const weekDate=new Date(now+9*3600000);weekDate.setUTCDate(weekDate.getUTCDate()-(weekDate.getUTCDay()+6)%7);
+  const weekStart=Date.parse(weekDate.toISOString().slice(0,10)+'T00:00:00+09:00');
+  const currentSubjects=new Set(scopes.filter(g=>g.lastAt>=weekStart).map(g=>g.subject));
+  if(strict)scopes=scopes.filter(g=>!currentSubjects.has(g.subject)||g.lastAt>=weekStart);
+  const weeklyCoverage=Object.fromEntries(Object.keys(quotas).map(subject=>{
+   const dates=reports.filter(r=>{const m=r.metadata||{};return (m.source==='math-formula'?'math_formula':r.subject)===subject&&!m.assessment&&!m.assessmentId&&!m.mockExam&&!m.examTraining&&!m.review&&m.status!=='draft'&&m.status!=='partial'&&Number(r.totalQuestions)>0&&Array.isArray(m.initialAttempts||m.attempts)&&(m.initialAttempts||m.attempts).length>=Number(r.totalQuestions)&&(m.initialAttempts||m.attempts).slice(0,Number(r.totalQuestions)).every(a=>a&&typeof a.correct==='boolean');}).map(r=>Number(r.metadata?.submittedAt||r.createdAt||r.date)).filter(at=>Number.isFinite(at)&&at<=now);
+   const days=new Set(dates.filter(at=>at>=weekStart).map(at=>new Date(at+9*3600000).toISOString().slice(0,10))),newThisWeek=dates.length>0&&Math.min(...dates)>=weekStart;
+   return [subject,{days:days.size,newThisWeek,weight:quotas[subject]*(newThisWeek?Math.min(5,days.size)/5:1)}];
+  }));
   const history=[...reports];
   if(strict)for(const week of app.LocalRepository?.getPreference?.(`SmartStudy_MockExam_Index_${encodeURIComponent(user)}`,[])||[]){
    const draft=app.LocalRepository.getPreference(`SmartStudy_MockExam_${encodeURIComponent(user)}_${week}`,null);
@@ -117,16 +127,27 @@
     const skills=new Set(attempts.map(a=>{const p=(root.ReadingPassages||[]).find(p=>p.unitId===c.unitId&&(p.levelId||'level1')===(c.levelId||'level1')&&g.passageIds.has(p.id));const original=p?.questions?.find(q=>q.id===a.questionId||normalize(q.question)===normalize(a.question));return skillOf(a.skill||original?.skill);}).filter(Boolean));
     // Locating a stated fact is a prerequisite of the evidenced higher-order reading skills, not a new syllabus topic.
     if(skills.size)skills.add('fact');
-    for(const p of root.MockKoreanTransfer||[])if(p.grade===grade)for(const item of p.questions)if(skills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:item.id,conceptId:`reading:${item.skill}`,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 지문 · 배운 읽기 기능 적용'});
+    for(const p of root.MockKoreanTransfer||[])if(p.grade===grade)for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,sourceQuestionId:item.id,conceptId:`reading:${item.skill}`,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 지문 · 배운 읽기 기능 적용'});
     continue;
    }
    if(strict&&g.subject==='english_reading'){
     const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId&&(u.gradeId||'grade6')===(c.levelId||'grade6'));
     const skills=new Set();for(const p of unit?.passages||[])if(g.passageIds.has(p.id))for(const a of attempts){const q=p.questions.find(q=>q.id===a.questionId||normalize(q.prompt)===normalize(a.question));if(q)skills.add(q.type);}
-    for(const p of root.MockEnglishTransfer||[])if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.has(item.skill))add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
+    for(const p of root.MockEnglishTransfer||[])if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
     continue;
    }
-   if(strict&&g.subject==='math'){for(const item of root.MockMathTransfer?.create(g,rng)||[])add(g,item);continue;}
+   if(strict&&g.subject==='math'){
+    for(const item of root.MockMathTransfer?.create(g,rng)||[])add(g,item);
+    // Exact learned generators provide unseen numeric practice, never labelled reasoning.
+    const source=root.MathQuizData?.[c.unitId]||{},known=new Set(attempts.map(a=>a.generator).filter(id=>id&&id!=='math_word_problem'));
+    const templates=[...source.word||[],...source.advanced||[],...source.basic||[]],byGenerator=new Map();
+    for(const t of templates)if(known.has(t.generator)&&!byGenerator.has(t.generator))byGenerator.set(t.generator,t);
+    for(const [generator,t] of byGenerator)for(let i=0;i<80;i++)try{
+     const item=generated(()=>root.Utils?.generateMathQuiz(t));if(!item||!Number.isInteger(Number(item.answer))||item.choices?.[Number(item.answer)]===undefined)continue;
+     add(g,{...item,answer:String(item.choices[Number(item.answer)]),generator,conceptId:`numeric:${generator}`,templateFamily:`numeric:${generator}`,noveltyKind:'numeric-variation',cognitiveDemand:'recall',sourceType:'학습한 계산 유형 · 미출제 수치 변형',difficulty:'standard'});
+    }catch(_){}
+    continue;
+   }
    if(strict&&g.subject==='math_formula'){for(const item of generated(()=>root.MockMathTransfer?.createFormula(g,rng))||[])add(g,item);continue;}
    if(g.subject==='reading'){
     const currentCourse=root.KoreanReadingCurriculum&&[...g.passageIds].some(id=>root.KoreanReadingCurriculum.isCurrentPassageId(id));
@@ -219,7 +240,7 @@
     const full=shuffle([...texts.values()].filter(rows=>rows.length>=required),rng).sort((a,b)=>b.filter(q=>q.cognitiveDemand==='reasoning').length-a.filter(q=>q.cognitiveDemand==='reasoning').length);
     if(full.length)pool=full[0];
    }
-   const order=list=>shuffle(list,rng).sort((a,b)=>(meta.get(b)?.recency||0)-(meta.get(a)?.recency||0));
+   const order=list=>shuffle(list,rng).sort((a,b)=>(strict?(Number(['application','reasoning'].includes(b.cognitiveDemand))-Number(['application','reasoning'].includes(a.cognitiveDemand))):0)||(meta.get(b)?.recency||0)-(meta.get(a)?.recency||0));
    const ranked=[...order(pool.filter(q=>!q.repeated)),...order(pool.filter(q=>q.repeated))];
    const cap=CAPS[subject]||{},picked=[],units=new Map(),concepts=new Map();
    const fits=q=>(!cap.unit||(units.get(meta.get(q)?.unit)||0)<cap.unit)&&(!cap.concept||(concepts.get(q.conceptId)||0)<cap.concept);
@@ -227,8 +248,10 @@
    for(const [tier,share] of Object.entries(strict?{challenge:.25,standard:.6}:(MIX[subject]||{}))){let left=Math.round(required*share);for(const q of ranked)if(left>0&&q.difficulty===tier&&!picked.includes(q)&&fits(q)){take(q);left--;}}
    for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&fits(q))take(q);
    for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&(!strict||!cap.concept||(concepts.get(q.conceptId)||0)<cap.concept))take(q);
+   for(const q of ranked)if(picked.length<required&&!picked.includes(q))take(q);
    return shuffle(picked,rng);
   }
+  if(!strict){
   const items=[],shortages={};
   // 어휘를 먼저 뽑고, 모자란 만큼 국어 독해를 더 뽑아 국어 영역 15문항을 맞춘다.
   const order=['korean_vocab',...Object.keys(quotas).filter(s=>s!=='korean_vocab')];
@@ -244,6 +267,26 @@
   }
   const quality=strict?(root.MockExamQuality?.evaluate(items)||{complete:false,deficits:{dependency:{reason:'시험 품질 검사 준비가 필요합니다.'}}}):null;
   return {items,quotas:{...quotas},shortages,quality,complete:Object.keys(shortages).length===0&&(!strict||quality.complete),version:buildVersion,policyId:strict?root.MockExamQuality?.policyId:null,scopeCutoffAt:now,evidenceWindowDays:21,repeatAvoidanceDays:strict?null:14,repeatPolicy:strict?'all-stored-history':'14-days',newQuestionCount:items.filter(q=>!q.repeated).length,reexposureCount:items.filter(q=>q.repeated).length};
+  }
+  const areaSubjects={reading:['reading','korean_vocab'],english:['english','grammar','english_reading'],math:['math','math_formula'],hanja:['hanja']};
+  const effectiveQuotas=Object.fromEntries(Object.keys(quotas).map(s=>[s,0])),items=[],shortages={},coverageNotes=[];
+  for(const [area,subjects] of Object.entries(areaSubjects)){
+   const target=area==='hanja'?10:15,available=subjects.filter(s=>pools[s].length),counts=new Map(available.map(s=>[s,0]));
+   const weights=new Map(available.map(s=>[s,Math.max(.01,weeklyCoverage[s].weight)])),sum=[...weights.values()].reduce((a,b)=>a+b,0);
+   for(let i=0;i<target;i++){
+    const eligible=available.filter(s=>counts.get(s)<pools[s].length);if(!eligible.length)break;
+    eligible.sort((a,b)=>(target*weights.get(b)/sum-counts.get(b))-(target*weights.get(a)/sum-counts.get(a)));
+    counts.set(eligible[0],counts.get(eligible[0])+1);
+   }
+   let actual=0;for(const subject of subjects){const required=counts.get(subject)||0,selected=select(subject,pools[subject],required);effectiveQuotas[subject]=selected.length;actual+=selected.length;
+    if(subject==='math')selected.filter(writable).slice(0,WRITTEN_MATH).forEach(q=>Object.assign(q,{kind:'written',inputHint:'분수는 4/9처럼 쓰고, 단위는 빼도 돼요.'}));items.push(...selected);
+    if(weeklyCoverage[subject].newThisWeek&&weeklyCoverage[subject].days)coverageNotes.push({subject,days:weeklyCoverage[subject].days,questions:selected.length});
+   }
+   if(actual<target)shortages[area]={required:target,actual,missing:target-actual,reason:'학습한 범위의 출제 자료를 준비하지 못했습니다. 추가 학습을 요구하는 조건이 아닙니다.'};
+  }
+  const quality=root.MockExamQuality?.evaluate(items)||{complete:false,summary:{},deficits:{}};
+  return {items,quotas:effectiveQuotas,shortages,quality,qualityAdvisory:true,weeklyCoverage,coverageNotes,complete:items.length===55&&!Object.keys(shortages).length,version:buildVersion,policyId:'weekly-transfer-20261024',scopeCutoffAt:now,evidenceWindowDays:21,repeatAvoidanceDays:null,repeatPolicy:'all-stored-history',newQuestionCount:items.filter(q=>!q.repeated).length,reexposureCount:items.filter(q=>q.repeated).length};
+
  }
  app.MockExamBank={build,grade,quotas,version,fingerprint,learnedScopes,writtenKey};
 })(window);

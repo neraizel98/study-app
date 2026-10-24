@@ -3,7 +3,7 @@ const {setup}=require('./tests/helpers/mock-transfer-fixture.cjs');
 test('current Korean course and all eight subjects produce a quality-gated unseen 55-question mock',()=>{
  const s=setup(),before=JSON.stringify(s.reports),b=s.api.build('learner',s.now);
  assert.equal(b.complete,true,JSON.stringify({short:b.shortages,quality:b.quality}));assert.equal(b.items.length,55);
- assert.equal(b.policyId,'transfer-20261024');assert.equal(b.reexposureCount,0);assert.equal(b.repeatPolicy,'all-stored-history');
+ assert.equal(b.policyId,'weekly-transfer-20261024');assert.equal(b.reexposureCount,0);assert.equal(b.repeatPolicy,'all-stored-history');
  assert.equal(s.c.SmartStudy.MockExam.validateBank(b),true);
  for(const q of b.items){assert.equal(s.api.grade(q,q.answer).correct,true,q.question);assert(q.evidenceReportIds.length);assert(!q.repeated);}
  for(const row of Object.values(b.quality.summary)){assert(row.application>=row.applicationRequired);assert(row.reasoning>=row.reasoningRequired);}
@@ -22,9 +22,9 @@ test('past booklet snapshots exclude exposed passages even if no answer was subm
  const second=s.api.build('learner',s.now),seen=new Set(english.map(q=>q.passageId));
  assert(second.items.filter(q=>q.subject==='english_reading').every(q=>!seen.has(q.passageId)));
 });
-test('enough easy items are not enough to start and claimed quality is independently rechecked',()=>{
+test('quality ratio is advisory while repeat and quota validation still protect a full weekly exam',()=>{
  const s=setup(),b=s.api.build('learner',s.now),weak={...b,items:b.items.map(q=>({...q,cognitiveDemand:'recall',noveltyKind:'recall'}))};
- assert.equal(s.c.MockExamQuality.evaluate(weak.items).complete,false);assert.equal(s.c.SmartStudy.MockExam.validateBank(weak),false);
+ assert.equal(s.c.MockExamQuality.evaluate(weak.items).complete,false);assert.equal(s.c.SmartStudy.MockExam.validateBank(weak),true);assert.equal(s.c.SmartStudy.MockExam.validateBank({...b,items:b.items.map((q,i)=>i? q:{...q,repeated:true})}),false);assert.equal(s.c.SmartStudy.MockExam.validateBank({...b,quotas:{...b.quotas,math:999}}),false);
 });
 test('an already started exam keeps answers, question IDs and deadlines after a bank update',()=>{
  const s=setup(),b=s.api.build('learner',s.now),api=s.c.SmartStudy.MockExam,draft=api.create('learner',b,s.now),q=draft.questions[0];
