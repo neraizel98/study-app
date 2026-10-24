@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261024-time-display';
+const CACHE_NAME = 'smart-study-20261024-assessment-style';
 
 try {
     importScripts('./firebase-config.js');
@@ -115,6 +115,8 @@ const STATIC_ASSETS = [
     './mock-exam-results.js',
     './mock-wrong-note.js',
     './mock-exam.css',
+    './assessment-results.css',
+    './assessment-summary.js',
     './learning-translation-guard.js',
     './learning-translation-guard.css',
     './mock-publication.js',

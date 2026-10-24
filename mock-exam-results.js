@@ -28,29 +28,32 @@
         } catch (_) { return { published: false, reason: 'offline' }; }
     }
     function render(container, result) {
-        container.replaceChildren();
-        if (!result?.published) { container.append(node('p', result?.reason === 'offline' ? '공개 상태를 확인하지 못했어요. 인터넷 연결 후 다시 확인해 주세요.' : '선생님/보호자가 결과를 확인하고 있어요. 공개되면 이곳에서 확인할 수 있어요.')); return; }
+        container.replaceChildren();container.classList.add('released-results');
+        if (!result?.published) {
+            const waiting=node('div',null,'released-waiting');waiting.append(node('span','🔒','assessment-icon'),node('h2','결과를 확인하고 있어요'),node('p',result?.reason==='offline'?'인터넷 연결 후 공개 상태를 다시 확인해 주세요.':'선생님·보호자가 공개하면 점수와 해설을 볼 수 있어요.'));container.append(waiting);return;
+        }
         const draft = result.snapshot;
-        container.append(node('h2', '공개된 첫 제출 결과'));
-        if (result.publishedAt) container.append(node('p', `공개 시각: ${new Date(result.publishedAt).toLocaleString('ko-KR')}`, 'muted'));
+        const heading=node('div',null,'released-heading'),titles=node('div');titles.append(node('span','MY LEARNING REPORT','assessment-eyebrow'),node('h2','나의 모의고사 결과'));heading.append(titles,node('span','결과 공개 완료','assessment-tag'));container.append(heading);
+        const all=draft.sections.flatMap(s=>s.initialAttempts||[]),correctAll=all.filter(a=>a.correct).length;
+        const overview=node('div',null,'released-overview'),description=node('div');description.append(node('span','전체 정답'),node('p',`${all.length}문항 중 ${correctAll}문항을 맞혔어요`));
+        const overall=node('strong',all.length?String(Math.round(correctAll/all.length*100)):'—');overall.append(node('small','점'));overview.append(description,overall);container.append(overview);
+        if (result.publishedAt) container.append(node('p', `공개 시각: ${new Date(result.publishedAt).toLocaleString('ko-KR')}`, 'released-date'));
         const grid = node('div', null, 'score-grid');
         for (const section of draft.sections) {
             const attempts = section.initialAttempts || [], correct = attempts.filter(a => a.correct).length;
             const card = node('div', null, 'score-card');
-            card.append(node('h3', section.name), node('strong', attempts.length ? `${Math.round(correct / attempts.length * 100)}점 · ${correct}/${attempts.length}` : '평가 자료 없음'));
-            for (const subject of section.subjects) if (section.subjects.length > 1) {
-                const part = attempts.filter(a => a.subject === subject);
-                card.append(node('p', `${names[subject]} ${part.filter(a => a.correct).length}/${part.length}`));
-            }
+            card.append(node('h3',section.name));const score=node('strong',attempts.length?`${Math.round(correct/attempts.length*100)}점`:'—');score.append(node('small',attempts.length?`${correct} / ${attempts.length} 정답`:'평가 자료 없음'));card.append(score);
+            const parts=section.subjects.map(subject=>({subject,attempts:attempts.filter(a=>a.subject===subject)})).filter(part=>part.attempts.length);
+            if(parts.length>1)for(const part of parts)card.append(node('p',`${names[part.subject]} ${part.attempts.filter(a=>a.correct).length}/${part.attempts.length}`));
             grid.append(card);
         }
-        container.append(grid, node('p', '첫 제출 점수입니다. 같은 문제를 다시 확인해도 이 점수는 바뀌지 않습니다.', 'muted'));
+        container.append(grid, node('p', '첫 제출 점수입니다. 같은 문제를 다시 확인해도 이 점수는 바뀌지 않습니다.', 'released-first-note'));
         for (const section of draft.sections) {
-            const detail = node('details'), summary = node('summary', `${section.name} · 답안과 해설 확인`); detail.append(summary);
+            const detail = node('details',null,'released-details'), summary = node('summary', `${section.name} · 답안과 해설`); detail.append(summary);
             (section.initialAttempts || []).forEach((attempt, index) => {
-                const card = node('article', null, 'released-question');
-                card.append(node('h3', `${index + 1}. ${attempt.question}`), node('p', attempt.unanswered ? '미응답' : attempt.correct ? '정답' : '오답'),
-                    node('p', `나의 답: ${attempt.selectedAnswer || '미응답'}`), node('p', `정답: ${attempt.correctAnswer}`), node('p', attempt.explanation || '별도 해설이 없습니다.'));
+                const card = node('article', null, `released-question ${attempt.unanswered?'is-empty':attempt.correct?'is-correct':'is-wrong'}`);
+                card.append(node('h3', `${index + 1}. ${attempt.question}`), node('p', attempt.unanswered ? '미응답' : attempt.correct ? '정답' : '오답 · 다시 확인', 'released-answer-state'),
+                    node('p', `나의 답: ${attempt.selectedAnswer || '미응답'}`), node('p', `정답: ${attempt.correctAnswer}`), node('p', attempt.explanation || '별도 해설이 없습니다.', 'released-explanation'));
                 if (['math', 'math_formula'].includes(attempt.subject)) {
                     setMathText(card.children[0], `${index + 1}. ${attempt.question}`);
                     setMathText(card.children[2], `나의 답: ${attempt.selectedAnswer || '미응답'}`);
@@ -61,7 +64,7 @@
             });
             container.append(detail);
         }
-        container.append(node('a', '일요일 오답 복습으로 이동', 'review-link')); container.lastChild.href = 'today.html';
+        container.append(node('a', '오답 복습 이어가기 →', 'review-link')); container.lastChild.href = 'today.html';
     }
     app.MockExamResults = { load, render, setMathText };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExamResults;

@@ -1,0 +1,33 @@
+/* Assessment reports share the app's warm paper / green visual language. */
+.assessment-summary,.released-results{--report-green:#23845c;--report-ink:#2b2620;--report-muted:#6e6559;--report-line:#ede5d6;color:var(--report-ink);text-align:left;overflow-wrap:anywhere}
+.assessment-heading,.released-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:20px}
+.assessment-eyebrow{display:block;color:var(--report-green);font-size:10px;font-weight:800;letter-spacing:.12em;margin-bottom:6px}
+.assessment-heading h3,.released-heading h2{font-size:20px;line-height:1.4;margin:0;color:var(--report-ink)}
+.assessment-tag{display:inline-flex;align-items:center;flex-shrink:0;border-radius:8px;padding:5px 9px;background:#eaf4ed;color:#206348;font-size:11px;font-weight:700;line-height:1.5}
+.assessment-overview,.released-overview{display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#f4f8f3;border:1px solid #dceadd;border-radius:14px;padding:16px 18px;margin-bottom:18px;font-size:13px;color:var(--report-muted)}
+.assessment-overview strong{font-size:25px;line-height:1.3;color:var(--report-ink);font-variant-numeric:tabular-nums}
+.assessment-percent{margin-left:auto;color:var(--report-green);font-size:17px;font-weight:800}
+.assessment-subjects{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.assessment-subject{min-width:0;border:1px solid var(--report-line);border-radius:13px;padding:14px;background:#fff}
+.assessment-subject-top,.assessment-subject-name{display:flex;align-items:center;gap:9px;min-width:0}
+.assessment-subject-top{justify-content:space-between;gap:10px}.assessment-subject-name strong{font-size:14px;line-height:1.4}
+.assessment-icon{display:grid;place-items:center;flex-shrink:0;width:32px;height:32px;border-radius:10px;background:#f5f1e9;font-size:17px}
+.assessment-score{flex-shrink:0;font-weight:800;font-size:17px;font-variant-numeric:tabular-nums;white-space:nowrap}.assessment-score.is-strong{color:#207443}.assessment-score.is-review{color:#a65324}
+.assessment-track{height:5px;border-radius:8px;overflow:hidden;background:#f1eee7;margin:13px 0 9px}.assessment-track>span{display:block;height:100%;border-radius:inherit;background:#67a58a}
+.assessment-subject-meta{display:flex;flex-wrap:wrap;justify-content:space-between;gap:4px 10px;font-size:11px;line-height:1.6;color:var(--report-muted)}
+.assessment-followup{margin-top:18px;padding:15px;border-radius:13px;background:#faf7ef;border:1px solid #eee6d6}.assessment-followup h4{font-size:13px;margin:0 0 10px}.assessment-followup p{font-size:13px;color:var(--report-muted);margin:0}
+.assessment-review-chips{display:flex;flex-wrap:wrap;gap:7px}.assessment-review-chips>span{font-size:11px;line-height:1.6;padding:5px 9px;border:1px solid #e7decb;background:#fff;border-radius:8px;max-width:100%}
+.released-results .released-heading{margin-bottom:12px}.released-date{font-size:12px;color:var(--report-muted);margin:0 0 18px}
+.released-overview{justify-content:space-between;align-items:center}.released-overview strong{font-size:36px;line-height:1.2;color:var(--report-green);font-variant-numeric:tabular-nums}.released-overview strong small{font-size:14px;margin-left:3px}.released-overview p{margin:5px 0 0;font-size:12px}
+.released-results .score-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin-bottom:16px}
+.released-results .score-card{min-width:0;border:1px solid var(--report-line);border-radius:14px;padding:16px;background:#fff}.released-results .score-card h3{font-size:14px;line-height:1.5;margin:0 0 10px;color:var(--report-muted)}
+.released-results .score-card>strong{display:block;font-size:27px;color:var(--report-ink);line-height:1.4}.released-results .score-card>strong small{display:block;font-size:12px;font-weight:500;color:var(--report-muted);margin:4px 0 0}.released-results .score-card p{font-size:11px;color:var(--report-muted);margin:5px 0 0}
+.released-first-note{font-size:12px;line-height:1.7;color:var(--report-muted);margin:0 0 22px}
+.released-details{margin-top:10px;border:1px solid var(--report-line);border-radius:13px;background:#fff;overflow:hidden}.released-details>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;list-style:none;padding:15px;font-size:14px;color:var(--report-ink)}.released-details>summary::-webkit-details-marker{display:none}.released-details>summary::after{content:'⌄';color:var(--report-green);font-size:20px}.released-details[open]>summary::after{content:'⌃'}
+.released-details .released-question{padding:16px;margin:0 15px;border-top:1px solid var(--report-line);min-width:0}.released-question h3{font-size:14px;line-height:1.8;margin:10px 0 12px;white-space:pre-line}.released-question p{font-size:13px;line-height:1.8;margin:7px 0;overflow-wrap:anywhere}
+.released-question .released-answer-state{display:inline-flex;align-items:center;padding:3px 9px;border-radius:7px;font-size:11px;line-height:1.6;font-weight:700;background:#f1f0eb;color:#6e6559}.released-question.is-correct .released-answer-state{background:#eaf4ed;color:#207443}.released-question.is-wrong .released-answer-state{background:#fff0e6;color:#a65324}
+.released-question .released-explanation{padding:12px;border-radius:10px;background:#faf7ef;color:#554c40;margin:12px 0 0}
+.released-results .review-link{display:flex;align-items:center;justify-content:center;min-height:48px;padding:12px 16px;border-radius:11px;background:var(--report-green);color:#fff;text-decoration:none;font-size:14px;font-weight:700;margin-top:22px}
+.released-waiting{text-align:center;padding:22px 12px}.released-waiting .assessment-icon{margin:0 auto 12px;width:48px;height:48px;font-size:24px;background:#eaf4ed}.released-waiting h2{font-size:19px;margin:0 0 8px}.released-waiting p{font-size:13px;line-height:1.8;color:var(--report-muted);margin:0}
+.released-results .katex-display{max-width:100%;overflow-x:auto}.released-results .katex{font-size:1.05em}
+@media(max-width:600px){.assessment-subjects{grid-template-columns:1fr}.assessment-heading h3,.released-heading h2{font-size:19px}.assessment-overview{padding:14px}.assessment-subject{padding:13px}.released-results .score-card{padding:13px}.released-details .released-question{padding:14px 0}.released-overview{padding:15px}.assessment-subject-meta{font-size:11px}}

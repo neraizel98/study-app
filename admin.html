@@ -128,6 +128,8 @@
     <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
     <script src="answer-math-renderer.js?v=20261023-progression"></script>
     <style>.quiz-answer-line{overflow-wrap:anywhere;line-height:1.8}.quiz-answer-line .katex{font-size:1.05em}.quiz-answer-line .katex-display{max-width:100%;overflow-x:auto;overflow-y:hidden}</style>
+<link rel="stylesheet" href="assessment-results.css?v=20261024-assessment-style">
+<script src="assessment-summary.js?v=20261024-assessment-style"></script>
 </head>
 <body>
     <div class="background-blobs">
@@ -528,28 +530,7 @@
             const details = await Promise.all(rows.map(row => row._body
                 ? SmartStudy.FirestoreRepository.getReportDetail(userId, row) : row));
             if (!panel.isConnected || window._adminData?.userId !== userId) return;
-            panel.replaceChildren();
-            const title = document.createElement('h3'); title.textContent = '최근 주간 평가 · 범위와 표본'; panel.append(title);
-            const labels = { reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자' };
-            const supplements = [];
-            details.forEach(report => {
-                const metadata = report.metadata || {};
-                const attempts = metadata.initialAttempts || metadata.attempts || [];
-                const line = document.createElement('p');
-                line.textContent = `${metadata.examTraining?"[학습 모의고사] ":""}${labels[metadata.assessmentSubject || report.subject] || report.subject}: ${report.initialScore}/${report.totalQuestions} 정답 · 실제 ${metadata.actualCount ?? report.totalQuestions}/${metadata.requestedCount ?? report.totalQuestions}문항 · ${attempts.length}개 답안 확인${metadata.periodCounts&&!metadata.examTraining?` · 이번 주 ${metadata.periodCounts.current} / 누적 ${metadata.periodCounts.previous}`:''}`;
-                panel.append(line);
-                attempts.filter(attempt => !attempt.correct).forEach(attempt => {
-                    const context = attempt.context || metadata;
-                    const scope = context.title || context.unitTitle || context.unitId || report.level;
-                    supplements.push(`${labels[metadata.assessmentSubject || report.subject] || report.subject} ${scope}`);
-                });
-            });
-            const next = document.createElement('p');
-            next.style.color = 'var(--text-sub)';
-            next.textContent = supplements.length
-                ? `다음 보충: ${[...new Set(supplements)].join(' · ')}`
-                : '다음 보충: 이번 평가의 오답이 없습니다. 최근 학습 기록을 이어서 살펴보세요.';
-            panel.append(next);
+            SmartStudy.AssessmentSummary.render(panel, details);
         } catch (error) { if (panel.isConnected) panel.textContent = '최근 평가 상세 기록을 불러오지 못했습니다.'; }
     }
 
@@ -1435,6 +1416,6 @@
         }
     });
     </script>
-<script src="mock-publication.js"></script><script src="mock-admin.js?v=20261020-korean-vocab"></script><script src="version-check.js?v=20261024-time-display"></script>
+<script src="mock-publication.js"></script><script src="mock-admin.js?v=20261020-korean-vocab"></script><script src="version-check.js?v=20261024-assessment-style"></script>
 </body>
 </html>

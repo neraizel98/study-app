@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261024-time-display';
+    const APP_VERSION = '20261024-assessment-style';
 
     (async function () {
         try {
