@@ -1,0 +1,13 @@
+/* Suppress the native selection/translation menu on read-only lesson text.
+   No touch, scrolling, click, keyboard, speech or screen-reader interception. */
+html[data-learning-translation-guard] body {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    user-select: none;
+}
+html[data-learning-translation-guard] :is(input, textarea, [contenteditable="true"], [contenteditable=""], [role="textbox"], [data-allow-selection]),
+html[data-learning-translation-guard] :is([contenteditable="true"], [contenteditable=""], [role="textbox"], [data-allow-selection]) * {
+    -webkit-touch-callout: default;
+    -webkit-user-select: text;
+    user-select: text;
+}
