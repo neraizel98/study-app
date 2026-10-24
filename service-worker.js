@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261024-learning-original';
+const CACHE_NAME = 'smart-study-20261024-time-display';
 
 try {
     importScripts('./firebase-config.js');

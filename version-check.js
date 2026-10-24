@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261024-learning-original';
+    const APP_VERSION = '20261024-time-display';
 
     (async function () {
         try {

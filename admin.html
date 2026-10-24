@@ -601,7 +601,7 @@
         const subjects = [...new Set([...(ds.subjectsStudied || []), ...timedSubjects])];
         const items = subjects.map(s => {
             const info = typeof SubjectRegistry !== 'undefined' ? SubjectRegistry.get(s) : { icon:'📚', name:s };
-            const sec = ds.studyTime?.[s] || 0;
+            const sec = Math.max(0, Math.round(Number(ds.studyTime?.[s]) || 0));
             const learningSec = ds.learningTime?.[s] || 0;
             const quizSec = ds.quizTime?.[s] || 0;
             const min = Math.floor(sec / 60);
@@ -619,6 +619,7 @@
             const totalSec = studySec + quizSec;
             if (totalSec > 0) {
                 const formatTime = sec => {
+                    sec = Number.isFinite(Number(sec)) ? Math.max(0, Math.round(Number(sec))) : 0;
                     const min = Math.floor(sec / 60);
                     const rem = sec % 60;
                     return min > 0 ? `${min}분${rem ? ' '+rem+'초' : ''}` : `${sec}초`;
@@ -646,6 +647,7 @@
         const todayStudy = isToday ? time.studySeconds || 0 : 0;
         const todayQuiz = isToday ? time.quizSeconds || 0 : 0;
         const formatTime = sec => {
+                    sec = Number.isFinite(Number(sec)) ? Math.max(0, Math.round(Number(sec))) : 0;
             const hour = Math.floor(sec / 3600);
             const min = Math.floor((sec % 3600) / 60);
             const rem = sec % 60;
@@ -757,7 +759,7 @@
             const c     = SUBJ_COLORS[r.subject] || '#6e6559';
             const d     = new Date(r.date);
             const ds    = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-            const sec   = r.timeSpentSeconds || 0;
+            const sec   = Number.isFinite(Number(r.timeSpentSeconds)) ? Math.max(0, Math.round(Number(r.timeSpentSeconds))) : 0;
             const timeStr = sec > 0 ? (Math.floor(sec/60) + '분 ' + (sec%60) + '초') : '-';
             const lvlShort = (r.level||'-').length > 16 ? (r.level||'-').slice(0,16)+'…' : (r.level||'-');
             const round = r.round || 1;
@@ -819,7 +821,7 @@
 
     // ── 과목별 통계 탭 ──
     function formatStudySeconds(sec) {
-        const value = Math.max(0, Math.round(sec || 0));
+        const value = Number.isFinite(Number(sec)) ? Math.max(0, Math.round(Number(sec))) : 0;
         const min = Math.floor(value / 60);
         const rem = value % 60;
         return min > 0 ? `${min}분${rem ? ` ${rem}초` : ''}` : `${rem}초`;
@@ -1029,8 +1031,9 @@
                     const count = attempts.length;
                     const avgPct = Math.round(attempts.reduce((a, r) => a + (r.totalQuestions > 0 ? r.initialScore / r.totalQuestions * 100 : 0), 0) / count);
                     const bestPct = Math.round(Math.max(...attempts.map(r => r.totalQuestions > 0 ? r.initialScore / r.totalQuestions * 100 : 0)));
-                    const timeMin = Math.floor(totalTime / 60);
-                    const timeSec = totalTime % 60;
+                    const displaySeconds = Number.isFinite(Number(totalTime)) ? Math.max(0, Math.round(Number(totalTime))) : 0;
+                    const timeMin = Math.floor(displaySeconds / 60);
+                    const timeSec = displaySeconds % 60;
                     const pctColor = avgPct >= 80 ? '#20852b' : avgPct >= 50 ? '#e22604' : '#eb0015';
 
                     // Round breakdown
@@ -1432,6 +1435,6 @@
         }
     });
     </script>
-<script src="mock-publication.js"></script><script src="mock-admin.js?v=20261020-korean-vocab"></script><script src="version-check.js?v=20261024-learning-original"></script>
+<script src="mock-publication.js"></script><script src="mock-admin.js?v=20261020-korean-vocab"></script><script src="version-check.js?v=20261024-time-display"></script>
 </body>
 </html>

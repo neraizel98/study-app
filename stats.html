@@ -332,7 +332,7 @@
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
     <script src="concept-mastery.js?v=20261023-korean-reading"></script><script src="icons.js?v=20261014-scratchpad"></script><script src="achievements.js?v=20261014-redesign"></script>
     <script src="report.js?v=20261020-korean-vocab"></script><script src="missions.js?v=20261020-korean-vocab"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261021-english-three-levels"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261024-learning-original"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261021-english-three-levels"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261024-time-display"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
     // ─────────────────────────────────────────────
@@ -652,7 +652,7 @@
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
             const levelShort = r.level ? (r.level.length > 18 ? r.level.slice(0,18) + '…' : r.level) : '-';
-            const sec = r.timeSpentSeconds || 0;
+            const sec = Number.isFinite(Number(r.timeSpentSeconds)) ? Math.max(0, Math.round(Number(r.timeSpentSeconds))) : 0;
             const timeStr = sec > 0 ? `${Math.floor(sec / 60)}분 ${sec % 60 ? `${sec % 60}초` : ''}`.trim() : '시간 기록 없음';
             const quizStatus = r.isCompleted ? '완료' : '진행 중';
             return `
@@ -766,7 +766,7 @@
             const subjectInfo = SubjectRegistry.get(r.subject);
             const d = new Date(r.date);
             const ds = `${d.getMonth()+1}/${d.getDate()} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
-            const sec = r.timeSpentSeconds || 0;
+            const sec = Number.isFinite(Number(r.timeSpentSeconds)) ? Math.max(0, Math.round(Number(r.timeSpentSeconds))) : 0;
             const timeStr = sec > 0 ? `${Math.floor(sec/60)}분 ${sec%60 ? sec%60+'초' : ''}`.trim() : '';
             const roundBadge = r.round > 1
                 ? `<span style="font-size:0.68rem;color:${c.bd};background:${c.bd}22;padding:2px 7px;border-radius:10px;margin-left:6px;">${r.round}회차</span>`
@@ -892,7 +892,7 @@
         window.addEventListener('firesynced', () => render());
     });
     </script>
-<script src="version-check.js?v=20261024-learning-original"></script>
+<script src="version-check.js?v=20261024-time-display"></script>
 <script src="app-shell.js?v=20261014-redesign"></script>
 </body>
 </html>
