@@ -107,11 +107,31 @@
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
             scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false,
             questions: clone(bank.items), sections, cursor: 0, responses: {}, startedAt: now, submittedAt: null,
-            resultVisibility: 'withheld', status: 'in-progress', syncStatus: 'not-submitted', break: null });
+            resultVisibility: 'withheld', status: 'in-progress', syncStatus: 'not-submitted', break: null,
+            integrity: { ...blankIntegrity(), pledgedAt: options.pledged ? now : null } });
+    }
+    // Screen-leave and translation records for the guardian. A leave is counted when it
+    // starts; its away time is closed on return or, at the latest, at submission.
+    const EVENT_LIMIT = 50;
+    function blankIntegrity() { return { leaves: 0, awaySeconds: 0, longestAwaySeconds: 0, translationDetected: false, events: [], awayStartedAt: null, pledgedAt: null }; }
+    function integrityOf(draft) {
+        const record = draft.integrity = { ...blankIntegrity(), ...(draft.integrity || {}) };
+        if (!Array.isArray(record.events)) record.events = [];
+        return record;
+    }
+    function pushEvent(record, event) { record.events = [...record.events, event].slice(-EVENT_LIMIT); }
+    function closeAway(draft, end) {
+        const record = draft.integrity; if (!record?.awayStartedAt) return;
+        const seconds = Math.max(0, Math.floor((end - record.awayStartedAt) / 1000));
+        record.awaySeconds = (Number(record.awaySeconds) || 0) + seconds;
+        record.longestAwaySeconds = Math.max(Number(record.longestAwaySeconds) || 0, seconds);
+        const event = (record.events || []).filter(e => e.type === 'leave' && e.at === record.awayStartedAt).at(-1);
+        if (event) event.seconds = seconds;
+        record.awayStartedAt = null;
     }
     function activate(draft, index, now) {
         const section = draft.sections[index];
-        if (!section) { draft.submittedAt = now; draft.status = 'submitted'; draft.syncStatus = 'pending'; return; }
+        if (!section) { draft.submittedAt = now; draft.status = 'submitted'; draft.syncStatus = 'pending'; closeAway(draft, now); return; }
         section.state = 'active'; section.startedAt = now; section.deadline = now + section.durationSeconds * 1000; draft.cursor = 0;
     }
     function questionsFor(draft, section) { return draft.questions.filter(q => section.subjects.includes(q.subject)); }
@@ -178,6 +198,24 @@
         const previous = Math.max(0, Number(section.activeSeconds) || 0), next = Math.min(section.durationSeconds, elapsed, previous + delta);
         if (next <= previous) return draft;
         section.activeSeconds = next; return write(draft);
+    }
+    // Leaving during the break is allowed; only an active section counts.
+    function markLeave(user, week, now = Date.now()) {
+        assertUser(user); const draft = reconcile(user, week, now);
+        if (!draft || draft.submittedAt || draft.break && !draft.break.endedAt || !draft.sections.some(s => s.state === 'active')) return draft;
+        const record = integrityOf(draft); if (record.awayStartedAt) return draft;
+        record.leaves += 1; record.awayStartedAt = now; pushEvent(record, { type: 'leave', at: now, seconds: 0 }); return write(draft);
+    }
+    function markReturn(user, week, now = Date.now()) {
+        assertUser(user); const draft = get(user, week); if (!draft?.integrity?.awayStartedAt) return draft;
+        reconcileDraft(draft, now); closeAway(draft, draft.submittedAt ? Math.min(now, draft.submittedAt) : now); return write(draft);
+    }
+    // The translation guard may report the same signal repeatedly; keep one event per change.
+    function markTranslation(user, week, signal, now = Date.now()) {
+        assertUser(user); const draft = get(user, week); if (!draft || draft.submittedAt) return draft;
+        const record = integrityOf(draft), name = String(signal || 'unknown').slice(0, 40);
+        if (record.translationDetected && record.events.filter(e => e.type === 'translation').at(-1)?.signal === name) return draft;
+        record.translationDetected = true; pushEvent(record, { type: 'translation', at: now, seconds: 0, signal: name }); return write(draft);
     }
     function finishSection(user, week, now = Date.now(), expectedSectionId) {
         const before = get(user, week), previousId = expectedSectionId || before?.sections.find(s => s.state === 'active')?.id;
@@ -249,6 +287,6 @@
         }
     }
     app.MockExam = { areas, definitions, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
-        skipBreak, reportsFor, saveReports, submissionSnapshot, sync };
+        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, sync };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExam;
 })(typeof window !== 'undefined' ? window : globalThis);

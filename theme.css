@@ -531,6 +531,9 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
 .mock-score small { font-size: .72rem; color: var(--text-sub); }
 .mock-result-foot { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
 .mock-result-note { margin: 0; font-size: .75rem; color: var(--text-sub); }
+.mock-integrity { margin: 10px 0 0; padding: 8px 12px; border-radius: 10px; background: #faf6ee; font-size: .8rem; font-weight: 600; color: var(--text-sub); }
+.mock-integrity.is-warning { background: #fff0db; color: #9a4a12; border-left: 4px solid #e0a040; }
+.mock-integrity.is-empty { font-weight: 400; }
 .mock-admin .mock-publish { min-height: 40px; margin: 0; padding: 8px 16px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 .88rem var(--font); cursor: pointer; }
 .mock-admin .mock-publish:disabled { background: #e2f3e9; color: #1f7a55; cursor: default; opacity: 1; }
 .mock-admin .mock-admin-error { margin: 0; font-size: .78rem; color: #c0392b; }

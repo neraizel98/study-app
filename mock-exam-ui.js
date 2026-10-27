@@ -56,17 +56,17 @@
         function clear() { for (const id of ['readyPanel', 'workPanel', 'breakPanel', 'submittedPanel']) $(id).hidden = true; }
         function showReady() {
             clear(); $('readyPanel').hidden = false;
-            if (params.has('assessment')&&!retakeOptions) { $('bankStatus').textContent = '이 기기에 시험이 없습니다. 공개된 결과를 서버에서 확인합니다.'; $('startExam').hidden = true; $('remoteResult').hidden = false; return; }
+            if (params.has('assessment')&&!retakeOptions) { $('bankStatus').textContent = '이 기기에 시험이 없습니다. 공개된 결과를 서버에서 확인합니다.'; $('startExam').hidden = true; $('pledgeLabel').hidden = true; $('remoteResult').hidden = false; return; }
             bank = app.MockExamBank.build(user, Date.now(),retakeOptions||{});
             $('cancelRetake').hidden=!retakeOptions||!draft;
-            $('startExam').hidden=false;
+            $('startExam').hidden=false;$('pledgeLabel').hidden=false;
             $('startExam').textContent=retakeOptions?`${retakeOptions.attemptNo}회차 새 문제로 시작`:'55문항 시험 시작';
             $('bankStatus').textContent = api.validateBank(bank) ? '학습한 범위의 새 지문·응용 문제로 55문항을 준비했어요. 기존 풀이 기록과 중복을 확인했어요.' : '학습 기록에서 시험 문항을 구성하지 못했어요. 추가 공부가 필요한 것은 아닙니다. 기록 동기화 후 다시 확인해 주세요.';
             $('shortages').replaceChildren();
             for (const [subject, shortage] of Object.entries(bank.shortages || {})) if (shortage.missing > 0) $('shortages').append(text('li', `${app.MockExamBank.subjectNames?.[subject] || ({reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[subject] || subject}: ${shortage.actual}/${shortage.required}문항 · ${shortage.missing}문항 부족`));
             for(const row of bank.coverageNotes||[])if(row.questions)$('shortages').append(text('li',`${({reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[row.subject]}: 이번 주 ${row.days}일 학습 · ${row.questions}문항 반영`));
             if (!api.validateBank(bank) && !$('shortages').children.length) $('shortages').append(text('li', '문항 구성과 영역 배분 확인이 필요합니다.'));
-            $('startExam').disabled = !api.validateBank(bank);
+            $('startExam').disabled = !api.validateBank(bank) || !$('examPledge').checked;
             const minutes = app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};
             $('timePlan').textContent = api.definitions.map(s => `${s.name} ${minutes[s.id] || s.minutes}분`).join(' → ') + ' · 영어 뒤 최대 5분 휴식';
         }
@@ -153,7 +153,9 @@
                 $('submissionMessage').textContent = result.published ? '선생님/보호자가 결과를 공개했어요. 이 회차의 결과와 해설을 아래에서 확인하세요.' : '선생님/보호자가 결과를 확인하고 있어요. 공개되면 확인할 수 있어요.';
             }
         }
-        $('startExam').onclick = () => { if (!guard()) return; try { draft = api.create(user, bank,Date.now(),retakeOptions||{});retakeOptions=null;readPassages.clear();params.delete('assessment');root.history.replaceState(null,'',root.location.pathname);$('releasedResults').hidden=true;render(); } catch (e) { error = e.message; render(); } };
+        // The pledge gates every start, including retakes; the start button stays the only start path.
+        $('examPledge').onchange = () => { $('startExam').disabled = !bank || !api.validateBank(bank) || !$('examPledge').checked; };
+        $('startExam').onclick = () => { if (!guard() || !$('examPledge').checked) return; try { draft = api.create(user, bank,Date.now(),{...(retakeOptions||{}),pledged:true});retakeOptions=null;$('examPledge').checked=false;readPassages.clear();noteTranslation();params.delete('assessment');root.history.replaceState(null,'',root.location.pathname);$('releasedResults').hidden=true;render(); } catch (e) { error = e.message; render(); } };
         function renderHistory(){
             const select=$('examHistory'),rows=api.list(user,draft?.scheduledWeekId||api.weekId());select.replaceChildren();select.disabled=busy;
             for(const row of rows){const option=text('option',`${row.scheduledDate} · ${row.attemptNo||1}회차${row.submittedAt?'':' · 진행 중'}`);option.value=row.assessmentId;option.selected=row.assessmentId===draft?.assessmentId;select.append(option);}
@@ -182,7 +184,42 @@
         $('confirmSection').onclick = () => { $('submitDialog').close(); if (!guard()) return; try { flushActivity(); draft = api.finishSection(user, draft.assessmentId, Date.now(), confirmingSection); render(); persistSections(); } catch (e) { error = e.message; render(); } };
         $('skipBreak').onclick = () => { if (guard()) { draft = api.skipBreak(user, draft.assessmentId); render(); } };
         $('retrySave').onclick = send; $('checkResults').onclick = () => showResults(draft.assessmentId); $('remoteResult').onclick = () => showResults(params.get('assessment'));
-        if (draft) { draft = api.reconcile(user, draft.assessmentId); render(); if (draft.sections.some(s => s.state === 'ended')) persistSections(); if (draft.submittedAt) showResults(draft.assessmentId); }
+        // Leaving the exam screen (other app, translator, screen lock, call) is recorded, not blocked.
+        // Focus moving inside the page (an input or an iframe) is not a leave.
+        const examRunning = () => !!draft && !draft.submittedAt && !retakeOptions;
+        function noteLeave() {
+            if (!guard() || !examRunning() || draft.integrity?.awayStartedAt) return;
+            try { flushActivity(); draft = api.markLeave(user, draft.assessmentId); } catch (e) { error = e.message; }
+        }
+        function noteReturn() {
+            if (!guard() || !draft?.integrity?.awayStartedAt || document.hidden) return;
+            try {
+                const previous = JSON.stringify(draft.sections.map(s => s.state)) + String(draft.break?.endedAt);
+                draft = api.markReturn(user, draft.assessmentId); render();
+                if (previous !== JSON.stringify(draft.sections.map(s => s.state)) + String(draft.break?.endedAt)) persistSections();
+                if (!draft.submittedAt) showLeaveWarning();
+            } catch (e) { error = e.message; render(); }
+        }
+        function showLeaveWarning() {
+            $('leaveMessage').textContent = `시험 중에는 번역기·사전·다른 앱을 쓰지 않아요. 화면을 벗어난 기록은 보호자 결과에 표시돼요. (이번까지 ${draft.integrity?.leaves || 1}회)`;
+            if (!$('leaveDialog').open) { try { $('leaveDialog').showModal(); } catch (_) { $('leaveDialog').setAttribute('open', ''); } }
+        }
+        // The translation guard shows its own overlay; this page only records the signal.
+        function noteTranslation(signal) {
+            const detector = root.LearningTranslationGuard;
+            if (signal == null) { if (!detector?.detected) return; signal = detector.signal; }
+            if (!guard() || !examRunning()) return;
+            try { draft = api.markTranslation(user, draft.assessmentId, signal); } catch (e) { error = e.message; }
+        }
+        $('resumeExam').onclick = () => { $('leaveDialog').close(); if (guard() && !$('workPanel').hidden) $('question').focus(); };
+        root.addEventListener('blur', event => {
+            if (event.target !== root && event.target !== document) return;
+            setTimeout(() => { if (!document.hasFocus?.() && document.activeElement?.tagName !== 'IFRAME') noteLeave(); }, 0);
+        });
+        root.addEventListener('focus', event => { if (event.target === root || event.target === document) noteReturn(); });
+        document.addEventListener('learning-translation-detected', event => noteTranslation(event.detail?.signal || 'unknown'));
+        try { root.LearningTranslationGuard?.onDetect?.(signal => noteTranslation(signal || root.LearningTranslationGuard?.signal || 'unknown')); } catch (_) { /* The document event still records detection. */ }
+        if (draft) { draft = api.reconcile(user, draft.assessmentId); noteReturn(); noteTranslation(); render(); if (draft.sections.some(s => s.state === 'ended')) persistSections(); if (draft.submittedAt) showResults(draft.assessmentId); }
         else { render(); if (params.has('assessment')) showResults(params.get('assessment')); }
         timer = setInterval(() => {
             if (!guard() || !draft || draft.submittedAt) return;
@@ -194,7 +231,7 @@
         }, 1000);
         root.addEventListener('storage', guard);
         root.addEventListener('firemerged',event=>{if(event.detail?.userId===user&&guard()&&!busy&&(!draft||retakeOptions))render();});
-        document.addEventListener('visibilitychange', () => { if (!guard()) return; try { flushActivity(); ensureActivity(); } catch (e) { error = e.message; } });
+        document.addEventListener('visibilitychange', () => { if (!guard()) return; try { if (document.hidden) noteLeave(); flushActivity(); ensureActivity(); if (!document.hidden) noteReturn(); } catch (e) { error = e.message; } });
         root.addEventListener('pagehide', () => { try { flushActivity(); activityTracker?.destroy(); activityTracker = null; } catch (_) { /* Existing saved activity is retained. */ } });
         root.addEventListener('pageshow', () => { if (!guard() || !draft || draft.submittedAt) return; draft = api.reconcile(user, draft.assessmentId); render(); if (draft.sections.some(s => s.state === 'ended')) persistSections(); });
         root.addEventListener('smartstudy:storage-error', event => {

@@ -14,6 +14,13 @@
             } else element.append(document.createTextNode(part));
         }
     }
+    const duration = seconds => { const total = Math.max(0, Math.round(Number(seconds) || 0)), m = Math.floor(total / 60), r = total % 60; return m ? `${m}분${r ? ` ${r}초` : ''}` : `${r}초`; };
+    // Exams submitted before screen-leave recording have no integrity data and show nothing.
+    function integrityText(integrity) {
+        if (!integrity || typeof integrity !== 'object') return null;
+        const leaves = Math.max(0, Number(integrity.leaves) || 0), translated = integrity.translationDetected === true;
+        return { text: `${leaves ? `화면 이탈 ${leaves}회 · 총 ${duration(integrity.awaySeconds)}` : '화면 이탈 없음'} · ${translated ? '번역 감지됨' : '번역 감지 없음'}`, warning: leaves > 0 || translated };
+    }
     async function load(user, assessmentId) {
         if (app.LocalRepository.getActiveUser() !== user) return { published: false, reason: 'account' };
         if (!app.MockPublication?.get) return { published: false, reason: 'unavailable' };
@@ -48,6 +55,8 @@
             grid.append(card);
         }
         container.append(grid, node('p', '이 회차의 제출 점수입니다. 다시 응시한 결과는 별도 회차에 기록됩니다.', 'released-first-note'));
+        const integrity = integrityText(draft.integrity);
+        if (integrity) container.append(node('p', `시험 중 기록 · ${integrity.text}`, `released-integrity${integrity.warning ? ' is-warning' : ''}`));
         for (const section of draft.sections) {
             const detail = node('details',null,'released-details'), summary = node('summary', `${section.name} · 답안과 해설`); detail.append(summary);
             (section.initialAttempts || []).forEach((attempt, index) => {
@@ -66,6 +75,6 @@
         }
         container.append(node('a', '오답 복습 이어가기 →', 'review-link')); container.lastChild.href = 'today.html';
     }
-    app.MockExamResults = { load, render, setMathText };
+    app.MockExamResults = { load, render, setMathText, integrityText };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExamResults;
 })(typeof window !== 'undefined' ? window : globalThis);

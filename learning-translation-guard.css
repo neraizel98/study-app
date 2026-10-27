@@ -11,3 +11,65 @@ html[data-learning-translation-guard] :is([contenteditable="true"], [contentedit
     -webkit-user-select: text;
     user-select: text;
 }
+
+/* Offscreen English canary: real text for translators, invisible and silent to people. */
+.learning-translation-sentinel {
+    position: absolute;
+    left: -10000px;
+    top: 0;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    white-space: nowrap;
+    pointer-events: none;
+}
+/* Shown when page translation was forced on anyway. */
+.learning-translation-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 2147483000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background: rgba(251, 247, 239, 0.96);
+    font-family: var(--font, sans-serif);
+    color: var(--text, #2b2620);
+}
+.learning-translation-card {
+    max-width: 380px;
+    width: 100%;
+    padding: 28px 24px 24px;
+    border: 1px solid var(--card-border, #ede5d6);
+    border-radius: 20px;
+    background: var(--card-bg, #ffffff);
+    box-shadow: 0 12px 32px rgba(43, 38, 32, 0.12);
+    text-align: center;
+}
+.learning-translation-card h2 {
+    margin: 0 0 10px;
+    font-size: 1.25rem;
+    color: var(--text, #2b2620);
+}
+.learning-translation-card p {
+    margin: 0 0 20px;
+    line-height: 1.65;
+    color: var(--text-sub, #6e6559);
+    word-break: keep-all;
+}
+.learning-translation-card button {
+    min-width: 140px;
+    min-height: 48px;
+    padding: 12px 22px;
+    border: 0;
+    border-radius: 14px;
+    background: var(--accent, #23845c);
+    color: #ffffff;
+    font: inherit;
+    font-weight: 700;
+    cursor: pointer;
+}
+.learning-translation-card button:focus-visible {
+    outline: 3px solid var(--accent2, #2e9a6c);
+    outline-offset: 3px;
+}
