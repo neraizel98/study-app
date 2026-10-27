@@ -102,16 +102,16 @@ test('admin list: rounds area, paper card without score or publication, reprint 
  assert.equal(buttons(paperCard,'학습자에게 공개').length,0);assert.equal(all(paperCard).some(n=>n.className.includes('mock-score-grid')||n.className.includes('mock-integrity')),false);
  assert.equal(buttons(host,'학습자에게 공개').length,1,'only the online round can be published');
  // Reprint from the list and from the rounds area writes the stored set for mock-print.html.
- buttons(paperCard,'다시 출력')[0].onclick();
+ buttons(paperCard,'출력하기')[0].onclick();
  assert.deepEqual(opened.at(-1),['mock-print.html','_blank']);const printed=JSON.parse(raw.get('SmartStudy_MockPaperPrint'));
  assert.equal(printed.attemptNo,2);assert.deepEqual(printed.items.map(q=>q.id),Array.from(two.payload.questions,q=>q.id));
- assert.equal(buttons(host,'다시 출력').length,2);
+ assert.equal(buttons(host,'출력하기').length,2);
  // Only the next free round can be made; making it re-renders with the new state.
  const make=buttons(host,'시험지 만들기');assert.equal(make.length,1);assert.equal(make[0].disabled,false);
  const count=opened.length;await make[0].onclick();
- assert.equal(opened.length,count+1);assert.equal(JSON.parse(raw.get('SmartStudy_MockPaperPrint')).attemptNo,3);
+ assert.equal(opened.length,count,'making a round does not open a window; 출력하기 does (a window opened after the save is blocked as a popup)');
  assert.deepEqual(all(host).filter(n=>n.className==='mock-paper-state').map(n=>n.textContent),['온라인 응시함','종이 시험지 생성됨','종이 시험지 생성됨']);
- assert.match(textOf(host),/3회차 종이 시험지를 저장했습니다/);assert.equal(buttons(host,'시험지 만들기').length,0);
+ assert.match(textOf(host),/3회차 종이 시험지를 만들었습니다\. 출력하기를 눌러/);assert.equal(buttons(host,'시험지 만들기').length,0);
 });
 test('admin rounds: a later round waits, a declined confirmation saves nothing, and an incomplete bank is refused with reasons',async()=>{
  const w=world(),{app,c}=w.parent,host=new El('div');let notice=null;

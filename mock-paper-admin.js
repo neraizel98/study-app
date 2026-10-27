@@ -67,13 +67,14 @@
    try{
     const result=await generate(user,{attemptNo:n,now:options.now,learnerName:options.learnerName});
     if(!result.ok){for(const row of reasons(result))shortages.append(el('li',null,row));say(`${n}회차 시험 문항을 구성하지 못했습니다. 온라인 시험도 시작할 수 없는 상태라 시험지를 만들지 않았습니다. 추가 공부가 필요한 것은 아니며, 학습자 기기의 기록 동기화 후 다시 확인해 주세요.`,true);unlock();return;}
-    const notice=`${n}회차 종이 시험지를 저장했습니다. ${print(result.set)?'인쇄 창을 확인해 주세요.':'팝업이 차단되었다면 다시 출력을 눌러 주세요.'}`;
+    // The print window is opened by the 출력하기 click itself; opening it after the save is usually blocked as a popup.
+    const notice=`${n}회차 종이 시험지를 만들었습니다. 출력하기를 눌러 인쇄해 주세요.`;
     if(options.onChange)await options.onChange(notice);else say(notice);
    }catch(error){say(errorText(error),true);unlock();}
   }
   for(const round of rounds(records,week)){
    const row=el('div',`mock-paper-round is-${round.state}`);row.append(el('strong',null,`${round.attemptNo}회차`),el('span','mock-paper-state',{online:'온라인 응시함',scored:'종이 시험 채점함',paper:'종이 시험지 생성됨',empty:'비어 있음'}[round.state]));
-   if(round.state==='paper'){const again=button('다시 출력');again.onclick=()=>say(reprint(round.paper)?`${round.attemptNo}회차 시험지를 인쇄 창에 열었습니다.`:'팝업이 차단되었습니다. 팝업을 허용한 뒤 다시 출력을 눌러 주세요.');row.append(again);}
+   if(round.state==='paper'){const again=button('출력하기');again.onclick=()=>say(reprint(round.paper)?`${round.attemptNo}회차 시험지를 인쇄 창에 열었습니다.`:'팝업이 차단되었습니다. 팝업을 허용한 뒤 출력하기를 다시 눌러 주세요.');row.append(again);}
    if(round.state==='empty'){const create=button('시험지 만들기');create.onclick=()=>make(round.attemptNo);if(round.attemptNo!==next)create.title='앞 회차부터 순서대로 만들 수 있습니다.';makers.push([create,round.attemptNo]);row.append(create);}
    list.append(row);
   }
