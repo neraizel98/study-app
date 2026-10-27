@@ -1,0 +1,212 @@
+/* Printable weekly mock exam (mock-print.html).
+   The toolbar uses the app's warm theme; the paper itself is a black-and-white school test paper. */
+:root {
+    --paper-serif: 'Noto Serif KR', 'Batang', 'BatangChe', 'AppleMyungjo', 'Nanum Myeongjo', serif;
+    --paper-sans: 'Noto Sans KR', 'Malgun Gothic', 'Apple SD Gothic Neo', sans-serif;
+    --paper-ink: #111;
+    --paper-gray: #ececec;
+    --omr: #d4246a;
+    --omr-soft: #fbe3ec;
+}
+
+* { box-sizing: border-box; }
+html, body { margin: 0; }
+body.paper-page { background: #e8e3d9; color: var(--paper-ink); font-family: var(--paper-serif); }
+
+/* ---------- On-screen toolbar (warm app theme) ---------- */
+.pp-toolbar {
+    position: sticky; top: 0; z-index: 10;
+    display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px;
+    padding: 12px 20px; background: #fbf7ef; border-bottom: 1px solid #ede5d6;
+    box-shadow: 0 6px 20px rgba(80, 60, 30, .06);
+    font-family: 'Pretendard Variable', Pretendard, -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; color: #2b2620;
+}
+.pp-brand { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; flex: 1 1 260px; min-width: 0; }
+.pp-brand strong { font-size: 17px; }
+.pp-back { color: #6e6559; text-decoration: none; font-size: 14px; }
+.pp-label { color: #6e6559; font-size: 13px; }
+.pp-parts { display: flex; flex-wrap: wrap; gap: 6px; }
+.pp-parts button, .pp-print {
+    font: inherit; font-size: 14px; font-weight: 600; cursor: pointer;
+    border: 1px solid #ded3bf; background: #fff; color: #2b2620; border-radius: 999px; padding: 8px 14px;
+}
+.pp-parts button[aria-pressed="true"] { background: #23845c; border-color: #23845c; color: #fff; }
+.pp-print { background: #2b2620; border-color: #2b2620; color: #fff; padding: 8px 20px; }
+.pp-toolbar button:disabled { opacity: .45; cursor: not-allowed; }
+.pp-toolbar button:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(35, 132, 92, .3); }
+.pp-tip { flex-basis: 100%; margin: 0; font-size: 12px; color: #6e6559; }
+.pp-empty {
+    max-width: 520px; margin: 48px auto; padding: 28px; background: #fff; border: 1px solid #ede5d6; border-radius: 16px;
+    font-family: 'Pretendard Variable', Pretendard, 'Malgun Gothic', sans-serif; color: #2b2620; text-align: center;
+}
+.pp-empty h1 { font-size: 20px; margin: 0 0 8px; }
+.pp-empty a { color: #23845c; font-weight: 700; }
+
+/* ---------- Sheets ---------- */
+.paper-root { padding: 24px 0 48px; overflow-x: auto; }
+.sheet {
+    width: 210mm; min-height: 297mm; margin: 0 auto 12mm; padding: 15mm; background: #fff;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, .18); font-size: 9.8pt; line-height: 1.55;
+}
+
+/* ---------- Exam header (first page of each 교시) ---------- */
+.exam-head { font-family: var(--paper-sans); margin-bottom: 5mm; }
+.eh-top { display: flex; justify-content: space-between; font-size: 8.5pt; font-weight: 500; padding-bottom: 1.2mm; border-bottom: .3mm solid var(--paper-ink); }
+.eh-kind { letter-spacing: .3em; }
+.eh-main { display: grid; grid-template-columns: 30mm 1fr 30mm; align-items: center; padding: 4mm 0 3.5mm; }
+.eh-period {
+    justify-self: start; border: .4mm solid var(--paper-ink); border-radius: 999px; padding: 1.2mm 4mm;
+    font-size: 11pt; font-weight: 700; letter-spacing: .05em; white-space: nowrap;
+}
+.eh-title { margin: 0; text-align: center; font-size: 27pt; font-weight: 900; letter-spacing: .32em; line-height: 1.2; padding-left: .32em; }
+.eh-round { justify-self: end; border: .5mm solid var(--paper-ink); padding: 1mm 3.5mm; font-size: 11pt; font-weight: 700; }
+.eh-info { display: flex; border-top: .8mm solid var(--paper-ink); border-bottom: .3mm solid var(--paper-ink); }
+.eh-field { display: flex; align-items: stretch; border-right: .25mm solid var(--paper-ink); font-size: 9pt; flex: 0 0 auto; }
+.eh-field:last-child { border-right: 0; }
+.eh-label { display: flex; align-items: center; padding: 1.4mm 2.2mm; background: var(--paper-gray); font-weight: 700; white-space: nowrap; border-right: .25mm solid var(--paper-ink); }
+.eh-value { display: flex; align-items: center; min-width: 9mm; padding: 1.4mm 2.2mm; font-family: var(--paper-serif); font-weight: 600; white-space: nowrap; }
+.eh-name { flex: 1 1 auto; }
+.eh-name .eh-value { min-width: 26mm; font-size: 10.5pt; }
+.eh-notice { margin-top: 2.5mm; border: .3mm solid var(--paper-ink); padding: 1.8mm 3mm 1.8mm; font-size: 8.3pt; line-height: 1.5; font-family: var(--paper-serif); }
+.eh-notice strong { font-family: var(--paper-sans); font-size: 8.8pt; }
+.eh-notice ol { margin: .6mm 0 0; padding-left: 4.5mm; }
+
+/* ---------- Two-column body ---------- */
+.cols { column-count: 2; column-gap: 9mm; column-rule: .35mm solid var(--paper-ink); column-fill: balance; padding-top: 2mm; border-top: .8mm solid var(--paper-ink); }
+.q-group { break-inside: avoid; margin-bottom: 3mm; }
+.q-directive { margin: 0 0 1.6mm; font-weight: 700; break-after: avoid; }
+.passage { border: .3mm solid var(--paper-ink); padding: 2.6mm 3.2mm; font-size: 9.3pt; line-height: 1.58; break-inside: avoid; }
+.passage--inline { margin: 1.6mm 0 1.6mm 1.6em; }
+.passage-title { margin: 0 0 1mm; text-align: center; font-weight: 700; font-family: var(--paper-sans); font-size: 9pt; }
+.passage-line { margin: 0; text-indent: 1em; text-align: justify; word-break: keep-all; }
+.sec-english .passage-line { text-align: left; }
+.glossary { margin: 1.6mm 0 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 3mm; font-size: 8pt; }
+.q { break-inside: avoid; margin: 0 0 5mm; }
+.q-stem { margin: 0 0 1.6mm; padding-left: 1.6em; text-indent: -1.6em; white-space: pre-wrap; word-break: keep-all; }
+.q-no { font-family: var(--paper-sans); font-weight: 900; margin-right: .35em; }
+.q-type { font-family: var(--paper-sans); font-weight: 700; margin-right: .3em; }
+.q-pts { font-family: var(--paper-sans); font-weight: 700; font-size: 9pt; margin-left: .35em; white-space: nowrap; }
+.bogi { position: relative; margin: 3mm 0 2mm 1.6em; padding: 3.4mm 3mm 1.8mm; border: .3mm solid var(--paper-ink); font-size: 9.4pt; }
+.bogi p { margin: 0; text-align: justify; word-break: keep-all; }
+.bogi-label { position: absolute; top: -2.4mm; left: 50%; transform: translateX(-50%); background: #fff; padding: 0 2mm; font-family: var(--paper-sans); font-size: 8.5pt; font-weight: 700; line-height: 1.4; }
+.choices { list-style: none; margin: 0; padding: 0 0 0 1.6em; }
+.choices--row { display: flex; gap: 0 2mm; }
+.choices--row .choice { flex: 1 1 0; }
+.choices--two { display: grid; grid-template-columns: 1fr 1fr; gap: .4mm 3mm; }
+.choices--one .choice { margin-bottom: .4mm; }
+.choice { display: flex; gap: 1.2mm; align-items: baseline; word-break: keep-all; }
+.mk { flex: none; font-family: var(--paper-serif); }
+.written-box { display: flex; align-items: stretch; height: 11mm; margin: 2mm 0 0 1.6em; border: .35mm solid var(--paper-ink); }
+.written-label { display: flex; align-items: center; padding: 0 3.5mm; background: var(--paper-gray); border-right: .3mm solid var(--paper-ink); font-family: var(--paper-sans); font-weight: 700; }
+.written-line { flex: 1; }
+.written-hint { margin: 1mm 0 0 1.6em; font-size: 8pt; }
+.end-note { break-inside: avoid; margin-top: 5mm; padding: 2.4mm 3mm; border: .4mm solid var(--paper-ink); font-size: 8.8pt; }
+.end-note strong { font-family: var(--paper-sans); }
+.math .katex { font-size: 1.08em; }
+
+/* ---------- 정답표·해설 ---------- */
+.ans-head { font-family: var(--paper-sans); text-align: center; margin-bottom: 4mm; }
+.ans-head .eh-top { justify-content: center; }
+.ans-title { margin: 3mm 0 1mm; font-size: 22pt; font-weight: 900; letter-spacing: .3em; padding-left: .3em; }
+.ans-sub { margin: 0; font-size: 9pt; padding-bottom: 2.5mm; border-bottom: .8mm solid var(--paper-ink); }
+.ans-h2 { font-family: var(--paper-sans); font-size: 11.5pt; margin: 5mm 0 2.5mm; padding-left: 2mm; border-left: 1.4mm solid var(--paper-ink); }
+.ans-h2--exp { break-before: page; margin-top: 0; }
+.key-table { width: 100%; border-collapse: collapse; table-layout: fixed; margin-bottom: 4mm; font-size: 8.8pt; break-inside: avoid; }
+.key-table caption { caption-side: top; text-align: left; font-family: var(--paper-sans); font-weight: 700; font-size: 9.5pt; padding-bottom: 1mm; }
+.key-table th, .key-table td { border: .25mm solid var(--paper-ink); text-align: center; padding: 1.1mm 0; line-height: 1.3; }
+.key-table th { width: 11mm; background: var(--paper-gray); font-family: var(--paper-sans); font-weight: 700; }
+.key-table tr:first-of-type td { background: #f7f7f7; font-family: var(--paper-sans); font-weight: 700; }
+.key-table .key-written { font-size: 7.4pt; word-break: break-all; }
+.key-mark { font-weight: 700; font-size: 10.5pt; }
+.exp-area { margin-bottom: 4mm; }
+.exp-title { font-family: var(--paper-sans); font-size: 10.5pt; margin: 0 0 2mm; padding: 1mm 2mm; background: var(--paper-gray); border-top: .4mm solid var(--paper-ink); break-after: avoid; }
+.exp-cols { column-count: 2; column-gap: 8mm; column-rule: .25mm solid #555; }
+.exp { break-inside: avoid; padding-top: .6mm; margin-bottom: 2mm; font-size: 8.8pt; line-height: 1.55; }
+.exp-head { margin: 0; }
+.exp-label { font-family: var(--paper-sans); font-weight: 700; font-size: 8pt; border: .25mm solid var(--paper-ink); padding: 0 1mm; margin-right: 1.2mm; }
+.key-text { margin-left: 1mm; }
+.exp-body { margin: .6mm 0 0 1.6em; white-space: pre-line; text-align: justify; word-break: keep-all; }
+
+/* ---------- OMR 답안지 ----------
+   Geometry (every left/top/width/height) comes from omr-layout.js as inline mm; this file only styles. */
+.omr { position: relative; width: 180mm; height: 262mm; color: var(--omr); font-family: var(--paper-sans); }
+.omr-fid, .omr-photo-tip, .omr-frame, .omr-top, .omr-id, .omr-col, .omr-col > *, .omr-row > *, .omr-legend > *, .omr-timing, .omr-tick, .omr-code-cell, .omr-code-label { position: absolute; }
+.omr-fid, .omr-code-cell--on { background: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-photo-tip, .omr-code-label { margin: 0; display: flex; align-items: center; font-size: 7pt; font-weight: 700; color: var(--paper-ink); }
+.omr-photo-tip { justify-content: center; }
+.omr-code-label { font-size: 7.4pt; letter-spacing: .02em; }
+.omr-frame { border: .6mm solid var(--omr); pointer-events: none; z-index: 2; }
+.omr-top { display: flex; align-items: stretch; border-bottom: .5mm solid var(--omr); }
+.omr-pen { display: flex; align-items: center; padding: 0 4mm; background: var(--omr); color: #fff; font-weight: 900; font-size: 10pt; letter-spacing: .08em; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-heading { flex: 1; display: flex; align-items: center; justify-content: center; padding: 0 4mm; font-size: 12pt; font-weight: 900; color: var(--paper-ink); }
+.omr-id { display: flex; flex-direction: column; border-right: .5mm solid var(--omr); }
+.omr-box { border-bottom: .35mm solid var(--omr); padding: 1.6mm 2mm 2mm; }
+.omr-cap { display: block; text-align: center; font-weight: 900; font-size: 8.5pt; letter-spacing: .1em; margin-bottom: 1.4mm; }
+.omr-name .omr-written { display: block; min-height: 9mm; border: .3mm solid var(--omr); text-align: center; font: 600 13pt/9mm var(--paper-serif); color: var(--paper-ink); }
+.omr-digits { display: grid; grid-template-columns: repeat(6, 1fr); border: .3mm solid var(--omr); }
+.omr-digit { display: flex; flex-direction: column; align-items: center; gap: 1.05mm; padding-bottom: 1.4mm; border-right: .25mm solid var(--omr); }
+.omr-digit:last-child { border-right: 0; }
+.omr-digit-write { align-self: stretch; height: 6mm; border-bottom: .3mm solid var(--omr); margin-bottom: .6mm; }
+.bub {
+    display: inline-flex; align-items: center; justify-content: center; flex: none;
+    width: 3.6mm; height: 5.2mm; border: .3mm solid var(--omr); border-radius: 50%;
+    font-size: 6.4pt; font-weight: 700; line-height: 1; color: var(--omr); background: #fff;
+}
+.omr-row > .bub { display: flex; }
+.bub--filled { background: var(--paper-ink); border-color: var(--paper-ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-area-row { display: grid; grid-template-columns: 1fr 1fr; gap: 1.6mm 2mm; }
+.omr-area { display: flex; align-items: center; justify-content: space-between; font-size: 7.6pt; font-weight: 700; }
+.omr-sign-space { display: flex; align-items: flex-end; justify-content: center; height: 12mm; border: .3mm solid var(--omr); font-size: 7pt; padding-bottom: 1mm; }
+.omr-guide { flex: 1; padding: 2mm; font-size: 7.4pt; line-height: 1.5; }
+.omr-guide strong { display: block; text-align: center; font-size: 8.5pt; margin-bottom: 1mm; }
+.omr-guide p { margin: 0 0 .8mm; display: flex; align-items: center; gap: 1.2mm; flex-wrap: wrap; }
+.omr-guide .omr-rule { display: block; }
+.omr-wrong { font-size: 10pt; line-height: 1; }
+.omr-col { border-right: .35mm solid var(--omr); }
+.omr-col:last-child { border-right: 0; }
+.omr-col-head { display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--omr-soft); border-bottom: .35mm solid var(--omr); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-col-period { font-size: 7.4pt; font-weight: 700; }
+.omr-col-name { font-size: 10pt; font-weight: 900; letter-spacing: .08em; }
+.omr-row { border-bottom: .2mm dotted var(--omr); }
+.omr-row--fifth { border-bottom: .35mm solid var(--omr); }
+.omr-row--last { border-bottom: 0; }
+.omr-n { display: flex; align-items: center; justify-content: center; font-size: 8.5pt; font-weight: 900; border-right: .25mm solid var(--omr); background: var(--omr-soft); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.omr-legend { font-size: 6.6pt; font-weight: 700; border-bottom: .35mm solid var(--omr); }
+.omr-legend .omr-n { font-size: 6.4pt; }
+.omr-legend-mark { display: flex; align-items: center; justify-content: center; }
+.omr-write { border: .35mm solid var(--omr); background: #fff; }
+.omr-write-label { position: absolute; top: .4mm; left: 1mm; font-size: 6.2pt; font-weight: 700; }
+.omr-timing { border-left: .35mm solid var(--omr); }
+.omr-tick { background: var(--paper-ink); -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+
+/* ---------- Print ---------- */
+@page {
+    size: A4 portrait;
+    margin: 15mm 15mm 17mm;
+    @bottom-center { content: counter(page) " / " counter(pages); font-family: 'Noto Serif KR', 'Batang', serif; font-size: 9pt; }
+    @bottom-right { content: "Smart Study"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; color: #555; }
+}
+.sec-reading { page: reading; }
+.sec-math { page: math; }
+.sec-english { page: english; }
+.sec-hanja { page: hanja; }
+.answer-sheet { page: answers; }
+.omr-sheet { page: omr; }
+@page reading { @bottom-left { content: "1교시 국어 영역"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; } }
+@page math { @bottom-left { content: "2교시 수학 영역"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; } }
+@page english { @bottom-left { content: "3교시 영어 영역"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; } }
+@page hanja { @bottom-left { content: "4교시 한자 영역"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; } }
+@page answers { @bottom-left { content: "정답 및 해설"; font-family: 'Noto Sans KR', 'Malgun Gothic', sans-serif; font-size: 7.5pt; } }
+
+@media print {
+    body.paper-page { background: #fff; }
+    .pp-toolbar, .pp-empty { display: none !important; }
+    .paper-root { padding: 0; overflow: visible; }
+    .sheet { width: auto; min-height: 0; margin: 0; padding: 0; box-shadow: none; }
+    .sheet + .sheet { break-before: page; }
+    .omr { break-inside: avoid; }
+}
+@media screen and (max-width: 840px) {
+    .pp-toolbar { padding: 10px 14px; }
+    .paper-root { padding: 12px 0 32px; }
+}

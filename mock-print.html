@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="ko" translate="no" class="notranslate" data-learning-translation-guard><head>
+    <meta name="google" content="notranslate">
+    <link rel="stylesheet" href="learning-translation-guard.css?v=20261027-exam-integrity">
+    <script src="learning-translation-guard.js?v=20261027-exam-integrity" defer></script>
+    <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+    <title>모의고사 인쇄 · Smart Study</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@500;700;900&family=Noto+Serif+KR:wght@400;600;700&display=swap">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.css">
+    <link rel="stylesheet" href="mock-paper.css?v=20261027-mock-paper">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.8/dist/katex.min.js"></script>
+    <script defer src="omr-layout.js?v=20261027-mock-paper"></script>
+    <script defer src="mock-paper.js?v=20261027-mock-paper"></script>
+</head><body class="paper-page">
+<nav class="pp-toolbar" id="paperToolbar" aria-label="인쇄 선택">
+    <div class="pp-brand"><a href="admin.html" class="pp-back">← 관리</a><strong>모의고사 인쇄</strong><span id="paperLabel" class="pp-label"></span></div>
+    <div class="pp-parts" role="group" aria-label="인쇄할 부분">
+        <button type="button" data-part="paper" aria-pressed="true">문제지</button>
+        <button type="button" data-part="answers" aria-pressed="false">정답표·해설</button>
+        <button type="button" data-part="omr" aria-pressed="false">OMR 답안지</button>
+        <button type="button" data-part="all" aria-pressed="false">전체</button>
+    </div>
+    <button type="button" id="printPaper" class="pp-print">인쇄</button>
+    <p class="pp-tip">A4 세로 · 배율 100% · ‘배경 그래픽’을 켜면 OMR 색이 그대로 나와요.</p>
+</nav>
+<main class="pp-empty" id="paperEmpty" hidden>
+    <h1>인쇄할 모의고사가 없어요</h1>
+    <p>관리 화면에서 이번 주 모의고사 문항을 만든 뒤 인쇄 버튼을 눌러 주세요.</p>
+    <p><a href="admin.html">관리 화면으로 가기</a></p>
+</main>
+<main id="paperRoot" class="paper-root" aria-label="시험지"></main>
+</body></html>

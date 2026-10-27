@@ -29,9 +29,12 @@
             .filter(d=>d?.userId===user&&d.scheduledWeekId===week)
             .map(clone).sort((a,b)=>(Number(a.attemptNo)||1)-(Number(b.attemptNo)||1)||a.startedAt-b.startedAt);
     }
+    // A paper round (status 'paper') occupies its round number and question history only;
+    // the week's current online exam is the latest round that was taken on screen.
+    const MAX_ATTEMPTS = 3, isPaper = draft => draft?.status === 'paper';
     function get(user, reference = weekId()) {
         if(String(reference).startsWith('mock:'))return getById(user,reference);
-        return list(user,reference).at(-1)||null;
+        return list(user,reference).filter(d=>!isPaper(d)).at(-1)||null;
     }
     function getById(user, assessmentId) {
         const prefix=`mock:${user}:`;if(!String(assessmentId).startsWith(prefix))return null;
@@ -52,12 +55,28 @@
     function restore(user, records) {
         assertUser(user);
         for(const row of records||[]){
-            const d=row.payload||row.snapshot;if(!d||row.learnerId&&row.learnerId!==user||d.userId!==user||d.kind!=='mock'||d.status!=='submitted'||!d.submittedAt||!/^\d{4}-\d{2}-\d{2}$/.test(d.scheduledWeekId)||!String(d.assessmentId).startsWith(`mock:${user}:${d.scheduledWeekId}:`)||!Array.isArray(d.questions)||d.questions.length!==55||!Array.isArray(d.sections)||d.sections.length!==4||!d.sections.every(s=>s.state==='ended'&&Array.isArray(s.initialAttempts))||d.sections.reduce((n,s)=>n+s.initialAttempts.length,0)!==55)continue;
-            if(getById(user,d.assessmentId))continue; // Never replace this device's in-progress/submitted answers.
+            const d=row.payload||row.snapshot;if(!d||row.learnerId&&row.learnerId!==user||d.userId!==user||d.kind!=='mock'||!/^\d{4}-\d{2}-\d{2}$/.test(d.scheduledWeekId)||!String(d.assessmentId).startsWith(`mock:${user}:${d.scheduledWeekId}:`)||!Array.isArray(d.questions)||d.questions.length!==55
+                ||(isPaper(d)?d.mode!=='paper'||!(Number(d.attemptNo)>=1&&Number(d.attemptNo)<=MAX_ATTEMPTS)
+                    :d.status!=='submitted'||!d.submittedAt||!Array.isArray(d.sections)||d.sections.length!==4||!d.sections.every(s=>s.state==='ended'&&Array.isArray(s.initialAttempts))||d.sections.reduce((n,s)=>n+s.initialAttempts.length,0)!==55))continue;
+            // Never replace this device's in-progress/submitted answers. The only replacement is the
+            // parent's OMR-scored result over this device's copy of the same printed paper round.
+            const existing=getById(user,d.assessmentId),scored=isPaperResult(d);
+            if(existing&&!(scored&&isPaper(existing))){if(scored&&!isPaper(existing))savePaperReports(existing,row.published===true);continue;}
             const restored=clone(d),n=Number(restored.attemptNo)||1;
-            restored.storageSlot=n===1?restored.scheduledWeekId:`${restored.scheduledWeekId}~${n}~${encodeURIComponent(restored.assessmentId)}`;
+            // A paper round never takes the week slot, which belongs to this device's online first exam.
+            restored.storageSlot=existing?.storageSlot||(n===1&&d.mode!=='paper'?restored.scheduledWeekId:`${restored.scheduledWeekId}~${n}~${encodeURIComponent(restored.assessmentId)}`);
             restored.syncStatus='synced';restored.resultVisibility=row.published===true?'published':'withheld';write(restored);
+            if(scored)savePaperReports(restored,row.published===true);
         }
+    }
+    // An OMR-scored paper round has no learner device that submitted it, so the learner's device
+    // keeps its subject reports (as an online submission does), and they sync from here as usual.
+    const isPaperResult = draft => draft?.mode === 'paper' && draft.status === 'submitted' && draft.integrity?.source === 'paper-omr';
+    function savePaperReports(draft, published) {
+        const old = repo().listReports(draft.userId), ids = new Set(old.map(r => r.sessionId));
+        const added = reportsFor(draft).filter(r => !ids.has(r.sessionId)).map(r => ({ ...r, metadata: { ...r.metadata, resultVisibility: published ? 'published' : 'withheld' } }));
+        if (added.length) repo().saveReports(draft.userId, [...old, ...added]);
+        return added.length;
     }
     function write(draft) {
         assertUser(draft.userId);
@@ -81,9 +100,10 @@
         assertUser(user);
         const scheduledWeekId = options.scheduledWeekId || weekId(now), old = get(user, scheduledWeekId);
         if(old&&!options.retake)return old;
-        if(!old&&!options.retake&&repo().listReports(user).some(r=>r.metadata?.mockExam&&r.metadata?.scheduledWeekId===scheduledWeekId))throw new Error('이전 응시 기록이 있습니다. 새 회차로 시험을 준비해 주세요.');
+        if(!old&&!options.retake&&(list(user,scheduledWeekId).length||repo().listReports(user).some(r=>r.metadata?.mockExam&&r.metadata?.scheduledWeekId===scheduledWeekId)))throw new Error('이전 응시 기록이 있습니다. 새 회차로 시험을 준비해 주세요.');
         if(options.retake&&old&&!old.submittedAt)throw new Error('진행 중인 시험을 먼저 제출해 주세요.');
         const previous=list(user,scheduledWeekId),attemptNo=options.retake?Math.max(1,...previous.map(d=>Number(d.attemptNo)||1),Number(options.previousAttemptNo)||0)+1:1;
+        if(attemptNo>MAX_ATTEMPTS)throw new Error(`이번 주 모의고사 ${MAX_ATTEMPTS}회차까지 모두 사용했어요. 종이 시험 회차도 포함됩니다.`);
         if(options.retake){
             const oldIds=new Set(previous.flatMap(d=>d.questions||[]).map(q=>q.id));
             const oldContent=new Set(previous.flatMap(d=>d.questions||[]).map(q=>app.MockExamBank.fingerprint?.(q)||[q.subject,q.question,q.answer].join('|')));
@@ -140,8 +160,12 @@
         if (section.state !== 'active') return;
         section.state = 'ended'; section.endedAt = now; section.timedOut = timedOut;
         section.elapsedSeconds = Math.max(0, Math.min(section.durationSeconds, Math.floor((now - section.startedAt) / 1000)));
-        section.initialAttempts = questionsFor(draft, section).map(q => {
-            const selectedAnswer = draft.responses[q.id] ?? '';
+        section.initialAttempts = questionsFor(draft, section).map(q => attemptFor(q, draft.responses[q.id] ?? ''));
+        if (index === 1) draft.break = { startedAt: now, deadline: now + 5 * 60000, endedAt: null };
+        else activate(draft, index + 1, now);
+    }
+    // One graded first attempt; shared by online sections and parent-scored paper rounds.
+    function attemptFor(q, selectedAnswer) {
             const grade = app.MockExamBank.grade(q, selectedAnswer);
             return { questionId: q.id, subject: q.subject, question: q.question, selectedAnswer,
                 correct: typeof grade === 'boolean' ? grade : grade.correct === true, correctAnswer: q.answer ?? grade.answer,
@@ -152,9 +176,6 @@
                 conceptId: q.conceptId || null, sourceQuestionId: q.sourceQuestionId || null,
                 repeated: !!q.repeated, assisted: false, generator: q.generator || null,
                 fingerprint:q.fingerprint||null,templateFamily:q.templateFamily||null,noveltyKind:q.noveltyKind||null,cognitiveDemand:q.cognitiveDemand||null,difficulty:q.difficulty||null };
-        });
-        if (index === 1) draft.break = { startedAt: now, deadline: now + 5 * 60000, endedAt: null };
-        else activate(draft, index + 1, now);
     }
     function reconcileDraft(draft, now) {
         for (let i = 0; i < 6 && !draft.submittedAt; i++) {
@@ -237,7 +258,7 @@
                 round: draft.attemptNo||1, date: section.endedAt, createdAt: section.endedAt, updatedAt: section.endedAt, totalQuestions: attempts.length,
                 initialScore: score, finalScore: score, timeSpentSeconds: Math.max(0, Number(section.activeSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
                 isCompleted: score === attempts.length, metadata: { ...context, assessment: true, examTraining: true, mockExam: true, kind: 'mock', assessmentId: draft.assessmentId,
-                    assessmentSubject: subject, ...(formula ? { source: 'math-formula' } : {}), resultVisibility: 'withheld',
+                    assessmentSubject: subject, ...(formula ? { source: 'math-formula' } : {}), ...(draft.mode === 'paper' ? { mode: 'paper' } : {}), resultVisibility: 'withheld',
                     scheduledWeekId: draft.scheduledWeekId, scheduledDate: draft.scheduledDate, scopeCutoffAt: draft.scopeCutoffAt,
                     bankVersion: draft.bankVersion, examVersion: draft.bankVersion, attemptNo: draft.attemptNo||1, parentAttemptId: draft.parentAttemptId||null, submittedAt: section.endedAt,
                     examComplete: !!draft.submittedAt, status: 'submitted', sectionId: section.id, sectionDeadline: section.deadline,
@@ -270,6 +291,27 @@
         if (!draft?.submittedAt || draft.sections.some(s => s.state !== 'ended')) throw new Error('네 과목 제출을 먼저 완료해 주세요.');
         return { ...clone(draft), initialAttempts: draft.sections.flatMap(s => clone(s.initialAttempts)), reports: reportsFor(draft) };
     }
+    // A printed round scored from its OMR card: the same submitted record an online exam produces
+    // (four ended sections, 55 graded first attempts, subject reports), with no screen or time record.
+    function paperResult(paper, responses, now = Date.now()) {
+        if (!isPaper(paper) || paper.mode !== 'paper' || paper.kind !== 'mock' || !Array.isArray(paper.questions) || paper.questions.length !== 55) throw new Error('채점할 종이 시험지가 아닙니다.');
+        const answers = {};
+        for (const q of paper.questions) {
+            const raw = responses?.[q.id], value = q.kind === 'written' ? String(raw ?? '').trim().slice(0, 2000) : raw == null ? '' : String(raw);
+            if (value && q.kind !== 'written' && !(q.choices || []).map(String).includes(value)) throw new Error('보기에 없는 답이 있습니다. 답안을 다시 확인해 주세요.');
+            answers[q.id] = value;
+        }
+        const minutes = paper.paper?.timeLimits || {}, startedAt = Number(paper.startedAt || paper.generatedAt) || now;
+        const draft = { ...clone(paper), status: 'submitted', mode: 'paper', responses: answers, cursor: 0, break: null, startedAt, submittedAt: now, resultVisibility: 'withheld', syncStatus: 'synced',
+            scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false, integrity: { source: 'paper-omr' } };
+        draft.sections = definitions.map(section => {
+            const proposed = Number(minutes[section.id]), ended = { ...section, durationSeconds: (Number.isInteger(proposed) && proposed >= 5 && proposed <= 60 ? proposed : section.minutes) * 60,
+                state: 'ended', startedAt, deadline: null, endedAt: now, timedOut: false, activeSeconds: 0, elapsedSeconds: 0 };
+            ended.initialAttempts = questionsFor(draft, ended).map(q => attemptFor(q, answers[q.id]));
+            return ended;
+        });
+        return submissionSnapshot(draft);
+    }
     async function sync(user, week) {
         assertUser(user); let draft = get(user, week); if (!draft?.submittedAt) return { synced: false, reason: 'incomplete' };
         const assessmentId=draft.assessmentId;
@@ -286,7 +328,7 @@
             return { synced: false, reason: String(error.message || error) };
         }
     }
-    app.MockExam = { areas, definitions, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
-        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, sync };
+    app.MockExam = { areas, definitions, maxAttempts: MAX_ATTEMPTS, isPaper, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
+        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, paperResult, isPaperResult, sync };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExam;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -18,6 +18,8 @@
     // Exams submitted before screen-leave recording have no integrity data and show nothing.
     function integrityText(integrity) {
         if (!integrity || typeof integrity !== 'object') return null;
+        // A paper round scored from its OMR card has no screen record.
+        if (integrity.source === 'paper-omr') return { text: '종이 시험 · OMR 채점', warning: false, paper: true };
         const leaves = Math.max(0, Number(integrity.leaves) || 0), translated = integrity.translationDetected === true;
         return { text: `${leaves ? `화면 이탈 ${leaves}회 · 총 ${duration(integrity.awaySeconds)}` : '화면 이탈 없음'} · ${translated ? '번역 감지됨' : '번역 감지 없음'}`, warning: leaves > 0 || translated };
     }
@@ -56,7 +58,7 @@
         }
         container.append(grid, node('p', '이 회차의 제출 점수입니다. 다시 응시한 결과는 별도 회차에 기록됩니다.', 'released-first-note'));
         const integrity = integrityText(draft.integrity);
-        if (integrity) container.append(node('p', `시험 중 기록 · ${integrity.text}`, `released-integrity${integrity.warning ? ' is-warning' : ''}`));
+        if (integrity) container.append(node('p', integrity.paper ? integrity.text : `시험 중 기록 · ${integrity.text}`, `released-integrity${integrity.warning ? ' is-warning' : ''}`));
         for (const section of draft.sections) {
             const detail = node('details',null,'released-details'), summary = node('summary', `${section.name} · 답안과 해설`); detail.append(summary);
             (section.initialAttempts || []).forEach((attempt, index) => {

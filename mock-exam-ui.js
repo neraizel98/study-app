@@ -5,21 +5,29 @@
         await local.ready;
         const user = local.getActiveUser(); if (!user) { root.location.href = 'index.html'; return; }
         const $ = id => document.getElementById(id), params = new URLSearchParams(root.location.search);
-        let retakeOptions=null,remoteHistory=[],publicationRequest=0;
-        let draft = params.get('assessment') ? api.getById(user, params.get('assessment')) : api.get(user), bank = null, busy = false, error = '', timer, confirmingSection;
+        let retakeOptions=null,remoteHistory=[],publicationRequest=0,printedWeek=null;
+        // A paper round is never opened as an online exam; its link falls back to this week's flow.
+        // Before the server check (pending), a printed copy is kept aside: the parent may have scored it since.
+        function current(pending){const found=params.get('assessment')?api.getById(user,params.get('assessment')):api.get(user);if(!api.isPaper?.(found))return found;if(pending){printedWeek=found.scheduledWeekId;return null;}params.delete('assessment');root.history.replaceState(null,'',root.location.pathname);return api.get(user);}
+        let draft = current(true), bank = null, busy = false, error = '', timer, confirmingSection;
         // Recover submitted rounds from another device before offering a new first exam.
         if(!draft||draft.submittedAt){
         $('readyPanel').hidden=false;$('startExam').disabled=true;$('bankStatus').textContent='이전 시험과 회차를 확인하고 있어요.';
         try{
-            remoteHistory=await app.MockPublication.list(user,{week:draft?.scheduledWeekId||api.weekId()});
+            remoteHistory=await app.MockPublication.list(user,{week:draft?.scheduledWeekId||printedWeek||api.weekId()});
             if(local.getActiveUser()!==user)return;
             api.restore(user,remoteHistory);
-            draft=params.get('assessment')?api.getById(user,params.get('assessment')):api.get(user);
         }catch(_){/* Offline exams on this device remain available; no draft is overwritten. */}
+        if(local.getActiveUser()!==user)return;
+        draft=current();
+        // An unscored printed round of an earlier week falls back to this week, which needs this week's history.
+        if(printedWeek&&printedWeek!==api.weekId()&&!params.has('assessment')&&(!draft||draft.submittedAt)){try{remoteHistory=await app.MockPublication.list(user,{week:api.weekId()});if(local.getActiveUser()!==user)return;api.restore(user,remoteHistory);draft=current();}catch(_){remoteHistory=[];}}
         }
         if(!draft&&!params.has('assessment')){
             const recorded=local.listReports(user).filter(r=>r.metadata?.mockExam&&r.metadata?.examComplete&&r.metadata.scheduledWeekId===api.weekId());
-            if(recorded.length){const max=Math.max(...recorded.map(r=>Number(r.metadata.attemptNo||r.round)||1));retakeOptions={retake:true,attemptNo:max+1,previousAttemptNo:max,scheduledWeekId:api.weekId(),parentAttemptId:recorded.find(r=>Number(r.metadata.attemptNo||r.round||1)===max)?.metadata.assessmentId,history:remoteHistory};}
+            // Paper rounds made by the parent occupy round numbers too, so the next online round follows them.
+            const rounds=[...recorded.map(r=>({n:Number(r.metadata.attemptNo||r.round)||1,id:r.metadata.assessmentId})),...[...api.list(user,api.weekId()),...remoteHistory.map(r=>r.payload).filter(p=>p?.userId===user&&p.scheduledWeekId===api.weekId())].map(d=>({n:Number(d.attemptNo)||1,id:d.assessmentId}))];
+            if(rounds.length){const last=rounds.reduce((a,b)=>b.n>a.n?b:a);retakeOptions={retake:true,attemptNo:last.n+1,previousAttemptNo:last.n,scheduledWeekId:api.weekId(),parentAttemptId:last.id,history:remoteHistory};}
         }
         // Passages read in this visit; their options open only after the learner confirms reading.
         const readPassages = new Set();
@@ -57,6 +65,7 @@
         function showReady() {
             clear(); $('readyPanel').hidden = false;
             if (params.has('assessment')&&!retakeOptions) { $('bankStatus').textContent = '이 기기에 시험이 없습니다. 공개된 결과를 서버에서 확인합니다.'; $('startExam').hidden = true; $('pledgeLabel').hidden = true; $('remoteResult').hidden = false; return; }
+            if (retakeOptions?.attemptNo > api.maxAttempts) { bank = null; $('cancelRetake').hidden = !draft; $('startExam').hidden = true; $('pledgeLabel').hidden = true; $('shortages').replaceChildren(); $('bankStatus').textContent = `이번 주 모의고사 ${api.maxAttempts}회차까지 모두 사용했어요. 보호자가 만든 종이 시험 회차도 포함됩니다.`; return; }
             bank = app.MockExamBank.build(user, Date.now(),retakeOptions||{});
             $('cancelRetake').hidden=!retakeOptions||!draft;
             $('startExam').hidden=false;$('pledgeLabel').hidden=false;
@@ -82,8 +91,9 @@
             });
             if (draft.submittedAt) {
                 $('submittedPanel').hidden = false;$('submittedPanel').querySelector('h2').textContent=`${draft.attemptNo||1}회차 · 네 과목 제출 완료`; $('syncState').textContent = busy ? '클라우드 저장 확인 중…' : draft.syncStatus === 'synced' ? '클라우드 저장 완료' : '이 기기에 제출 완료 · 클라우드 저장 대기';
-                $('retakeExam').disabled=busy;$('checkResults').disabled=busy;
-                $('retakeExam').textContent=`새 문제로 ${Number(draft.attemptNo||1)+1}회차 보기`;
+                const next=Math.max(Number(draft.attemptNo||1),...api.list(user,draft.scheduledWeekId).map(d=>Number(d.attemptNo)||1))+1;
+                $('retakeExam').disabled=busy||next>api.maxAttempts;$('checkResults').disabled=busy;
+                $('retakeExam').textContent=next>api.maxAttempts?`이번 주 ${api.maxAttempts}회차까지 모두 응시했어요`:`새 문제로 ${next}회차 보기`;
                 renderHistory();
                 $('retrySave').hidden = draft.syncStatus === 'synced'; $('retrySave').disabled = busy; return;
             }
@@ -158,11 +168,11 @@
         $('startExam').onclick = () => { if (!guard() || !$('examPledge').checked) return; try { draft = api.create(user, bank,Date.now(),{...(retakeOptions||{}),pledged:true});retakeOptions=null;$('examPledge').checked=false;readPassages.clear();noteTranslation();params.delete('assessment');root.history.replaceState(null,'',root.location.pathname);$('releasedResults').hidden=true;render(); } catch (e) { error = e.message; render(); } };
         function renderHistory(){
             const select=$('examHistory'),rows=api.list(user,draft?.scheduledWeekId||api.weekId());select.replaceChildren();select.disabled=busy;
-            for(const row of rows){const option=text('option',`${row.scheduledDate} · ${row.attemptNo||1}회차${row.submittedAt?'':' · 진행 중'}`);option.value=row.assessmentId;option.selected=row.assessmentId===draft?.assessmentId;select.append(option);}
+            for(const row of rows){const paper=api.isPaper(row),option=text('option',`${row.scheduledDate} · ${row.attemptNo||1}회차${paper?' · 종이 시험':row.submittedAt?'':' · 진행 중'}`);option.value=row.assessmentId;option.disabled=paper;option.selected=row.assessmentId===draft?.assessmentId;select.append(option);}
             $('examHistoryLabel').hidden=rows.length<2;
         }
         $('cancelRetake').onclick=()=>{retakeOptions=null;render();};
-        $('examHistory').onchange=()=>{const saved=api.getById(user,$('examHistory').value);if(!saved)return;draft=saved;publicationRequest++;params.set('assessment',saved.assessmentId);root.history.replaceState(null,'',root.location.pathname+'?assessment='+encodeURIComponent(saved.assessmentId));$('releasedResults').hidden=true;render();if(draft.submittedAt)showResults(draft.assessmentId);};
+        $('examHistory').onchange=()=>{const saved=api.getById(user,$('examHistory').value);if(!saved||api.isPaper(saved))return;draft=saved;publicationRequest++;params.set('assessment',saved.assessmentId);root.history.replaceState(null,'',root.location.pathname+'?assessment='+encodeURIComponent(saved.assessmentId));$('releasedResults').hidden=true;render();if(draft.submittedAt)showResults(draft.assessmentId);};
         $('retakeExam').onclick=async()=>{
             if(!guard()||busy||!draft?.submittedAt)return;
             busy=true;publicationRequest++;$('examHistory').disabled=true;$('retakeExam').disabled=true;$('retakeExam').textContent='이전 회차와 새 문제 확인 중…';

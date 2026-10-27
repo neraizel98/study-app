@@ -91,7 +91,8 @@
  function build(user,now=Date.now(),options={}){
   const retake=Number(options.attemptNo)>1,strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
   now=Number(now);if(!Number.isFinite(now))now=Date.now();
-  const reports=(app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user));
+  // The parent's device supplies the learner's server reports; the learner's own device reads local ones.
+  const reports=(options.reports||app.LocalRepository?.listReports(user)||[]).filter(r=>(!r.userId||r.userId===user)&&(!r.learnerId||r.learnerId===user));
   let scopes=learnedScopes(reports,now);
   const weekDate=new Date(now+9*3600000);weekDate.setUTCDate(weekDate.getUTCDate()-(weekDate.getUTCDay()+6)%7);
   const weekStart=Date.parse(weekDate.toISOString().slice(0,10)+'T00:00:00+09:00');

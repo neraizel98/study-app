@@ -207,8 +207,32 @@
   const db=await client.getDB();
   const pages=await timed(Promise.all(dates.map(week=>db.collection('mockExamResults').where('learnerId','==',user).where('payload.scheduledWeekId','==',week).get({source:'server'}))));
   const rows=[];for(const page of pages)for(const doc of page.docs){const data=doc.data();if(data.learnerId!==user||data.payload?.userId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);rows.push({...data,documentId:doc.id});}
-  return rows.sort((a,b)=>Number(b.payload.submittedAt)-Number(a.payload.submittedAt));
+  return rows.sort((a,b)=>Number(b.payload.submittedAt||b.payload.generatedAt)-Number(a.payload.submittedAt||a.payload.generatedAt));
  }
- async function publish(user,assessment){const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');const r=await ref(user,assessment),db=await client.getDB();await timed(db.runTransaction(async tx=>{const doc=await tx.get(r);if(!doc.exists)throw new Error('저장된 시험이 없습니다.');if(doc.data().published)return;tx.update(r,{published:true,publishedAt:root.firebase.firestore.FieldValue.serverTimestamp(),publishedBy:auth.uid});}));return get(user,assessment);}
- app.MockPublication={get,submit,list,publish,id};
+ // A parent's printed exam takes the week's next round like an online attempt, without answers or
+ // scores. It is stored beside the online rounds so every device skips that round and its questions.
+ async function savePaper(user,payload){
+  const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');
+  const n=Number(payload?.attemptNo);if(payload?.status!=='paper'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||!Number.isInteger(n)||n<1||n>3||!Array.isArray(payload.questions)||payload.questions.length!==55||payload.submittedAt!==undefined||payload.initialAttempts!==undefined)throw new Error('종이 시험 정보가 올바르지 않습니다.');
+  const taken=(await list(user,{week:payload.scheduledWeekId})).map(r=>Number(r.payload.attemptNo)||1);
+  if(taken.includes(n)||Math.max(0,...taken)+1!==n)throw new Error(`${n}회차는 이미 기록이 있거나 아직 만들 차례가 아닙니다. 기존 기록을 덮어쓰지 않았습니다.`);
+  const r=await ref(user,payload.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists)throw new Error('같은 시험 기록이 이미 있습니다. 덮어쓰지 않았습니다.');tx.set(r,{learnerId:user,assessmentId:payload.assessmentId,payload:JSON.parse(JSON.stringify(payload)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};
+ }
+ // The parent's OMR scoring turns the printed round into a submitted, still unpublished result, once.
+ // The round, assessmentId and questions stay; a scored or published round is never re-scored.
+ async function savePaperResult(user,payload){
+  const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');
+  const sections=payload?.sections||[],order=['reading','english','math','hanja'];
+  if(payload?.status!=='submitted'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||payload.integrity?.source!=='paper-omr'||!Number.isInteger(payload.submittedAt)
+   ||sections.length!==4||!sections.every((s,i)=>s.id===order[i]&&s.state==='ended')||payload.questions?.length!==55||payload.initialAttempts?.length!==55||!(payload.reports?.length>=4&&payload.reports.length<=8))throw new Error('채점 결과가 올바르지 않습니다.');
+  const r=await ref(user,payload.assessmentId);
+  await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(!old.exists)throw new Error('종이 시험지 기록이 없습니다.');const data=old.data(),p=data.payload||{};
+   if(data.published)throw new Error('이미 공개한 결과는 다시 채점할 수 없습니다.');
+   if(p.status!=='paper')throw new Error('이미 채점한 회차입니다. 기존 결과를 덮어쓰지 않았습니다.');
+   if(data.learnerId!==user||p.userId!==user||p.assessmentId!==payload.assessmentId||Number(p.attemptNo)!==payload.attemptNo||p.scheduledWeekId!==payload.scheduledWeekId||JSON.stringify(p.questions)!==JSON.stringify(payload.questions))throw new Error('시험지와 채점 정보가 일치하지 않습니다.');
+   tx.update(r,{payload:JSON.parse(JSON.stringify(payload))});}));
+  return {saved:true};
+ }
+ async function publish(user,assessment){const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');const r=await ref(user,assessment),db=await client.getDB();await timed(db.runTransaction(async tx=>{const doc=await tx.get(r);if(!doc.exists)throw new Error('저장된 시험이 없습니다.');if(doc.data().payload?.status==='paper')throw new Error('종이 시험은 채점 기록이 없어 공개할 수 없습니다.');if(doc.data().published)return;tx.update(r,{published:true,publishedAt:root.firebase.firestore.FieldValue.serverTimestamp(),publishedBy:auth.uid});}));return get(user,assessment);}
+ app.MockPublication={get,submit,list,publish,savePaper,savePaperResult,id};
 })(window);

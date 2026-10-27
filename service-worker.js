@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261027-exam-integrity';
+const CACHE_NAME = 'smart-study-20261027-mock-paper';
 
 try {
     importScripts('./firebase-config.js');
@@ -115,12 +115,19 @@ const STATIC_ASSETS = [
     './mock-exam-results.js',
     './mock-wrong-note.js',
     './mock-exam.css',
+    './mock-print.html',
+    './mock-paper.js',
+    './mock-paper.css',
+    './omr-layout.js',
+    './omr-reader.js',
     './assessment-results.css',
     './assessment-summary.js',
     './learning-translation-guard.js',
     './learning-translation-guard.css',
     './mock-publication.js',
     './mock-admin.js',
+    './mock-paper-admin.js',
+    './mock-paper-omr.js',
     './MockRetakeReading.js',
     './MockRetakeEnglish.js',
     './mock-retake-grammar.js',

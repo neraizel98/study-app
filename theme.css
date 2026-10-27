@@ -537,6 +537,48 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
 .mock-admin .mock-publish { min-height: 40px; margin: 0; padding: 8px 16px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 .88rem var(--font); cursor: pointer; }
 .mock-admin .mock-publish:disabled { background: #e2f3e9; color: #1f7a55; cursor: default; opacity: 1; }
 .mock-admin .mock-admin-error { margin: 0; font-size: .78rem; color: #c0392b; }
+/* Paper rounds: parent-printed exams take a weekly round without a score. */
+.mock-paper-admin { padding: 14px 16px; border: 1px solid var(--card-border); border-radius: 16px; background: #fff; }
+.mock-paper-admin h3 { margin: 0; font-size: 1rem; }
+.mock-paper-sub, .mock-paper-note { margin: 4px 0 0; font-size: .75rem; color: var(--text-sub); }
+.mock-paper-rounds { display: grid; gap: 8px; margin-top: 10px; }
+.mock-paper-round { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; padding: 8px 12px; border-radius: 12px; background: #faf6ee; }
+.mock-paper-round strong { min-width: 48px; }
+.mock-paper-state { flex: 1; font-size: .82rem; color: var(--text-sub); }
+.mock-paper-round.is-paper .mock-paper-state { color: #9a4a12; font-weight: 700; }
+.mock-paper-round.is-online .mock-paper-state { color: #1f7a55; font-weight: 700; }
+.mock-paper-round button, .mock-admin .mock-paper-reprint { min-height: 38px; margin: 0; padding: 6px 14px; border: 0; border-radius: 10px; background: var(--accent); color: #fff; font: 700 .82rem var(--font); cursor: pointer; }
+.mock-paper-round button:disabled { background: #e8e1d4; color: #8a8174; cursor: default; }
+.mock-paper-message { margin: 8px 0 0; font-size: .8rem; font-weight: 600; }
+.mock-paper-message:empty, .mock-paper-shortages:empty { display: none; }
+.mock-paper-shortages { margin: 6px 0 0; padding-left: 18px; font-size: .78rem; color: #9a4a12; }
+.mock-status.is-paper { background: #ece6f7; color: #5a3d8a; }
+.mock-paper-round.is-scored .mock-paper-state { color: #5a3d8a; font-weight: 700; }
+/* OMR scoring of a paper round (mock-paper-omr.js): a transcription check, no answers shown. */
+.omr-review { display: grid; gap: 10px; margin-top: 12px; padding: 12px; border-radius: 14px; background: #fffdf8; border: 1px solid var(--card-border); }
+.omr-review:empty { display: none; }
+.omr-title { margin: 0; font-size: .95rem; }
+.omr-sub, .omr-pending, .omr-message { margin: 0; font-size: .78rem; color: var(--text-sub); }
+.omr-pending { font-weight: 700; color: #9a4a12; }
+.omr-area h5 { margin: 0 0 6px; font-size: .82rem; }
+.omr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+.omr-item { display: grid; gap: 4px; padding: 6px 8px; border-radius: 10px; background: #faf6ee; }
+.omr-item.is-written { grid-column: 1 / -1; }
+.omr-item.was-uncertain { box-shadow: inset 3px 0 0 #e0a040; }
+.omr-item.is-uncertain { background: #fff3c4; box-shadow: inset 3px 0 0 #e0a040; }
+.omr-item-head { display: flex; align-items: baseline; gap: 6px; }
+.omr-no { min-width: 22px; font-size: .85rem; }
+.omr-reason { font-size: .7rem; color: #9a4a12; font-weight: 700; }
+.omr-marks { display: flex; flex-wrap: wrap; gap: 4px; }
+.omr-mark, .omr-none { min-width: 32px; min-height: 32px; margin: 0; padding: 2px 6px; border: 1px solid #ddd2bf; border-radius: 8px; background: #fff; color: var(--text); font: 700 .9rem var(--font); cursor: pointer; }
+.omr-none { font-size: .72rem; }
+.omr-mark[aria-pressed="true"], .omr-none[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+.omr-crop { display: block; max-width: 100%; height: auto; max-height: 90px; border-radius: 8px; background: #fff; border: 1px solid #ddd2bf; }
+.omr-write { display: flex; gap: 6px; }
+.omr-text { flex: 1; min-width: 0; min-height: 36px; padding: 6px 10px; border: 1px solid #ddd2bf; border-radius: 8px; font: 600 .9rem var(--font); }
+.omr-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
+.omr-retake { min-height: 40px; margin: 0; padding: 8px 14px; border: 1px solid #ddd2bf; border-radius: 10px; background: #fff; color: var(--text); font: 700 .85rem var(--font); cursor: pointer; }
+.mock-admin .mock-publish.omr-save:disabled { background: #e8e1d4; color: #8a8174; }
 .mock-answers { margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 10px; }
 .mock-answers summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--accent); }
 .mock-answers-english { margin: 8px 0; font-size: .78rem; color: var(--text-sub); }
