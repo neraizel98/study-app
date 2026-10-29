@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261027-paper-print';
+    const APP_VERSION = '20261029-hanja-jun5';
 
     (async function () {
         try {

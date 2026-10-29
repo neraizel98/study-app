@@ -6,6 +6,8 @@
     const ids=budgetPolicy.subjects, allocations=budgetPolicy.allocations;
     const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const subjectOf=r=>r.metadata?.source==='math-formula'?'math_formula':r.subject;
+    // level_jun5 is 준5급; stripping 'level' alone printed '_jun5급'.
+    const hanjaGrade=unitId=>unitId==='level_jun5'?'준5급':`${String(unitId).replace('level','')}급`;
     const previousContext=plan.contextOf,previousCatalog=plan.catalog,previousTarget=plan.target;
     function contextOf(subject,r){
         const m=r?.metadata||r||{};
@@ -34,7 +36,7 @@
         return [...unique.values()];
     }
     function rawCatalog(subject,profile){
-        if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${unitId.replace('level','')}급`,context:{unitId,title:`한자 ${unitId.replace('level','')}급`}}));
+        if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${hanjaGrade(unitId)}`,context:{unitId,title:`한자 ${hanjaGrade(unitId)}`}}));
         if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.allGrades||id===(root.SmartStudy?.SubjectProgression&&profile.userId?root.SmartStudy.SubjectProgression.resolve('grammar',root.SmartStudy.SubjectProgression.profileGroup('grammar',profile.grade),profile.userId):(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary'))).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
             const grades={'초6':6,'중1':7,'중2':8,'중3':9,'고1':10,'고2':11,'고3':12};

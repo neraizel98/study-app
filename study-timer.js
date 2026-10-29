@@ -51,6 +51,7 @@ const StudyTimer = (() => {
             { key: 'level8', label: '8급' },
             { key: 'level7', label: '7급' },
             { key: 'level6', label: '6급' },
+            { key: 'level_jun5', label: '준5급' },
             { key: 'level5', label: '5급' }
         ],
         math: [
