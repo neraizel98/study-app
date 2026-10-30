@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261029-hanja-jun5';
+    const APP_VERSION = '20261030-vocab-continuity';
 
     (async function () {
         try {

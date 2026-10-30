@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261029-hanja-jun5';
+const CACHE_NAME = 'smart-study-20261030-vocab-continuity';
 
 try {
     importScripts('./firebase-config.js');

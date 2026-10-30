@@ -333,9 +333,11 @@ function startQuiz(wordList) {
                     }
                     notice.textContent = `${EnglishVocabularyProgress.label(currentLevel, currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
                 }
-                if (window.QuizExposure) dataList = QuizExposure.freshWords(dataList);
+                if (window.QuizExposure?.practiceWords) {
+                    dataList = QuizExposure.practiceWords(dataList, QUIZ_COUNT);
+                }
                 if (!dataList.length) {
-                    alert('최근에 풀지 않은 새 단어 문제가 부족해요. 새 범위를 학습하거나 오답 노트에서 복습해 주세요.');
+                    alert('단어 데이터를 불러오지 못했어요. 화면을 새로고침한 뒤 다시 시작해 주세요.');
                     setMode('study'); return;
                 }
                 const baseCount = Math.min(QUIZ_COUNT, dataList.length) - challengeWords.length;
