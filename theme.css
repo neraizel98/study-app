@@ -577,7 +577,7 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
 .omr-write { display: flex; gap: 6px; }
 .omr-text { flex: 1; min-width: 0; min-height: 36px; padding: 6px 10px; border: 1px solid #ddd2bf; border-radius: 8px; font: 600 .9rem var(--font); }
 .omr-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
-.omr-retake { min-height: 40px; margin: 0; padding: 8px 14px; border: 1px solid #ddd2bf; border-radius: 10px; background: #fff; color: var(--text); font: 700 .85rem var(--font); cursor: pointer; }
+.omr-retake, .omr-upload { min-height: 40px; margin: 0; padding: 8px 14px; border: 1px solid #ddd2bf; border-radius: 10px; background: #fff; color: var(--text); font: 700 .85rem var(--font); cursor: pointer; }
 .mock-admin .mock-publish.omr-save:disabled { background: #e8e1d4; color: #8a8174; }
 .mock-answers { margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 10px; }
 .mock-answers summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--accent); }

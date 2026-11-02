@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261030-vocab-continuity';
+const CACHE_NAME = 'smart-study-20261102-paper-omr-fix';
 
 try {
     importScripts('./firebase-config.js');

@@ -190,6 +190,15 @@
 // Assessment publication stays inside the Firestore repository boundary.
 (function(root){
  'use strict';const app=root.SmartStudy=root.SmartStudy||{},client=app.FirebaseClient;
+ // Firestore maps may return keys in a different order. Arrays (question/choice order)
+ // and every stored value must still match; JSON.stringify is not map equality.
+ function sameSnapshot(a,b){
+  if(a===b)return true;
+  if(a===null||b===null||typeof a!=='object'||typeof b!=='object'||Array.isArray(a)!==Array.isArray(b))return false;
+  if(Array.isArray(a))return a.length===b.length&&a.every((value,i)=>sameSnapshot(value,b[i]));
+  const keys=Object.keys(a);
+  return keys.length===Object.keys(b).length&&keys.every(key=>Object.prototype.hasOwnProperty.call(b,key)&&sameSnapshot(a[key],b[key]));
+ }
  const id=(user,assessment)=>{if(String(user).includes('/')||String(assessment).includes('/'))throw new Error('시험 식별자가 올바르지 않습니다.');return user+'|'+assessment;};
  async function ref(user,assessment){return (await client.getDB()).collection('mockExamResults').doc(id(user,assessment));}
  const timed=p=>{let timer;return Promise.race([p,new Promise((_,reject)=>{timer=setTimeout(()=>reject(new Error('서버 확인 시간이 초과되었습니다. 다시 시도해 주세요.')),10000);})]).finally(()=>clearTimeout(timer));};
@@ -199,7 +208,7 @@
   local.saveReports(data.learnerId,rows.map(r=>r.metadata?.assessmentId===data.assessmentId?{...r,updatedAt:Date.now(),metadata:{...r.metadata,resultVisibility:'published',publicationConfirmedAt:Date.now()}}:r));
  }
  async function get(user,assessment){const doc=await timed((await ref(user,assessment)).get({source:'server'}));if(!doc.exists)return {published:false};const data=doc.data();if(data.learnerId!==user||data.assessmentId!==assessment)throw new Error('시험 정보가 일치하지 않습니다.');markPublished(data);return {published:data.published===true,publishedAt:data.publishedAt?.toMillis?.()||null,snapshot:data.payload};}
- async function submit(user,snapshot){const auth=await client.getCurrentUser();if(!auth)throw new Error('계정 연결 후 다시 저장해 주세요.');const r=await ref(user,snapshot.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists){if(old.data().payload.submittedAt!==snapshot.submittedAt||JSON.stringify(old.data().payload.questions)!==JSON.stringify(snapshot.questions)||JSON.stringify(old.data().payload.initialAttempts)!==JSON.stringify(snapshot.initialAttempts))throw new Error('다른 기기의 제출 기록이 있습니다. 관리자 확인이 필요합니다.');return;}tx.set(r,{learnerId:user,assessmentId:snapshot.assessmentId,payload:JSON.parse(JSON.stringify(snapshot)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};}
+ async function submit(user,snapshot){const auth=await client.getCurrentUser();if(!auth)throw new Error('계정 연결 후 다시 저장해 주세요.');const r=await ref(user,snapshot.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists){if(old.data().payload.submittedAt!==snapshot.submittedAt||!sameSnapshot(old.data().payload.questions,snapshot.questions)||!sameSnapshot(old.data().payload.initialAttempts,snapshot.initialAttempts))throw new Error('다른 기기의 제출 기록이 있습니다. 관리자 확인이 필요합니다.');return;}tx.set(r,{learnerId:user,assessmentId:snapshot.assessmentId,payload:JSON.parse(JSON.stringify(snapshot)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};}
  async function list(user,options={}){
   const count=Math.max(1,Math.min(12,Number(options.weeks)||1)),dates=[];
   for(let i=0;i<count;i++){const k=new Date(Date.now()+9*3600000-i*7*86400000);k.setUTCDate(k.getUTCDate()-(k.getUTCDay()+6)%7);dates.push(k.toISOString().slice(0,10));}
@@ -229,7 +238,7 @@
   await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(!old.exists)throw new Error('종이 시험지 기록이 없습니다.');const data=old.data(),p=data.payload||{};
    if(data.published)throw new Error('이미 공개한 결과는 다시 채점할 수 없습니다.');
    if(p.status!=='paper')throw new Error('이미 채점한 회차입니다. 기존 결과를 덮어쓰지 않았습니다.');
-   if(data.learnerId!==user||p.userId!==user||p.assessmentId!==payload.assessmentId||Number(p.attemptNo)!==payload.attemptNo||p.scheduledWeekId!==payload.scheduledWeekId||JSON.stringify(p.questions)!==JSON.stringify(payload.questions))throw new Error('시험지와 채점 정보가 일치하지 않습니다.');
+   if(data.learnerId!==user||p.userId!==user||p.assessmentId!==payload.assessmentId||Number(p.attemptNo)!==payload.attemptNo||p.scheduledWeekId!==payload.scheduledWeekId||!sameSnapshot(p.questions,payload.questions))throw new Error('시험지와 채점 정보가 일치하지 않습니다.');
    tx.update(r,{payload:JSON.parse(JSON.stringify(payload))});}));
   return {saved:true};
  }

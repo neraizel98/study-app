@@ -15,7 +15,8 @@ const buttons=(node,label)=>all(node).filter(n=>n.tagName==='BUTTON'&&n.textCont
 const NOW=Date.parse('2026-10-25T10:00:00+09:00'),WEEK='2026-10-19';
 const flush=async()=>{for(let i=0;i<10;i++)await new Promise(resolve=>setImmediate(resolve));};
 function server(){
- const docs=new Map(),snap=id=>({id,exists:docs.has(id),data:()=>structuredClone(docs.get(id))}),ref=id=>({id,get:async()=>snap(id)});
+ const sorted=v=>Array.isArray(v)?v.map(sorted):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sorted(v[k])])):v;
+ const docs=new Map(),snap=id=>({id,exists:docs.has(id),data:()=>sorted(structuredClone(docs.get(id)))}),ref=id=>({id,get:async()=>snap(id)});
  const query=filters=>({where:(field,op,value)=>query([...filters,[field,value]]),get:async()=>({docs:[...docs].filter(([,d])=>filters.every(([field,v])=>field.split('.').reduce((x,k)=>x?.[k],d)===v)).map(([id])=>snap(id))})});
  return {docs,db:{collection:()=>({doc:ref,where:(field,op,value)=>query([[field,value]])}),runTransaction:async fn=>fn({get:async r=>snap(r.id),update:(r,patch)=>docs.set(r.id,{...docs.get(r.id),...structuredClone(patch)}),set:(r,data)=>docs.set(r.id,structuredClone(data))})}};
 }
@@ -61,7 +62,7 @@ function plan(set){
 }
 async function openOmr(w,host){
  const {app}=w.parent;await app.MockAdmin.render('learner',host);
- const trigger=buttons(host,'OMR 사진으로 채점');assert.equal(trigger.length,1,'one printed round, one OMR button');
+ const trigger=buttons(host,'사진 올려서 채점');assert.equal(trigger.length,1,'one printed round, one OMR button');
  const input=all(host).find(n=>n.className==='omr-file');trigger[0].onclick();assert.equal(input.clicks,1,'the button opens the camera/gallery picker');
  return {input,panel:all(host).find(n=>n.className==='omr-review'),take:async(file={width:4000,height:3000})=>{input.files=[file];await input.onchange();}};
 }
@@ -81,7 +82,7 @@ test('reader errors are shown in Korean with a retake; the image is oriented, do
  assert.equal(c.bitmapOptions.imageOrientation,'from-image');assert.equal(c.bitmapClosed,true);
  const seen=w.parent.reads.at(-1);assert.equal(seen.image.width,2000);assert.equal(seen.image.height,1500);assert.equal(seen.image.data.length,2000*1500*4);
  assert.deepEqual(JSON.parse(JSON.stringify(seen.set)),JSON.parse(JSON.stringify(app.MockPaperAdmin.paperSet(paper.payload))),'the same set the reprint uses');
- assert.match(textOf(o.panel),/답안지 네 모서리의 검은 사각형이 모두 보이게 다시 찍어 주세요/);retake().onclick();assert.equal(o.input.clicks,2);
+ assert.match(textOf(o.panel),/답안지 네 모서리의 검은 사각형이 모두 보이게 다시 찍어 주세요/);retake().onclick();assert.equal(all(host).find(n=>n.className==='omr-camera-file').clicks,1);
  c.readerResult=Promise.resolve({ok:false,error:'blurry'});await o.take();assert.match(textOf(o.panel),/사진이 흐려요\. 밝은 곳에서 흔들리지 않게 다시 찍어 주세요/);assert(retake());
  c.readerResult={ok:false,error:'wrong-card'};await o.take();assert.match(textOf(o.panel),/다른 회차\(또는 다른 주\)의 답안지예요\. 1회차 답안지를 찍어 주세요/);
  // A clean read of another round's card is the wrong card too.
@@ -118,7 +119,7 @@ test('confirmation: uncertain rows wait for the parent, handwriting is shown for
  // Typing replaces 무응답 for 단답형; clearing the text needs a choice again.
  const text=all(row(o.panel,written[0])).find(n=>n.className==='omr-text');text.value='12';text.oninput();assert.equal(save.disabled,false);
  text.value='';text.oninput();assert.equal(save.disabled,true);
- buttons(o.panel,'다시 찍기')[0].onclick();assert.equal(o.input.clicks,2);
+ buttons(o.panel,'다시 찍기')[0].onclick();assert.equal(all(host).find(n=>n.className==='omr-camera-file').clicks,1);
 });
 
 test('scoring and saving: the printed round becomes an online-shaped submitted result that only the admin sees',async()=>{
@@ -134,7 +135,7 @@ test('scoring and saving: the printed round becomes an online-shaped submitted r
  const saveAt=w.clock.now;await buttons(o.panel,'채점하고 저장')[0].onclick();
  const doc=w.cloud.docs.get(`learner|${paper.payload.assessmentId}`),saved=doc.payload;
  onlineChecks(doc);assert.equal(saved.mode,'paper');assert.deepEqual(saved.integrity,{source:'paper-omr'});assert.equal(saved.attemptNo,2);assert.equal(saved.assessmentId,paper.payload.assessmentId);
- assert.equal(JSON.stringify(saved.questions),JSON.stringify(paper.payload.questions));assert.equal(saved.submittedAt,saveAt);assert.equal(saved.startedAt,paper.payload.startedAt);assert.equal(saved.scheduledWeekId,WEEK);
+ assert.deepEqual(JSON.parse(JSON.stringify(saved.questions)),JSON.parse(JSON.stringify(paper.payload.questions)));assert.equal(saved.submittedAt,saveAt);assert.equal(saved.startedAt,paper.payload.startedAt);assert.equal(saved.scheduledWeekId,WEEK);
  assert.equal(doc.createdBy,'parent');assert.equal(doc.publishedAt,null);
  // Expected grading, computed from the marks.
  const expected=new Map(set.items.map((q,i)=>{if(q.kind==='written'){const k=written.indexOf(i);return [q.id,{answer:typed[k],correct:k===0}];}
@@ -153,7 +154,7 @@ test('scoring and saving: the printed round becomes an online-shaped submitted r
  // Admin list: the round reads like an online result waiting for publication.
  const card=all(host).filter(n=>n.className==='mock-result-card').find(n=>textOf(n).includes('2회차'));
  assert.match(textOf(card),/학생 공개 대기/);assert(all(card).some(n=>n.className==='mock-score-grid'));assert.match(textOf(card),/종이 시험 · OMR 채점/);assert.doesNotMatch(textOf(card),/화면 이탈/);
- assert.equal(buttons(card,'학습자에게 공개').length,1);assert.equal(buttons(host,'OMR 사진으로 채점').length,0,'a scored round cannot be scored again');
+ assert.equal(buttons(card,'학습자에게 공개').length,1);assert.equal(buttons(host,'사진 올려서 채점').length,0,'a scored round cannot be scored again');
  assert.match(textOf(host),/2회차 종이 시험을 채점해 저장했습니다/);
  assert.deepEqual(all(host).filter(n=>n.className==='mock-paper-state').map(n=>n.textContent),['온라인 응시함','종이 시험 채점함','비어 있음']);
  // The learner sees nothing before publication, yet the round is restored with its subject reports.
@@ -238,4 +239,52 @@ test('firestore.rules: one admin-only transition from a printed round to an unpu
  const admin=fs.readFileSync('admin.html','utf8'),scripts=[...admin.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1].split('?')[0]);
  for(const name of ['mock-paper.js','omr-layout.js','omr-reader.js','mock-paper-omr.js'])assert(scripts.indexOf(name)>scripts.indexOf('mock-paper-admin.js')&&scripts.indexOf(name)<scripts.indexOf('mock-admin.js'),name);
  assert(fs.readFileSync('service-worker.js','utf8').includes("'./mock-paper-omr.js'"));
+});
+
+
+test('Firestore map order does not block grading; changed exam content and identities still cannot overwrite paper',async()=>{
+ const w=world(),paper=await printed(w,1),app=w.parent.app,original=paper.payload;
+ const responses=Object.fromEntries(original.questions.map(q=>[q.id,q.kind==='written'?'32':q.choices[0]]));
+ const result=app.MockExam.paperResult(original,responses,w.clock.now),id='learner|'+original.assessmentId;
+ const sorted=v=>Array.isArray(v)?v.map(sorted):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sorted(v[k])])):v;
+ assert.notEqual(JSON.stringify(original.questions),JSON.stringify(sorted(original.questions)),'reproduces the old stringify mismatch');
+ const mutations=[
+  p=>p.questions.reverse(),
+  p=>{const q=p.questions.find(q=>q.choices?.length>1);q.choices.reverse();},
+  p=>{p.questions[0].answer='altered';},
+  p=>{p.questions[0].question+=' altered';},
+  p=>{p.questions[0].context={unexpected:true};},
+  p=>{p.questions[0].unexpected=true;},
+  p=>{delete p.questions[0].id;},
+  p=>{p.questions[0].choices=Object.assign({},p.questions[0].choices);},
+  p=>{p.questions[0].band=typeof p.questions[0].band==='number'?String(p.questions[0].band):123;},
+  p=>{p.scheduledWeekId='2026-01-05';},p=>{p.attemptNo=2;}
+ ];
+ const before=structuredClone(w.cloud.docs.get(id));
+ for(const mutate of mutations){const changed=structuredClone(result);mutate(changed);await assert.rejects(()=>app.MockPublication.savePaperResult('learner',changed),/일치하지/);assert.deepEqual(w.cloud.docs.get(id),before);}
+ await app.MockPublication.savePaperResult('learner',result);
+ assert.equal(w.cloud.docs.get(id).payload.status,'submitted');
+ assert.equal(w.cloud.docs.get(id).published,false);
+ await assert.rejects(()=>app.MockPublication.savePaperResult('learner',result),/이미 채점/);
+});
+
+test('online retry accepts reordered maps but rejects altered answers, question order and submission time',async()=>{
+ const w=world(),draft=await online(w),app=w.learner.app,id='learner|'+draft.assessmentId,snapshot=app.MockExam.submissionSnapshot(draft);
+ await app.MockPublication.submit('learner',snapshot);
+ const before=structuredClone(w.cloud.docs.get(id));
+ for(const mutate of [p=>{p.initialAttempts[0].selectedAnswer='altered';},p=>p.questions.reverse(),p=>{p.submittedAt++;}]){
+  const changed=structuredClone(snapshot);mutate(changed);await assert.rejects(()=>app.MockPublication.submit('learner',changed),/다른 기기/);assert.deepEqual(w.cloud.docs.get(id),before);
+ }
+});
+
+test('camera capture and saved-photo upload have separate inputs and both open confirmation',async()=>{
+ const w=world(),paper=await printed(w),host=new El('div'),o=await openOmr(w,host),app=w.parent.app;
+ const camera=all(host).find(n=>n.className==='omr-camera-file');
+ assert.equal(o.input.attributes.capture,undefined,'upload must allow the existing photo library');
+ assert.equal(camera.attributes.capture,'environment');
+ buttons(host,'직접 촬영')[0].onclick();assert.equal(camera.clicks,1);
+ w.parent.c.readerResult=readerResult(app,paper.set,()=>({choice:1}));
+ camera.files=[{width:1500,height:2000}];await camera.onchange();assert.match(textOf(o.panel),/1회차 답안 확인/);
+ buttons(o.panel,'사진 다시 선택')[0].onclick();assert.equal(o.input.clicks,2);
+ await o.take({width:1500,height:2000});assert.match(textOf(o.panel),/1회차 답안 확인/);
 });

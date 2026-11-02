@@ -54,20 +54,23 @@
   return canvas;
  }
  function mount(user,payload,options={}){
-  const panel=el('div','omr-review'),trigger=button('OMR 사진으로 채점','mock-publish omr-trigger'),input=el('input','omr-file');
-  input.type='file';input.accept='image/*';input.setAttribute('capture','environment');input.hidden=true;
+  const panel=el('div','omr-review'),trigger=button('사진 올려서 채점','mock-publish omr-trigger'),input=el('input','omr-file'),camera=button('직접 촬영','mock-publish omr-camera'),cameraInput=el('input','omr-camera-file');
+  input.type='file';input.accept='image/*';input.hidden=true;
+  cameraInput.type='file';cameraInput.accept='image/*';cameraInput.setAttribute('capture','environment');cameraInput.hidden=true;
   const set=app.MockPaperAdmin.paperSet(payload),n=set.attemptNo;let busy=false;
   const say=(text,error)=>{const p=el('p',`omr-message${error?' mock-admin-error':''}`,text);return p;};
-  function retake(){input.value='';input.click?.();}
-  function fail(code){const retry=button('다시 찍기','omr-retake');retry.onclick=retake;panel.replaceChildren(say(message(code,n),true),retry);}
-  input.onchange=async()=>{
-   const file=input.files?.[0];if(!file||busy)return;busy=true;trigger.disabled=true;panel.replaceChildren(say('답안지를 읽는 중이에요...'));
+  function retake(){if(busy)return;input.value='';input.click?.();}
+  function photograph(){if(busy)return;cameraInput.value='';cameraInput.click?.();}
+  function fail(code){const retry=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload');retry.onclick=photograph;upload.onclick=retake;panel.replaceChildren(say(message(code,n),true),retry,upload);}
+  async function choose(input){
+   const file=input.files?.[0];if(!file||busy)return;busy=true;trigger.disabled=true;camera.disabled=true;panel.replaceChildren(say('답안지를 읽는 중이에요...'));
    let result;try{result=await read(await loadImage(file),set);}catch(_){result={ok:false,error:'image'};}
-   busy=false;trigger.disabled=false;
+   busy=false;trigger.disabled=false;camera.disabled=false;
    if(result.ok)review(rowsFor(set,result));else fail(result.error);
-  };
+  }
+  input.onchange=()=>choose(input);cameraInput.onchange=()=>choose(cameraInput);
   function review(rows){
-   const pending=el('p','omr-pending'),save=button('채점하고 저장','mock-publish omr-save'),again=button('다시 찍기','omr-retake'),note=el('p','omr-message');
+   const pending=el('p','omr-pending'),save=button('채점하고 저장','mock-publish omr-save'),again=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload'),note=el('p','omr-message');
    const refresh=()=>{const left=rows.filter(r=>!r.resolved).length;pending.textContent=left?`노란 칸 ${left}문항을 확인해 주세요.`:'모든 문항을 확인했어요.';save.disabled=busy||left>0;};
    panel.replaceChildren(el('h4','omr-title',`${n}회차 답안 확인`),el('p','omr-sub','사진에서 읽은 답이에요. 노란 칸은 직접 골라 주세요. 단답형은 아이가 쓴 그대로 적어 주세요.'),pending);
    for(const area of root.MockPaper.AREAS){const own=rows.filter(r=>r.area===area.id);if(!own.length)continue;
@@ -94,21 +97,21 @@
     }
     panel.append(box);
    }
-   again.onclick=retake;
+   again.onclick=photograph;upload.onclick=retake;
    save.onclick=async()=>{
-    if(busy||rows.some(r=>!r.resolved))return;busy=true;refresh();again.disabled=true;note.className='omr-message';note.textContent='채점해서 저장하는 중이에요...';
+    if(busy||rows.some(r=>!r.resolved))return;busy=true;refresh();again.disabled=true;upload.disabled=true;trigger.disabled=true;camera.disabled=true;note.className='omr-message';note.textContent='채점해서 저장하는 중이에요...';
     try{
      const responses=Object.fromEntries(rows.map(r=>[r.item.id,r.value||'']));
      const result=app.MockExam.paperResult(payload,responses,Date.now());
      await app.MockPublication.savePaperResult(user,result);
      const notice=`${n}회차 종이 시험을 채점해 저장했습니다. 결과를 확인한 뒤 학습자에게 공개해 주세요.`;
      if(options.onSaved)await options.onSaved(notice);else{panel.replaceChildren(say(notice));}
-    }catch(error){busy=false;again.disabled=false;note.className='omr-message mock-admin-error';note.textContent=app.MockPaperAdmin?.errorText?.(error)||error?.message||String(error);refresh();}
+    }catch(error){busy=false;again.disabled=false;upload.disabled=false;trigger.disabled=false;camera.disabled=false;note.className='omr-message mock-admin-error';note.textContent=app.MockPaperAdmin?.errorText?.(error)||error?.message||String(error);refresh();}
    };
-   const actions=el('div','omr-actions');actions.append(again,save);panel.append(actions,note);refresh();
+   const actions=el('div','omr-actions');actions.append(again,upload,save);panel.append(actions,note);refresh();
   }
-  trigger.onclick=()=>{if(!busy)retake();};
-  return {trigger,input,panel};
+  trigger.onclick=retake;camera.onclick=photograph;
+  return {trigger,input,camera,cameraInput,panel};
  }
  app.MockPaperOmr={mount,loadImage,read,rowsFor,numbering,message,MAX_SIDE};
 })(typeof window!=='undefined'?window:globalThis);

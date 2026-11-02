@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261030-vocab-continuity';
+    const APP_VERSION = '20261102-paper-omr-fix';
 
     (async function () {
         try {
