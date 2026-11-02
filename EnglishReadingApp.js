@@ -117,6 +117,14 @@
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
         $('passageMeta').textContent = `${learnerLabel()} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
         $('passageTitle').textContent = item.title; $('studyPassage').innerHTML = renderPassageLines(item, true);
+        const guideHost = $('sentenceGuide');
+        if (!window.ReadingSentenceGuide && guideHost) guideHost.textContent = '문장별 독해 해설지를 불러오지 못했어요. 새로고침해 주세요.';
+        window.ReadingSentenceGuide?.mount(guideHost, item, { onOpen: () => {
+            if (mode !== 'study') return;
+            expose(item.id, 'sentence-guide');
+            const views = getPreference('sentenceGuideViews', {});
+            if (!views[item.id]) { views[item.id] = Date.now(); setPreference('sentenceGuideViews', views); }
+        } });
         $('vocabulary').innerHTML = item.vocabulary.map((entry, index) => `<li><div class="word-controls"><b class="reading-word">${escapeHTML(entry.word)}</b>${Object.values(window.vocabData || {}).some(words => words.some(word => word.word.toLowerCase() === entry.word.toLowerCase())) ? `<a class="word-book-link" href="english.html?word=${encodeURIComponent(entry.word)}" aria-label="${escapeHTML(entry.word)} 단어장에서 보기">단어장 ›</a>` : ''}<button type="button" class="meaning-btn" data-meaning="${index}" aria-expanded="false" aria-controls="word-meaning-${index}">뜻 확인</button><button type="button" class="audio-icon" data-pronounce="${index}" aria-pressed="false" title="발음 듣기 · 다시 누르면 정지" aria-label="${escapeHTML(entry.word)} 발음 듣기">${soundIcon}</button></div><p id="word-meaning-${index}" class="word-meaning" hidden>${escapeHTML(entry.meaning)}</p></li>`).join('');
         $('grammarNotes').innerHTML = item.grammarNotes.map(note => `<p><b>${escapeHTML(note.title)}</b><br>${escapeHTML(note.text)}</p>`).join('');
         const grammarUnits = window.EnglishGrammarData?.elementary?.units || [];

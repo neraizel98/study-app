@@ -42,7 +42,7 @@ for (const file of files.filter(name => name.endsWith('.html'))) {
 
 const worker = read('service-worker.js');
 const assetsBlock = worker.match(/const STATIC_ASSETS\s*=\s*\[([\s\S]*?)\];/)?.[1] || '';
-const localAssets = [...assetsBlock.matchAll(/['"]\.\/([^'"]+)['"]/g)].map(match => match[1]).filter(Boolean);
+const localAssets = [...assetsBlock.matchAll(/['"]\.\/([^'"]+)['"]/g)].map(match => match[1].replace(/[?#].*$/, '')).filter(Boolean);
 const missing = localAssets.filter(asset => !fs.existsSync(path.join(root, asset)));
 assert.deepEqual(missing, [], `Missing service worker assets: ${missing}`);
 

@@ -69,14 +69,20 @@
 
     function renderStudy() {
         const item = unit().lessons[lessonIndex] || unit().lessons[0];
+        const visual = window.GrammarVisualLessons?.get(stageId, unit().id, lessonIndex);
+        const escapeLessonText = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
         $('lessonTitle').textContent = item.title;
-        $('principle').textContent = item.principle;
+        $('principle').textContent = visual?.rule || item.principle;
+        if ($('grammarDiagram')) {
+            const diagram = window.GrammarVisualLessons?.diagramHTML(visual);
+            if (diagram) $('grammarDiagram').innerHTML = diagram;
+            else $('grammarDiagram').textContent = '구조 그림을 불러오지 못했어요. 아래 예문과 자세한 설명으로 학습할 수 있어요.';
+        }
         $('principleDetail').textContent = item.detail || principleDetails[unit().id]
             || `${item.principle} 먼저 문장의 주어와 동사를 찾고, 핵심 형태가 어떤 의미와 역할을 만드는지 확인하세요. 규칙을 외우는 데서 끝내지 말고 예문을 긍정문·부정문·의문문으로 바꾸어 보면 원리를 더 정확히 이해할 수 있습니다.`;
         $('rules').innerHTML = (item.steps || item.rules).map((rule, i) => `<li><span>${i + 1}</span>${rule}</li>`).join('');
-        $('examples').innerHTML = item.examples.map(([en, ko]) =>
-            `<article><strong>${en}</strong><p>${ko}</p><div class="accent-listen"><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="us">🇺🇸 미국식 듣기</button><button class="speak" data-speak="${en.replace(/"/g, '&quot;')}" data-accent="uk">🇬🇧 영국식 듣기</button></div></article>`
-        ).join('');
+        $('examples').innerHTML = window.GrammarVisualLessons?.examplesHTML(visual)
+            || item.examples.slice(0, 2).map(([en, ko]) => `<article><strong lang="en">${escapeLessonText(en)}</strong><p>${escapeLessonText(ko)}</p><button type="button" class="speak" data-speak="${escapeLessonText(en)}" data-accent="us" aria-label="영어 예문 미국식 발음 듣기">듣기</button></article>`).join('');
         $('tip').textContent = item.tip;
         const error = item.commonError;
         $('commonError').hidden = !error;

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-paper-omr-fix';
+const CACHE_NAME = 'smart-study-20261102-english-guides';
 
 try {
     importScripts('./firebase-config.js');
@@ -70,6 +70,12 @@ const STATIC_ASSETS = [
     './math_quiz.html',
     './english.html',
     './english_reading.html',
+    './GrammarVisualLessons.js?v=20261102-english-guides',
+    './grammar-visual.css?v=20261102-english-guides',
+    './ReadingSentenceNotesPrimary.js?v=20261102-english-guides',
+    './ReadingSentenceNotesSecondary.js?v=20261102-english-guides',
+    './reading-sentence-guide.js?v=20261102-english-guides',
+    './reading-sentence-guide.css?v=20261102-english-guides',
     './korean_vocab.html',
     './KoreanVocabData.js',
     './KoreanVocabLevel1a.js',
