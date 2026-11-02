@@ -3,25 +3,25 @@
     'use strict';
     const themes = [
         { id: 'plant', title: 'Parts of a Plant · 식물의 부분', triggers: ['plant','flower','leaf','stem','root','petal'],
-          words: [['flower','꽃',245,72],['leaf','잎',305,158],['stem','줄기',245,220],['root','뿌리',250,317],['petal','꽃잎',210,62]],
+          words: [['flower','꽃',235,78],['leaf','잎',289,157],['stem','줄기',236,176],['root','뿌리',242,259],['petal','꽃잎',213,66]],
           example: ['Roots take in water from the soil.', '뿌리는 흙에서 물을 흡수한다.'],
-          drawing: '<path d="M95 270H395" stroke="#cbbd9f"/><path d="M245 270V105"/><path d="M245 185Q275 123 326 141Q311 189 245 185Z" fill="#dcebdc"/><path d="M245 222Q180 219 164 178Q221 166 245 222Z" fill="#dcebdc"/><path d="M245 270V343M245 290L210 323M245 309L279 341M245 274L275 300M245 303L223 350"/><g fill="#f2e4c8"><ellipse cx="245" cy="56" rx="17" ry="28"/><ellipse cx="217" cy="75" rx="28" ry="17"/><ellipse cx="272" cy="75" rx="28" ry="17"/><ellipse cx="245" cy="97" rx="17" ry="25"/></g><circle cx="245" cy="76" r="14" fill="#d9bc77"/>' },
+          asset: 'assets/vocabulary/plant-v1.webp' },
         { id: 'body', title: 'Parts of the Body · 몸의 부분', triggers: ['body','head','arm','hand','leg','foot'],
-          words: [['head','머리',245,60],['arm','팔',300,153],['hand','손',330,204],['leg','다리',270,278],['foot','발',213,343]],
+          words: [['head','머리',240,69],['arm','팔',286,160],['hand','손',297,193],['leg','다리',261,257],['foot','발',213,306]],
           example: ['The thumb is part of the hand.', '엄지는 손의 일부다.'],
-          drawing: '<circle cx="245" cy="62" r="32" fill="#f2e4c8"/><path d="M221 99H269L290 209H200Z" fill="#dcebdc"/><path d="M215 112L181 195L174 215M275 112L317 190L330 207M220 211L213 327L199 343H225M268 211L277 328L291 343H266" stroke-width="15" stroke-linecap="round"/><ellipse cx="330" cy="211" rx="9" ry="12" fill="#f2e4c8"/><ellipse cx="174" cy="219" rx="9" ry="12" fill="#f2e4c8"/>' },
+          asset: 'assets/vocabulary/body-v1.webp' },
         { id: 'face', title: 'Parts of the Face · 얼굴의 부분', triggers: ['face','eye','ear','nose','mouth','hair'],
-          words: [['eye','눈',211,147],['ear','귀',326,173],['nose','코',245,187],['mouth','입',245,237],['hair','머리카락',245,68]],
+          words: [['eye','눈',211,154],['ear','귀',311,174],['nose','코',239,183],['mouth','입',239,205],['hair','머리카락',225,82]],
           example: ['We use our ears to hear sounds.', '우리는 귀로 소리를 듣는다.'],
-          drawing: '<ellipse cx="160" cy="178" rx="17" ry="30" fill="#f2e4c8"/><ellipse cx="329" cy="178" rx="17" ry="30" fill="#f2e4c8"/><ellipse cx="245" cy="184" rx="80" ry="113" fill="#fbf4e5"/><path d="M165 139Q151 37 246 50Q340 42 324 139L299 103L262 117L217 99Z" fill="#52685f"/><path d="M198 146Q211 134 225 146M265 146Q279 134 292 146M245 163L237 196H251M217 235Q244 253 272 235" stroke-linecap="round"/>' },
+          asset: 'assets/vocabulary/face-v1.webp' },
         { id: 'house', title: 'Parts of a House · 집의 부분', triggers: ['house','roof','window','door','wall','chimney'],
-          words: [['roof','지붕',245,108],['window','창문',196,222],['door','문',275,281],['wall','벽',327,263],['chimney','굴뚝',293,75]],
+          words: [['roof','지붕',233,127],['window','창문',179,214],['door','문',300,234],['wall','벽',239,233],['chimney','굴뚝',333,80]],
           example: ['A chimney carries smoke out of a building.', '굴뚝은 건물 밖으로 연기를 내보낸다.'],
-          drawing: '<path d="M280 113V55H307V132" fill="#f2e4c8"/><path d="M153 159H338V331H153Z" fill="#fbf4e5"/><path d="M125 161L245 63L367 161Z" fill="#dcebdc"/><path d="M174 192H220V245H174Z" fill="#dcebdc"/><path d="M197 192V245M174 219H220"/><path d="M251 249H300V331H251Z" fill="#f2e4c8"/><circle cx="288" cy="292" r="3"/>' },
+          asset: 'assets/vocabulary/house-v1.webp' },
         { id: 'bicycle', title: 'Parts of a Bicycle · 자전거의 부분', triggers: ['bicycle','bike','wheel','pedal','saddle','handlebar','handlebars','chain'],
-          words: [['wheel','바퀴',147,266],['pedal','페달',241,279],['saddle','안장',214,141],['handlebar','핸들',307,116],['chain','체인',200,268]],
+          words: [['wheel','바퀴',81,152],['pedal','페달',264,241],['saddle','안장',173,89],['handlebar','핸들',296,69],['chain','체인',162,204]],
           example: ['A bicycle usually has two wheels.', '자전거에는 보통 바퀴가 두 개 있다.'],
-          drawing: '<circle cx="145" cy="254" r="64" fill="#fbf4e5"/><circle cx="345" cy="254" r="64" fill="#fbf4e5"/><path d="M145 254L207 178L235 254H145L198 158M207 178H308L235 254M345 254L300 137L310 116H333M198 142H231" stroke-width="6"/><path d="M198 142H231" stroke-width="13" stroke-linecap="round"/><circle cx="235" cy="254" r="18" fill="#dcebdc"/><path d="M235 254L246 280H260M235 254L224 229H211M145 263L231 273M145 244L231 235"/>' }
+          asset: 'assets/vocabulary/bicycle-v1.webp' }
     ];
     function find(word) { const key = String(word || '').trim().toLowerCase(); return themes.find(t => t.triggers.includes(key)) || null; }
     function node(tag, cls, value) { const el = document.createElement(tag); if (cls) el.className = cls; if (value !== undefined) el.textContent = value; return el; }
@@ -32,10 +32,20 @@
         const heading = node('h3', 'vocab-visual-title', theme.title); host.append(heading);
         const layout = node('div', 'vocab-visual-layout');
         const figure = node('div', 'vocab-visual-figure');
-        // SVG markup is exclusively static authored data, never vocabulary or user input.
-        const labels = ({plant:[[390,42],[398,136],[75,214],[394,339],[70,62]],body:[[385,40],[390,135],[392,218],[382,288],[80,344]],face:[[75,132],[402,174],[74,206],[395,266],[75,45]],house:[[80,80],[75,210],[390,315],[398,250],[398,50]],bicycle:[[60,340],[285,350],[78,85],[405,75],[80,200]]})[theme.id];
-        const marks = theme.words.map((w,i) => { const [x,y] = labels[i]; return `<path d="M${x} ${y}L${w[2]} ${w[3]}" stroke-width="1.8"/><circle cx="${w[2]}" cy="${w[3]}" r="3" fill="#247957"/><circle cx="${x}" cy="${y}" r="16" fill="#fff"/><text x="${x}" y="${y+5}" text-anchor="middle" fill="#193b30" stroke="none" font-size="16" font-weight="700">${i+1}</text>`; }).join('');
-        figure.innerHTML = `<svg viewBox="0 0 480 380" role="img" aria-label="${theme.title}"><g fill="none" stroke="#426858" stroke-width="3" stroke-linejoin="round">${theme.drawing}${marks}</g></svg>`;
+        // Generated illustration is a local optimized asset; labels stay crisp and editable.
+        const labels = ({
+            plant:[[385,45],[398,150],[75,200],[394,310],[90,55]],
+            body:[[360,50],[365,140],[375,215],[365,280],[100,325]],
+            face:[[75,125],[402,180],[74,200],[395,260],[75,55]],
+            house:[[80,75],[65,210],[405,285],[80,290],[408,50]],
+            bicycle:[[25,200],[290,345],[100,45],[400,45],[80,320]]
+        })[theme.id];
+        const marks = theme.words.map((w,i) => {
+            const [x,y] = labels[i];
+            return `<path d="M${x} ${y}L${w[2]} ${w[3]}" stroke="#fffdf8" stroke-width="5"/><path d="M${x} ${y}L${w[2]} ${w[3]}" stroke="#426858" stroke-width="1.8"/><circle cx="${w[2]}" cy="${w[3]}" r="3" fill="#247957"/><circle cx="${x}" cy="${y}" r="18" fill="#fffdf8" stroke="#426858" stroke-width="1.8"/><text x="${x}" y="${y+6}" text-anchor="middle" fill="#193b30" font-size="20" font-weight="700">${i+1}</text>`;
+        }).join('');
+        // All interpolated markup below is trusted authored topic data, never user input.
+        figure.innerHTML = `<svg viewBox="0 0 480 380" role="img" aria-label="${theme.title}"><image href="${theme.asset}" x="40" y="30" width="400" height="300"/><g aria-hidden="true">${marks}</g></svg>`;
         const list = node('ol','vocab-visual-legend'); list.setAttribute('aria-label','번호별 영어 단어와 뜻');
         theme.words.forEach(([en,ko],i) => { const item = node('li', 'vocab-visual-word');
             item.append(node('span','vocab-visual-number',String(i+1)));

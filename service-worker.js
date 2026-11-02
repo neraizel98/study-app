@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-vocab-visual';
+const CACHE_NAME = 'smart-study-20261102-vocab-art';
 
 try {
     importScripts('./firebase-config.js');
@@ -105,8 +105,13 @@ const STATIC_ASSETS = [
     './shared-report-loader.js',
     './styles.css',
     './main.js',
-    './vocabulary-visual.js?v=20261102-vocab-visual',
-    './vocabulary-visual.css?v=20261102-vocab-visual',
+    './vocabulary-visual.js?v=20261102-vocab-art',
+    './vocabulary-visual.css?v=20261102-vocab-art',
+    './assets/vocabulary/plant-v1.webp',
+    './assets/vocabulary/body-v1.webp',
+    './assets/vocabulary/face-v1.webp',
+    './assets/vocabulary/house-v1.webp',
+    './assets/vocabulary/bicycle-v1.webp',
     './weekly-schedule.js',
     './weekly-dashboard.js',
     './weekly-dashboard.css',
