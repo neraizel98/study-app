@@ -14,7 +14,7 @@ const prefs=new Map();
 const c={console,Date,Math,Set,Map,URLSearchParams};c.window=c;
 c.SmartStudy={LocalRepository:{getPreference:(key,fallback)=>prefs.get(key)||fallback,setPreference:(key,value)=>prefs.set(key,value),listReports:()=>[],getWrongAnswers:()=>({}),getUser:()=>({})}};
 vm.createContext(c);
-for(const file of ['english-curriculum.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','EnglishReadingPolicy.js','EnglishGrammarData.js','EnglishGrammarExpanded.js','EnglishCourse.js','learning-budget-policy.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+for(const file of ['english-curriculum.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','EnglishReadingExpansion.js','EnglishReadingMiddleExpansion.js','EnglishReadingHighExpansion.js','EnglishReadingPolicy.js','EnglishGrammarData.js','EnglishGrammarExpanded.js','EnglishCourse.js','learning-budget-policy.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
 ids.forEach((id,index)=>{
  const profile={grade:index+6,semester:1},plan=c.SmartStudy.LearningPlan;
  const reading=plan.catalog('english_reading',profile),grammar=plan.catalog('grammar',profile);
@@ -48,7 +48,7 @@ for(const unit of c.EnglishReadingData.units){
 }
 for(const id of ids){
  const passages=curriculum.unitsForGrade(c.EnglishReadingData,id).flatMap(unit=>unit.passages);
- assert(passages.length>=(id==='grade6'?44:6),`${id}: expanded reading coverage`);
+ assert(passages.length>=(id==='grade6'?44:12),`${id}: expanded reading coverage`);
  assert.deepEqual([...new Set(passages.map(p=>p.band))].sort(),[0,1,2],`${id}: three within-grade bands`);
 }
 

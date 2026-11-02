@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-vocab-expand';
+const CACHE_NAME = 'smart-study-20261102-reading-expanded';
 
 try {
     importScripts('./firebase-config.js');
@@ -94,6 +94,9 @@ const STATIC_ASSETS = [
     './EnglishReadingMore2.js',
     './english-curriculum.js',
     './EnglishReadingSecondary.js',
+    './EnglishReadingExpansion.js?v=20261102-reading-expanded',
+    './EnglishReadingMiddleExpansion.js?v=20261102-reading-expanded',
+    './EnglishReadingHighExpansion.js?v=20261102-reading-expanded',
     './EnglishGrammarExpanded.js',
     './EnglishGrammarAdvancedQuiz.js',
     './EnglishReadingPolicy.js',

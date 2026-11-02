@@ -1,16 +1,16 @@
 const {test}=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const files=['EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','ReadingSentenceNotesPrimary.js','ReadingSentenceNotesSecondary.js','reading-sentence-guide.js'];
+const files=['EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','EnglishReadingExpansion.js','EnglishReadingMiddleExpansion.js','EnglishReadingHighExpansion.js','ReadingSentenceNotesPrimary.js','ReadingSentenceNotesSecondary.js','reading-sentence-guide.js'];
 function load(){const c={console};c.window=c;vm.createContext(c);for(const f of files)vm.runInContext(fs.readFileSync(f,'utf8'),c,{filename:f});return c;}
 test('every current passage has authored, source-aligned sentence structure, grammar and contextual vocabulary',()=>{
  const c=load(),passages=c.EnglishReadingData.units.flatMap(u=>u.passages);let count=0;
- assert.equal(passages.length,80);
+ assert.equal(passages.length,116);
  for(const p of passages){const notes=c.EnglishReadingSentenceNotes[p.id];assert(notes,p.id);assert.equal(notes.length,p.sentences.length,p.id);
   for(let i=0;i<p.sentences.length;i++){const row=notes[i],id=`${p.id}:${i+1}`;assert(c.ReadingSentenceGuide.valid(row,p.sentences[i]),id);assert(row.chunks.length>=2,id+' useful chunks');
    for(const v of row.vocabulary)assert(p.sentences[i].toLowerCase().includes(v.word.toLowerCase()),id+' contextual vocabulary '+v.word);
    assert(row.grammar.every(g=>g.explanation.length>=8),id+' actual explanation');count++;
   }
  }
- assert.equal(count,530);
+ assert(count>=800,'all new sentences have guides');
 });
 class Element{
  constructor(tag){this.tagName=tag;this.children=[];this.dataset={};this.listeners={};this.attributes={};this.textContent='';this.open=false;}

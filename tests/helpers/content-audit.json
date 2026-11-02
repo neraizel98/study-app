@@ -7035,6 +7035,293 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "56add156d3d7c4a4c7d1360e055e5e68a8fb08a290ae9901bbb92140c342eabc",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "12137f27d2f0ca73fc10e68ee5554db4bc16a7c523124a53b989a1b646e34a67",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "762e519a032ef23a2903a24264f169cbc72f8c4bcde41ed44f33b260105e11eb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "afec71073be5c43ff836639d47f651eb10d069e8ebaad096430bf682a5fac6e5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "8641663ce69be3e757677517b5cdef18cd37f689cafd433dc8ec4e08bf48db49",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "ea9b6213419982b0bed5e1da4c66c388f30f6a7b46a17689aaf31cde56eb1856",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-basket",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "ed3452e1bac3cafc9b51e68e8bfe102353866a84e3d1f231603b689f81fb1769",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-corner",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "b608ba1cc62c24417a9424dab5d4df02f7f5211000ab76996fbd31726c8b3088",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-captain",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "eafb6207570ce1163d5fe789b3d2477669cd01e3a7e724bac2e1791ea0a45f08",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-space",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "809540f8cfbc2a1103d55230323cd229f746d893a9121f8634ee00391105c9b0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-pass",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "08353db1b228c9dcb0d5af8e4496d3327ae114cfa9b6d2858008a19a79bafc7a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-crowd",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "765041a5c6c8bf71ad0a62561bc361007c7f25ebaa2950b5fc1e9e43037dcc94",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-unguarded",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "0e5556e5fe45e885ba14ae2ec7fce93e8b5f6513469b5dfcf42c0db3989b05be",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p4/mr1-unit1-p4-context-room",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p4",
+    "hash": "2e102a3d668eae3724b5c8aacd8f8e00ba07f1308103ea59cd78d411cfa06d67",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "365530132cfa12255c53f36a472edd5de0ae0acca2d1a48e24db8484592195ed",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "df7424adedd376f3a4769aa30a90bd53cfc5e111772b72e0082447c69c3d1640",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "8d89271c75890a456b83a102cdde8178336031bf67c5e48f0295ecbe40394f0f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "92ff04623dd65d5812d941db637bda2f2240e0bcc973e43b72c288cec143e32f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "0eaeac677a3fe2728a41744bba6f2fec2b80f539fb6ee73493d2f42a4406a431",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "da9bb57b951a39a0fa9808e6b9c7b34fbea5f9c601439ee7ad4e7db4a68ba84d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-pale",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "346707401c8d3d91c9fe252add29f7d18a5d2afd155bf85d89df33aba04151ef",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-hear",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "b24e09f813fdef86769b85ecc67a1264dfd05cf0eaa7aee8f5d0dfb338984508",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-heat",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "ae804de679604e68b23b6e31bbeea35896a5de3c45b7ec33989e062f4934d4d8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-ground",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "1084d6df2a1dc0ee3054fcac3937d8998f66d512d3af858a55bf48f9cfff8827",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-fur",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "abf59fc85ec61369d2f6ed248433aa2f9bbbebea6b763389ad1bae72ecdbd4a8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-storybook",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "47ab5094a744734e09eac1a0a0b83fa6a1e3c70110fccd3844f711cf2a775822",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p5/mr1-unit1-p5-context-decoration",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p5",
+    "hash": "66a17f2e8c40e4f40a7c335c3306e0fe5bb46660dab18acbb4fbfab4c3a02eb9",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "32feef0e2d88a37b1a7fa02d8806997539c9f8b0aac683dbeb9c54af37e07523",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "b0287032c0b103c7639abdd9d9183db227034a81a508a8d2a2da050800d10feb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "bb2619e13fae2286b4313f140487b4a095625758131c751d710f56e135c9dd4d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "fee8ee94e30029f8be7111b24b45f0a11c3299830f3de72029423615864f2fcb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "25ad63c3afa22dd12fc502a3402f522842ca75b30814cc384ccd90c082278869",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "66cfb98ef856a24b49b3736ecb4bc0c043840afb45715c7c918873be76447948",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-imaginary",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "4d336fb94d5d008bd4a4977b373ef56fa39fb0973e127e53b988d75eb3005c35",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-harbor",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "cda364e246647bf0497499e92e63854bc46ee9d5bd90e1e99ad0971f64857a01",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-souvenir",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "20213b435583817030758887ffc474ceaccad9f5f8871d69609eff8875c41031",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-frame",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "17df870a8f3445a104600b92cfdc57b5bb15a994d27a203cc3072c6ea2de278c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-passenger",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "7157ae91a132f24a4e17fe78252886a6de17a234536ab13991f91afde7e17548",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-attach",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "d74a8f03ba9bb4be24d5f752c5860268aee52bde5c50ef4dd570eb95cdd3fe25",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-glow",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "a5e92a9318d3d80f3f8cec05325de05d92ed0525ee86418aa85d0ee7e0186f7c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit1-p6/mr1-unit1-p6-context-tradition",
+    "subject": "english_reading",
+    "passageId": "mr1-unit1-p6",
+    "hash": "0db9c81133360a7759e9bf6b98acd8948d9c79ccabd88fda27f04a98e502e63f",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/mr1-unit2-p1/mr1-unit2-p1-q1",
     "subject": "english_reading",
     "passageId": "mr1-unit2-p1",
@@ -7235,6 +7522,230 @@
     "subject": "english_reading",
     "passageId": "mr1-unit2-p3",
     "hash": "c5d0a9249a0580412d1b3f9d24a69d4a68fc3b139f64b2fb71a40edaec5812ed",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "af73e781423fcbcab857e53e3f258277719dffc27559fa7cedffca9a22646c48",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "e493d1572ecf91d7347712d17d22f7e35cc1eaed2461c075d4b10fd95412eb3d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "f1686a789312332feef9fd73037f90e4eb821ae1bf20cd15b0a69df101fb98f4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "d6446978df6ae31bc2e4d92059dfe041d278083eaa4743a3c9ff36affb8aad6a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "9621f78613419eaf891c5003984e26490bc596cffdb24c4239a6a76a635ab132",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "dc73a205ea0bde74690f1105978dfb4570600f25aa4cfd35a14e19ef133ac90a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-context-rubber band",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "8a547aed1693d74cac62b077c801a20e0c0ab99e0721ec6e52bbd65b1f6e2c79",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-context-bumpy",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "609f87f345d929dad34beebfb389da99542492d45143b5f0019cde53c7c60435",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-context-low",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "0db78ae33ffe94b398ceb9d28322bd095f875c2f8de0d6f215341b313c2ce316",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p4/mr1-unit2-p4-context-label",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p4",
+    "hash": "7b07a731707f747e2f29c2cfd0f7b7b8a55f1a6023a123907db0c08422fbf165",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "d694ff69feff77dc9a08f5b399713f578f738c8f9b04c78e42c8b97d05f68539",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "6c7ac08f04efb80acf39ae8e73593c896404f893b287546cb72409c276f9ae15",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "dcbdf636d00067ddc16a76dbcfa3ad136d7cab4393211bd0e4abb08ce47f8d35",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "085d515903a3e38319688199bb1e0d8c8b74fa65820b51ce0c03ff7d128eab9d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "a905566ffbb01cbe90b88287e6293428441ed40c434d80f32ebd425232ac567b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "5b8f5537d57d07dae11fe1c772ac8ba446ce495b3881c2121103dd7051c3abf1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-context-radio play",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "6194e2da028cac278de112de37dff5f1d0ba376cf18d6de8eeafc81c60a44299",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-context-flat",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "e428c67cd3502e84ace1c4132c0d6e5704affa040d2a3a09146da79d4a7d543d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-context-creaking",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "9dac683a865ebe073e0b818e25cc29c3117639f7214b30aa1ec1497d42007c30",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-context-version",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "a3f4b5cf2e9a597fdc3c247b8d3e240996d2ca80bd23cd8c5499815f2d8b49e4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p5/mr1-unit2-p5-context-ordinary",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p5",
+    "hash": "52ea3c9654874018a2130a2abb74f3b63bd68962c66332c9d357789bf116288b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "e8a2cee3f35ec14b61aacd83669250ccd6b90a9634971d72ce0e333546e49d8a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "65985388f3e75051d2cd1071ff995cf6472bd89562190c6eac2479045c829a8d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "0c0e97d5dd4c3a2207db2bad187ec308dc2eee34bde7f55e7109bb5a7f234689",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "c6eb038310a67538748fc7d7304783fc189533650992d1ca34eac36d07cb792c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "0241821142b5cafa11632d28d75bac13e482560db43b798594ce5e0c566b357f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "cdd43615e9a062c9b60f468153aae4a5fb8e2c2a08a3d684355673449479c94f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-context-crescent",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "bc714ba62d253d2b217821e3c30e930d8db405e76ae07b1f160af44dd8602f64",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-context-stool",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "88c978da7e5d2093c2449e3317cbda88716c3aaa8dfe8e2f38a10b22e5bb9bf3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-context-different",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "9f3283f31022723e08e2093a3a51e13f0a3d8c3a4c97737b58c76216d789a12d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-context-viewpoint",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "4b36b19613e1ae19e33dc1fa258392cd9dd4ec7ef95e089d7cf23e6239e19b24",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr1-unit2-p6/mr1-unit2-p6-context-outline",
+    "subject": "english_reading",
+    "passageId": "mr1-unit2-p6",
+    "hash": "ee03e7a59f19fbd59f0d322088ae5617637f494c5dc0313e2194392133396fef",
     "semanticStatus": "unreviewed"
   },
   {
@@ -7455,6 +7966,272 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "c6742fae70688153ee63eb25e76b1bc947a48573cd97674e75fd29d9547513e0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "4a3637a86312f5c95b3c95c80801148c415c198e264669f4a99519b35085a050",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "e1b99b9d10943e3a3c268261b9fc9548ec5ebfe2ccb0d9c25a9c65552a7084f7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "557f850aa8133df634c7ac6bd4cf4b6c39fd890ffdd2d18c9a83eb7c58f61ad0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "237a40015425d5f595678cbe1a0604fa29a45efdb50a6354e4d58dea6eb7ca25",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "8fdfe9509f2a335a80504efac00f60a8589d4594ccdc586b89d8f479162d4d5d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-chart",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "18be7efa40e94bb512d99613a03bc89da1f0aea89e29eed94fab97a7c07aa430",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-forward",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "3798ec6d75b325e90c6a9ce1c5d3fa1a6e149b167e03cbc43a56ba442fd8ea5f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-immediately",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "33286a4a21c4df5eb9f3f102ee0524f1ee47c4c75bc53f9a18e6685ab0491a11",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-accurate",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "ca48344c1813487b267f29995172e5ad08e0c68f13ba54005a9b73b31a7ec5a2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-repeatedly",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "bfd215382ff9a20f8e90e6793ef0c115b65e39d16d5d491dabdf41c5288dec67",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p4/mr2-unit1-p4-context-cover",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p4",
+    "hash": "c9750fa4db3ea490c85dad026fb79859b102cc1e5a2685c029148db730275953",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "a198402d1d67be0f16710f3c1d9eff72423a4f90fc95fdef959c1186a07a6a64",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "cbb669d2c71ef2c814a4dd3f505d2d1fedf643c9a8368e5bb023be21bd27fa98",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "ce3a27bd37b9aa49ecb31d92403c7674b157b6ec083583df8e79f83b8937205d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "3fb7a7f50aa723c92d932f34793fe5e109953aa1fcb292c9480af1a243355ad7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "08688581755fd7a53d637e1aa3c970b42f6644e2d76c6f93f9f986cfbc13215f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "bd030ceadc273671e5fde2c0f86f79aa357cebbcd04c05b0c9f224ad412f017d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-vanish",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "874e60c8b970e7a76fcf09fe7f9ff212b036e94d78ec006f7ccca6127feac6da",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-distinguish",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "01ccc875ee5994eb1ba2793fbc2cac43d3c22724e1ace409a58c9818ec0ac55b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-blend",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "534d0c7e26d59319d450a2014cd5ebd3c92bac3b30a4d9260b83942ecf0325f2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-texture",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "2ed0db00527eb4c2876c3ca253c4b78499a00a33f58e306f9645dde699ea5a97",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-perfectly",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "ef7d1da8ec2989169aee8c23931c3d9e8ced69ab5a0cedbeb156833b4755c054",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p5/mr2-unit1-p5-context-appearance",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p5",
+    "hash": "deecedb9fa8311b359ac3e2fea53de20d8bed283dac36681f93b3438a9d5db5c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "12fbb407b0efb2121895352875379160b881a7570fe9f112c1145981055f61a7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "80e04ab3813d5df64b56734cfe0001ababc042e4d8840b37a06696a5de764ae5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "77eb197f1410429010a069d37cefa16ee2f8caaa3b66dfdf655999da9c09004a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "1a723e38b6e089a5c34cf62b96c1eb641a567e4596d9fa064507d76a54614e44",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "3ab9d6bcbe3a2ddf59b700b2460387c3c09c447a1a5729afa3e5cf0f817f0ac8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "d246d4b1f0003bb26652465c50a369ec843a2a9c3da22fc398e2b8ae45ca33bf",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-fictional",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "8ddb3f245dda4cac2c96842bc08581e4a7e1dc60bad453107d0f7320ee2213ee",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-host",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "de3d53368f4b9fcf34dd3b83adf00c1de511e6a7dc71479314b46f14a79210a9",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-request",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "0ce0d8185f7287d3db929ba17d5912cfafcb415f02a383ee5dc742c03640e8a7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-serving",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "cabd28ba48a2426f1a2f71f8217f035a6de5ade09af52688ccb5b008c563935d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-hesitation",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "c0e637acbfdb6be2766a7979233e067104aba8277f5fdd8e013fe88292718369",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-gesture",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "b8b6d62262bf07880bd39d543d53e5c0fe70a7c50a8cd17e84dd023c3a57a018",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-offended",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "d90b5dde0b412697ba8b8deaf51b13616a8bffb825c966e58ec6ed0dfa1586f9",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit1-p6/mr2-unit1-p6-context-insist",
+    "subject": "english_reading",
+    "passageId": "mr2-unit1-p6",
+    "hash": "63a7d8f0bfb4b3fdfc3f57bb69b5a7afa754d8d0c2baccbfd7f215e864fce8aa",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/mr2-unit2-p1/mr2-unit2-p1-q1",
     "subject": "english_reading",
     "passageId": "mr2-unit2-p1",
@@ -7648,6 +8425,258 @@
     "subject": "english_reading",
     "passageId": "mr2-unit2-p3",
     "hash": "a76d13f5f8d467c369516d20156754f73e52dab8b815faaf7763eb00ab724443",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "876b8fb93f668a7ced932729ebcb78c683980b7ed635b0da02d9d2ee1f0e03bc",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "ae62c365602958d7a3d58b4b1c5fd7bf27b233ceffa5f662fe25aac0f43a80a6",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "9c5cf8d38bf0e43ccfd8563d14b62393934a7ed7859b70b03aac88b1f1bce00e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "dbafa632808f8aaa4cb1f3583309e882c048f74b5550bf4b1b5a859173e7a52a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "34cb273cd8a768552a8cc24e7e92c5438e89f0d761c4affc2669a632c44a1f74",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "e9cdaf19a3aea26b395b48121cf632a67d13afa33b3367ec8cc01dd299f3d83c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-advertisement",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "1194dfa52f2bca236be542ff31ebd802e0e976ecde101bc96204fdbb15dbeeee",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-perform",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "0c4d365e48931f0ec7d2cde422e37bf271501c25a7954665a03d5581e74043eb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-extra",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "6d525b9e4ee0eaf11f9dc08fbdc087b0a684687b8aa1337f503b8d0c9aabae49",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-doorway",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "eb0b9a1d1857433321d581227456cac79daefb1b9910e23c674c7a192b3fcb9e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-trial",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "606d14d0180fab1365b6a658fd610cd013a325b3ba2247d45b2875df304aa6e1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-grip",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "46a01c1911dbde511562427c990eae361277159867fae4b8d52621395e8592f5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p4/mr2-unit2-p4-context-compromise",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p4",
+    "hash": "094284a3ee8f80e009d3c0cc86282b0c630005ce1035c7c133efe4b647bd8799",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "b70c4f5161c12e4360916f71200499e0621d0b9a53f3f584490f289589059bb2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "4329d36241f8e9385a3d5638dfce1fd56a84c1d67dead6bc24e07d4b13a2527a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "a26af5a16363def0732cc6bc9115a9216f57de45ee46d7cb991c2e5be68b97d1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "9ae5e7a159ab1c48e4777484a977fc1d52b95f314b95b09684a4fc4416772416",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "24f7f3b93269f5b49493ed9dac093362d9debf7f77ad5532d0c8f6817a1f74b2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "e828ac806465bd314315c4d7a56c4763ff78bb104d4d425ef1e0d037665e94f7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-loaf",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "6ad80fd4fbb56609aabfe7bcf988258f22d7355ce5ec7c990b72c6f2502a01ad",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-doorway",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "a32eead0bc58d5c933faa8e4e62b5fd47dc2d93325894875f58a369d7d828459",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-secretly",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "e8918321fb7c35a3f9ab21b2d9d2af1851659db677c401caf7f1d5b04f30f1ec",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-purchase",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "af216d9e29545f1522097233fb113320e91e0915cedd652a5bdf260f5272e056",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-guess",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "a0dd554bf299a7dce8e3a3567d3a86ab0062bf4b50683e5c62c3f67736388d13",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-panel",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "d8888ab17d96cf61e5d5fc22dd0b15fef2e47352bb5616b924bae357cd126e0b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-intended",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "a6911f05e63a8d60a53c439eb84e8dbc46fe29ae432ccc36ff51286b144ded42",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p5/mr2-unit2-p5-context-shift",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p5",
+    "hash": "4a348a7bf9668d4011f3ba6e479dee98957cbabcb6e81dc21026cfda7037bf05",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "42f96bf2aae39b285f1f6695e4e198f8d8ffab690441f724630c5e089b12fc51",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "c5c3134a85936143dd5db3be8df2e1761eb16a6fae11a37ee9c18db434ddb001",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "6ecac0f85c6cef07829586700a8635c09b692845944a0422cb683db4a3fa42c8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "9a28d700c57dc09d114999fd317e1ca5a19b23044154b9c5a62aef51288dd399",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "4056dc8a722eb384255b22e79e8ba2c3a71756d3c15cc65d24c728afac601f29",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "d908072cd64fee1e75fa68355e8eb1d0a704b444ac27558801ddcb0d9ca11e50",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-context-visible",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "f6f3e7844b23247972c3047d0c10b7dfbcb511f33121d6d1f26ab200cfb49e51",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-context-solution",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "a0645dd11f1fa7b656c7573e4e191e061922be0c5ccd32ab6874a8fa238ff27e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr2-unit2-p6/mr2-unit2-p6-context-unsupported",
+    "subject": "english_reading",
+    "passageId": "mr2-unit2-p6",
+    "hash": "791bc974214263af68b25ba1b70979ef5c3520f640db88c66b8e3796fcf6a66d",
     "semanticStatus": "unreviewed"
   },
   {
@@ -7868,6 +8897,314 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "19ddcfd71e276d8b8d50f5a6757ee241f937ab03f53a823244c064c88a3362aa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "bbb3f611e81dd9649ae68a6e03c6fae6a5fc1e2bb7f694404fc4218f09b75cbe",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "446afdf7628f7e53f7669d316c175c4f71eb3e4e472389bb4663cbabdc7700de",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "f5ab38d0e654906be8066d8c58a6ddc2a9902f9c747d1fa0f2b2eac4c8663641",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "f94feeb6605298b0ac928e0e16ac9ae8d667b47acccdc68211e2f6db480a9d03",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "d0e5a65ee3e86848afb6cffe3f289cf0a541fded35a619e23bed0d28da64697c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-credit",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "5c44827b43a80a180690e65d9b3ea440621c639828c72addd3a4335b225756fb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-leg",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "0361ceacf67398478475077532c63ffe0b6d84d3e43d8190e09959c2238db203",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-championship",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "21d447440b94a7a3f89159a5498776536bab7c3ccb6c63e85c95a36bf7bf1a97",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-exchange",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "d5e621085dbc1f759779132499d4c87ade2d18c2b7bcb080ced309ee4fbd3e6c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-sharply",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "587b8f96edefa33e9f0b7a16083f8d6dc688828d02941223a8504d90935b04c6",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-accounted for",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "32b800e3d916a0afb25fa4d521ef761ecab01153241b23a6ea7b819dbedf0205",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-confirm",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "3ad4ca54ee8a976e81a968db45ac543daea7cc29d1b0da785e455819efcbb3ea",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-reasonably",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "5071e7423c9d3e850412567a173692d804a2290204807e018b6aa34608fef7d4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p4/mr3-unit1-p4-context-celebrate",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p4",
+    "hash": "45bd8209a6ebd35356a43a476c525b5710aebe51d3cb5fb1a40d32c8ab8ed7df",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "71f5b142eb40abed9c43ea58fcaf0bf90b507cb36658e17abf306406165cd88d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "06c26b535b77785ba6e26fe6d1665dfb77d331054a9de06962b77bb8c495fa40",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "7a076e8178de4ffeda93c8136e5ea02a36e05011ec384486a7d7f06e8705cd67",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "7fbdfddcd98fe55b708054f8d5d75090f4ae9e872d044ca9f8cb39a3afb1c58f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "dc0ceb9a2c1308168b173ee6737fd6df3644380e52928bed41d580977451b95e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "1a6ceaacfa4ce40400babc42bdb419c2d1108bd3010a97ea1b6a36de8814bc9a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-outer",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "faa6f3cedb13b6972e807d244786e930d6355d09eb0e8b5fad5214dc698cb7bc",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-condensed",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "5ddd09dfae00f4b280476099a08b654144a415fd02377a7146e914adabd6591f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-distinguish",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "8d63c1b17c687844d27542adfcdc905f23de7867293e519acbf848fd0c75daf4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-sealed",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "b3e4786039d7c2a30d1b646e30c738a271033c844a9bcf5f0d7febb670e4510e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-surface",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "3b3824b0740d3ef6e75daeb487dfd2f8e739b4f31804f44e4329b951e92cdc76",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-visibly",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "97636b6a0603174eed5c0faf44e91a656dc992c02203cad3d07309bf1df9ceeb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-moisture",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "117bb60bb14cdef0778562b22f9d38cbb3fa1bfbed573836f9b2a5f690032205",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p5/mr3-unit1-p5-context-plausible",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p5",
+    "hash": "c5659f6ee32e755ea04cc0a0f8b88a8796d3235643184495d5add62cb43dea3f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "f1794cb859ba7475dc3b69dd8d97c46def2aa6f180db230df49087544d34a1ad",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "7b78f23eba6d4222cfc5ee9089dcd669d5625de62acacbacde5eb2a67ef63b8c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "8a11ae6721860c7d00f7d4de7383a5448791aaafa258f85add2d0ffcc6e4c875",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "5cdd39a9a6a8dc4ab30025543e5fab0c890e0d2c1075feb8203e30d623d808e9",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "87b4ac781ceb899041b1d325170edb3b132614b7948bd1825a8b0c7032678a7b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "2875e6249a3b43ac2e5d7bc17bc915b18da84f023b67a6d4ad3fcc7b71b0e30a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-replica",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "a5d0a80401c9eec7df8f673b9f4e52a79711ec9e9417c3cc34f79e55d27a8056",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-original",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "0deecf56a61b7197b6a6a50c3b279639648723e4bb21fa86b3fc61d8c7a99883",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-worn",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "2ab80be97b1ff4825068c39b89d339fa415ecfefdafc8080ec8e661424ea935f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-supply",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "21ed591b6b77f11a8158e455c48da9b187926e356d63fe972c270902c8b46f81",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-fragile",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "03c87e5fc4d547f77c3e3dbf438dc4ce178f9af32a07992b71870c2426f81e15",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-grip",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "5fd60b7cd2b88f7d2e810318ed7c717996b4ed877293d8ac8389877922da3711",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-presence",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "412ee7cd9edd714a3e2ac979b7eab3b6fe3e449ab0e83dc4637ce18ef453d32b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-label",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "72e683bb3217d48f37ab8aa6ad467c0b5c6c065f45304b2fd1c44373a34123c3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit1-p6/mr3-unit1-p6-context-substitute",
+    "subject": "english_reading",
+    "passageId": "mr3-unit1-p6",
+    "hash": "a26172b69ee4a92c98de8dc144f2ef6797760cec9dddc65326789b209b4a62dd",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/mr3-unit2-p1/mr3-unit2-p1-q1",
     "subject": "english_reading",
     "passageId": "mr3-unit2-p1",
@@ -8082,6 +9419,300 @@
     "subject": "english_reading",
     "passageId": "mr3-unit2-p3",
     "hash": "4aee1fb2626bbd6fff2367983bb3072cc4c10b296b0eaa64ed6a946d26744b3a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "3d821d9dff3435c6927c6569c9f46fdc808964c5cf9551e1255dc5ca1f85066b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "e31bf5be2fb98dc96d8087b8168d6ff5660f7fd1f30766e3f7c712a16d45ae12",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "9fb3c8ebbc1604010d499d52f205e70319ca52d2e8afad99f8e06694deddf56b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "fb1b5339364df2c99c31d7ffb9835e2d1deaf66f5c89248fc2cc5b9518225a2d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "0aa82a26f9f261205d802b9656baa54b2e137ba51d5af45b911b27ab3275aea1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "5c85a0fc9d8933e8055478f6b67f96f9b09e2135f338ae0cdc88caa33c8f5639",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-appliance",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "0cf6b3a082cf3b2bdcffecb9e3f18aad4f08d1c72b7466c42bc40d0e8fbbaf09",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-panel",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "b82c5dde6ddbcd375863cb2eea12708b35e77162ac6b305d29333e667f861d26",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-supervised",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "62cbe1e5cf6e24847c17f3c51508100936e2664ed1dca2bb5b40c45ce3b3ba25",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-shiny",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "eed06b04e097032c593a3a1403ce51b108e8de2042e1c2043a7b2bbebec5b73f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-familiar",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "17f2c851d48844bc1b066bee2d1a6899d8a66357c4f64ee51e59dbc36b040e84",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-raised",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "824749f8e542b3824ed857f2a4e69b5fe6f2030baeeb932597ced00ab65d77fb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-revision",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "7a9204e6ffc6fcee9cada239d7b27fe5492b27460adb3a7d403a68e31c7158d0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p4/mr3-unit2-p4-context-inclusive",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p4",
+    "hash": "21d73431cf3fad54437041aee5b34a4cf3f329355572d4b2bcce5411898821c5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "bf8973eea5c852ebb2fb21e484cfcef7b4ece9a99b1536b072e5a4450727c394",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "11482457c8de873b98a0903bcae5a4e4858b3d2d38767bcf40b125683775eb1e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "ee42cb0f4ffd24af91567412b238d64ae5a59c6b795c94957531a437ad9b9167",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "52eadd9b780c27754b18942867c7f0dc2e0af0073166b6d9464438cc6ebe139f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "7aad4dbe17b8881fe4926f0a558d2a799abe378d01f6d68153eca7200540e43d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "4ffd6a762d82789e066620c29cd3488bc63675866f5b521890ed6125ff087b3a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-quartet",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "39ae09b87ed3bcc1967497f409de6fba823cee81c4bf29e1ef91c591fcdb0ea1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-passage",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "2af24319775eb3b18ea96ee909eae86ffddf7fc56981a7224eea4217b22af123",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-cellist",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "f41fff102c6965dcfd102ff709eae56cc63f47e3e5827d4b0548b8107a202713",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-emphasis",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "113fdf6735d0b302f2d770b2edc59ed265c7aab968350e58c0e9b18fbbeb7b68",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-pulse",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "d2395fb09b33fe29c75073d8acf35eee02c0d94edd33ac800d1a3a483ea91527",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-distinct",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "4de306108968a99d90980b90da10c49dcacbf239ab3ceecc73dff0dec6baac67",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-entrance",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "a8e5bfb6ffac8c62912e6639c447975dae80d9f228dab52e1001254ab73f7baa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-restrained",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "498d32fc2955e362c4c8fd40f9737793f90bcc4a29bd31bbd69942915ab0b760",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p5/mr3-unit2-p5-context-interpretation",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p5",
+    "hash": "1103fea20e09d687dfabea7d347677e0bd0e59f8782a44884672633e4f2f577c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "5a2454ac9b873eefa7dac07b006d81ae04ca12d5c776be494ba1c39320c569ba",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "1eee60691982a5a037ed5ebcd756965c5e36a02e1bbd83522dfa756967068a24",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "99b21b0b52506d1efdce07fb51fe770ac5661ef514bd3b5d209c010bb5cfaacf",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "850154182d2b5697d153fc765d6938d0578a4f4bd32ea4763a05199053c90985",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "ea99916bea78e8a04ec374a473b837725a9b81387455ea8dce12cce74e14131f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "91b7d990f7f3b80a967ae3044e1eae17a2bd02e02da56533816a698fc9853e81",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-hilltop",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "558800496676cc095a88aef63599b438fb7e1da61fde6da126689a9808a86e4d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-distance",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "893e71df3d77d5232aa02f55643a471f2123ff3d87b40c310aaebdfc4a9ab0cc",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-gravel",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "14fd9d818009ca55f517f202e5a1b6a258bcefa5dcf414a8d85db2849f148c02",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-participant",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "a72d513809af1b7bc1c2f1f744a18567c54349aa2006033d767b2bafc8cb69a5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-priorities",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "38278cc8370b0d3531f902e9deaa1b37a3963c645c6ddc2ba5ec13751e484a10",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-alternative",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "33ba0ffeb1aeb675674bfa668663baad6cda9edeb037ed1ecc4a79e94153bb04",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/mr3-unit2-p6/mr3-unit2-p6-context-guarantee",
+    "subject": "english_reading",
+    "passageId": "mr3-unit2-p6",
+    "hash": "2b7d361efc7608b92a64900319af93382c32266cdaa2ab85200608f938f3bedc",
     "semanticStatus": "unreviewed"
   },
   {
@@ -8316,6 +9947,230 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "7474353290b82b37a07b7794477f3191af6b0f619a58afa19107537a0595e7b0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "fbdc6c468bb5b7770472e4c44c9c3683636f6d045e255964ebbe9704ffe0e4e8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "7d9de09948cbdb9179d75ed4166cdf7d9c93541118d6f0681512a3477d40eb5e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "d63c22f23caf8f9ba3cd0123857da4c8e8c68d04a4f0557c3a4d7896169faa27",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "ae5671e6bfce1359eefcfc66a02c0feba895c6826132671fb2957487eccbf722",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "bd86fe004a7919f8f12afa1eaf7c033ee263fdbfaf5c35e9547a2372568fcb7c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-context-version",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "beedc494729b7287368e18bb4efead2e7fc1a090e8b017922ca4c995a18e02d8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-context-pause",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "1a02412981b731751da2e2f6adc2f38f6c9bb417a363011864b8f837b5fcaf65",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-context-uncertainty",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "17d4ce4b4eb144b8454b67736e31ce8b5d38f32f50647780897d694bed16ee3e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-context-arrangement",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "298b5093acfd2d293e0796906cd8b97ebdba3bfaacd91b1ffe7b5ed217be397a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p4/hr1-unit1-p4-context-rhythm",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p4",
+    "hash": "32e82f01d59f9ddab5773aa4b252c3bb78c5df76d74824107c9796fce0e88bd0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "5800a719c727abbe7e708022949ec5d74b2a427fe433db23b717962b6cfbfc91",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "53430ef47d0e12beb2258d2752d360403f457d479aea12968a2f7f8d065658d2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "c4d181918f812cb8836587b59c4bb540afd39554f6b437998b30393f4476e022",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "308587a5b21177748937a96d42f32bb7bddb4cac5c5b0be22c192ee103e50524",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "bf2375d9d3252387af50ae153e4b051109e891a971104438368d9735114dd9af",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "3dd8e378c754b09708710f8e487f7973637e8518a8d231a7936cb64cc0961824",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-context-familiar",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "801b1a87484fbe8ba59b862f9e593d462df9905036e25fa80ba83334d99acc1f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-context-modest",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "416864ef934fab963f114043b72b1f94ccddf0ff4a372801dd737c6387796a0f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p5/hr1-unit1-p5-context-afterward",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p5",
+    "hash": "f6e1b527a7fb1f987bb5583bad4d07ecc4155e98d3e45a5c489543639f7a12db",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "feef8142ff017bb1346fe61d13875a11eb24bd1fa87522a0deb5f71b74311701",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "f8bd8b8870475929f2772842b672237128722dc68a987c7f29756deeb9413d47",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "266f02f6254841f8cfb45a163d51cb666991f242e572a58eb19bf6b28e57d681",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "bdc497df427b11583ed4ac649682f09d956294f8f3af914e2d5ca9f4ebf631a7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "69e40704d19c4f5637711c128f07a9e549c2321623b69cd22b07876280f030bf",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "9c088b1b0677b0fe2c2ba4a6ba6dce2a432b3323e5bf2ce3a01e6dff8e2a1432",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-surface",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "ab0ac2a56d6f58d916f28f199ef5fa030e1603a006b609ae8f87cb03faa5a775",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-decorative",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "66fa39ae8d03b645f3d9a63a6185db70ccb048c357f51da00600a7f8821a3e54",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-steep",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "cc1ac150037a7eba3a3c3f431e70a655dec8d2b6ce99d6f03f595f15f067b0da",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-representation",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "06391d79992ce80bfcb4a7f305b20dc625bac21e1727596da1be96874884a096",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-selection",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "cb6593431719e2890fd34a20fe4b73787c4e740873df651817893de50c4ef884",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit1-p6/hr1-unit1-p6-context-miniature",
+    "subject": "english_reading",
+    "passageId": "hr1-unit1-p6",
+    "hash": "81b54296a7cf4b2ddc30cb2d4e715abc750db153e5b6195997dab7b2018fccb9",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/hr1-unit2-p1/hr1-unit2-p1-q1",
     "subject": "english_reading",
     "passageId": "hr1-unit2-p1",
@@ -8537,6 +10392,237 @@
     "subject": "english_reading",
     "passageId": "hr1-unit2-p3",
     "hash": "e56842013ce5174dea865dc647f54179f53a6e2256a9dbc53e0087519279f2d7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "497a6be0f7ca9745c6544c45ca921a4cc1a61485bfb3a4d8463661f2305c1f91",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "bc4515429a34003de86f07fc4aca8496ca05b97b582b52e44fad757ef87b9ea6",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "afaafc35eea8c5af323f6816000aff364d82d7beedf69011201be0251cfa31fa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "f9fbfd87450166facfcf09299b8eb401e9416d6fa8ac85174e89d2f8e97e37f8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "f971c1c45ed459887527d9a152ad3b8fb11ce414fab3c95ae7a1239514d47246",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "222ccfae5c5ab0516013ebbf44b15ddee13c10bf42011af33a8ec4bdbca3695c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-quartet",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "6da7ff31230fe796045dfc8912ba45451f43f31fe46ccd310b54e13bce4a9670",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-fragile",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "e7d9671de44b2fc96e5751b26cfcb0256bc257dca610303623726391112a00a1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-rehearsal",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "240bcab09bd74c3c3ec4e64e56478fdc7e4525426dfb5f96017470a15df0cab8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-confident",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "693a3dab7b962efa39817260d433b182b9ef615383b489ee27a1d744f444c767",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-tense",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "d00aba2ee21ea60f82b3b619daf5139d2dea816225c669425c792d2cf362c4c5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p4/hr1-unit2-p4-context-interpretation",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p4",
+    "hash": "b5b5164e36ad8573bca220f3dd1bdc880502098f1202d8026d956797e63b3860",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "2f0cc0679f91517ca8461ae746d2fa45baf8b7603aa3d050948dfaae9c21b3bd",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "510e872ad6f0eda0fa96a425af6b4457d0b7f8bb4e4679fad5fcc12a60ea4dd1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "aa7a629cafa2540e2f1191177ebcbfa11b2c003f06f332ccf4494cd6a6faa6fa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "d81042ba47de6c6a9ec3e76c30f134a151f86be5faa8bc55d3b3e5b6f86e903b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "ace1028d31182b2bd1624ef0a54da0022e28e5cc1e3263cb0b2d6f6d7d178587",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "ad035bc6187fc9904e923da01ca353174502ae63ec0110d4565b2cb165fad909",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-context-strip",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "5ea05dfecbf5c8c1992879867f90ca4f7d8d7a9c4bd951e9f224edc72927e53b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-context-shelter",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "2608361823eadc07ab4007e58c081afcc8fcd7eb51c9a1ec453b4694a6d98aa0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-context-compromise",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "95d3be4d67dfdef1124bec751eab22edc1ca4b95816b769af45eebb63eb3b6b3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-context-maximize",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "b7ebd15b8a52efe372b301f3b0c3421b538f7c5694e7b9a1e43478de665a484a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p5/hr1-unit2-p5-context-competing",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p5",
+    "hash": "ff0e28645e0b682e43f49104c79289ec002c21b0cf2c53d603048ec8654a215e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "c6af3fa7415bb191fe70c8106a88cd2438be5d137b9497d50983cedb3a83658b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "0de740deb503d7896d7a32139f9d02832383adda499a6f18383335292fe80306",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "093e7cc0e0064a57c948318196fc6a3ca4d89aae5af3f485792d423ca4bc5914",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "3dabb7c4d03e8306f843b14499d2232b7b65c7090972854d4180dee833af5293",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "56258b268323b54b1908ce7cdc899688ff959bf7c56916c7d009d05fb030f258",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "9fe9c728e69012c87d3d0ae5f3a99c7384bc891025dbf7b3dde60ac1a453eabd",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-context-dent",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "d25b168ae4f9fff4df63b09c792aef03035bff541f8547e2ff3ff7daf1d944fe",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-context-accompanying",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "6ed502cb157fa7241c40872eaec9412fcc79b02a11ddb267b31ccf9405a68eaa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-context-hardship",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "90dad91487e64c902cfde9f98fc7b7982a62f8841ca092e4dc513c8078a75e56",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr1-unit2-p6/hr1-unit2-p6-context-confirmed",
+    "subject": "english_reading",
+    "passageId": "hr1-unit2-p6",
+    "hash": "5be242ddba6a96885c842b7e40f139314eb6de39f2db4204704e5ed8bf5f9a68",
     "semanticStatus": "unreviewed"
   },
   {
@@ -8764,6 +10850,237 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "8000eb40d3a2166d53bd1056aa102ef4a53cb5519e0018d9fb27628507d29d6d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "5f2db99c2388f5cd175c42babe0f83561b600f23f434549d37c7f9cb117e5dd4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "4644592cf12b1598c1c58a095a2f89f2a3818d73f6d5fa9d77ea6f3ee3abd41a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "15e289b1c3d5488553f563e6de701d9b9d31e86373d52ac651c7b3e2c6d7e051",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "d13987e92b7d6b12e89e0cc9ddd1ecf4f65b7012770a4a990704c82e584bee8c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "679d8945aee905ba802284bc09cf3435c23b91236a441ef56a9cb765a9671096",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-exception",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "a20788ebce063efa2b27c9b72bcf4095aae7dda80c14e0266cf967e7c0a4f8b5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-sincere",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "8e043cbf71ec9380f4377a41d42729449cdf602a5393ea7e7532b4e88557c6ca",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-guarantee",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "5279fb1e7ac0561b98732c409bd46fac312cb8bc368403d5afd092ec5a8885d5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-deliberate",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "9c165305019d16835339535270f5b9839ded573a9b2d6b2797cce466fa48754e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-unquestioned",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "e81d24b4f9b8a99cbc09d61296a6d2ed334d8f96c0ceeaaf5c89add5548f8571",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p4/hr2-unit1-p4-context-farewell",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p4",
+    "hash": "44080008466ee7095c0677ece43992fdce9d16bb32a1f5f8930ac3f76e7f5b1a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "3ba1ec00d06ed5a21c461d57435de595d0e8fbf30c7f4d9f6efa69df030b2afb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "a7648d7fc24df110ee04642932c51fa83cfc3ca13e9793aa2206cc2f69b0d09d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "ebc119c3966481857d18305b7a35b411e18a7c50dc1dbefca2ac556eb75e033a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "f710e82c1c0640a358ac6e0509939e3085d7938ecf8a0ad8c522507744e95f2a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "992472e06d693d4664066caef4457950da0daec93e98a97637faf5a5962dde42",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "e6c560471bffcb0100c0444cef80a32e7a1cd16d14024ffd4e149c9bf8e1edf7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-context-fitted",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "eb178bf6b314398fc2837bb3255fc8ef86a5ae829ccc600cda8091550fbac82c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-context-considerable",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "a4cdccbac02115132b279bbf9bc062edb4795f5dbf4394b4ce00d381c0e9b62b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-context-procedure",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "a828e6d486d869085a4eef2768adf05439fa76fb65801e3f8c9a8306700bf351",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-context-consistent",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "9af9ff19ce1821b8a1dcdf0883ebd4f7e2d26b158cc005a7df3cade4071109f3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p5/hr2-unit1-p5-context-scale",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p5",
+    "hash": "8d27035574d9b2b84b7d1d25e01f2df734d61f5f76d5a7b09accfcd6129ee86e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "438dd0c646dbfbbedbe4114061fc3e4665ec5b8df060d339e2badb510be44441",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "6b5d67874760acfec7ad0e92021697a00787eb3cb3c8ee5ce62ddf0005c7248e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "5261501a778d82983be5a8a7617704265b0b4b0f65fe49a81790a0b919ce72e8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "3ad732a4beeeffe1e0fb0aff6665c649bcb9e696aab227151ee4dd28d19549bf",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "080a2fbcf52a930c1cb4093257d35e7e1400967077763ea08baca45e3df7985a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "89fcfb4f7c00d1975e62927ea253fb8c6f81ebb6ec0baf38f5cdd806e65e13e7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-context-simulation",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "9cbcff625ec659e0c55131ab0de55ec3b982121d10bfaa5fdff34dae00242e24",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-context-observation window",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "99a58a6d970d67a09592ac92f5ab070b38ea36971b465dcb9c989d8cef6218cd",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-context-pressure",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "a1d76c6a1e7808970357c67f173f0f41143bc2e3c02c4676b12939dc6f5edef9",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit1-p6/hr2-unit1-p6-context-time horizon",
+    "subject": "english_reading",
+    "passageId": "hr2-unit1-p6",
+    "hash": "9bb427fad1773c50daef5ea4aa9bd943d6c66b68a666e54b0accfb4d58c8fb6c",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/hr2-unit2-p1/hr2-unit2-p1-q1",
     "subject": "english_reading",
     "passageId": "hr2-unit2-p1",
@@ -8981,6 +11298,258 @@
     "semanticStatus": "unreviewed"
   },
   {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "4d96054b2f69e7c0c3645e665f224d227d557786d00eae80cfa072846c86c381",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "827cc70ec93afcd8bf98e89a450937efb6634ad28d9239d901f468aa570978e7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "81f9439acd844071642ddfda1d069d31a18b10c87c4c83fc33497dbf4b7e9103",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "43839fbbccf7b71e036417756017f36ba10b97bf1d7514e5a130b709fa9a1b61",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "1c73e16e66e90e02881e105f4b73424998e2f6c574c10e007b9ce13bf8e72686",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "225fd4c5884e03e3058a561acc9e07c7df7e3b28d7b3646790ca19c48c96c9fe",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-departure",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "1e3618923fe20f343970808c775be9aaca633a13b4eb2a9ea4aacd18231451ca",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-motive",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "67bf0fc71303df11ecb5bda0b79762fd6c33b1c0f9afd686adfc6632cff4b7e5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-ambiguity",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "1e60c7c0884376e810194117b3e2c9404b90d34343db7f6e34066d857cfdea3f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-compact",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "961a850193624d2671cf1319a44d7ade0a081612fb047d08f76876b11ce30df4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-trade-off",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "f1b201f7b8a010636a0cb9d7181f713a9fc5e9b357eed9298a8d9796e28dad6e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p4/hr2-unit2-p4-context-faithfulness",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p4",
+    "hash": "b55816cfcae7bdb46140ed317dffeb41bdbfd02409aed32139da48a0b71ef2a0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "6c752928591b896dbd656d104b8450002cdfda1948a4f97326374a4a59934b25",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "ffb8d273a3e4859b63925401f42f896a199689583714f0067c5a5da0e0a7a928",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "e4eb1e527b609e124a7f812b5fd79824dc83dceb379e65016283b902aab76cf6",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "a2e0acc96a0f943eb5793fa90d9501396564c5c2ed4e60a9da641d20a1eda79a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "ac56f83971063d849621cfbfc72cb6fcc3206d6fb1293a7b9a6121684df9a402",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "30b1caad8220e0adedfa35a6fa3f24886d4ec75af37896558883501459766a79",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-miniature",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "984e3437f6d254ab26a201a09144ebdc7c056aeadf51f6e22f5c04dd99980710",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-register",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "42409ae78ed2aab4193fb8a6d36b69048a056f22ff4af6cfa82f9d599d112a66",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-continuation",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "f10caefcfc6c9ec724979419ad79b0b6d124c372ee9ecd60322c670f04edf7c0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-duration",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "47dd29e10602b89fea6ec78ffafa711ce8dc05e532375634b7836d8622b04e18",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-hesitation",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "7fe15546abbe5adeaa5eb20896d355a06c662dc0fba053903caac3619f7579f0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p5/hr2-unit2-p5-context-sufficient",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p5",
+    "hash": "e2dd860a5b8377b262d43237b65354003c12cbd6e237d9b3f6a5cdeeb5834cb0",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "dc7f058a81e1ee4c509e697d3cb1f239aede6b34344886c2c56a1e348a99c3bb",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "c358bff6271ee30bd1fe189cffc7a85bbdb53a92219eebecb5b71974e900704a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "3d3babcaf1fea3cd3408f48da32078fa210ff0c4fe9ca433ea51952a625c3222",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "651f95237d95915c47f9495eefacae7430ea941d2c27e96bffa42c8de06885da",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "1176a7843721ca27d1626913fab759abbd575c8981919a32cca4272a77d9e8fc",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "078eef5cf00a67ff0e139bd32d3ed85cbdc0844b94bf8e2705ae293e55fbbf4d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-curator",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "ed29a0d92f15a6291be8a37503a887c93e2af60f327a421676a8ca1e3d4efb7a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-grip",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "b41f259c4c7602a03b09509f1841b72546d6e6e98eefb733a43e0d1374e3c47a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-alteration",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "dabd402c7dbe3dd29ca2e9efeb5244a1bc84f50bfd02fa757d3fe676cd69786b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-authentic",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "6ded795c8eedc04c54b8d4b8901d1cd1e72c1d8806d23202885098f68d979523",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-resemble",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "c96f5b4285ba0e71f8641aae1769d2405bdeb842e42b42e1c6850b6a8211d7f6",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr2-unit2-p6/hr2-unit2-p6-context-caption",
+    "subject": "english_reading",
+    "passageId": "hr2-unit2-p6",
+    "hash": "f6b77450189cf1d6d39f6df6c80a49e996f7f87f49e16d82178e5e7bb59cd3f4",
+    "semanticStatus": "unreviewed"
+  },
+  {
     "id": "english_reading/hr3-unit1-p1/hr3-unit1-p1-q1",
     "subject": "english_reading",
     "passageId": "hr3-unit1-p1",
@@ -9181,6 +11750,237 @@
     "subject": "english_reading",
     "passageId": "hr3-unit1-p3",
     "hash": "f4b8d81e893697538a384fe11340ec302bdc097a7a5b20c1f4444520eabb6e85",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "7cf3a204aeaeea2c796e2ab510105be4b68ef0c9f64e657de627ac91a55af35a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "a549a8a99d07b55ca1f313e51c66daee15a3fc75b3915f8f44724a85554c570b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "a46d7fc22e6b1e9788c287d2e249cda32f03ddaeb6559767210333a91094a9ce",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "6706c58cd3192cef6e24c5a749dec88e2f1fd2742d2cfe731b8639a45504067d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "00387471913135f042421d5ff8f943edf2cdfa5b1674107468a916b565d4589b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "d70196e099e8b250da90c52fb1b15860d591f21e350be03c3e39e05f5957af0a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-recurring",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "9b3b6c072e5b7b7fd1b182f696e98d6c90182ecbe8632754f6a44da647f63461",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-mechanically",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "23f355ebf0a4b8887e2a20671b80ae452de89752305fce1a9765a4b1a5f54e25",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-incidental",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "75713445acc817421359a4a5de7d9d08718c028b07267db46daa53dfb09a16be",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-incompatible",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "e562dc8bafbe224f42b9f029a74dce4954aa7bffdf164af32a85d52a56938f46",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-obscure",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "63da7924cba1f434f83d8ffc10df310b0c8eca9f054162c96d9be7e073939425",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p4/hr3-unit1-p4-context-significance",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p4",
+    "hash": "0ea919aa25d6129cbfad546710ef83bce8aac1f347877260186778bbde07129a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "34cb46fd81ab2d38488523681654bc3c69d547d55d8a998882a2f9866008f88d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "cf851782e04fa87664d7aa7d197650b685bfddb7afc2da621606c671ab973ef2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "af9bbc214b94176d10112feaeb14cd5ac7a1615f8fb1c1f0e972859db9116947",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "a34b26301a678ac728c006b58bce31b270d9a15b6452a962eead3ed83d6b0302",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "46bd4fce3e447a51ed1c412ea88bf35a9a05f6a1bd64c33a82ae06fe31a33359",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "8c2981a1f9c4150a0ae29cb1c6aaefb76ff4865b4ff6c771228092168039096f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-context-indicator",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "f3406a4b9e04dc48294e05ed94269899ff1cdaa1eb9d3a1dc6a361c9afdb4eb3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-context-reference",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "5b254a1903e30d9159b66dc2d0f5229b7b976922611a54832374819a522caf81",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-context-mismatch",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "7e8407313eec00e7d29898411fc72432c33a51efbf9f7e33231f621245a8f3c5",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-context-prolonged",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "249aff5c035fea9ab213a90a343781e34b94e47252aedb4d5721e7a1d05f17e7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p5/hr3-unit1-p5-context-interchangeable",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p5",
+    "hash": "c4d2e3a7696bc6e1625911088f234718d01309e5331e5ba39d2c19cce94a54f3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "004ac916e92e0434de7272d262e3b6d429161cc65d0a4c80ceca3d1c1e2ea4cd",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "ac49ff2c2d5305d80de793174f4bf3865a06a5ed5cd3d317caeaa21737bc92f7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "0171a05cc634c11d040664c6cb92e00cf5e08b5d99c21e31e90256d194fd03bf",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "7318c39080a8b19131dd1457e34200faaffdbeb4db92ebc2d126de4127b3b5be",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "9c430f2d7ff8e820a82517d16204f5ee99598ede15bc51e66d301192380c2dae",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "5e3699a3f27bf9395b61c11394c78056e3769ce0daed96817e2640ca5e8d7e21",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-context-underlying",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "21a3df828d0686e0a6387b47baf7f453fc19a30e4acb8c3949313b40ca8eb865",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-context-intact",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "32a97eecf5d7b1bf07a86e3631c3a5c21fb976504337bc94583b63aa8251ce7e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-context-justify",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "7327869f810c834ca422217f03bfe2a48ca2e4fb52071e94c819b7ffe1acd86c",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit1-p6/hr3-unit1-p6-context-assumption",
+    "subject": "english_reading",
+    "passageId": "hr3-unit1-p6",
+    "hash": "2f5ec163d1f9ff159ff3d7f66377b13b8d8c6f0790baea866cfbe3b6305b8b48",
     "semanticStatus": "unreviewed"
   },
   {
@@ -9398,6 +12198,244 @@
     "subject": "english_reading",
     "passageId": "hr3-unit2-p3",
     "hash": "3b10fc86ea38695c8c7093741db3082b4e6c1a700b854ae9e1cdfb288c419efe",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "8ef73764b5c0585c5f518b7fb00423d226aa33ebc9bc7984975f369497db8041",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "c8af2602c300ca28e58f0f6753971e3eea7a57223d38eb8752732a78cf123bf3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "6617c622d3d93d9df507e3a2ff5315eac31d327358b5894e3ef30ae27baa8ad8",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "b36d24bbbe3caf823c83695ccff64b94c9a3291ed5e26511ecaa5a2de3e31551",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "f6f08592d6e68d31eb1821451c1a9c3b15316ce9faa17db618feb446b899af0e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "d474131a7cff3dddbcbb0de5c935158acbe2016e95c00e2bfcbc0e447bfaf249",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-broaden",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "efcb41c33765e4c7240903aadc4eeb911fb9666498976301d15be9c8fa0527e4",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-transition",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "53ded4c52bc8ff442b803ade650a1a068c9537a13f5d2b8ed9ac4a5224c2938b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-audible",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "038f405cbd9ef2fb6855fa18b26438012f6616db0801276c8569513d985e955e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-cue",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "7d5903c9e280182b7f78629e1f832a59448ad7df02c55c95890d0b931a7bf8f3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-anticipate",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "67fc4b5527bf15d1973b26bec87f528746105625dc7ac659c608b768b7af46fa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p4/hr3-unit2-p4-context-coordination",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p4",
+    "hash": "9daf1e88e4e4d4b95a81cf7e970092f20f48b874fa936bd550391c50827dd806",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "9e74eebbbd75f6d2f437ea5868969bc44411469b7aadea78b764fc6cf6d778aa",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "621d20536f07f0ea80a374f38edd668988e0c3c4518f7237c2684b66bf116771",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "c65fd26efaa57c3475b4d0e12c0c4c858316fb178e5daf8fdf44f71eb75d7793",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "9858db19010c22b5737eb961f9bd000a780cdf8251a79bd56d4318c1f6d45313",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "f0dd27012fd32780795a0d5e1fa357d32060806e55e1224f84e6796ff0637e6e",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "638e9304475783925ef4d6e02940abbd6314437aa4a456e1fe60701732bc19e3",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-context-negligible",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "db92390289b8a29f9f2b762909ff3fa84484ecedb46afd09a2131137a637041b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-context-staged",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "477b4852e722ed367bb0b876cbc52b82c6ac8f8a3f441520b25bc61b0ce29d12",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-context-trigger",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "102c057043a805a500a141e9bc5f2113931bfaa99f0b0d44dad557f37535c12d",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-context-intervention",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "6436cf55f5c2a84dd86b03664888188b263799c1d694ffffda5ffe0b4c51a5e1",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p5/hr3-unit2-p5-context-proportionate",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p5",
+    "hash": "a6f707ca205e50aab885130e6ebb590c07244322d935965943520fe8d195270b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q1",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "1f940cfc68790af53854a2dae90825fa38099233ee2314bf3f0155b312f3b5f7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q2",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "a0c0bdae19072de3773e9226f3fc89d49691ee19e8c3a728e6d5b1161969ac1a",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q3",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "5ce48539b3f16ffb050e9ec4217db19982c2615156e89d4323b5139b82e69d9f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q4",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "03ad2d69060338ee222c7e0f55c45ba72c5325589b946a02c093419232424ef7",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q5",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "2622cc5bef71e6e2869c4ac138cc47e2dfb0ffffd5765e9efe17314a90a4d657",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-q6",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "cd92f78fe95a44debfe79c7a246898f83d03ec49a02a738a6f870262ca3dd37f",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-context-inventory",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "58558e712ffb24e7ee37c87d939543eab42b05a17fa058d8d4c775bb3faea9e2",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-context-durable",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "68bccb8d82d2b4813c7eec4f7dc1a3cf096a4515f20dd72d9a8dfc1a6bf1539b",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-context-disposable",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "23d53b766f9f955b2c9b59b5fcaf132ecca66902202c335737499e3344775493",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-context-preservation",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "6bfce265709806f7a8f962b913ff6791e51cb48e3017328e6d22f603bfba8805",
+    "semanticStatus": "unreviewed"
+  },
+  {
+    "id": "english_reading/hr3-unit2-p6/hr3-unit2-p6-context-plausible",
+    "subject": "english_reading",
+    "passageId": "hr3-unit2-p6",
+    "hash": "f32caa57277cb3d9831d98b6ac7c6437520fe2fbd130107a1658dc5d8410fe03",
     "semanticStatus": "unreviewed"
   },
   {

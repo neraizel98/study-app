@@ -80,7 +80,7 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     vm.createContext(sandbox);
     vm.runInContext(fs.readFileSync('EnglishGrammarData.js', 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync('EnglishReadingData.js', 'utf8'), sandbox);
-    if (options.secondary) vm.runInContext(fs.readFileSync('EnglishReadingSecondary.js', 'utf8'), sandbox);
+    if (options.secondary) for (const file of ['EnglishReadingSecondary.js','EnglishReadingExpansion.js','EnglishReadingMiddleExpansion.js','EnglishReadingHighExpansion.js']) vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync('EnglishReadingApp.js', 'utf8'), sandbox);
     return { window, elements, init: documentListeners.DOMContentLoaded };
 }

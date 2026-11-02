@@ -2,7 +2,7 @@ const assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('nod
 const prefs=new Map(),reports=[];
 const local={getPreference:(k,d)=>prefs.get(k)??d,setPreference:(k,v)=>prefs.set(k,v),getActiveUser:()=> 'learner',listReports:u=>reports.filter(r=>r.userId===u),getWrongAnswers:()=>({}),getUser:()=>({})};
 const c={console,Date,Math,Set,Map,URLSearchParams};c.window=c;c.SmartStudy={LocalRepository:local};vm.createContext(c);
-for(const file of ['ReadingData.js','ReadingPassages.js','KoreanReadingMiddle.js','KoreanReadingHigh.js','KoreanReadingCurriculum.js','EnglishGrammarData.js','EnglishGrammarExpanded.js','english-curriculum.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','VocabEng.js','VocabHanja.js','subject-progression.js','EnglishCourse.js','learning-budget-policy.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+for(const file of ['ReadingData.js','ReadingPassages.js','KoreanReadingMiddle.js','KoreanReadingHigh.js','KoreanReadingCurriculum.js','EnglishGrammarData.js','EnglishGrammarExpanded.js','english-curriculum.js','EnglishReadingData.js','EnglishReadingMore1.js','EnglishReadingMore2.js','EnglishReadingSecondary.js','EnglishReadingExpansion.js','EnglishReadingMiddleExpansion.js','EnglishReadingHighExpansion.js','VocabEng.js','VocabHanja.js','subject-progression.js','EnglishCourse.js','learning-budget-policy.js','learning-plan.js','unified-learning.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
 const plan=c.SmartStudy.LearningPlan;
 plan.applyParentSettings('learner',{grade:8,semester:1,budgetMinutes:45});
 const profile=plan.getProfile('learner');
