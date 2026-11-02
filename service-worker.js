@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-vocab-art';
+const CACHE_NAME = 'smart-study-20261102-vocab-expand';
 
 try {
     importScripts('./firebase-config.js');
@@ -105,13 +105,21 @@ const STATIC_ASSETS = [
     './shared-report-loader.js',
     './styles.css',
     './main.js',
-    './vocabulary-visual.js?v=20261102-vocab-art',
-    './vocabulary-visual.css?v=20261102-vocab-art',
+    './vocabulary-visual.js?v=20261102-vocab-expand',
+    './vocabulary-visual.css?v=20261102-vocab-expand',
     './assets/vocabulary/plant-v1.webp',
     './assets/vocabulary/body-v1.webp',
     './assets/vocabulary/face-v1.webp',
     './assets/vocabulary/house-v1.webp',
     './assets/vocabulary/bicycle-v1.webp',
+    './assets/vocabulary/weather-v1.webp',
+    './assets/vocabulary/watercycle-v1.webp',
+    './assets/vocabulary/space-v1.webp',
+    './assets/vocabulary/landscape-v1.webp',
+    './assets/vocabulary/fruit-v1.webp',
+    './assets/vocabulary/kitchen-v1.webp',
+    './VocabularyRelations.js?v=20261102-vocab-expand',
+    './vocabulary-connections.js?v=20261102-vocab-expand',
     './weekly-schedule.js',
     './weekly-dashboard.js',
     './weekly-dashboard.css',

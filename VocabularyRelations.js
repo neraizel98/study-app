@@ -1,0 +1,211 @@
+/* Authored reading supplement. Never used as quiz answers or alternative answers. */
+(function (root) {
+    'use strict';
+    const records = Object.create(null);
+    const normalize = value => typeof value === 'string' ? value.trim().replace(/\s+/g, ' ') : '';
+    // Compact authoring format: English|Korean|sense/use note; next relation.
+    function relations(text) {
+        return text ? text.split(';').map(item => {
+            const [word, meaning, note] = item.split('|');
+            return note ? { word, meaning, note } : { word, meaning };
+        }) : [];
+    }
+    function R(word, pos, meaning, synonyms, antonyms) {
+        if (records[word]) throw new Error('Duplicate vocabulary relation: ' + word);
+        records[word] = { word, pos, meaning, synonyms: relations(synonyms), antonyms: relations(antonyms), expressions: [] };
+    }
+    R('beautiful', 'adj.', '아름다운', 'pretty|예쁜|주로 보기 좋은 모습;lovely|아름다운, 사랑스러운', 'ugly|못생긴, 보기 흉한|외모·모습을 비교할 때');
+    R('easy', 'adj.', '쉬운', 'simple|간단한|복잡하지 않아 쉬운;straightforward|어렵지 않은|이해하거나 수행하기 쉬운', 'difficult|어려운;hard|어려운|난이도를 말할 때');
+    R('fast', 'adv.', '빠르게', 'quickly|빠르게;rapidly|빠르게, 급속히', 'slowly|느리게');
+    R('happy', 'adj.', '행복한', 'glad|기쁜|어떤 일 때문에 기쁜;joyful|기쁨에 찬|기쁨이 큰', 'unhappy|불행한, 기쁘지 않은;sad|슬픈|감정의 대조');
+    R('idea', 'n.', '생각, 아이디어', 'thought|생각;notion|생각, 개념|마음속에 가진 생각');
+    R('jump', 'v.i.', '뛰다, 점프하다', 'leap|뛰다, 도약하다;hop|깡충 뛰다|짧게 뛰거나 한 발로 뛸 때');
+    R('kind', 'adj.', '친절한', 'considerate|배려하는;thoughtful|사려 깊은|다른 사람을 배려하는', 'unkind|불친절한;cruel|잔인한|상대에게 고통을 주는 성격·행동');
+    R('quiet', 'adj.', '조용한', 'silent|소리가 없는|quiet보다 소리가 더 없는 상태;hushed|나직한, 조용해진|목소리·분위기에 사용', 'noisy|시끄러운;loud|소리가 큰|소리의 크기를 비교할 때');
+    R('tall', 'adj.', '키가 큰', '', 'short|키가 작은|사람의 키를 비교할 때');
+    R('useful', 'adj.', '유용한', 'helpful|도움이 되는;handy|유용한, 편리한|일상적인 표현', 'useless|쓸모없는');
+    R('good', 'adj.', '좋은', 'nice|좋은|만족스럽거나 기분 좋은;fine|좋은, 괜찮은|질이나 상태가 좋은', 'bad|나쁜|질·상태를 비교할 때');
+    R('help', 'v.t.', '돕다', 'assist|돕다|help보다 격식 있는 표현;aid|돕다, 지원하다|격식 있는 표현', 'hinder|방해하다|일을 쉽게 해 주는 것과 대조');
+    R('like', 'v.t.', '좋아하다', 'enjoy|즐기다|활동·경험을 좋아할 때;be fond of|좋아하다|사람·사물에 애정이 있을 때 쓰는 구', 'dislike|싫어하다');
+    R('make', 'v.t.', '만들다', 'create|만들다, 창조하다;produce|만들다, 생산하다|제품·결과물을 만들어 낼 때');
+    R('old', 'adj.', '나이 든, 오래된', 'aged|나이 든|주로 사람에게 쓰며 격식 있음;ancient|아주 오래된|사물·역사가 매우 오래된', 'young|젊은|사람·동물의 나이;new|새로운|사물의 사용 기간·시기');
+    R('talk', 'v.i.', '말하다, 이야기하다', 'speak|말하다;chat|담소를 나누다|가벼운 대화를 할 때');
+    R('use', 'v.t.', '사용하다', 'utilize|활용하다|격식 있는 표현;employ|사용하다|도구·방법을 사용할 때');
+    R('want', 'v.t.', '원하다', 'desire|원하다|격식 있는 표현;wish for|바라다|무언가를 바라는 구');
+    R('young', 'adj.', '젊은, 어린', 'youthful|젊은, 젊어 보이는|실제 나이보다 모습·활력에 초점', 'old|나이 든|사람·동물의 나이');
+    R('ask', 'v.t.', '묻다, 질문하다', 'inquire|문의하다|inquire about + 주제처럼 쓰며 격식 있음;question|질문하다|question + 사람', 'answer|대답하다|질문과 대답이라는 대응 행동');
+    R('begin', 'v.i.', '시작하다', 'start|시작하다;commence|시작하다|격식 있는 표현', 'end|끝나다;finish|끝나다|활동·행사가 끝날 때');
+    R('big', 'adj.', '큰', 'large|큰;huge|거대한|big보다 매우 큰', 'small|작은;little|작은|크기를 비교할 때');
+    R('buy', 'v.t.', '사다', 'purchase|구매하다|buy보다 격식 있는 표현');
+    R('close', 'v.t.', '닫다', 'shut|닫다', 'open|열다|문·창문 등을 열고 닫을 때');
+    R('cold', 'adj.', '추운, 차가운', 'chilly|쌀쌀한;freezing|몹시 추운|cold보다 강함', 'hot|뜨거운, 더운;warm|따뜻한|온도에 관한 대조');
+    R('cry', 'v.i.', '울다', 'weep|울다|다소 문어적;sob|흐느껴 울다|숨을 들썩이며 울 때');
+    R('dark', 'adj.', '어두운', 'dim|어둑한|빛이 약한;unlit|불이 켜지지 않은', 'bright|밝은|빛의 밝기를 비교할 때');
+    R('find', 'v.t.', '찾다', 'locate|위치를 찾아내다;discover|발견하다|몰랐던 것을 찾아낼 때', 'lose|잃다|물건을 찾는 것과 잃는 것의 대조');
+    R('hot', 'adj.', '뜨거운, 더운', 'heated|열이 가해진|물체·공간의 온도;scorching|몹시 더운|날씨·열이 매우 강한', 'cold|차가운, 추운');
+    R('long', 'adj.', '긴', 'lengthy|긴|시간·글 등이 길 때;extended|연장된, 긴|보통보다 길어진 기간', 'short|짧은|길이·기간');
+    R('love', 'v.t.', '사랑하다', 'adore|무척 사랑하다;cherish|소중히 여기다|애정을 가지고 소중하게 대할 때', 'hate|미워하다, 몹시 싫어하다');
+    R('new', 'adj.', '새로운', 'brand-new|완전히 새것인|물건에 사용;novel|새로운, 참신한|아이디어·방식이 생소하고 새로운', 'old|오래된|물건·방식의 시기');
+    R('short', 'adj.', '짧은, 키가 작은', 'brief|짧은|시간·글·말의 길이', 'long|긴|길이·기간;tall|키가 큰|사람의 키');
+    R('small', 'adj.', '작은', 'little|작은;tiny|아주 작은|small보다 매우 작은', 'big|큰;large|큰');
+    R('start', 'v.t.', '시작하다', 'begin|시작하다;commence|시작하다|격식 있는 표현', 'finish|끝내다;end|끝내다');
+    R('stop', 'v.t.', '멈추다', 'halt|멈추게 하다;cease|그만두다|cease + 활동 또는 -ing, 격식 있음');
+    R('warm', 'adj.', '따뜻한', '', 'cool|서늘한;cold|차가운|온도에 관한 대조');
+    R('build', 'v.t.', '짓다', 'construct|건설하다;erect|세우다|건물·구조물을 세울 때', 'demolish|철거하다|건물을 짓는 것과 대조');
+    R('carry', 'v.t.', '나르다, 운반하다', 'transport|운송하다;convey|운반하다|격식 있는 표현');
+    R('enjoy', 'v.t.', '즐기다', 'like|좋아하다;relish|매우 즐기다|경험·활동을 특히 즐길 때', 'dislike|싫어하다');
+    R('forget', 'v.t.', '잊다', '', 'remember|기억하다|정보·약속을 잊지 않는 것');
+    R('get', 'v.t.', '얻다, 받다', 'obtain|얻다|노력하거나 요청해서 얻는;receive|받다|누군가 주거나 보내 준 것을 받는');
+    R('need', 'v.t.', '필요로 하다', 'require|필요로 하다|더 격식 있는 표현');
+    R('pull', 'v.t.', '당기다', 'tug|세게 잡아당기다;drag|끌다|바닥 등을 따라 끌어당길 때', 'push|밀다|자신 쪽으로 당김과 반대 방향');
+    R('push', 'v.t.', '밀다', 'shove|거칠게 밀다;press|누르다|표면에 힘을 가할 때', 'pull|당기다|힘을 가하는 방향의 대조');
+    R('remember', 'v.t.', '기억하다', 'recall|기억해 내다;recollect|기억해 내다|다소 격식 있는 표현', 'forget|잊다');
+    R('stay', 'v.i.', '머무르다', 'remain|남아 있다;linger|오래 머무르다|예상보다 오래 머무를 때', 'leave|떠나다|한 장소에 머물지 않고 떠남');
+    R('angry', 'adj.', '화난', 'mad|화난|미국 영어의 일상 표현;furious|몹시 화난|angry보다 강함', 'calm|차분한|감정이 격해진 상태와 대조');
+    R('bad', 'adj.', '나쁜', 'poor|질이 나쁜|품질·성과를 말할 때;terrible|끔찍한|bad보다 강함', 'good|좋은');
+    R('busy', 'adj.', '바쁜', 'occupied|일에 매여 있는|할 일이 있어 시간이 없는', 'free|시간이 있는|일정에 여유가 있을 때');
+    R('dirty', 'adj.', '더러운', 'unclean|깨끗하지 않은;filthy|몹시 더러운|dirty보다 강함', 'clean|깨끗한|형용사 의미');
+    R('heavy', 'adj.', '무거운', 'weighty|무게가 많이 나가는', 'light|가벼운|무게에 관한 형용사');
+    R('hungry', 'adj.', '배고픈', 'famished|몹시 배고픈|hungry보다 강함', 'full|배부른|식사 후 배가 찬 상태');
+    R('poor', 'adj.', '가난한, 불쌍한', 'needy|궁핍한|경제적으로 도움이 필요한;impoverished|빈곤한|격식 있는 표현', 'rich|부유한|재산·소득의 대조');
+    R('rich', 'adj.', '부유한', 'wealthy|부유한;affluent|부유한, 풍족한', 'poor|가난한');
+    R('sad', 'adj.', '슬픈', 'unhappy|슬픈, 불행한;sorrowful|비탄에 잠긴|격식 있고 슬픔이 큰 표현', 'happy|행복한;cheerful|명랑한|기분·표정의 대조');
+    R('strong', 'adj.', '강한', 'powerful|힘이 센;sturdy|튼튼한|몸·물체가 견고한', 'weak|약한');
+    R('wet', 'adj.', '젖은', 'damp|축축한|조금 젖은;soaked|흠뻑 젖은|많이 젖은', 'dry|마른');
+    R('high', 'adj.', '높은', 'elevated|높은|위치·수치가 높은', 'low|낮은|높이·수준을 비교할 때');
+    R('low', 'adj.', '낮은', '', 'high|높은|높이·수준을 비교할 때');
+    R('slow', 'adj.', '느린', 'sluggish|느릿느릿한|움직임·반응이 둔한;unhurried|서두르지 않는', 'fast|빠른|형용사 의미;quick|빠른');
+    R('glad', 'adj.', '기쁜', 'happy|기쁜;pleased|기쁜, 만족한|어떤 결과에 만족할 때', 'unhappy|기쁘지 않은');
+    R('brave', 'adj.', '용감한', 'courageous|용기 있는;fearless|두려움이 없는|두려움을 느끼지 않는다는 뜻이 강함', 'cowardly|겁이 많은, 비겁한');
+    R('smart', 'adj.', '똑똑한', 'clever|영리한;intelligent|지적인, 똑똑한');
+    R('funny', 'adj.', '웃기는, 재미있는', 'amusing|재미있는, 웃기는;humorous|유머가 있는|웃음을 주는 뜻');
+    R('lazy', 'adj.', '게으른', 'indolent|게으른|격식 있는 표현', 'hardworking|부지런한');
+    R('tired', 'adj.', '피곤한', 'weary|지친;exhausted|기진맥진한|tired보다 강함', 'rested|충분히 쉬어 개운한');
+    R('sick', 'adj.', '아픈', 'ill|아픈;unwell|몸이 좋지 않은', 'healthy|건강한;well|건강한|몸 상태를 말하는 형용사');
+    R('healthy', 'adj.', '건강한', 'well|건강한|주로 be·feel 뒤에 사용;fit|건강하고 체력이 좋은', 'sick|아픈;ill|아픈');
+    R('safe', 'adj.', '안전한', 'secure|안전한|위험·침입으로부터 보호된;out of danger|위험을 벗어난|형용사 역할을 하는 구', 'unsafe|안전하지 않은;dangerous|위험한');
+    R('loud', 'adj.', '시끄러운, 소리가 큰', 'noisy|시끄러운;deafening|귀가 먹먹할 만큼 큰|소리가 매우 큰', 'quiet|조용한;soft|나직한|소리·목소리의 크기');
+    R('dry', 'adj.', '건조한, 마른', 'arid|건조한|땅·기후에 사용;parched|바싹 마른|땅·입 등이 매우 마른', 'wet|젖은;damp|축축한');
+    R('full', 'adj.', '가득 찬', 'filled|채워진|filled with + 내용물;packed|가득 찬|사람·물건이 빽빽한', 'empty|빈');
+    R('empty', 'adj.', '빈, 비어 있는', 'vacant|비어 있는|자리·방 등이 사용되지 않는;unfilled|채워지지 않은', 'full|가득 찬');
+    R('finish', 'v.t.', '끝내다', 'complete|완료하다;conclude|마무리하다|회의·연설·일 등을 끝낼 때', 'begin|시작하다;start|시작하다');
+    R('laugh', 'v.i.', '웃다', 'chuckle|빙그레 웃다|작은 소리로 웃을 때;giggle|킥킥거리다|가볍게 연달아 웃을 때');
+    R('shout', 'v.i.', '소리치다', 'yell|외치다;scream|비명을 지르다|높고 날카로운 소리를 낼 때', 'whisper|속삭이다|목소리 크기의 대조');
+    R('guess', 'v.t.', '추측하다', 'estimate|추정하다|수량·정도를 대략 판단할 때;surmise|추측하다|불완전한 근거로 판단하며 격식 있음');
+    R('afraid', 'adj.', '두려워하는', 'scared|겁먹은;frightened|두려워하는', 'unafraid|두려워하지 않는');
+    R('bright', 'adj.', '밝은, 빛나는', 'shining|빛나는;radiant|환하게 빛나는|빛·표정을 말할 때', 'dim|어둑한|빛의 세기;dark|어두운');
+    R('careful', 'adj.', '조심하는, 주의 깊은', 'cautious|조심하는;attentive|주의를 기울이는', 'careless|부주의한');
+    R('cheap', 'adj.', '값싼, 저렴한', 'inexpensive|비싸지 않은;low-priced|가격이 낮은', 'expensive|비싼;costly|값비싼');
+    R('clever', 'adj.', '영리한, 똑똑한', 'smart|똑똑한;intelligent|지적인');
+    R('delicious', 'adj.', '맛있는', 'tasty|맛있는;flavorful|맛이 풍부한|음식의 풍미가 좋은', 'unpleasant-tasting|맛이 좋지 않은');
+    R('expensive', 'adj.', '비싼', 'costly|값비싼;high-priced|가격이 높은', 'cheap|값싼;inexpensive|비싸지 않은');
+    R('fresh', 'adj.', '신선한', 'newly picked|갓 딴|과일·채소에 쓰는 구;freshly made|갓 만든|음식 등에 쓰는 구', 'stale|신선하지 않은|빵·공기 등이 오래되어 신선하지 않은');
+    R('hard', 'adj.', '단단한, 어려운', 'firm|단단한|눌러도 쉽게 들어가지 않는;difficult|어려운|난이도를 말할 때', 'soft|부드러운|단단함의 대조;easy|쉬운|난이도의 대조');
+    R('lucky', 'adj.', '운이 좋은', 'fortunate|운이 좋은', 'unlucky|운이 나쁜;unfortunate|불운한');
+    R('polite', 'adj.', '공손한, 예의 바른', 'courteous|정중한;well-mannered|예의 바른', 'rude|무례한;impolite|예의 없는');
+    R('scared', 'adj.', '무서워하는, 겁먹은', 'afraid|두려워하는;frightened|겁먹은', 'unafraid|두려워하지 않는');
+    R('allow', 'v.t.', '허락하다', 'permit|허용하다|더 격식 있는 표현;let|하게 하다|let + 사람 + 동사원형, to를 붙이지 않음', 'forbid|금지하다;prohibit|금지하다|격식 있는 표현');
+    R('calm', 'adj.', '차분한, 침착한', 'composed|침착한;relaxed|편안한|긴장하지 않은', 'agitated|불안하고 동요하는;nervous|긴장한');
+    R('choose', 'v.t.', '선택하다', 'select|고르다;pick|고르다|일상적인 표현');
+    R('improve', 'v.t.', '향상시키다, 개선하다', 'enhance|향상시키다|질·가치 등을 높일 때;better|개선하다|동사 의미', 'worsen|악화시키다');
+    R('prevent', 'v.t.', '막다, 예방하다', 'stop|막다|발생하지 못하게 할 때;avert|방지하다|위험·재난 등을 피하게 할 때');
+    R('protect', 'v.t.', '보호하다', 'safeguard|보호하다;shield|지키다, 보호하다|shield A from B처럼 사용', 'endanger|위험에 빠뜨리다|안전하게 지킴과 대조');
+    R('reduce', 'v.t.', '줄이다, 감소시키다', 'decrease|줄이다|타동사 의미;lessen|줄이다, 완화하다', 'increase|늘리다|타동사 의미');
+    R('repair', 'v.t.', '수리하다, 고치다', 'fix|고치다|일상적인 표현;mend|수선하다|옷·찢어진 것 등을 고칠 때', 'damage|손상시키다');
+    R('weak', 'adj.', '약한', 'feeble|힘이 없는;frail|허약한|사람의 몸이 약할 때', 'strong|강한');
+    R('wide', 'adj.', '넓은', 'broad|폭이 넓은', 'narrow|폭이 좁은');
+    R('honest', 'adj.', '정직한', 'truthful|진실을 말하는;sincere|진실한|감정·태도가 거짓 없는', 'dishonest|정직하지 않은');
+    R('active', 'adj.', '활동적인', 'energetic|활기찬;lively|활발한', 'inactive|활동하지 않는;sedentary|주로 앉아서 지내는|생활 방식의 대조');
+    R('nervous', 'adj.', '긴장한', 'anxious|불안한;uneasy|마음이 불편한, 불안한', 'calm|침착한;relaxed|긴장이 풀린');
+    R('confident', 'adj.', '자신 있는', 'self-assured|자신감 있는;sure of oneself|자신감 있는|사람의 자신감을 나타내는 구', 'insecure|자신감이 없는;unsure|확신하지 못하는');
+    R('comfortable', 'adj.', '편안한', 'cozy|아늑한|공간·옷 등이 따뜻하고 편안한;at ease|편안한|사람이 긴장하지 않는 상태를 나타내는 구', 'uncomfortable|불편한');
+    R('necessary', 'adj.', '필요한', 'essential|필수적인;required|요구되는, 필요한', 'unnecessary|불필요한');
+    R('private', 'adj.', '개인적인, 사적인', 'personal|개인적인|개인과 관련된;confidential|비밀의|정보를 남에게 공개하지 않는', 'public|공개된, 공적인|접근·공개 범위의 대조');
+    R('opportunity', 'n.', '기회', 'chance|기회;opening|좋은 기회|활동·진출할 가능성');
+    R('advantage', 'n.', '장점, 이점', 'benefit|이점;plus|장점|비격식 표현', 'disadvantage|단점, 불리한 점;drawback|단점');
+    R('disadvantage', 'n.', '단점, 불리한 점', 'drawback|단점;downside|불리한 면', 'advantage|이점;benefit|이익');
+    R('evidence', 'n.', '증거', 'proof|증명, 증거|proof는 사실임을 더 확실히 입증한다는 뜻이 강함');
+    R('solution', 'n.', '해결책', 'answer|해답|문제에 대한 해결책;remedy|해결책|문제·잘못을 바로잡는 방법');
+    R('awake', 'adj.', '깨어 있는', 'not asleep|잠들지 않은|같은 뜻의 풀이', 'asleep|잠든');
+    R('boring', 'adj.', '지루한, 재미없는', 'dull|지루한;tedious|지루하고 싫증 나는', 'interesting|흥미로운;exciting|신나는');
+    R('careless', 'adj.', '부주의한, 조심성 없는', 'inattentive|주의를 기울이지 않는;negligent|태만한|해야 할 주의를 기울이지 않는', 'careful|주의 깊은;attentive|주의를 기울이는');
+    R('certain', 'adj.', '확실한, 확신하는, 어떤', 'sure|확신하는;definite|확실한|명확하게 정해진', 'uncertain|불확실한|확실하다는 뜻에서의 대조');
+    R('dangerous', 'adj.', '위험한', 'risky|위험한;hazardous|위험한|사고·해를 일으킬 수 있는', 'safe|안전한;harmless|해가 없는');
+    R('accept', 'v.t.', '받아들이다, 수락하다', 'take|받아들이다|제안·도움 등을 받는 뜻;agree to|동의하다|제안·요청을 수락하는 구', 'refuse|거절하다;reject|거부하다');
+    R('accurate', 'adj.', '정확한', 'correct|맞는;precise|정밀한|수치·설명이 세밀하고 정확한', 'inaccurate|부정확한;incorrect|틀린');
+    R('brief', 'adj.', '짧은, 간단한', 'short|짧은;concise|간결한|글·말이 짧고 핵심적인', 'lengthy|긴|시간·글·말의 길이');
+    R('decrease', 'v.i.', '줄다, 감소하다', 'decline|감소하다;diminish|줄어들다', 'increase|증가하다;grow|늘어나다|수량·규모');
+    R('expand', 'v.i.', '팽창하다, 확장되다', 'grow|커지다;enlarge|커지다|자동사 의미', 'contract|수축하다;shrink|줄어들다');
+    R('generous', 'adj.', '너그러운, 후한', 'giving|아낌없이 베푸는;openhanded|후한', 'stingy|인색한');
+    R('increase', 'v.i.', '증가하다, 늘다', 'grow|늘어나다;rise|증가하다|수량·수준이 올라가는', 'decrease|감소하다;decline|줄어들다');
+    R('obvious', 'adj.', '명백한, 분명한', 'clear|분명한;evident|명백한', 'unclear|불분명한;obscure|분명하지 않은');
+    R('refuse', 'v.t.', '거절하다, 거부하다', 'decline|정중히 거절하다;reject|거부하다', 'accept|수락하다');
+    R('benefit', 'n.', '이익, 혜택', 'advantage|이점;gain|이득', 'disadvantage|불리한 점|장점과 단점의 대조');
+    R('abundant', 'adj.', '풍부한, 많은', 'plentiful|풍부한;ample|충분한, 넉넉한', 'scarce|부족한');
+    R('rapid', 'adj.', '빠른, 급속한', 'fast|빠른;swift|신속한', 'slow|느린');
+
+    function E(word, pos, meaning, phrase, kind, translation, ex, exKo, note) {
+        if (!records[word]) R(word, pos, meaning, '', '');
+        const row = records[word];
+        if (row.pos !== pos || row.meaning !== meaning) throw new Error('Expression sense mismatch: ' + word);
+        row.expressions.push({ phrase, kind, meaning: translation, ex, exKo, ...(note ? { note } : {}) });
+    }
+    E('book', 'n.', '책', 'by the book', 'idiom', '규칙대로, 원칙대로', 'The referee did everything by the book.', '심판은 모든 일을 규칙대로 처리했다.', '책을 읽는다는 뜻이 아닌 관용적 의미');
+    E('break', 'v.t.', '깨다, 부수다', 'break the ice', 'idiom', '어색한 분위기를 풀다', 'We played a quick game to break the ice.', '우리는 어색한 분위기를 풀려고 짧은 게임을 했다.');
+    E('eye', 'n.', '눈 (신체)', 'keep an eye on', 'idiom', '지켜보다, 살피다', 'Please keep an eye on my bag.', '내 가방을 좀 지켜봐 주세요.');
+    E('moon', 'n.', '달', 'once in a blue moon', 'idiom', '아주 드물게', 'We eat fast food once in a blue moon.', '우리는 패스트푸드를 아주 드물게 먹는다.');
+    E('easy', 'adj.', '쉬운', 'take it easy', 'fixed phrase', '쉬다, 무리하지 않다', 'You worked hard today, so take it easy tonight.', '오늘 열심히 일했으니 오늘 밤에는 푹 쉬어.');
+    E('hand', 'n.', '손', 'give someone a hand', 'idiom', '누군가를 도와주다', 'Can you give me a hand with these boxes?', '이 상자들을 옮기는 것 좀 도와줄 수 있니?', '이 예문에서는 박수를 보내다가 아닌 도와주다');
+    E('time', 'n.', '시간', 'on time', 'fixed phrase', '정시에, 늦지 않게', 'The train arrived on time.', '기차가 정시에 도착했다.', 'in time은 어떤 일을 하기 늦기 전에라는 뜻');
+    E('time', 'n.', '시간', 'in time', 'fixed phrase', '늦지 않게, 시간에 맞춰', 'We arrived in time to catch the bus.', '우리는 버스를 타기에 늦지 않게 도착했다.');
+    E('mind', 'n.', '마음, 정신, 생각', 'change your mind', 'idiom', '생각이나 결정을 바꾸다', 'I wanted tea, but I changed my mind.', '나는 차를 마시려다가 생각을 바꿨다.', 'your는 주어에 맞춰 my·her 등으로 바꿈');
+    E('make', 'v.t.', '만들다', 'make a decision', 'collocation', '결정하다', 'We need to make a decision today.', '우리는 오늘 결정해야 한다.');
+    E('make', 'v.t.', '만들다', 'make a mistake', 'collocation', '실수하다', 'It is okay to make a mistake while learning.', '배우는 동안 실수해도 괜찮다.');
+    E('take', 'v.t.', '가져가다, 잡다', 'take a break', 'collocation', '잠깐 쉬다', 'Let us take a break after this chapter.', '이 장을 끝내고 잠깐 쉬자.', '이 표현에서는 가져가다가 아닌 휴식하다');
+    E('listen', 'v.i.', '듣다', 'listen carefully', 'collocation', '주의 깊게 듣다', 'Listen carefully to the instructions.', '안내 사항을 주의 깊게 들어라.');
+    E('good', 'adj.', '좋은', 'be good at', 'fixed phrase', '~을 잘하다', 'She is good at solving puzzles.', '그녀는 퍼즐을 잘 푼다.', 'at 뒤에는 명사나 동명사');
+    E('look', 'v.i.', '보다', 'look forward to', 'phrasal verb', '~을 기대하다', 'I look forward to seeing you.', '너를 만나기를 기대한다.', 'to는 전치사이므로 뒤에 명사나 동명사');
+    E('run', 'v.i.', '달리다', 'run out of', 'phrasal verb', '~을 다 써서 없어지다', 'We ran out of milk this morning.', '우리는 오늘 아침 우유가 다 떨어졌다.', '달린다는 뜻이 아닌 자원·물자의 소진');
+    E('put', 'v.t.', '놓다', 'put off', 'phrasal verb', '미루다, 연기하다', 'Do not put off your homework until Sunday.', '숙제를 일요일까지 미루지 마라.', 'put it off처럼 대명사는 put과 off 사이');
+    E('give', 'v.t.', '주다', 'give back', 'phrasal verb', '돌려주다', 'Please give the book back tomorrow.', '내일 그 책을 돌려주세요.', 'give it back처럼 대명사는 give와 back 사이');
+    E('loud', 'adj.', '시끄러운, 소리가 큰', 'out loud', 'fixed phrase', '소리 내어', 'Please read the first sentence out loud.', '첫 번째 문장을 소리 내어 읽어 주세요.', '큰 소리로 외치기보다 남이 들을 수 있게 소리를 내는 뜻');
+    E('pick', 'v.t.', '고르다, (꽃·과일을) 따다', 'pick up', 'phrasal verb', '들어 올리다, 집어 들다', 'Please pick up the pencil from the floor.', '바닥에 있는 연필을 집어 주세요.', '이 표현에서는 선택하다가 아닌 집어 들다');
+    E('keep', 'v.t.', '유지하다, 보관하다', 'keep a promise', 'collocation', '약속을 지키다', 'I always try to keep a promise.', '나는 언제나 약속을 지키려고 한다.');
+    E('catch', 'v.t.', '잡다', 'catch a cold', 'collocation', '감기에 걸리다', 'I caught a cold last week.', '나는 지난주에 감기에 걸렸다.', '감기를 손으로 잡는다는 뜻이 아님');
+    E('heavy', 'adj.', '무거운', 'heavy rain', 'collocation', '폭우, 많은 비', 'Heavy rain delayed the game.', '폭우로 경기가 지연되었다.', '여기서 heavy는 비의 양이 많다는 뜻');
+    E('strong', 'adj.', '강한', 'strong wind', 'collocation', '강한 바람', 'A strong wind blew my hat off.', '강한 바람에 내 모자가 날아갔다.');
+    E('effort', 'n.', '노력', 'make an effort', 'collocation', '노력하다', 'We made an effort to arrive early.', '우리는 일찍 도착하려고 노력했다.');
+    E('friend', 'n.', '친구', 'make friends with', 'collocation', '~와 친구가 되다', 'I made friends with a new student.', '나는 새로 온 학생과 친구가 되었다.');
+    E('learn', 'v.t.', '배우다', 'learn by heart', 'idiom', '외우다', 'We learned the poem by heart.', '우리는 그 시를 외웠다.');
+    E('weather', 'n.', '날씨', 'under the weather', 'idiom', '몸이 좋지 않은', 'I felt under the weather, so I stayed home.', '나는 몸이 좋지 않아서 집에 있었다.');
+    E('piece', 'n.', '조각, 한 개, 한 장', 'a piece of cake', 'idiom', '아주 쉬운 일', 'The first question was a piece of cake.', '첫 번째 문제는 아주 쉬웠다.', '먹는 케이크가 아닌 일이 쉽다는 비격식 표현');
+    E('foot', 'n.', '발', 'on foot', 'fixed phrase', '걸어서', 'We went to the library on foot.', '우리는 도서관에 걸어서 갔다.');
+    E('purpose', 'n.', '목적', 'on purpose', 'fixed phrase', '일부러, 고의로', 'I did not break the cup on purpose.', '나는 일부러 컵을 깨뜨린 것이 아니다.');
+    E('chance', 'n.', '기회, 가능성', 'by chance', 'fixed phrase', '우연히', 'I met my neighbor at the airport by chance.', '나는 공항에서 우연히 이웃을 만났다.');
+    E('say', 'v.t.', '말하다', 'that is to say', 'fixed phrase', '즉, 다시 말해서', 'The shop closes at noon, that is to say, at twelve.', '가게는 정오에, 즉 열두 시에 문을 닫는다.');
+    E('touch', 'v.t.', '만지다', 'keep in touch', 'idiom', '계속 연락하고 지내다', 'Let us keep in touch after graduation.', '졸업한 뒤에도 계속 연락하고 지내자.', '여기서 touch는 손으로 만지는 뜻이 아님');
+    E('step', 'n.', '걸음, 단계', 'step by step', 'fixed phrase', '단계적으로, 차근차근', 'The teacher explained the problem step by step.', '선생님은 문제를 차근차근 설명해 주셨다.');
+    E('fact', 'n.', '사실', 'in fact', 'fixed phrase', '사실은, 실제로', 'The test was not easy. In fact, it was quite difficult.', '그 시험은 쉽지 않았다. 사실 꽤 어려웠다.');
+    E('trouble', 'n.', '문제, 곤란', 'in trouble', 'fixed phrase', '곤란에 처한', 'We were in trouble when our car broke down.', '차가 고장 났을 때 우리는 곤란에 처했다.');
+    E('notice', 'v.t.', '알아차리다, 인지하다', 'take notice of', 'idiom', '~에 주의를 기울이다, 알아차리다', 'She took notice of the warning sign.', '그녀는 경고 표지판에 주의를 기울였다.', '이 표현에서 notice는 동사가 아닌 명사');
+    E('difference', 'n.', '차이, 다름', 'make a difference', 'idiom', '영향을 미치다, 변화를 가져오다', 'A little practice every day can make a difference.', '매일 조금씩 연습하면 변화를 가져올 수 있다.');
+    E('join', 'v.t.', '가입하다, 함께하다', 'join in', 'phrasal verb', '(활동에) 참여하다', 'Everyone joined in the game.', '모두가 그 게임에 참여했다.');
+
+    function freeze(value) {
+        Object.values(value).forEach(item => { if (item && typeof item === 'object') freeze(item); });
+        return Object.freeze(value);
+    }
+    const entries = freeze(Object.values(records));
+    const metadata = freeze({ version: 1, headwords: entries.length, expressions: entries.reduce((sum, row) => sum + row.expressions.length, 0), role: 'study-supplement' });
+    root.VocabularyRelations = Object.freeze({
+        metadata,
+        entries,
+        get(entry) {
+            if (!entry || typeof entry !== 'object') return null;
+            const row = records[normalize(entry.word).toLowerCase()];
+            // A changed POS or Korean sense must be editorially reviewed before reuse.
+            if (!row || normalize(entry.pos) !== row.pos || normalize(entry.meaning) !== row.meaning) return null;
+            return row;
+        }
+    });
+})(typeof window !== 'undefined' ? window : globalThis);

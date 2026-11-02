@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261102-vocab-art';
+    const APP_VERSION = '20261102-vocab-expand';
 
     (async function () {
         try {
