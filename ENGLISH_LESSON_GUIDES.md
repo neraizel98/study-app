@@ -18,3 +18,5 @@
 - grammar-visual.test.js: all 92 mappings, 184 examples, register/ending/construction anchors, escaping and speech markup.
 - reading-sentence-guide.test.js: all 530 exact alignments, grammar and contextual vocabulary, original translations, source immutability, stale-data and HTML-injection handling.
 - tests/english-guides-browser.cjs: Chrome 390x844 elementary/middle/high study pages, guide expansion, passage switch, quiz hiding and horizontal fit. Physical iPhone behavior is not claimed.
+
+The reading guide uses rounded cream/green sentence cards, role-specific local SVG drawings, colored structure chips, separate grammar/vocabulary panels and an original-translation panel. On narrow screens the structure follows vertical arrows; all information remains inside the study-only disclosure.

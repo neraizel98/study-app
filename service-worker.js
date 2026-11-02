@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-grammar-style';
+const CACHE_NAME = 'smart-study-20261102-reading-style';
 
 try {
     importScripts('./firebase-config.js');
@@ -74,8 +74,8 @@ const STATIC_ASSETS = [
     './grammar-visual.css?v=20261102-grammar-style',
     './ReadingSentenceNotesPrimary.js?v=20261102-english-guides',
     './ReadingSentenceNotesSecondary.js?v=20261102-english-guides',
-    './reading-sentence-guide.js?v=20261102-english-guides',
-    './reading-sentence-guide.css?v=20261102-english-guides',
+    './reading-sentence-guide.js?v=20261102-reading-style',
+    './reading-sentence-guide.css?v=20261102-reading-style',
     './korean_vocab.html',
     './KoreanVocabData.js',
     './KoreanVocabLevel1a.js',
