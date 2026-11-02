@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-reading-style';
+const CACHE_NAME = 'smart-study-20261102-vocab-visual';
 
 try {
     importScripts('./firebase-config.js');
@@ -105,6 +105,8 @@ const STATIC_ASSETS = [
     './shared-report-loader.js',
     './styles.css',
     './main.js',
+    './vocabulary-visual.js?v=20261102-vocab-visual',
+    './vocabulary-visual.css?v=20261102-vocab-visual',
     './weekly-schedule.js',
     './weekly-dashboard.js',
     './weekly-dashboard.css',

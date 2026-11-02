@@ -75,6 +75,7 @@ function updateCard() {
     
     wordIndexEl.textContent = `${currentIndex + 1} / ${shuffledStudyIndices.length}${window.EnglishVocabularyProgress?.isGraded(currentLevel) ? " · " + EnglishVocabularyProgress.label(currentLevel, studyVocabularyBand) + " 단계" : ""}`;
     englishWordEl.textContent = d.word;
+    window.VocabularyVisual?.render(document.getElementById('vocabularyVisual'), d.word);
     pronunciationEl.textContent = d.pron || '';
     koreanMeaningEl.textContent = d.meaning;
     englishDefEl.textContent = d.def || '';
