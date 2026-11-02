@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-english-guides';
+const CACHE_NAME = 'smart-study-20261102-grammar-style';
 
 try {
     importScripts('./firebase-config.js');
@@ -70,8 +70,8 @@ const STATIC_ASSETS = [
     './math_quiz.html',
     './english.html',
     './english_reading.html',
-    './GrammarVisualLessons.js?v=20261102-english-guides',
-    './grammar-visual.css?v=20261102-english-guides',
+    './GrammarVisualLessons.js?v=20261102-grammar-style',
+    './grammar-visual.css?v=20261102-grammar-style',
     './ReadingSentenceNotesPrimary.js?v=20261102-english-guides',
     './ReadingSentenceNotesSecondary.js?v=20261102-english-guides',
     './reading-sentence-guide.js?v=20261102-english-guides',

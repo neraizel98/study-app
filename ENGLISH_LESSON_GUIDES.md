@@ -3,7 +3,7 @@
 ## Grammar
 - GrammarVisualLessons.js explicitly maps all 92 current lessons to a concise rule, an ordered arrow diagram, and two authored register examples.
 - [구어체] uses English contractions and colloquial Korean; [문어체] uses full English forms and written Korean. Examples have separate US speech controls.
-- The diagram and register cards use ink, blue, and white. Existing detailed explanations and practice remain in a disclosure; quiz IDs, timers and stored records remain compatible.
+- The diagram and register cards follow the app’s cream, white and forest-green palette, with rounded flow cards, concept-specific SVG drawings and parallel noun/pronoun mappings. Existing detailed explanations and practice remain in a disclosure; quiz IDs, timers and stored records remain compatible.
 
 ## Reading
 - ReadingSentenceNotesPrimary.js and ReadingSentenceNotesSecondary.js contain authored notes for all 80 current passages / 530 sentences.

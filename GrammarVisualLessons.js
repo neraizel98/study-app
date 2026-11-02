@@ -5,6 +5,7 @@
     const lessons = Object.create(null);
     function add(stage, unit, index, rule, flow, spoken, written) {
         lessons[`${stage}/${unit}/${index}`] = Object.freeze({
+            visualKind: unit === 'e1' && index === 1 ? 'nouns' : /^(e4|m2|m9|n2u1|n3u1|h2u1)$/.test(unit) ? 'time' : ((unit === 'm6' && index === 0) || (unit === 'h3u4' && index === 1)) ? 'compare' : /^(n3u2|h2u2|h3u2)$/.test(unit) ? 'condition' : 'structure',
             rule, flow: Object.freeze(flow.map(node => Object.freeze(node))),
             examples: Object.freeze([
                 Object.freeze({ register: '구어체', en: spoken[0], ko: spoken[1] }),
@@ -391,9 +392,17 @@
     const escape = value => String(value).replace(/[&<>"']/g, character => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[character]);
     const speakerIcon = '<svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 9h4l5-4v14l-5-4H4z" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linejoin="round"/><path d="M16 8a6 6 0 0 1 0 8m3-11a10 10 0 0 1 0 14" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round"/></svg>';
     function get(stage, unitId, lessonIndex) { return lessons[`${stage}/${unitId}/${lessonIndex}`] || null; }
+    const drawings = {
+        nouns: '<circle cx="22" cy="17" r="7"/><path d="M10 40v-5a12 12 0 0 1 24 0v5M40 12h14v27H40zM44 8h14v27M44 20h6M44 25h6"/>',
+        time: '<circle cx="31" cy="25" r="18"/><path d="M31 12v14l9 5M5 43h52m-5-5 5 5-5 5"/>',
+        compare: '<path d="M31 8v36M13 15h36M16 15 6 34h20L16 15zm30 0L36 34h20L46 15zM20 45h22"/>',
+        condition: '<path d="M8 25h14m0 0 12-14h20m-32 14 12 14h20M49 6l5 5-5 5m0 18 5 5-5 5"/><circle cx="8" cy="25" r="4"/>',
+        structure: '<rect x="5" y="15" width="14" height="20" rx="4"/><rect x="24" y="15" width="14" height="20" rx="4"/><rect x="43" y="15" width="14" height="20" rx="4"/><path d="M19 25h5m14 0h5M10 22h4m15 0h4m15 0h4"/>'
+    };
     function diagramHTML(lesson) {
         if (!lesson) return '';
-        return `<ol class="grammar-flow" aria-label="문법 구조 흐름">${lesson.flow.map(([label, value], index) => `<li class="grammar-flow-step">${index ? '<span class="grammar-flow-arrow" aria-hidden="true">→</span>' : ''}<div class="grammar-flow-node"><span class="grammar-flow-label">${escape(label)}</span><strong>${escape(value)}</strong></div></li>`).join('')}</ol>`;
+        const kind = lesson.visualKind || 'structure';
+        return `<div class="grammar-diagram-heading"><span>구조를 눈으로 익혀요</span><small>순서대로 연결해 보세요</small></div><ol class="grammar-flow" style="--flow-count:${lesson.flow.length}" aria-label="문법 구조 흐름">${lesson.flow.map(([label, value], index) => `<li class="grammar-flow-step">${index ? '<span class="grammar-flow-arrow" aria-hidden="true">→</span>' : ''}<div class="grammar-flow-node"><div class="grammar-node-head"><span class="grammar-step-index">${String(index + 1).padStart(2, '0')}</span><span class="grammar-flow-label">${escape(label)}</span></div>${index === 0 ? `<svg class="grammar-diagram-art" viewBox="0 0 64 52" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${drawings[kind]}</svg>` : ''}<strong${kind === 'nouns' ? ' class="grammar-map-caption"' : ''}>${escape(value)}</strong>${kind === 'nouns' ? `<div class="grammar-map-pair">${[['Mina','books'],['한 사람','여러 사물'],['she','they']][index].map((text, row) => `<span>${index === 0 ? `<svg class="grammar-map-image" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round">${row === 0 ? '<circle cx="16" cy="10" r="5"/><path d="M7 28v-4a9 9 0 0 1 18 0v4"/>' : '<rect x="5" y="9" width="16" height="19" rx="2"/><path d="M10 4h16v19M10 15h6m-6 5h6"/>'}</svg>` : `<i class="grammar-map-dot lane-${row}" aria-hidden="true"></i>`}${escape(text)}</span>`).join('')}</div>` : ''}</div></li>`).join('')}</ol>`;
     }
     function examplesHTML(lesson) {
         if (!lesson) return '';
