@@ -92,7 +92,8 @@
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
             && (bank.policyId==='weekly-transfer-20261024'
-                ? items.every(q=>!q.repeated)&&Object.entries(areas).every(([subject])=>Number.isInteger(bank.quotas?.[subject])&&bank.quotas[subject]>=0&&counts[subject]===bank.quotas[subject])&&counts.english+counts.grammar+counts.english_reading===15&&counts.math+counts.math_formula===15&&counts.hanja===10
+                // Only the bank's labelled oldest-first fallback may repeat earlier-week content, and every item must pass the integrity check.
+                ? items.every(q=>!q.repeated||q.noveltyKind==='re-exposure'&&Number.isFinite(q.lastExposedAt))&&(!root.MockExamQuality?.validateItem||items.every(q=>root.MockExamQuality.validateItem(q).ok))&&Object.entries(areas).every(([subject])=>Number.isInteger(bank.quotas?.[subject])&&bank.quotas[subject]>=0&&counts[subject]===bank.quotas[subject])&&counts.english+counts.grammar+counts.english_reading===15&&counts.math+counts.math_formula===15&&counts.hanja===10
                 : Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count))
             && counts.reading + counts.korean_vocab === KOREAN.total && (bank.policyId==='weekly-transfer-20261024'||counts.korean_vocab <= KOREAN.vocabularyMax);
     }
@@ -264,7 +265,7 @@
                     examComplete: !!draft.submittedAt, status: 'submitted', sectionId: section.id, sectionDeadline: section.deadline,
                     timedOut: section.timedOut, activeSeconds: Math.max(0, Number(section.activeSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
                     elapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
-                    sectionElapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0), timeAccountingVersion: 'active-v1',
+                    sectionElapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0), timeAccountingVersion: 'active-v1', ...(draft.mode === 'paper' ? { timeEntered: section.timeEntered === true } : {}),
                     unansweredCount: attempts.filter(a => a.unanswered).length, initialAttempts: clone(attempts), attempts: clone(attempts),
                     requestedCount: draft.quotas?.[subject] ?? areas[subject], actualCount: attempts.length, repeatedCount: attempts.filter(a => a.repeated).length,
                     newQuestionCount: attempts.filter(a => !a.repeated).length, scopeComplete: true,
@@ -291,22 +292,55 @@
         if (!draft?.submittedAt || draft.sections.some(s => s.state !== 'ended')) throw new Error('네 과목 제출을 먼저 완료해 주세요.');
         return { ...clone(draft), initialAttempts: draft.sections.flatMap(s => clone(s.initialAttempts)), reports: reportsFor(draft) };
     }
+    // Minutes per section of a printed round (the limits printed on its pages; the defaults otherwise).
+    const PAPER_ORDER = Object.freeze(['reading', 'math', 'english', 'hanja']), PAPER_EXTRA_MINUTES = 30;
+    function paperTimeLimits(paper) {
+        const minutes = paper?.paper?.timeLimits || {};
+        return Object.fromEntries(definitions.map(section => { const proposed = Number(minutes[section.id]);
+            return [section.id, Number.isInteger(proposed) && proposed >= 5 && proposed <= 60 ? proposed : section.minutes]; }));
+    }
+    // The parent's optional per-교시 times. Empty means "not recorded" (null); otherwise a whole
+    // number of minutes from 0 to the section's limit + 30.
+    function paperMinutes(paper, entered) {
+        const limits = paperTimeLimits(paper), result = {};
+        for (const section of definitions) {
+            const raw = entered?.[section.id], text = raw == null ? '' : String(raw).trim();
+            if (text === '') { result[section.id] = null; continue; }
+            const value = Number(text), max = limits[section.id] + PAPER_EXTRA_MINUTES;
+            if (!/^\d+(\.0+)?$/.test(text) || !Number.isInteger(value) || value < 0 || value > max) throw new Error(`${section.name} 걸린 시간은 0~${max}분 사이의 숫자(분)로 적어 주세요.`);
+            result[section.id] = value;
+        }
+        return result;
+    }
+    // Per-section time for result screens. Online sections use their recorded elapsedSeconds; a paper
+    // round has a time only where the parent entered one (timeEntered), otherwise "시간 기록 없음".
+    const durationText = seconds => { const total = Math.max(0, Math.round(Number(seconds) || 0)), m = Math.floor(total / 60), r = total % 60; return m ? `${m}분${r ? ` ${r}초` : ''}` : `${r}초`; };
+    function sectionTime(draft, sectionId) {
+        const paper = draft?.mode === 'paper', section = (Array.isArray(draft?.sections) ? draft.sections : []).find(s => s?.id === sectionId);
+        const order = paper ? PAPER_ORDER : (draft?.sections || []).map(s => s?.id), seconds = Number(section?.elapsedSeconds);
+        const recorded = !!section && section.state === 'ended' && section.elapsedSeconds != null && Number.isFinite(seconds) && (!paper || section.timeEntered === true);
+        return { id: sectionId, period: order.indexOf(sectionId) + 1, recorded, seconds: recorded ? Math.max(0, Math.round(seconds)) : null,
+            text: recorded ? `걸린 시간 ${durationText(seconds)}` : '시간 기록 없음' };
+    }
     // A printed round scored from its OMR card: the same submitted record an online exam produces
-    // (four ended sections, 55 graded first attempts, subject reports), with no screen or time record.
-    function paperResult(paper, responses, now = Date.now()) {
+    // (four ended sections, 55 graded first attempts, subject reports), with no screen record.
+    // options.minutes ({reading, english, math, hanja}) are the optional per-교시 times; an entered
+    // time is stored like an online one (elapsedSeconds), and timeEntered tells the two cases apart.
+    function paperResult(paper, responses, now = Date.now(), options = {}) {
         if (!isPaper(paper) || paper.mode !== 'paper' || paper.kind !== 'mock' || !Array.isArray(paper.questions) || paper.questions.length !== 55) throw new Error('채점할 종이 시험지가 아닙니다.');
+        const entered = paperMinutes(paper, options?.minutes);
         const answers = {};
         for (const q of paper.questions) {
             const raw = responses?.[q.id], value = q.kind === 'written' ? String(raw ?? '').trim().slice(0, 2000) : raw == null ? '' : String(raw);
             if (value && q.kind !== 'written' && !(q.choices || []).map(String).includes(value)) throw new Error('보기에 없는 답이 있습니다. 답안을 다시 확인해 주세요.');
             answers[q.id] = value;
         }
-        const minutes = paper.paper?.timeLimits || {}, startedAt = Number(paper.startedAt || paper.generatedAt) || now;
+        const minutes = paperTimeLimits(paper), startedAt = Number(paper.startedAt || paper.generatedAt) || now;
         const draft = { ...clone(paper), status: 'submitted', mode: 'paper', responses: answers, cursor: 0, break: null, startedAt, submittedAt: now, resultVisibility: 'withheld', syncStatus: 'synced',
             scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false, integrity: { source: 'paper-omr' } };
         draft.sections = definitions.map(section => {
-            const proposed = Number(minutes[section.id]), ended = { ...section, durationSeconds: (Number.isInteger(proposed) && proposed >= 5 && proposed <= 60 ? proposed : section.minutes) * 60,
-                state: 'ended', startedAt, deadline: null, endedAt: now, timedOut: false, activeSeconds: 0, elapsedSeconds: 0 };
+            const time = entered[section.id], ended = { ...section, durationSeconds: minutes[section.id] * 60,
+                state: 'ended', startedAt, deadline: null, endedAt: now, timedOut: false, activeSeconds: 0, elapsedSeconds: time == null ? 0 : time * 60, timeEntered: time != null };
             ended.initialAttempts = questionsFor(draft, ended).map(q => attemptFor(q, answers[q.id]));
             return ended;
         });
@@ -329,6 +363,6 @@
         }
     }
     app.MockExam = { areas, definitions, maxAttempts: MAX_ATTEMPTS, isPaper, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
-        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, paperResult, isPaperResult, sync };
+        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, paperResult, paperTimeLimits, paperMinutes, sectionTime, paperExtraMinutes: PAPER_EXTRA_MINUTES, isPaperResult, sync };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExam;
 })(typeof window !== 'undefined' ? window : globalThis);

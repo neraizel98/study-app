@@ -238,5 +238,8 @@
         ['structure', '이 글의 설명 흐름으로 가장 적절한 것은?', '일치·정확성 구별에서 보정 범위·시간·독립 검증으로 논의를 넓힌다.|센서의 제조 과정을 시간순으로 나열하고 가장 싼 부품의 장점을 설명한다.|두 연구원의 의견을 대립시킨 뒤 측정이 원리적으로 불가능함을 증명한다.|하천 온도의 실제 상승 원인을 제시한 뒤 센서 오차를 부차적인 문제로 정리한다.', [0,1,2,3,4,5,6,7], '처음 판단의 조건을 오차 종류·범위·시간·관측망으로 넓혀 검토한다.'],
         ['fact', '글에 제시된 내용과 일치하는 것은?', '기준 물의 실제 온도가 안정적인지도 센서 표시와 별도로 확인하기로 했다.|센서가 20도라고 표시한 물에서 새 기준도 정확히 20도를 나타냈다.|선형 반응은 온도 변화와 관계없이 전기 신호가 늘 같은 값을 갖는다는 뜻이다.|시간에 따라 치우침이 변해도 변화량을 구하면 그 영향은 항상 사라진다.', [2,3,4,5], '비교 대상 자체가 변하는지 확인해야 센서 변화와 구별할 수 있다.']
     ]);
-    window.MockKoreanTransfer = passages;
+    // Extension point: extra passage files may load before or after this one and push passages of the same
+    // shape into this global array ({id, grade:7, title, lines:[paragraph], questions:[{id, skill, question, answer, choices:[4], explanation, evidenceLines:[0-based], difficulty, cognitiveDemand}]}).
+    // Ids must be unique; mock-exam-bank.js (passagePool) uses every passage here for every round.
+    window.MockKoreanTransfer = passages.concat((Array.isArray(window.MockKoreanTransfer) ? window.MockKoreanTransfer : []).filter(p => !passages.some(x => x.id === p.id)));
 })();

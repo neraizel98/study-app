@@ -37,8 +37,10 @@
   if(attemptNo>limit())throw new Error(`이번 주 ${limit()}회차를 모두 사용했습니다.`);
   if(options.attemptNo!=null&&Number(options.attemptNo)!==attemptNo)throw new Error(`${options.attemptNo}회차는 만들 수 없습니다. 지금은 ${attemptNo}회차 차례이며 이미 있는 회차는 덮어쓰지 않습니다.`);
   const bank=app.MockExamBank.build(user,now,{attemptNo,history:records,reports:await learnerReports(user,now)});
-  const key=q=>app.MockExamBank.fingerprint(q),seen=new Set(records.flatMap(r=>payloadOf(r).questions||[]).flatMap(q=>[q.id,key(q)]));
-  const repeated=(bank.items||[]).filter(q=>seen.has(q.id)||seen.has(key(q))).length;
+  const key=q=>app.MockExamBank.fingerprint(q),contentOf=rows=>new Set(rows.flatMap(r=>payloadOf(r).questions||[]).flatMap(q=>[q.id,key(q)]));
+  // This week's rounds never repeat; earlier weeks may come back only as the bank's labelled oldest-first re-exposure.
+  const seen=contentOf(records),sameWeek=contentOf(records.filter(r=>payloadOf(r).scheduledWeekId===week)),hit=(set,q)=>set.has(q.id)||set.has(key(q));
+  const repeated=(bank.items||[]).filter(q=>hit(sameWeek,q)||hit(seen,q)&&q.noveltyKind!=='re-exposure').length;
   // Printing is allowed exactly when the online exam could start with this bank.
   if(!app.MockExam.validateBank(bank)||repeated)return {ok:false,attemptNo,bank,repeated};
   const last=records.map(payloadOf).filter(p=>p.scheduledWeekId===week).sort((a,b)=>(Number(b.attemptNo)||1)-(Number(a.attemptNo)||1))[0];
@@ -51,7 +53,7 @@
  }
  // Reasons are listed like the online ready screen: area shortages first, then quality checks.
  function reasons(result){
-  const rows=[];for(const [area,s] of Object.entries(result.bank?.shortages||{}))if(s.missing>0)rows.push(`${areaNames[area]||area}: ${s.actual}/${s.required}문항 · ${s.missing}문항 부족`);
+  const rows=[];for(const [area,s] of Object.entries(result.bank?.shortages||{}))if(s.missing>0)rows.push(`${areaNames[area]||area}: ${s.actual}/${s.required}문항 · ${s.missing}문항 부족${s.reason?` — ${s.reason}`:''}`);
   if(result.repeated)rows.push(`이전 회차와 겹치는 문제 ${result.repeated}개`);
   if(!rows.length)for(const d of Object.values(result.bank?.quality?.deficits||{}))if(d?.reason)rows.push(d.reason);
   return rows.length?rows:['문항 구성과 영역 배분 확인이 필요합니다.'];

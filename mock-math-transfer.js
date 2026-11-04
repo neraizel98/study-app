@@ -63,6 +63,11 @@
   }
   return rows;
  }
+ // Formula number -> the figure each generated measurement question must name.
+ const FIGURES=Object.freeze({3:'직각삼각형',6:'삼각형',15:'정사각형',16:'직사각형',17:'직사각형',19:'마름모',20:'평행사변형',21:'사다리꼴',31:'원',32:'원',37:'원',58:'정육면체',59:'정육면체',60:'직육면체',61:'직육면체'});
+ const figureOf=number=>FIGURES[Number(number)]||null;
+ // "밑변: 8 cm\n높이: 6 cm\n원주율: 3.14" -> "밑변 8 cm, 높이 6 cm" (원주율 is stated separately).
+ const describeGivens=givens=>String(givens||'').split('\n').map(line=>line.trim()).filter(line=>line&&!/^원주율/.test(line)).map(line=>line.replace(/\s*:\s*/,' ')).join(', ');
  function createFormula(scope,rng=Math.random){
   const number=Number(scope.context.unitId.replace('formula-',''));
   if(!scope.attempts.some(a=>/(?:guided-)?calculation/.test(a.questionId||'')||/^(?:guided-)?calculation$/.test(a.type||a.noteType||'')))return [];
@@ -74,10 +79,14 @@
     if(new Set(choices).size<4)continue;
     rows.push({question:`전체 ${total}명 중 처음 ${chosen}명이 참여했고 나중에 ${extra}명이 더 참여했습니다. 전체 인원은 그대로일 때 최종 참여 비율은 몇 %인가요?`,answer,choices,explanation:`최종 참여 인원은 ${chosen+extra}명입니다. (${chosen}+${extra})÷${total}×100=${percent}%이며, 나중에 더한 인원만으로 비율을 구하면 안 됩니다.`,unit:'%',templateFamily:'formula-percentage-combined',conceptId:'percentage-combined',noveltyKind:'multi-step-application',cognitiveDemand:'reasoning',difficulty:'challenge'});
    }else if(geometry.has(number)){
-    const source=(root.MathFormulaReview?.create(number,'practice')||[]).find(q=>q.kind==='choice'&&/calculation/.test(q.noteType||'')&&Number.isFinite(Number(q.answer)));
+    let review=[];try{review=root.MathFormulaReview?.create(number,'practice')||[];}catch(_){/* An unloaded generator is a shortage, not a broken exam. */}
+    const source=review.find(q=>q.kind==='choice'&&/calculation/.test(q.noteType||'')&&Number.isFinite(Number(q.answer)));
     if(!source?.unit||!/^cm/.test(source.unit))continue;
+    // The review item's givens omit the figure ("밑변: 8 cm\n높이: 6 cm"); never ship them without it.
+    const figure=figureOf(number),quantity=(String(source.prompt||'').match(/^(.+?)를 구해/)||[])[1];
+    if(!figure||!quantity)continue;
     const value=Number(source.answer),count=2+i%3,total=value*count;
-    const question=`[한 개의 조건] ${source.givens||''}\n${source.prompt}\n이 조건이 같은 대상을 ${count}개 준비할 때, 각 대상에서 구한 값을 모두 합하면 얼마인가요? (${source.unit})`;
+    const question=`똑같은 ${figure} ${count}개가 있습니다. ${figure} 한 개의 ${describeGivens(source.givens)}입니다.${/원주율/.test(source.givens||'')?' (원주율 3.14)':''}\n${figure} ${count}개의 ${quantity}를 모두 합하면 몇 ${source.unit}인가요?`;
     const answer=text(total),choices=[answer,...new Set([value,value*(count+1),value+count,total+count].map(text).filter(v=>v!==answer))].slice(0,4);
     if(choices.length<4)continue;
     rows.push({question,answer,choices,explanation:`먼저 한 개의 값을 공식으로 구합니다. ${source.solution} 같은 조건의 ${count}개이므로 ${value}×${count}=${answer}${source.unit}입니다.`,unit:source.unit,templateFamily:'formula-quantity-conditions',conceptId:'formula-quantity-conditions',noveltyKind:'multi-step-application',cognitiveDemand:'application',difficulty:'standard'});
@@ -92,5 +101,5 @@
   }
   return rows;
  }
- root.MockMathTransfer={create,createFormula};
+ root.MockMathTransfer={create,createFormula,figureOf,describeGivens};
 })(window);

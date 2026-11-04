@@ -582,6 +582,21 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
 .omr-actions { display: flex; justify-content: flex-end; gap: 8px; flex-wrap: wrap; }
 .omr-retake, .omr-upload { min-height: 40px; margin: 0; padding: 8px 14px; border: 1px solid #ddd2bf; border-radius: 10px; background: #fff; color: var(--text); font: 700 .85rem var(--font); cursor: pointer; }
 .mock-admin .mock-publish.omr-save:disabled { background: #e8e1d4; color: #8a8174; }
+.omr-time { display: grid; gap: 6px; padding: 10px 12px; border-radius: 12px; background: #faf6ee; border: 1px dashed #ddd2bf; }
+.omr-time-title { margin: 0; font-size: .82rem; }
+.omr-time-sub { margin: 0; font-size: .74rem; line-height: 1.5; color: var(--text-sub); }
+.omr-time-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.omr-time-field { display: grid; gap: 3px; min-width: 0; font-size: .75rem; font-weight: 700; color: var(--text-sub); }
+.omr-time-line { display: flex; align-items: center; gap: 4px; }
+.omr-time-input { flex: 1; width: 100%; min-width: 0; min-height: 40px; padding: 6px 8px; border: 1px solid #ddd2bf; border-radius: 8px; background: #fff; color: var(--text); font: 700 .95rem var(--font); }
+.omr-time-input::placeholder { font-weight: 500; font-size: .78rem; color: #a59a89; }
+.omr-time-input:focus { outline: 2px solid var(--accent); outline-offset: 1px; border-color: var(--accent); }
+.omr-time-unit { flex: none; font-size: .78rem; color: var(--text-sub); }
+.omr-time-field.is-invalid .omr-time-input { border-color: #c0392b; background: #fdf3f1; }
+.omr-time-error { margin: 0; font-size: .74rem; font-weight: 700; color: #c0392b; }
+.omr-time-error:empty { display: none; }
+.mock-score small.mock-score-time { color: var(--text); font-weight: 600; }
+.mock-score small.mock-score-time.is-empty { color: #a59a89; font-weight: 400; }
 .mock-answers { margin-top: 12px; border-top: 1px solid var(--card-border); padding-top: 10px; }
 .mock-answers summary { cursor: pointer; font-size: .85rem; font-weight: 700; color: var(--accent); }
 .mock-answers-english { margin: 8px 0; font-size: .78rem; color: var(--text-sub); }
@@ -597,7 +612,7 @@ body a.records-link { display: flex; align-items: center; gap: 8px; padding: 12p
 .mock-answer-a { margin: 0; font-size: .8rem; font-weight: 600; color: var(--text); }
 .mock-answer-x { margin: 4px 0 0; font-size: .78rem; line-height: 1.55; color: var(--text-sub); white-space: pre-wrap; }
 .mock-admin-empty { margin: 0; padding: 16px; border: 1px dashed #ddd2bf; border-radius: 14px; background: #fffdf8; font-size: .85rem; color: var(--text-sub); text-align: center; }
-@media (max-width: 600px) { .mock-score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mock-admin-chart .weekly-score-chart { height: 220px; } }
+@media (max-width: 600px) { .omr-time-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mock-score-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } .mock-admin-chart .weekly-score-chart { height: 220px; } }
 
 /* =====================================================================
    Shared page shell for older pages: back link pill + quiz "sheet" pages

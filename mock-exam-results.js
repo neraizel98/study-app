@@ -54,6 +54,9 @@
             card.append(node('h3',section.name));const score=node('strong',attempts.length?`${Math.round(correct/attempts.length*100)}점`:'—');score.append(node('small',attempts.length?`${correct} / ${attempts.length} 정답`:'평가 자료 없음'));card.append(score);
             const parts=section.subjects.map(subject=>({subject,attempts:attempts.filter(a=>a.subject===subject)})).filter(part=>part.attempts.length);
             if(parts.length>1)for(const part of parts)card.append(node('p',`${names[part.subject]} ${part.attempts.filter(a=>a.correct).length}/${part.attempts.length}`));
+            // Time per 교시; a paper round scored without entered times says "시간 기록 없음".
+            const time = app.MockExam?.sectionTime?.(draft, section.id);
+            if (time) card.append(node('p', time.text, `released-section-time${time.recorded ? '' : ' is-empty'}`));
             grid.append(card);
         }
         container.append(grid, node('p', '이 회차의 제출 점수입니다. 다시 응시한 결과는 별도 회차에 기록됩니다.', 'released-first-note'));

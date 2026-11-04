@@ -108,7 +108,7 @@ test('confirmation: uncertain rows wait for the parent, handwriting is shown for
  for(const i of written){const r=row(o.panel,i),canvas=all(r).find(n=>n.tagName==='CANVAS');assert(canvas&&canvas.put,'handwriting crop drawn');assert.equal(canvas.width,3);assert.equal(canvas.put.data[0],7);
   assert(all(r).some(n=>n.className==='omr-text'));assert.match(r.className,/is-uncertain/);}
  // Area sections in printed order, numbers restarting at 1.
- assert.deepEqual(all(o.panel).filter(n=>n.tagName==='H5').map(n=>n.textContent.split(' · ')[0]),['1교시 국어','2교시 수학','3교시 영어','4교시 한자']);
+ assert.deepEqual(all(o.panel).filter(n=>n.tagName==='H5'&&n.className!=='omr-time-title').map(n=>n.textContent.split(' · ')[0]),['1교시 국어','2교시 수학','3교시 영어','4교시 한자']);
  // Transcription only: no correct answers, no correctness, no choice text.
  const texts=new Set(all(o.panel).map(n=>n.textContent));assert.doesNotMatch(textOf(o.panel),/정답|오답|맞았|틀렸/);
  for(const q of set.items)for(const choice of q.choices||[])if(!/^\d{1,2}$/.test(String(choice)))assert(!texts.has(String(choice)),choice);
@@ -145,7 +145,8 @@ test('scoring and saving: the printed round becomes an online-shaped submitted r
  assert.equal(saved.initialAttempts.find(a=>a.questionId===set.items[blank].id).status,'unanswered');
  // Same record shape as the online round in this world.
  const keys=o=>Object.keys(o).sort().join(',');assert.equal(keys(saved.initialAttempts[0]),keys(first.sections[0].initialAttempts[0]));
- assert.equal(keys(saved.sections[0]),keys(first.sections[0]));
+ // Paper sections add only timeEntered (whether the parent entered the 교시 time).
+ assert.equal(keys(saved.sections[0]),keys({...first.sections[0],timeEntered:false}));assert(!('timeEntered' in first.sections[0]));
  const onlineReports=w.cloud.docs.get(`learner|${first.assessmentId}`).payload.reports;assert.equal(keys(saved.reports[0]),keys(onlineReports[0]));
  const fixed=['assessment','examTraining','mockExam','kind','assessmentId','assessmentSubject','resultVisibility','scheduledWeekId','scheduledDate','attemptNo','parentAttemptId','submittedAt','examComplete','status','sectionId','timedOut','activeSeconds','elapsedSeconds','unansweredCount','initialAttempts','attempts','requestedCount','actualCount','scopeComplete','questionContexts'];
  for(const r of [...saved.reports,...onlineReports])for(const k of fixed)assert(k in r.metadata,k);
@@ -198,6 +199,87 @@ test('after publication the learner sees score, answers and explanations; wrong 
  assert(review.mockCandidates.length>0);assert(review.mockCandidates.every(q=>q.sourceReferences[0].sourceAssessmentId===id));
  // The weekly dashboard counts a submitted (not printed) round as the week's mock exam.
  assert(rows.some(r=>r.assessmentId===id&&r.payload.status==='submitted'&&r.published===true));
+});
+
+// Optional per-교시 time on the confirmation screen: stored like an online section's elapsed time,
+// and "시간 기록 없음" (never 0초) where the parent left it empty.
+const timeBox=panel=>all(panel).find(n=>n.className==='omr-time');
+const timeInputs=panel=>all(timeBox(panel)).filter(n=>n.className==='omr-time-input');
+const typeTime=(input,value)=>{input.value=value;input.oninput();};
+async function confirmAll(w,o,set){
+ w.parent.c.readerResult=readerResult(w.parent.app,set,(i,q)=>({choice:q.choices.indexOf(q.answer)+1}));await o.take();
+ for(const r of items(o.panel))if(r.className.includes('is-uncertain'))buttons(r,'무응답')[0].onclick();
+}
+const byClass=(node,name)=>all(node).filter(n=>String(n.className).split(' ').includes(name));
+
+test('per-교시 time: four optional minute inputs in printed order with the limit as placeholder, validated 0 to limit+30',async()=>{
+ const w=world(),paper=await printed(w,1),host=new El('div'),{app}=w.parent,o=await openOmr(w,host),set=app.MockPaperAdmin.paperSet(paper.payload);
+ await confirmAll(w,o,set);
+ const box=timeBox(o.panel),inputs=timeInputs(o.panel),save=buttons(o.panel,'채점하고 저장')[0];
+ assert(box,'time block rendered');assert.match(textOf(box),/교시별 걸린 시간 \(선택\)/);
+ assert(o.panel.children.indexOf(box)<o.panel.children.findIndex(n=>n.className==='omr-actions'),'the block sits above the save buttons');
+ assert.deepEqual(byClass(box,'omr-time-name').map(n=>n.textContent),['1교시 국어','2교시 수학','3교시 영어','4교시 한자']);
+ assert.deepEqual(inputs.map(n=>n.attributes['data-section']),['reading','math','english','hanja']);
+ // The plan in this world sets reading 25, math 30, english 20, hanja 10 minutes.
+ assert.deepEqual(inputs.map(n=>n.placeholder),['제한 25분','제한 30분','제한 20분','제한 10분']);
+ assert.deepEqual(inputs.map(n=>[n.type,n.min,n.max,n.step,n.inputMode]),[['number','0','55','1','numeric'],['number','0','60','1','numeric'],['number','0','50','1','numeric'],['number','0','40','1','numeric']]);
+ assert(inputs.every(n=>n.value===''),'empty by default');assert.equal(save.disabled,false,'empty times do not block saving');
+ const hanja=inputs[3],field=all(box).find(n=>n.className.startsWith('omr-time-field')&&all(n).includes(hanja));
+ for(const bad of ['41','-1','12.5','abc']){typeTime(hanja,bad);assert.equal(save.disabled,true,bad);assert.match(field.className,/is-invalid/);assert.equal(hanja.attributes['aria-invalid'],'true');
+  assert.match(textOf(box),/4교시 한자 시간은 0~40분 사이로 적어 주세요/);}
+ // A browser number field reports unparseable text as badInput with an empty value.
+ hanja.validity={badInput:true};typeTime(hanja,'');assert.equal(save.disabled,true);hanja.validity={badInput:false};
+ for(const good of ['40','0','',' 7 ']){typeTime(hanja,good);assert.equal(save.disabled,false,good);assert.doesNotMatch(field.className,/is-invalid/);}
+ assert.equal(byClass(box,'omr-time-error')[0].textContent,'');
+ // The model refuses the same values, so a bypassed field cannot store them.
+ for(const minutes of [{hanja:41},{reading:'-1'},{math:'1.5'},{english:'x'},{reading:56}])assert.throws(()=>app.MockExam.paperResult(paper.payload,{},w.clock.now,{minutes}),/걸린 시간은 0~\d+분/);
+ const ok=app.MockExam.paperResult(paper.payload,{},w.clock.now,{minutes:{reading:' 55 ',math:null,english:'',hanja:0}});
+ assert.deepEqual(JSON.parse(JSON.stringify(ok.sections.map(s=>[s.id,s.elapsedSeconds,s.timeEntered]))),[['reading',3300,true],['english',0,false],['math',0,false],['hanja',0,true]]);
+});
+
+test('per-교시 time: entered minutes are stored as elapsed seconds and shown to the parent, the learner and in the summary',async()=>{
+ const w=world(),paper=await printed(w,1),host=new El('div'),{app}=w.parent,o=await openOmr(w,host),set=app.MockPaperAdmin.paperSet(paper.payload);
+ await confirmAll(w,o,set);
+ const [reading,math,english,hanja]=timeInputs(o.panel);typeTime(reading,'18');typeTime(math,'');typeTime(english,'20');typeTime(hanja,'40');
+ await buttons(o.panel,'채점하고 저장')[0].onclick();
+ const doc=w.cloud.docs.get(`learner|${paper.payload.assessmentId}`),saved=doc.payload;onlineChecks(doc);
+ assert.deepEqual(saved.sections.map(s=>[s.id,s.state,s.elapsedSeconds,s.timeEntered,s.activeSeconds]),[['reading','ended',1080,true,0],['english','ended',1200,true,0],['math','ended',0,false,0],['hanja','ended',2400,true,0]]);
+ assert.deepEqual(saved.sections.map(s=>s.durationSeconds),[1500,1200,1800,600],'limits are unchanged');
+ for(const r of saved.reports){const id=r.metadata.sectionId,s=saved.sections.find(x=>x.id===id);assert.equal(r.metadata.sectionElapsedSeconds,s.elapsedSeconds);assert.equal(r.metadata.timeEntered,s.timeEntered,id);}
+ // Parent admin card: score boxes are reading, english, math, hanja.
+ const card=all(host).filter(n=>n.className==='mock-result-card').find(n=>textOf(n).includes('1회차'));
+ const adminTimes=byClass(card,'mock-score-time');assert.deepEqual(adminTimes.map(n=>n.textContent),['걸린 시간 18분','걸린 시간 20분','시간 기록 없음','걸린 시간 40분']);
+ assert.deepEqual(adminTimes.map(n=>n.className.includes('is-empty')),[false,false,true,false]);assert.doesNotMatch(adminTimes.map(n=>n.textContent).join(' '),/0초/);
+ // Released result on the learner device.
+ await buttons(card,'학습자에게 공개')[0].onclick();
+ const L=w.learner,result=await L.app.MockExamResults.load('learner',saved.assessmentId),view=new El('div');L.app.MockExamResults.render(view,result);
+ assert.deepEqual(byClass(view,'released-section-time').map(n=>n.textContent),['걸린 시간 18분','걸린 시간 20분','시간 기록 없음','걸린 시간 40분']);
+ // Assessment summary (admin) from the subject reports.
+ vm.runInContext(fs.readFileSync('assessment-summary.js','utf8'),w.parent.c,{filename:'assessment-summary.js'});
+ const panel=new El('div');w.parent.app.AssessmentSummary.render(panel,saved.reports);
+ const summaryTimes=byClass(panel,'assessment-time').map(n=>n.textContent);assert.equal(summaryTimes.length,saved.reports.length);
+ for(const [i,r] of saved.reports.entries())assert.equal(summaryTimes[i],{reading:'교시 걸린 시간 18분',english:'교시 걸린 시간 20분',math:'시간 기록 없음',hanja:'교시 걸린 시간 40분'}[r.metadata.sectionId]);
+});
+
+test('per-교시 time: a paper round saved without times says 시간 기록 없음 everywhere; online rounds keep their elapsed time',async()=>{
+ const w=world(),first=await online(w),paper=await printed(w,2),host=new El('div'),{app}=w.parent,o=await openOmr(w,host),set=app.MockPaperAdmin.paperSet(paper.payload);
+ await confirmAll(w,o,set);await buttons(o.panel,'채점하고 저장')[0].onclick();
+ const saved=w.cloud.docs.get(`learner|${paper.payload.assessmentId}`).payload;
+ assert(saved.sections.every(s=>s.elapsedSeconds===0&&s.timeEntered===false));assert(saved.reports.every(r=>r.metadata.timeEntered===false));
+ const cards=all(host).filter(n=>n.className==='mock-result-card'),paperCard=cards.find(n=>textOf(n).includes('2회차')),onlineCard=cards.find(n=>textOf(n).includes('1회차'));
+ assert.deepEqual(byClass(paperCard,'mock-score-time').map(n=>n.textContent),Array(4).fill('시간 기록 없음'));
+ // The online round in this world finished each section within a second: recorded, so shown as time.
+ assert.deepEqual(byClass(onlineCard,'mock-score-time').map(n=>n.textContent),Array(4).fill('걸린 시간 0초'));
+ assert(app.MockExam.sectionTime(first,'reading').recorded);
+ await buttons(paperCard,'학습자에게 공개')[0].onclick();
+ const L=w.learner,result=await L.app.MockExamResults.load('learner',saved.assessmentId),view=new El('div');L.app.MockExamResults.render(view,result);
+ const shown=byClass(view,'released-section-time');assert.deepEqual(shown.map(n=>n.textContent),Array(4).fill('시간 기록 없음'));assert(shown.every(n=>n.className.includes('is-empty')));
+ vm.runInContext(fs.readFileSync('assessment-summary.js','utf8'),w.parent.c,{filename:'assessment-summary.js'});
+ const panel=new El('div');w.parent.app.AssessmentSummary.render(panel,saved.reports);
+ assert(byClass(panel,'assessment-time').every(n=>n.textContent==='시간 기록 없음'));assert.doesNotMatch(textOf(panel),/0초/);
+ // Paper results scored before time entry existed have no timeEntered field: no record either.
+ const old=structuredClone(saved);for(const s of old.sections)delete s.timeEntered;
+ assert(['reading','english','math','hanja'].every(id=>app.MockExam.sectionTime(old,id).text==='시간 기록 없음'));
 });
 
 // mock-exam-ui.js on the learner device: a link to a printed round that has since been scored opens its result.

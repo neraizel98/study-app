@@ -318,5 +318,8 @@
         ['inference','Why does a lower overall average not answer the nurse’s concern?','A better overall average can hide repeated delays for a particular group.','Averages are unrelated to the total time needed by the drivers.','The nurse wants every patient to receive medicine at the same minute.','The village patients have been shown to request ineligible medicines.','전체 평균 개선과 먼 마을의 반복 지연은 동시에 생길 수 있으므로 접근성 문제를 별도로 봐야 합니다.',[1,3,5,10],'challenge'],
         ['evidence','Which report best supports a transparent decision about the revised rule?','Total travel time, completed deliveries, and overdue requests.','Only the faster of the two average travel times from the trial.','The route plan selected without disclosing the waiting condition.','Only comments from town patients served early by the first system.','효율·처리량·대기 한도 초과를 함께 제시해야 비용과 접근성 변화를 비교할 수 있습니다.',[9,10,11,12],'challenge']
     ]);
-    root.MockEnglishTransfer = passages;
+    // Extension point: extra passage files may load before or after this one and push passages of the same
+    // shape into this global array ({id, gradeId:'middle1', title, lines:[sentence], glossary:[{word, meaning}], questions:[{id, skill, question, answer, choices:[4], explanation, evidenceLines:[0-based], difficulty, cognitiveDemand}]}).
+    // Ids must be unique; mock-exam-bank.js (passagePool) uses every passage here for every round.
+    root.MockEnglishTransfer = passages.concat((Array.isArray(root.MockEnglishTransfer) ? root.MockEnglishTransfer : []).filter(p => !passages.some(x => x.id === p.id)));
 })(typeof window !== 'undefined' ? window : globalThis);

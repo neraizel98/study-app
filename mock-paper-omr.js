@@ -53,6 +53,27 @@
   try{const ctx=canvas.getContext('2d'),img=ctx.createImageData(rgba.width,rgba.height);img.data.set(rgba.data);ctx.putImageData(img,0,0);}catch(_){/* The typed answer still works without the picture. */}
   return canvas;
  }
+ // Optional per-교시 times (minutes), in printed order. Empty is allowed and means "시간 기록 없음".
+ function timeBlock(payload,onChange){
+  const exam=app.MockExam,limits=exam.paperTimeLimits?.(payload)||{},extra=Number(exam.paperExtraMinutes)||30,fields=[];
+  const box=el('section','omr-time'),grid=el('div','omr-time-grid'),error=el('p','omr-time-error');error.setAttribute('role','alert');
+  box.append(el('h5','omr-time-title','교시별 걸린 시간 (선택)'),el('p','omr-time-sub','시계로 잰 시간을 분 단위로 적어 주세요. 비워 두면 "시간 기록 없음"으로 보여요.'),grid,error);
+  for(const area of root.MockPaper.AREAS){
+   const limit=Number(limits[area.id])||area.minutes,max=limit+extra,label=el('label','omr-time-field'),input=el('input','omr-time-input'),line=el('span','omr-time-line');
+   input.type='number';input.min='0';input.max=String(max);input.step='1';input.inputMode='numeric';input.autocomplete='off';input.placeholder=`제한 ${limit}분`;
+   input.setAttribute('aria-label',`${area.period}교시 ${area.name} 걸린 시간(분), 제한 ${limit}분`);input.setAttribute('data-section',area.id);
+   line.append(input,el('span','omr-time-unit','분'));label.append(el('span','omr-time-name',`${area.period}교시 ${area.name}`),line);grid.append(label);
+   const field={id:area.id,name:`${area.period}교시 ${area.name}`,input,label,max,valid:true};
+   input.oninput=()=>{check(field);onChange();};fields.push(field);
+  }
+  function check(field){
+   const text=String(field.input.value??'').trim(),bad=field.input.validity?.badInput===true;
+   field.valid=!bad&&(text===''||/^\d+$/.test(text)&&Number(text)<=field.max);
+   field.label.className=`omr-time-field${field.valid?'':' is-invalid'}`;field.input.setAttribute('aria-invalid',String(!field.valid));
+   const wrong=fields.filter(f=>!f.valid);error.textContent=wrong.map(f=>`${f.name} 시간은 0~${f.max}분 사이로 적어 주세요.`).join(' ');
+  }
+  return {box,valid:()=>fields.every(f=>f.valid),minutes:()=>Object.fromEntries(fields.map(f=>[f.id,String(f.input.value??'').trim()]))};
+ }
  function mount(user,payload,options={}){
   const panel=el('div','omr-review'),trigger=button('사진 올려서 채점','mock-publish omr-trigger'),input=el('input','omr-file'),camera=button('직접 촬영','mock-publish omr-camera'),cameraInput=el('input','omr-camera-file');
   input.type='file';input.accept='image/*';input.hidden=true;
@@ -71,7 +92,8 @@
   input.onchange=()=>choose(input);cameraInput.onchange=()=>choose(cameraInput);
   function review(rows){
    const pending=el('p','omr-pending'),save=button('채점하고 저장','mock-publish omr-save'),again=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload'),note=el('p','omr-message');
-   const refresh=()=>{const left=rows.filter(r=>!r.resolved).length;pending.textContent=left?`노란 칸 ${left}문항을 확인해 주세요.`:'모든 문항을 확인했어요.';save.disabled=busy||left>0;};
+   let times=null;
+   const refresh=()=>{const left=rows.filter(r=>!r.resolved).length;pending.textContent=left?`노란 칸 ${left}문항을 확인해 주세요.`:'모든 문항을 확인했어요.';save.disabled=busy||left>0||!!times&&!times.valid();};
    panel.replaceChildren(el('h4','omr-title',`${n}회차 답안 확인`),el('p','omr-sub','사진에서 읽은 답이에요. 노란 칸은 직접 골라 주세요. 단답형은 아이가 쓴 그대로 적어 주세요.'),pending);
    for(const area of root.MockPaper.AREAS){const own=rows.filter(r=>r.area===area.id);if(!own.length)continue;
     const box=el('section','omr-area'),grid=el('div','omr-grid');box.append(el('h5',null,`${area.period}교시 ${area.name} · ${own.length}문항`),grid);
@@ -97,12 +119,13 @@
     }
     panel.append(box);
    }
+   times=timeBlock(payload,refresh);panel.append(times.box);
    again.onclick=photograph;upload.onclick=retake;
    save.onclick=async()=>{
-    if(busy||rows.some(r=>!r.resolved))return;busy=true;refresh();again.disabled=true;upload.disabled=true;trigger.disabled=true;camera.disabled=true;note.className='omr-message';note.textContent='채점해서 저장하는 중이에요...';
+    if(busy||rows.some(r=>!r.resolved)||!times.valid())return;busy=true;refresh();again.disabled=true;upload.disabled=true;trigger.disabled=true;camera.disabled=true;note.className='omr-message';note.textContent='채점해서 저장하는 중이에요...';
     try{
      const responses=Object.fromEntries(rows.map(r=>[r.item.id,r.value||'']));
-     const result=app.MockExam.paperResult(payload,responses,Date.now());
+     const result=app.MockExam.paperResult(payload,responses,Date.now(),{minutes:times.minutes()});
      await app.MockPublication.savePaperResult(user,result);
      const notice=`${n}회차 종이 시험을 채점해 저장했습니다. 결과를 확인한 뒤 학습자에게 공개해 주세요.`;
      if(options.onSaved)await options.onSaved(notice);else{panel.replaceChildren(say(notice));}
@@ -113,5 +136,5 @@
   trigger.onclick=retake;camera.onclick=photograph;
   return {trigger,input,camera,cameraInput,panel};
  }
- app.MockPaperOmr={mount,loadImage,read,rowsFor,numbering,message,MAX_SIDE};
+ app.MockPaperOmr={mount,timeBlock,loadImage,read,rowsFor,numbering,message,MAX_SIDE};
 })(typeof window!=='undefined'?window:globalThis);

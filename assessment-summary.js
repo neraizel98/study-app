@@ -3,6 +3,7 @@
     const app = root.SmartStudy = root.SmartStudy || {};
     const names = {reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
     const icons = {reading:'📖',korean_vocab:'📚',english:'🔤',grammar:'🧩',english_reading:'📗',math:'📐',math_formula:'📏',hanja:'🏮'};
+    const duration = seconds => {const total=Math.max(0,Math.round(Number(seconds)||0)),m=Math.floor(total/60),r=total%60;return m?`${m}분${r?` ${r}초`:''}`:`${r}초`;};
     const el = (tag, cls, text) => {const node=document.createElement(tag);if(cls)node.className=cls;if(text!=null)node.textContent=text;return node;};
     function render(panel, reports) {
         const rows=(reports||[]).filter(Boolean),total=rows.reduce((n,r)=>n+(Number(r.totalQuestions)||0),0),correct=rows.reduce((n,r)=>n+(Number(r.initialScore)||0),0);
@@ -21,6 +22,9 @@
             const track=el('div','assessment-track'),fill=el('span');fill.style.width=`${pct}%`;track.append(fill);track.setAttribute('aria-hidden','true');
             const actual=m.actualCount??count,requested=m.requestedCount??count;
             const meta=el('div','assessment-subject-meta');meta.append(el('span',null,actual===requested?`${actual}문항 출제`:`출제 ${actual} / 계획 ${requested}문항`),el('span',null,`답안 ${attempts.length}개 확인`));
+            // Mock exam section time (online, or entered for a paper round); an unrecorded paper round says so instead of 0초.
+            if(m.mockExam&&m.mode==='paper'&&m.timeEntered!==true)meta.append(el('span','assessment-time is-empty','시간 기록 없음'));
+            else if(m.mockExam&&m.sectionElapsedSeconds!=null&&Number.isFinite(Number(m.sectionElapsedSeconds)))meta.append(el('span','assessment-time',`교시 걸린 시간 ${duration(m.sectionElapsedSeconds)}`));
             if(m.periodCounts&&!m.examTraining)meta.append(el('span',null,`이번 주 ${m.periodCounts.current} · 누적 ${m.periodCounts.previous}`));
             card.append(top,track,meta);grid.append(card);
             for(const attempt of attempts.filter(a=>!a.correct)){const context=attempt.context||m,scope=context.title||context.unitTitle||m.unitTitle||m.formulaTitle||(!/모의고사|주간 평가/.test(report.level||'')?report.level:'')||'이번 평가의 오답';supplements.add(`${names[subject]||subject}${scope?' · '+scope:''}`);}

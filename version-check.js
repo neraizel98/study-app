@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261104-quiz-integrity';
+    const APP_VERSION = '20261104-mock-integrity';
 
     (async function () {
         try {

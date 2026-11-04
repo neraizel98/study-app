@@ -7,7 +7,7 @@ test('current Korean course and all eight subjects produce a quality-gated unsee
  assert.equal(s.c.SmartStudy.MockExam.validateBank(b),true);
  for(const q of b.items){assert.equal(s.api.grade(q,q.answer).correct,true,q.question);assert(q.evidenceReportIds.length);assert(!q.repeated);}
  for(const row of Object.values(b.quality.summary)){assert(row.application>=row.applicationRequired);assert(row.reasoning>=row.reasoningRequired);}
- assert(b.items.filter(q=>q.subject==='reading').every(q=>q.passageId.startsWith('mock-kr-g7-')));
+ assert(b.items.filter(q=>q.subject==='reading').every(q=>/^mock-(?:retake-)?kr-g7-/.test(q.passageId)),'grade-7 passages from the first-round or retake pool');
  assert.equal(new Set(b.items.filter(q=>q.subject==='english_reading').map(q=>q.passageId)).size,1,'keep one English text unused for a later exam');
  assert.equal(JSON.stringify(s.reports),before);
 });

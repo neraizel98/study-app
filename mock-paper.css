@@ -78,7 +78,7 @@ body.paper-page { background: #e8e3d9; color: var(--paper-ink); font-family: var
 .passage { border: .3mm solid var(--paper-ink); padding: 2.6mm 3.2mm; font-size: 9.3pt; line-height: 1.58; break-inside: avoid; }
 .passage--inline { margin: 1.6mm 0 1.6mm 1.6em; }
 .passage-title { margin: 0 0 1mm; text-align: center; font-weight: 700; font-family: var(--paper-sans); font-size: 9pt; }
-.passage-line { margin: 0; text-indent: 1em; text-align: justify; word-break: keep-all; }
+.passage-line { margin: 0; text-indent: 1em; text-align: justify; word-break: keep-all; white-space: pre-line; } /* poems keep their line breaks */
 .sec-english .passage-line { text-align: left; }
 .glossary { margin: 1.6mm 0 0; display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 0 3mm; font-size: 8pt; }
 .q { break-inside: avoid; margin: 0 0 5mm; }
