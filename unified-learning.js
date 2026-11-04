@@ -104,14 +104,18 @@
         const isOutgrown=c=>readingPassed(c)||outgrown(statsOf(c));
         const todayEntry=entries.filter(e=>e.subject===subject&&day(e.at)===plan.today()).sort((a,b)=>b.at-a.at).find(e=>choices.some(c=>same(c.context,e.context)&&!outgrown(statsOf(c))));
         if(todayEntry)return {...choices.find(c=>same(c.context,todayEntry.context)),reason:'오늘 과목 화면에서 제출한 기록을 연결했어요.',todayEvidence:true};
+        const diagnostic=root.SmartStudy.MockLearning?.recommend(user,subject,choices,plan.contextKey.bind(plan));
+        if(diagnostic)return diagnostic;
+        const english=['english','grammar','english_reading'].includes(subject);
         const wrong=local.getWrongAnswers(user)?.[subject==='math_formula'?'math':subject]||[];
         for(const item of wrong){
+            if(english&&(item.source==='mock-exam'||String(item.sessionId||'').startsWith('mock:')))continue;
             if(item.deleted||item.invalid||item.quarantined||item.isMastered||Number(item.dueAt||0)>Date.now())continue;
             const choice=choices.find(c=>same(c.context,contextOf(subject,item)));
             // An outgrown unit's wrong answers stay in the wrong-note review instead of pulling the plan back.
             if(choice&&!isOutgrown(choice))return {...choice,reason:'복습할 오답이 있는 범위를 먼저 확인해요.'};
         }
-        const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
+        const assessments=(local.listReports(user)||[]).filter(r=>r.metadata?.assessment&&(!r.metadata.mockExam||r.metadata.resultVisibility==='published')&&(!english||!r.metadata.mockExam)&&subjectOf(r)===subject).sort((a,b)=>Number(b.date)-Number(a.date));
         const assessed=new Set();
         for(const report of assessments)for(const attempt of report.metadata.initialAttempts||report.metadata.attempts||[]){
             const c=attempt.context||contextOf(subject,report),id=plan.contextKey(subject,c);
@@ -146,7 +150,7 @@
             if(submitted)return p;
             const before=p.allocationPolicyVersion;budgetPolicy.migrate(p);
             const currentPlacement=root.SmartStudy?.SubjectProgression?JSON.stringify(['reading','grammar','english_reading'].map(subject=>root.SmartStudy.SubjectProgression.resolve(subject,root.SmartStudy.SubjectProgression.profileGroup(subject,p.profile.grade),p.userId))):null;
-            if((p.recommendationVersion==='20261024-internal-levels'&&p.placementSignature===currentPlacement)||p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
+            if((p.recommendationVersion==='20261024-internal-levels'&&p.placementSignature===currentPlacement&&(!root.SmartStudy.MockLearning||p.diagnosticSignature===root.SmartStudy.MockLearning.signature(p.userId)))||p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return before!==p.allocationPolicyVersion?plan.savePlan(p):p;
         }
         if(p.tasks.some(t=>t.status!=='ready'||t.startedAt||t.completedAt))return p;
         p.profile={...p.profile,userId:p.userId};
@@ -157,7 +161,7 @@
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
             const assignedChoice=scope?.mode==='assigned'?catalog(subject,{...p.profile,allGrades:true}).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
             let rec=recommend(subject,p.profile,entries,p.userId);
-            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom){
+            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
                 const params=new URLSearchParams(step.href.split('?')[1]);
                 const linked=subject==='english'?{unitId:params.get('level')}:subject==='grammar'?{levelId:params.get('stage'),unitId:params.get('unit')}:{levelId:course.unit.gradeId||'grade6',unitId:course.unit.id};
@@ -165,10 +169,13 @@
                 if(found)rec={...found,reason:'영어 통합 과정과 같은 단어·문법·독해 범위예요.'};
             }
             const context=assigned?(assignedChoice?.context||existing?.context||null):rec?.context||null;
-            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
-            return {...(existing||{}),id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage,
+            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
+            const diagnostic=assigned?null:rec?.diagnostic||null;
+            const focus=diagnostic?.kind==='word'?'&word='+encodeURIComponent(diagnostic.word):diagnostic?.kind==='lesson'?'&lesson='+encodeURIComponent(diagnostic.lessonIndex):'';
+            return {...(existing||{}),diagnostic,id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage+focus,
                 reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
         });
+        if(root.SmartStudy.MockLearning)p.diagnosticSignature=root.SmartStudy.MockLearning.signature(p.userId);
         p.curriculumVersion=1;p.recommendationVersion='20261024-internal-levels';p.placementSignature=root.SmartStudy?.SubjectProgression?JSON.stringify(['reading','grammar','english_reading'].map(subject=>root.SmartStudy.SubjectProgression.resolve(subject,root.SmartStudy.SubjectProgression.profileGroup(subject,p.profile.grade),p.userId))):null;p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);
     }
@@ -185,7 +192,7 @@
         if(!choice)throw Error('학습 자료에 없는 단원입니다.');
         if(outgrown(performance(task.subject,choice.context,evidence(user))))throw Error('충분히 익힌 범위예요. 오늘 학습에서는 다음 범위를 선택하고, 이 범위는 자유 복습에서 풀어 주세요.');
         if(this.contextKey(task.subject,task.context)===this.contextKey(task.subject,choice.context))return p;
-        task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.context=choice.context;task.targetUrl=target(task.subject,choice.context);task.status='ready';task.startedAt=null;task.studyConfirmed=false;task.sessionId=null;task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
+        task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.context=choice.context;task.diagnostic=null;task.targetUrl=target(task.subject,choice.context);task.status='ready';task.startedAt=null;task.studyConfirmed=false;task.sessionId=null;task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
     };
     plan.refreshEvidence=function(user){
         const p=this.getPlan(user);if(!p?.curriculumVersion)return oldRefresh(user);

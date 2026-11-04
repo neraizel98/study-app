@@ -36,6 +36,14 @@ let studyVocabularyBand = null;
 let studyVocabularyKey = "";
 let shuffledStudyIndices = []; // 학습 모드용 랜덤 순서
 
+function diagnosticWordFocus() {
+    const requested = new URLSearchParams(window.location.search).get('word')?.trim().toLowerCase();
+    const user = window.UserSession?.getActiveUser?.() || window.SmartStudy?.LocalRepository?.getActiveUser?.() || '';
+    const task = window.SmartStudy?.LearningPlan?.getPlan?.(user)?.tasks?.find(item => item.subject === 'english' && item.diagnostic?.kind === 'word');
+    const diagnostic = task?.context?.unitId === currentLevel ? task.diagnostic.word : null;
+    return String(diagnostic || requested || '').trim().toLowerCase() || null;
+}
+
 // ============================================================
 // DOM
 // ============================================================
@@ -344,10 +352,16 @@ function startQuiz(wordList) {
                 }
                 const baseCount = Math.min(QUIZ_COUNT, dataList.length) - challengeWords.length;
                 const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
+                const focusWord = diagnosticWordFocus();
+                const eligibleFocusPool = window.EnglishVocabularyProgress?.eligible
+                    ? EnglishVocabularyProgress.eligible(currentLevel, currentQuizBand)
+                    : (window.vocabData?.[currentLevel] || []);
+                const focusItem = focusWord ? eligibleFocusPool.find(item => item.word.toLowerCase() === focusWord) : null;
+                const selectionPool = focusItem ? dataList.filter(item => item.word !== focusItem.word) : dataList;
                 const baseWords = typeof AdaptiveQuiz !== 'undefined'
-                    ? AdaptiveQuiz.mix(dataList, wrongItems, item => item.word, item => item.word, baseCount, currentQuizBand.wrongRatio)
-                    : Utils.shuffle([...dataList]).slice(0, baseCount);
-                quizWords = Utils.shuffle([...baseWords, ...challengeWords]);
+                    ? AdaptiveQuiz.mix(selectionPool, wrongItems, item => item.word, item => item.word, Math.max(0, baseCount - (focusItem ? 1 : 0)), currentQuizBand.wrongRatio)
+                    : Utils.shuffle([...selectionPool]).slice(0, Math.max(0, baseCount - (focusItem ? 1 : 0)));
+                quizWords = [...(focusItem ? [focusItem] : []), ...Utils.shuffle([...baseWords, ...challengeWords])].slice(0, QUIZ_COUNT);
             }
             quizSessionData.total = quizWords.length;
         }
@@ -920,6 +934,9 @@ function showResult() {
             adaptiveBandSnapshot: currentQuizBand.name,
             attempts: questionResults.map(r => ({
                 question: r.word,
+                word: r.word,
+                conceptId: `word:${r.word}`,
+                learningTarget: { kind: 'word', conceptId: `word:${r.word}`, word: r.word, context: { unitId: currentLevel } },
                 hintUsed: Boolean(r.hintUsed),
                 questionType: r.qType,
                 selectedAnswer: r.selectedAnswer,

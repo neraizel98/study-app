@@ -44,6 +44,33 @@
     const aliases = () => legacyLabels[stageId]
         ? [`영문법 ${legacyLabels[stageId]}`, `영어 문법 ${legacyLabels[stageId]}`, stage().title]
         : [stage().title];
+    function diagnosticLessonFocus() {
+        const user = window.UserSession?.getActiveUser?.() || window.SmartStudy?.LocalRepository?.getActiveUser?.() || '';
+        const task = window.SmartStudy?.LearningPlan?.getPlan?.(user)?.tasks?.find(item => item.subject === 'grammar' && item.diagnostic?.kind === 'lesson');
+        const sameContext = task?.context?.levelId === stageId && task?.context?.unitId === unit().id;
+        const value = sameContext ? Number(task.diagnostic.lessonIndex) : params.has('lesson') ? Number(params.get('lesson')) : NaN;
+        return Number.isInteger(value) && value >= 0 && value < unit().lessons.length ? value : null;
+    }
+    function lessonIndexOfQuestion(question) {
+        if (Number.isInteger(question.lessonIndex)) return question.lessonIndex;
+        const haystack = `${question.question || ''}\n${question.explanation || ''}`;
+        const matches = unit().lessons.map((lesson, index) => ({ lesson, index })).filter(({ lesson }) =>
+            haystack.includes(lesson.title) || (lesson.examples || []).some(pair => pair.some(value => value && haystack.includes(value)))
+        );
+        return matches.length === 1 ? matches[0].index : null;
+    }
+    function lessonFocusQuestions(index) {
+        if (!Number.isInteger(index)) return [];
+        const lesson = unit().lessons[index];
+        const meanings = [...new Set(stage().units.flatMap(candidate => candidate.lessons || []).flatMap(candidate => candidate.examples || []).map(pair => pair[1]).filter(Boolean))];
+        return (lesson.examples || []).map(([sentence, meaning], exampleIndex) => {
+            const distractors = meanings.filter(value => value !== meaning).slice(exampleIndex, exampleIndex + 3);
+            if (distractors.length < 3) return null;
+            const choices = typeof Utils !== 'undefined' ? Utils.shuffle([meaning, ...distractors]) : [meaning, ...distractors];
+            return { type: 'choice', question: `다음 예문의 뜻으로 알맞은 것은? ${sentence}`, answer: meaning, choices, answerIndex: choices.indexOf(meaning),
+                explanation: `${lesson.title}: ${sentence} — ${meaning}`, lessonIndex: index, diagnosticFocus: true };
+        }).filter(Boolean);
+    }
     const hasNextLesson = () => lessonIndex < unit().lessons.length - 1
         || stage().units.findIndex(item => item.id === unit().id) < stage().units.length - 1;
 
@@ -129,6 +156,7 @@
         if (requestedReview) {
             questions = getReviewQuestions();
         } else {
+            const focusLesson = diagnosticLessonFocus();
             const band = typeof AdaptiveQuiz !== 'undefined'
                 ? AdaptiveQuiz.getBand('grammar', `grammar:${stageId}:${unit().id}`, aliases())
                 : { name: 'standard', score: null, wrongRatio: 0.45 };
@@ -154,8 +182,12 @@
                 seen.add(item.question);
                 return true;
             });
-            questions = [...priorityQuestions, ...fresh].slice(0, 10);
-            if (typeof Utils !== 'undefined') questions = Utils.shuffle(questions);
+            const builtFocus = window.QuizExposure ? QuizExposure.fresh('grammar', lessonFocusQuestions(focusLesson)) : lessonFocusQuestions(focusLesson);
+            const focused = [...builtFocus, ...fresh.filter(item => lessonIndexOfQuestion(item) === focusLesson).map(item => ({ ...item, lessonIndex: focusLesson, diagnosticFocus: true }))]
+                .filter((item, index, rows) => rows.findIndex(candidate => candidate.question === item.question) === index);
+            const general = fresh.filter(item => lessonIndexOfQuestion(item) !== focusLesson);
+            questions = [...priorityQuestions, ...(typeof Utils !== 'undefined' ? Utils.shuffle(focused) : focused), ...(typeof Utils !== 'undefined' ? Utils.shuffle(general) : general)].slice(0, 10);
+            if (typeof Utils !== 'undefined' && focusLesson === null) questions = Utils.shuffle(questions);
         }
         if (!questions.length) {
             alert(requestedReview ? '이 단원에서 다시 풀 오답이 없습니다.' : '최근에 풀지 않은 새 문항이 부족해요. 다른 범위를 학습하거나 오답 복습을 선택해 주세요.');
@@ -235,6 +267,8 @@
             type: `${unit().id}:${q.question}`,
             quizType: q.type || 'choice',
             lessonIndex: q.lessonIndex,
+            conceptId: Number.isInteger(q.lessonIndex) ? `lesson:${q.lessonIndex}` : null,
+            learningTarget: Number.isInteger(q.lessonIndex) ? { kind: 'lesson', conceptId: `lesson:${q.lessonIndex}`, lessonIndex: q.lessonIndex, context: { levelId: stageId, stageId, unitId: unit().id } } : null,
             category: 'grammar',
             stageId,
             stageTitle: stage().title,

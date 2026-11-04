@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261102-reading-expanded';
+const CACHE_NAME = 'smart-study-20261104-mock-learning';
 
 try {
     importScripts('./firebase-config.js');
@@ -94,9 +94,9 @@ const STATIC_ASSETS = [
     './EnglishReadingMore2.js',
     './english-curriculum.js',
     './EnglishReadingSecondary.js',
-    './EnglishReadingExpansion.js?v=20261102-reading-expanded',
-    './EnglishReadingMiddleExpansion.js?v=20261102-reading-expanded',
-    './EnglishReadingHighExpansion.js?v=20261102-reading-expanded',
+    './EnglishReadingExpansion.js?v=20261104-mock-learning',
+    './EnglishReadingMiddleExpansion.js?v=20261104-mock-learning',
+    './EnglishReadingHighExpansion.js?v=20261104-mock-learning',
     './EnglishGrammarExpanded.js',
     './EnglishGrammarAdvancedQuiz.js',
     './EnglishReadingPolicy.js',

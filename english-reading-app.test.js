@@ -63,7 +63,7 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
         ready: Promise.resolve(), getActiveUser: () => 'tester', getPreference: (key, fallback) => sharedPreferences.has(key) ? structuredClone(sharedPreferences.get(key)) : fallback,
         setPreference: (key, value) => sharedPreferences.set(key, structuredClone(value)), listReports: () => sharedReports
     };
-    const window = { QuizExposure: options.freshCount==null?undefined:{fresh:(subject,questions)=>questions.slice(0,options.freshCount)}, document, location: { search: options.search ?? '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository, SubjectProgression: options.progression, LearningPlan: { getProfile: () => ({ grade: options.profileGrade || 6 }) } },
+    const window = { QuizExposure: options.freshCount==null?undefined:{fresh:(subject,questions)=>questions.slice(0,options.freshCount)}, document, location: { search: options.search ?? '?level=grade6&unit=er1', href: '' }, history: { replaceState() {} }, addEventListener() {}, SmartStudy: { LocalRepository: repository, SubjectProgression: options.progression, LearningPlan: { getProfile: () => ({ grade: options.profileGrade || 6 }), getPlan: () => options.plan || null } },
         UserSession: { getActiveUser: () => 'tester' }, EnglishReadingPolicy: Policy, alert() {} };
     window.window = window;
     const sandbox = { window, document, location: window.location, history: window.history, URLSearchParams, console, Date, Math, structuredClone,
@@ -99,6 +99,12 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     const explicit = makeBrowser(new Map(), [], { search: '?level=middle1&unit=erm1-1', secondary: true, profileGrade: 8, progression });
     await explicit.init();
     assert.equal(explicit.window.EnglishReadingApp.getLevelId(), 'middle1', 'explicit saved task stage stays unchanged');
+    const diagnosticPrefs = new Map([['SmartStudy_EnglishReading_tester_exposed', ['er1-p0']]]);
+    const diagnosticReading = makeBrowser(diagnosticPrefs, [], { plan: { tasks: [{ subject: 'english_reading', context: { levelId: 'grade6', unitId: 'er1' }, diagnostic: { kind: 'reading-skill', skill: 'evidence' } }] } });
+    await diagnosticReading.init(); diagnosticReading.window.EnglishReadingApp.startQuiz('practice');
+    assert.notEqual(diagnosticReading.window.EnglishReadingApp.getSession().passageId, 'er1-p0', 'diagnostic reading starts from an unseen passage in the mapped unit');
+    assert.equal(diagnosticReading.window.EnglishReadingApp.getSession().questions[0].type, 'evidence', 'mock-exam reading weakness leads the new passage quiz with the mapped skill');
+    assert.equal(diagnosticReading.window.EnglishReadingApp.getSession().diagnosticSkill, 'evidence');
 
     const nearlyUsed = makeBrowser(new Map(), [], {freshCount:1}); await nearlyUsed.init();
     nearlyUsed.window.EnglishReadingApp.startQuiz('practice');

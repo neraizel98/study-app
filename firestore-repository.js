@@ -243,5 +243,63 @@
   return {saved:true};
  }
  async function publish(user,assessment){const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');const r=await ref(user,assessment),db=await client.getDB();await timed(db.runTransaction(async tx=>{const doc=await tx.get(r);if(!doc.exists)throw new Error('저장된 시험이 없습니다.');if(doc.data().payload?.status==='paper')throw new Error('종이 시험은 채점 기록이 없어 공개할 수 없습니다.');if(doc.data().published)return;tx.update(r,{published:true,publishedAt:root.firebase.firestore.FieldValue.serverTimestamp(),publishedBy:auth.uid});}));return get(user,assessment);}
+ // Diagnostic selection is a separate admin-owned document, never an exam payload edit.
+ const settingsRef=async user=>{
+  if(typeof user!=='string'||!user.trim()||user.includes('/')||user.length>160)throw new Error('학습자 식별자가 올바르지 않습니다.');
+  return (await client.getDB()).collection('mockLearningSettings').doc(String(user));
+ };
+ const settingsData=data=>({...data,updatedAt:data.updatedAt?.toMillis?.()||Number(data.updatedAt)||0});
+ const validAssessmentId=(user,value)=>typeof value==='string'&&value.startsWith(`mock:${user}:`)&&value.length<=300&&!value.includes('/');
+ async function getLearningSettings(user){
+  const doc=await timed((await settingsRef(user)).get({source:'server'}));if(!doc.exists)return null;
+  const d=doc.data(),normalized=settingsData(d),keys=['schemaVersion','learnerId','scope','assessmentId','confirmedUnassisted','updatedAt','updatedBy'];
+  if(Object.keys(d).length!==keys.length||!keys.every(k=>Object.prototype.hasOwnProperty.call(d,k))||d.learnerId!==user||d.schemaVersion!==1||d.scope!=='english'||!Number.isFinite(normalized.updatedAt)||normalized.updatedAt<=0||typeof d.updatedBy!=='string'||!d.updatedBy||!(d.assessmentId===null?d.confirmedUnassisted===false:validAssessmentId(user,d.assessmentId)&&d.confirmedUnassisted===true))throw new Error('진단 기준 정보를 확인하지 못했습니다.');
+  return normalized;
+ }
+ async function setLearningSettings(user,value){
+  const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);
+  if(access?.role!=='admin')throw new Error('관리자만 진단 기준을 지정할 수 있습니다.');
+  const assessmentId=value?.assessmentId;
+  if(!(assessmentId===null?value?.confirmedUnassisted===false:validAssessmentId(user,assessmentId)&&value?.confirmedUnassisted===true))throw new Error('채점 내용과 도움 없이 응시했는지 먼저 확인해 주세요.');
+  const r=await settingsRef(user),db=await client.getDB();
+  await timed(db.runTransaction(async tx=>{
+   if(assessmentId!==null){const exam=await tx.get(await ref(user,assessmentId)),d=exam.exists?exam.data():null,p=d?.payload;
+    const order=['reading','english','math','hanja'];
+    if(!d||d.learnerId!==user||d.assessmentId!==assessmentId||p?.userId!==user||p.assessmentId!==assessmentId||p.kind!=='mock'||p.status!=='submitted'||!Number.isInteger(p.submittedAt)||p.submittedAt<=0||!Array.isArray(p.sections)||p.sections.length!==4||!p.sections.every((s,i)=>s?.id===order[i]&&s.state==='ended')||!Array.isArray(p.questions)||p.questions.length!==55||!p.questions.every(q=>typeof q?.id==='string'&&q.id&&typeof q.subject==='string')||!Array.isArray(p.initialAttempts)||p.initialAttempts.length!==55||new Set(p.questions.map(q=>q?.id)).size!==55||new Set(p.initialAttempts.map(a=>a?.questionId)).size!==55||!p.initialAttempts.every(a=>a&&typeof a.correct==='boolean'&&p.questions.some(q=>q?.id===a.questionId&&q.subject===a.subject)))throw new Error('채점과 제출이 완료된 시험만 진단 기준으로 지정할 수 있습니다.');
+    if(p.integrity?.translationDetected===true)throw new Error('번역이 감지된 시험은 진단 기준에서 제외해 주세요.');
+   }
+   tx.set(r,{schemaVersion:1,learnerId:user,scope:'english',assessmentId,confirmedUnassisted:assessmentId!==null,updatedBy:auth.uid,updatedAt:root.firebase.firestore.FieldValue.serverTimestamp()});
+  }));
+  return getLearningSettings(user);
+ }
+ const reviewKeys=['eventId','assessmentId','questionId','correct','status','reviewedAt'];
+ function validReviewEvent(user,value){
+  return value&&typeof value==='object'&&Object.keys(value).length===reviewKeys.length&&reviewKeys.every(k=>Object.prototype.hasOwnProperty.call(value,k))
+   &&typeof value.eventId==='string'&&/^[A-Za-z0-9_.:-]{1,160}$/.test(value.eventId)&&validAssessmentId(user,value.assessmentId)
+   &&typeof value.questionId==='string'&&value.questionId.trim().length>0&&value.questionId.length<=300
+   &&typeof value.correct==='boolean'&&value.status===(value.correct?'correct':'wrong')&&Number.isInteger(value.reviewedAt)&&value.reviewedAt>0;
+ }
+ async function reviewCollection(user){
+  await settingsRef(user);const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);
+  if(!auth||(access?.role!=='admin'&&!access?.learnerIds?.includes(user)))throw new Error('이 학습자의 복습 기록에 접근할 수 없습니다.');
+  return (await client.getDB()).collection('mockLearningReviews').doc(user).collection('events');
+ }
+ async function listReviewEvents(user){
+  const page=await timed((await reviewCollection(user)).get({source:'server'}));
+  return page.docs.map(doc=>{const value=doc.data();if(!validReviewEvent(user,value)||value.eventId!==doc.id)throw new Error('복습 기록 정보를 확인하지 못했습니다.');return value;});
+ }
+ async function saveReviewEvent(user,value){
+  if(!validReviewEvent(user,value)||value.reviewedAt>Date.now()+300000)throw new Error('복습 기록 정보가 올바르지 않습니다.');
+  const event=JSON.parse(JSON.stringify(value)),r=(await reviewCollection(user)).doc(event.eventId),db=await client.getDB();
+  await timed(db.runTransaction(async tx=>{
+   const old=await tx.get(r);
+   if(old.exists){if(!sameSnapshot(old.data(),event))throw new Error('이미 저장된 복습 기록과 내용이 다릅니다. 기존 기록은 유지됩니다.');return;}
+   const source=await tx.get(await ref(user,event.assessmentId)),d=source.exists?source.data():null,p=d?.payload;
+   if(!d||d.learnerId!==user||d.assessmentId!==event.assessmentId||d.published!==true||p?.userId!==user||p.assessmentId!==event.assessmentId||p.kind!=='mock'||p.status!=='submitted'||!Number.isInteger(p.submittedAt)||event.reviewedAt<=p.submittedAt||!Array.isArray(p.questions)||p.questions.filter(q=>q?.id===event.questionId).length!==1)throw new Error('공개된 시험의 문항만 복습 기록으로 저장할 수 있습니다.');
+   tx.set(r,event);
+  }));
+  return event;
+ }
+ app.MockLearningRepository={get:getLearningSettings,set:setLearningSettings,listReviewEvents,saveReviewEvent};
  app.MockPublication={get,submit,list,publish,savePaper,savePaperResult,id};
 })(window);

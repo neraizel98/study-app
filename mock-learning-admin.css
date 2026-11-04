@@ -1,0 +1,19 @@
+.mock-learning-panel { background: #fffaf0; border: 1px solid #ddd2bf; border-radius: 16px; padding: 18px; color: #2b2620; }
+.mock-learning-panel h3 { margin: 0 0 12px; font-size: 1.08rem; }
+.mock-learning-reference p { margin: 8px 0; line-height: 1.6; overflow-wrap: anywhere; }
+.mock-learning-score { display: block; color: #23845c; font-size: 1.35rem; }
+.mock-learning-state, .mock-learning-card-status { color: #236849; font-weight: 650; }
+.mock-learning-counts { display: flex; flex-wrap: wrap; gap: 8px 16px; font-size: .9rem; }
+.mock-learning-note, .mock-learning-meta { color: #6e6559; font-size: .82rem; line-height: 1.6; }
+.mock-learning-select { margin-top: 16px; padding-top: 12px; border-top: 1px solid #e5dccb; }
+.mock-learning-card-status { margin: 0 0 10px; font-size: .85rem; }
+.mock-learning-confirm { display: flex; align-items: flex-start; gap: 9px; font-size: .84rem; line-height: 1.6; cursor: pointer; }
+.mock-learning-confirm input { flex: 0 0 auto; width: 18px; height: 18px; margin: 3px 0 0; accent-color: #23845c; }
+.mock-learning-choose, .mock-learning-clear { min-height: 44px; margin: 12px 0 0; padding: 10px 14px; border: 1px solid #23845c; border-radius: 10px; background: #23845c; color: #fff; font: inherit; font-size: .85rem; cursor: pointer; white-space: normal; }
+.mock-learning-clear { background: #fff; color: #236849; }
+.mock-learning-choose:disabled, .mock-learning-clear:disabled { opacity: .55; cursor: default; }
+.mock-learning-message { font-size: .85rem; line-height: 1.6; overflow-wrap: anywhere; }
+.mock-learning-message:empty { display: none; }
+.mock-learning-message.is-error { color: #b13e19; }
+.mock-admin .mock-result-card.is-learning-baseline { border-color: #23845c; }
+@media (max-width: 480px) { .mock-learning-panel { padding: 14px; } .mock-learning-choose { width: 100%; } }

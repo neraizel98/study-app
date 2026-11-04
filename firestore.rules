@@ -211,6 +211,58 @@ service cloud.firestore {
         && validPaperResult(request.resource.data.payload, resource.data.payload);
       allow delete: if false;
     }
+    function validDiagnosticExam(userId, assessmentId) {
+      let exam = get(/databases/$(database)/documents/mockExamResults/$(userId + '|' + assessmentId)).data;
+      return exam.learnerId == userId && exam.assessmentId == assessmentId
+        && exam.payload.userId == userId && exam.payload.assessmentId == assessmentId
+        && exam.payload.kind == 'mock' && exam.payload.status == 'submitted'
+        && exam.payload.submittedAt is int && exam.payload.submittedAt > 0
+        && exam.payload.sections is list && exam.payload.sections.size() == 4
+        && exam.payload.sections[0].id == 'reading' && exam.payload.sections[0].state == 'ended'
+        && exam.payload.sections[1].id == 'english' && exam.payload.sections[1].state == 'ended'
+        && exam.payload.sections[2].id == 'math' && exam.payload.sections[2].state == 'ended'
+        && exam.payload.sections[3].id == 'hanja' && exam.payload.sections[3].state == 'ended'
+        && exam.payload.questions is list && exam.payload.questions.size() == 55
+        && exam.payload.initialAttempts is list && exam.payload.initialAttempts.size() == 55
+        && (!exam.payload.keys().hasAny(['integrity']) || !exam.payload.integrity.keys().hasAny(['translationDetected']) || exam.payload.integrity.translationDetected != true);
+    }
+    function validDiagnosticSettings(userId) {
+      let d = request.resource.data;
+      return d.keys().hasAll(['schemaVersion','learnerId','scope','assessmentId','confirmedUnassisted','updatedAt','updatedBy'])
+        && d.keys().hasOnly(['schemaVersion','learnerId','scope','assessmentId','confirmedUnassisted','updatedAt','updatedBy'])
+        && d.schemaVersion == 1 && d.learnerId == userId && d.scope == 'english'
+        && d.confirmedUnassisted is bool && d.updatedAt == request.time && d.updatedBy == request.auth.uid
+        && ((d.assessmentId == null && d.confirmedUnassisted == false)
+          || (d.assessmentId is string && d.assessmentId.size() > 0 && d.assessmentId.size() <= 300
+            && d.assessmentId.matches('^[^/]+$') && d.confirmedUnassisted == true && validDiagnosticExam(userId,d.assessmentId)));
+    }
+    match /mockLearningSettings/{userId} {
+      allow get: if canUse(userId) && (isAdmin() || resource == null || resource.data.assessmentId == null
+        || (validDiagnosticExam(userId,resource.data.assessmentId)
+          && get(/databases/$(database)/documents/mockExamResults/$(userId + '|' + resource.data.assessmentId)).data.published == true));
+      allow create, update: if isAdmin() && canUse(userId) && validDiagnosticSettings(userId);
+      allow list, delete: if false;
+    }
+    function validMockReview(userId, eventId) {
+      let d = request.resource.data;
+      let exam = get(/databases/$(database)/documents/mockExamResults/$(userId + '|' + d.assessmentId)).data;
+      return d.keys().hasAll(['eventId','assessmentId','questionId','correct','status','reviewedAt'])
+        && d.keys().hasOnly(['eventId','assessmentId','questionId','correct','status','reviewedAt'])
+        && d.eventId == eventId && eventId.matches('^[A-Za-z0-9_.:-]{1,160}$')
+        && d.assessmentId is string && d.assessmentId.size() > 0 && d.assessmentId.size() <= 300 && d.assessmentId.matches('^[^/]+$')
+        && d.questionId is string && d.questionId.size() > 0 && d.questionId.size() <= 300
+        && d.correct is bool && d.status == (d.correct ? 'correct' : 'wrong')
+        && d.reviewedAt is int && d.reviewedAt > 0 && d.reviewedAt <= request.time.toMillis() + 300000
+        && exam.learnerId == userId && exam.assessmentId == d.assessmentId && exam.published == true
+        && exam.payload.userId == userId && exam.payload.assessmentId == d.assessmentId
+        && exam.payload.kind == 'mock' && exam.payload.status == 'submitted' && d.reviewedAt > exam.payload.submittedAt;
+    }
+    // Root collection avoids the legacy users/{userId}/** write permission.
+    match /mockLearningReviews/{userId}/events/{eventId} {
+      allow get, list: if canUse(userId);
+      allow create: if canUse(userId) && validMockReview(userId,eventId);
+      allow update, delete: if false;
+    }
     match /users/{userId} {
       allow get, create, update: if canUse(userId);
       allow list, delete: if isAdmin();

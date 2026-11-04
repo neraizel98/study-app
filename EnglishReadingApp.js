@@ -33,6 +33,24 @@
     const context = () => `english_reading:${levelId}`;
     const aliases = () => [level()?.title, `영어 독해 ${level()?.title}`].filter(Boolean);
     const allPassages = () => units().flatMap(item => item.passages || []);
+    function diagnosticSkillFocus() {
+        const user = userId();
+        const task = window.SmartStudy?.LearningPlan?.getPlan?.(user)?.tasks?.find(item => item.subject === SUBJECT && item.diagnostic?.kind === 'reading-skill');
+        const sameContext = task?.context?.levelId === levelId && task?.context?.unitId === unitId;
+        const skill = sameContext ? task.diagnostic.skill : params.get('skill');
+        return ['fact','main','vocabulary','reference','evidence','inference'].includes(skill) ? skill : null;
+    }
+    function selectDiagnosticPassage() {
+        const skill = diagnosticSkillFocus();
+        if (!skill) return false;
+        const prior = new Set(exposedIds());
+        reports().filter(report => report.subject === SUBJECT).forEach(report => prior.add(report.metadata?.passageId));
+        const candidates = passages().filter(item => item.questions.some(question => (question.skill || question.type) === skill));
+        const unseen = candidates.filter(item => !prior.has(item.id));
+        const pool = unseen.length ? unseen : candidates;
+        const selected = pool.find(item => Number(item.band) === currentBand()) || pool[0];
+        return selected ? selectPassageById(selected.id) : false;
+    }
 
     function validateContent() {
         const ids = new Set();
@@ -164,7 +182,12 @@
         const freshQuestions = window.QuizExposure ? QuizExposure.fresh(SUBJECT, allQuestions) : allQuestions;
         const practiceReview = params.get('mode') === 'review' || freshQuestions.length < 5;
         if (kind === 'assessment' && practiceReview) { alert('새 문제 5개가 있는 지문으로 평가해야 해요. 다른 지문을 선택해 주세요.'); return; }
-        const questionPool = (practiceReview ? allQuestions : freshQuestions).slice(0,10);
+        const focusSkill = diagnosticSkillFocus();
+        const candidates = practiceReview ? allQuestions : freshQuestions;
+        const questionPool = [
+            ...candidates.filter(question => (question.skill || question.type) === focusSkill).map(question => ({ ...question, diagnosticFocus: true })),
+            ...candidates.filter(question => (question.skill || question.type) !== focusSkill)
+        ].slice(0,10);
         if (!questionPool.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 선택하거나 오답 복습을 진행해 주세요.'); return; }
         const isNovel = kind === 'assessment' && !exposedIds().includes(item.id);
         const practiceAssessment = !practiceReview && !peekedLines(item.id).length && !reports().some(r=>r.subject===SUBJECT&&r.metadata?.passageId===item.id&&r.metadata?.status!=='draft');
@@ -173,7 +196,7 @@
             schema: 1, sessionId: `english-reading-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             levelId, unitId: units().find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
             passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', practiceAssessment, review: practiceReview,
-            isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, status: 'active', activeSeconds: 0,
+            isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, diagnosticSkill: focusSkill, status: 'active', activeSeconds: 0,
             questions: questionPool, roundQuestionIds: questionPool.map(question => question.id), questionIndex: 0, round: 1,
             answers: [], initialAttempts: [], attempts: [], initialScore: null, finalScore: 0, hintUsed: false, startedAt: Date.now()
         };
@@ -215,7 +238,9 @@
             type: `${session.passageId}:${question.id}`, wrongNoteId: `${session.passageId}:${question.id}`, category: SUBJECT,
             levelId: session.levelId, level: level().title, unitId: session.unitId, unitTitle: data().units.find(item => item.id === session.unitId)?.title,
             passageId: session.passageId, passageTitle: quizPassage().title, passageText: [...quizPassage().sentences], band: session.band,
-            questionId: question.id, question: question.prompt, choices: [...question.choices], selectedAnswer: question.choices[index],
+            questionId: question.id, skill: question.skill || question.type || null, question: question.prompt, choices: [...question.choices], selectedAnswer: question.choices[index],
+            conceptId: `reading-skill:${question.skill || question.type}`,
+            learningTarget: { kind: 'reading-skill', conceptId: `reading-skill:${question.skill || question.type}`, skill: question.skill || question.type, context: { levelId: session.levelId, unitId: session.unitId } },
             correctAnswer: question.choices[question.answerIndex], answer: question.choices[question.answerIndex], explanation: question.explanation,
             evidence: [...question.evidence], correct, translationUsed: Boolean(session.translationReadRound === session.round), hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed || session.translationReadRound === session.round), round: session.round
         };
@@ -266,7 +291,7 @@
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
             band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
             hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts,
-            vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason,
+            vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason, diagnosticSkill: session.diagnosticSkill,
             submittedAt: Date.now()
         });
     }
@@ -405,7 +430,7 @@
         if (requestedUnit) { levelId = gradeOf(requestedUnit); unitId = requestedUnit.id; }
         else unitId = unit().id;
         const requestedPassage = params.get('passage'); if (requestedPassage) selectPassageById(requestedPassage);
-        else if (!params.has('unit')) { const candidate = getRecommendation().passageId; if (candidate) selectPassageById(candidate); }
+        else if (!selectDiagnosticPassage() && !params.has('unit')) { const candidate = getRecommendation().passageId; if (candidate) selectPassageById(candidate); }
         renderSelectors(); bind(); updateBandNotice();
         if (typeof StudyTimer !== 'undefined') timerController = StudyTimer.initBar(SUBJECT, $('practiceQuiz'), { getContext: context, getAliases: aliases, getLabel: () => `영어 독해 · ${learnerLabel()}`, isLearningActive: () => mode === 'study' && !$('studyPanel').hidden, isLockBypassed: () => params.get('mode') === 'review' });
         if (!restoreSession()) { renderStudy(); if (params.get('mode') === 'review') startReview(); }
