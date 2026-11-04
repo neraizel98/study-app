@@ -573,7 +573,10 @@ function _mergeReports(local, cloud) {
         if (currentUpdated > previousUpdated || (currentUpdated === previousUpdated && (r.timeSpentSeconds || 0) > (prev.timeSpentSeconds || 0))) {
             map.set(r.sessionId, { ...prev, ...r, createdAt: prev.createdAt || r.createdAt || r.date,
                 initialScore: prev.initialScore,
-                metadata: {...r.metadata, initialAttempts: prev.metadata?.initialAttempts || r.metadata?.initialAttempts || []} });
+                metadata: {...r.metadata,
+                    // A later save of the same session without the screen-leave record keeps the earlier one.
+                    ...(!r.metadata?.integrity && prev.metadata?.integrity ? {integrity: prev.metadata.integrity} : {}),
+                    initialAttempts: prev.metadata?.initialAttempts || r.metadata?.initialAttempts || []} });
         }
     });
     return Array.from(map.values()).sort((a, b) => (a.date || 0) - (b.date || 0));

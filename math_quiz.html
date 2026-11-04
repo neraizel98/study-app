@@ -4,6 +4,7 @@
     <meta name="google" content="notranslate">
     <link rel="stylesheet" href="learning-translation-guard.css?v=20261027-exam-integrity">
     <script src="learning-translation-guard.js?v=20261027-exam-integrity" defer></script>
+    <script src="quiz-integrity.js?v=20261104-quiz-integrity" defer></script>
     <meta charset="UTF-8">
     <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
     <meta http-equiv="Pragma" content="no-cache">
@@ -190,7 +191,7 @@
         @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
     </style>
-<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261027-mock-paper"></head>
+<link rel="stylesheet" href="today-flow.css?v=20261014-redesign"><link rel="stylesheet" href="theme.css?v=20261104-quiz-integrity"></head>
 <body>
     <div class="bg-blobs">
         <div class="blob blob-1"></div>
@@ -228,7 +229,7 @@
     <script src="utils.js?v=20261021-stabilization"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
     <script src="subject-progression.js?v=20261024-internal-levels"></script><script src="concept-mastery.js?v=20261023-korean-reading"></script><script src="report.js?v=20261020-korean-vocab"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261104-mock-learning"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261104-mock-learning"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261104-mock-learning"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261104-quiz-integrity"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="english-curriculum.js?v=20261021-english-three-levels"></script><script src="study-timer.js?v=20261102-paper-omr-fix"></script>
     <script src="MathData.js?v=20261019-content-fix"></script>
@@ -380,6 +381,43 @@
             };
             const quizActiveTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
 
+            // Leaving the app while solving (a proxy for opening a calculator) is recorded per solving round.
+            // Rounds are merged so every save of this session (first result and retries) carries the full record.
+            const quizIntegrity = (() => {
+                let active = null;
+                const rounds = [];
+                const api = () => (window.QuizIntegrity && typeof window.QuizIntegrity.start === 'function') ? window.QuizIntegrity : null;
+                const merge = parts => {
+                    const list = parts.filter(part => part && typeof part === 'object');
+                    if (list.length <= 1) return list[0] || null;
+                    const last = list[list.length - 1];
+                    const flagged = list.find(part => part.translationDetected === true);
+                    return { ...last, v: 1, kind: 'calculator',
+                        leaves: list.reduce((sum, part) => sum + (Number(part.leaves) || 0), 0),
+                        awaySeconds: list.reduce((sum, part) => sum + (Number(part.awaySeconds) || 0), 0),
+                        longestAwaySeconds: Math.max(...list.map(part => Number(part.longestAwaySeconds) || 0)),
+                        translationDetected: Boolean(flagged),
+                        translationSignal: flagged ? (flagged.translationSignal ?? null) : (last.translationSignal ?? null),
+                        events: list.flatMap(part => Array.isArray(part.events) ? part.events : []).slice(-20) };
+                };
+                return {
+                    start() {
+                        if (active || !api()) return;
+                        try { active = api().start({ subject: 'math', kind: 'calculator' }) || null; } catch (e) { active = null; }
+                    },
+                    stop() {
+                        if (!active) return;
+                        try { const summary = active.stop(); if (summary) rounds.push(summary); } catch (e) { /* recording is best-effort */ }
+                        active = null;
+                    },
+                    summary() {
+                        let current = null;
+                        try { current = active ? active.summary() : null; } catch (e) { current = null; }
+                        return merge(current ? [...rounds, current] : rounds);
+                    }
+                };
+            })();
+
             let currentIdx = 0;
             let results = []; // { selected, correct, isOk }
 
@@ -395,6 +433,7 @@
 
             function renderQuiz(idx) {
                 const quiz = quizzes[idx];
+                quizIntegrity.start();
                 document.getElementById('quizIdx').innerText = `문항 ${idx + 1} / ${quizzes.length}`;
                 
                 document.getElementById('unitIndicator').innerText = `${unit.title} - ${typeName}`;
@@ -473,6 +512,7 @@
             }
 
             function showResult() {
+                quizIntegrity.stop();
                 const score = results.filter(r => r.isOk).length;
                 
                 if (quizSessionData.initialScore === null) {
@@ -578,7 +618,9 @@
                     const isCompleted = (wrongIdxs.length === 0);
                     const timeSpent = quizActiveTimer?.getSeconds() || 0;
                     if (typeof saveQuizResult === 'function') {
+                        const integrity = quizIntegrity.summary();
                         saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
+                            ...(integrity ? { integrity } : {}),
                             category: 'math',
                             review: isReviewMode,
                             levelId,

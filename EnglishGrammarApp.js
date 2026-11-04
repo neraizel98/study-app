@@ -17,7 +17,7 @@
     const requestedQuiz = params.get('mode') === 'quiz' || requestedReview;
     let mode = requestedQuiz ? 'quiz' : 'study';
     let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null, quizActiveTimer = null;
-    let sessionId = '', attempts = [];
+    let sessionId = '', attempts = [], quizIntegrity = null;
     const principleDetails = {
         e1: '한국어는 조사가 문장 성분을 알려 주지만 영어는 자리와 순서가 그 역할을 합니다. 그래서 단어 뜻만 아는 것보다 주어와 동사의 위치를 먼저 찾는 습관이 중요합니다. 문장을 읽을 때 “누가 또는 무엇이”를 찾고, 바로 뒤에서 그 대상의 행동이나 상태를 나타내는 동사를 확인하세요.',
         e2: 'be동사는 행동이 아니라 주어의 정체, 상태, 위치를 이어 주는 연결 동사입니다. 주어에 따라 am·are·is의 모양이 달라지지만 뜻과 역할은 같습니다. 부정문과 의문문에서도 별도의 do를 쓰지 않고 be동사 자체의 위치만 바꾼다는 점이 핵심입니다.',
@@ -118,6 +118,7 @@
             $('errorCorrect').textContent = `바른 표현: ${error.correct}`;
             $('errorReason').textContent = error.reason;
         }
+        quizIntegrity?.stop(); quizIntegrity = null;
         $('lessonPractice').innerHTML = (item.practice || []).map((exercise, index) =>
             `<article class="practice-item"><p>${index + 1}. ${exercise.question}</p><div class="practice-choices">${Utils.shuffle([exercise.answer, ...exercise.distractors]).map(choice => `<button type="button" class="lesson-chip" data-practice="${index}" data-practice-answer="${choice.replace(/"/g, '&quot;')}">${choice}</button>`).join('')}</div><p class="practice-feedback" id="practiceFeedback${index}" aria-live="polite" hidden></p></article>`
         ).join('');
@@ -203,6 +204,8 @@
         $('studyModeBtn').classList.remove('active');
         $('quizModeBtn').classList.add('active');
         setUrl();
+        // Screen leaves/translation are recorded only while solving, for the guardian.
+        quizIntegrity = window.QuizIntegrity?.start({ subject: 'grammar', kind: 'translator' }) || null;
         renderQuestion();
         timerController?.stopTimer();
     }
@@ -309,6 +312,7 @@
     function finishQuiz() {
         const initialScore = score / 10;
         const activeQuizSeconds = quizActiveTimer?.getSeconds() || 0;
+        const integrity = quizIntegrity?.stop() || null; quizIntegrity = null;
         if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(sessionId, 'grammar', `${levelLabel()} · ${unit().title}`, questions.length, initialScore, initialScore, activeQuizSeconds, true, {
@@ -318,6 +322,7 @@
                 stageTitle: stage().title,
                 unitId: unit().id,
                 unitTitle: unit().title,
+                ...(integrity ? { integrity } : {}),
                 attempts
             });
         }

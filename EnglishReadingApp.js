@@ -20,6 +20,7 @@
     let quizTimer = null;
     let quizTimerBase = 0;
     let session = null;
+    let quizIntegrity = null;
 
     const escapeHTML = value => String(value ?? '').replace(/[&<>"']/g, character => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[character]));
     const unit = () => units().find(item => item.id === unitId) || units()[0];
@@ -115,7 +116,7 @@
         if (!data().levels.some(item => item.id === id && item.available)) return;
         checkpointQuiz(); timerController?.stopTimer?.();
         levelId = id; unitId = units()[0]?.id; passageIndex = 0; session = null;
-        quizTimer?.destroy?.(); quizTimer = null;
+        quizTimer?.destroy?.(); quizTimer = null; quizIntegrity?.stop(); quizIntegrity = null;
         renderSelectors();
         if (!restoreSession(false)) renderStudy();
         updateBandNotice();
@@ -131,6 +132,7 @@
         const item = passage(); if (!item) return;
         stopSpeech();
         mode = 'study'; session = null; clearSavedSession(); quizTimer?.destroy?.(); quizTimer = null;
+        quizIntegrity?.stop(); quizIntegrity = null;
         renderSelectors();
         $('studyPanel').hidden = false; $('quizPanel').hidden = true; $('resultModal').hidden = true;
         $('passageMeta').textContent = `${learnerLabel()} · ${unit().title} · ${['기초','표준','도전'][item.band]}`;
@@ -207,6 +209,8 @@
         stopSpeech();
         mode = 'quiz'; $('studyPanel').hidden = true; $('quizPanel').hidden = false; $('resultModal').hidden = true;
         timerController?.stopTimer?.(); quizTimer?.destroy?.(); quizTimerBase = Number(session.activeSeconds || 0); quizTimer = typeof ActiveTimeTracker !== 'undefined' ? ActiveTimeTracker.create() : null;
+        // Screen leaves/translation while solving; the record rides on the session so retry rounds and restored quizzes keep counting.
+        quizIntegrity = window.QuizIntegrity?.start({ subject: SUBJECT, kind: 'translator', continueFrom: session.integrity || null }) || null;
         setUrl(session.review ? 'review' : 'quiz'); renderQuestion();
     }
     function quizPassage() { return allPassages().find(item => item.id === session?.passageId); }
@@ -272,6 +276,8 @@
         if (session.initialScore == null) session.initialScore = firstCorrect;
         const correctIds = new Set(session.answers.filter(item => item.correct).map(item => item.questionId));
         session.finalScore = session.questions.filter(item => correctIds.has(item.id)).length;
+        if (quizIntegrity) session.integrity = quizIntegrity.stop();
+        quizIntegrity = null;
         session.status = 'results'; session.finishedRound = session.round; saveReport(); saveSession();
         showResults();
         quizTimer?.destroy?.(); quizTimer = null; updateDifficultyAfterSession();
@@ -290,7 +296,7 @@
         if (typeof saveQuizResult === 'function') saveQuizResult(session.sessionId, SUBJECT, `${learnerLabel()} · ${quizPassage().title}`, total, session.finalScore, session.initialScore, seconds, true, {
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
             band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
-            hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts,
+            hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts, ...(session.integrity ? { integrity: session.integrity } : {}),
             vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason, diagnosticSkill: session.diagnosticSkill,
             submittedAt: Date.now()
         });
@@ -313,7 +319,7 @@
         session.status = 'active';
         $('resultModal').hidden = true; enterQuiz(); saveSession();
     }
-    function saveSession() { if (session) setPreference('activeSession', session); }
+    function saveSession() { if (!session) return; if (quizIntegrity) session.integrity = quizIntegrity.summary(); setPreference('activeSession', session); }
     function clearSavedSession() { setPreference('activeSession', null); }
     function restoreSession(respectQuery = true) {
         const saved = getPreference('activeSession', null);

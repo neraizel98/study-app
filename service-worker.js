@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261104-mock-learning';
+const CACHE_NAME = 'smart-study-20261104-quiz-integrity';
 
 try {
     importScripts('./firebase-config.js');
@@ -148,8 +148,10 @@ const STATIC_ASSETS = [
     './assessment-summary.js',
     './learning-translation-guard.js',
     './learning-translation-guard.css',
+    './quiz-integrity.js',
     './mock-publication.js',
     './mock-admin.js',
+    './quiz-integrity-admin.js',
     './mock-paper-admin.js',
     './mock-paper-omr.js',
     './MockRetakeReading.js',

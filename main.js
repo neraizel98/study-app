@@ -29,6 +29,7 @@ let retryWrongList = [];
 let quizWrongWordCounts = {}; // 오답 유지
 let quizSessionData = { id: null, total: 0, initialScore: null, currentScore: 0, startTime: 0 }; // 세션 관리
 let quizActiveTimer = null;
+let quizIntegrity = null; // 퀴즈 중 화면 이탈·번역 기록 (보호자 표시용)
 let currentQuizBand = { name: 'standard', score: null, wrongRatio: 0.45 };
 let showKoEx = false;
 let showKoDef = false; // 영문 뜻 한글 풀이는 예문과 따로 켜고 끈다
@@ -313,6 +314,7 @@ function startQuiz(wordList) {
             quizSessionData.initialScore = null;
             quizSessionData.currentScore = 0;
             quizSessionData.roundCount = 1;
+            quizSessionData.integrity = null;
 
             if (isReviewMode) {
                 const wrongAnswers = (typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [])
@@ -401,11 +403,22 @@ function startQuiz(wordList) {
             });
         }
 
+        startQuizIntegrity(Boolean(wordList));
         showQuestion();
     } catch (e) {
         console.error('[startQuiz Error]', e);
         reportCriticalError('퀴즈 초기화 중 오류가 발생했습니다: ' + e.message);
     }
+}
+
+// 틀린 문제 재도전은 같은 성적 기록을 갱신하므로 이탈 기록도 이어서 센다.
+function startQuizIntegrity(retry) {
+    quizIntegrity = window.QuizIntegrity?.start({ subject: 'english', kind: 'translator', continueFrom: retry ? quizSessionData.integrity : null }) || null;
+}
+function stopQuizIntegrity() {
+    if (quizIntegrity) quizSessionData.integrity = quizIntegrity.stop();
+    quizIntegrity = null;
+    return quizSessionData.integrity || null;
 }
 
 function updateHeader() {
@@ -923,6 +936,7 @@ function showResult() {
 
     const isCompleted = (retryWrongList.length === 0);
     const timeSpent = quizActiveTimer?.getSeconds() || 0;
+    const integrity = stopQuizIntegrity();
     
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
@@ -932,6 +946,7 @@ function showResult() {
             unitId: currentLevel,
             unitTitle: lvName,
             adaptiveBandSnapshot: currentQuizBand.name,
+            ...(integrity ? { integrity } : {}),
             attempts: questionResults.map(r => ({
                 question: r.word,
                 word: r.word,
@@ -987,6 +1002,7 @@ function setMode(mode) {
             studyControls.classList.add('view-active');
             quizView.classList.remove('view-active');
             currentMode = 'study';
+            stopQuizIntegrity();
             updateCard();
             if (_studyTimerCtrl) _studyTimerCtrl.startTimer();
         } else {

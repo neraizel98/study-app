@@ -18,6 +18,46 @@ const MathFormulaApp = (() => {
     let mobileFilterOpen = false;
     const openGroups = new Set();
 
+    // Leaving the app while solving (a proxy for opening a calculator) is recorded only while answers
+    // are being written, never in study mode or while graded results are shown. Each solving stretch of
+    // one quiz session is merged so every save of that session carries the whole record.
+    const integrity = (() => {
+        let active = null;
+        let parts = [];
+        const api = () => (window.QuizIntegrity && typeof window.QuizIntegrity.start === 'function') ? window.QuizIntegrity : null;
+        const merge = list => {
+            list = list.filter(part => part && typeof part === 'object');
+            if (list.length <= 1) return list[0] || null;
+            const last = list[list.length - 1];
+            const flagged = list.find(part => part.translationDetected === true);
+            return { ...last, v: 1, kind: 'calculator',
+                leaves: list.reduce((sum, part) => sum + (Number(part.leaves) || 0), 0),
+                awaySeconds: list.reduce((sum, part) => sum + (Number(part.awaySeconds) || 0), 0),
+                longestAwaySeconds: Math.max(...list.map(part => Number(part.longestAwaySeconds) || 0)),
+                translationDetected: Boolean(flagged),
+                translationSignal: flagged ? (flagged.translationSignal ?? null) : (last.translationSignal ?? null),
+                events: list.flatMap(part => Array.isArray(part.events) ? part.events : []).slice(-20) };
+        };
+        const stop = () => {
+            if (!active) return;
+            try { const summary = active.stop(); if (summary) parts.push(summary); } catch { /* recording is best-effort */ }
+            active = null;
+        };
+        return {
+            start() {
+                if (active || !api()) return;
+                try { active = api().start({ subject: 'math', kind: 'calculator' }) || null; } catch { active = null; }
+            },
+            stop,
+            reset() { stop(); parts = []; },
+            summary() {
+                let current = null;
+                try { current = active ? active.summary() : null; } catch { current = null; }
+                return merge(current ? [...parts, current] : parts);
+            }
+        };
+    })();
+
     const $ = id => document.getElementById(id);
     const formula = () => MATH_FORMULAS.find(item => item.number === formulaNumber);
     const math = tex => {
@@ -339,6 +379,7 @@ const MathFormulaApp = (() => {
     }
 
     function renderStudy() {
+        integrity.stop();
         const item = formula();
         const refs = MATH_PREREQUISITE_REFS[item.number] || [];
         const guideIds = [...new Set(refs.filter(ref => ref?.guide).map(ref => ref.guide))];
@@ -429,11 +470,15 @@ const MathFormulaApp = (() => {
             gradedAnswers = {};
             attemptHistory = [];
             hintUsed = new Set();
+            integrity.reset();
             window.MathFormulaTime?.startQuizSession();
         }
         if (!questions.length) {
+            integrity.stop();
             $('content').replaceChildren();const message=document.createElement('p');message.textContent='최근에 풀지 않은 새 공식 문제가 부족해요. 다른 공식을 공부하거나 오답 노트에서 복습해 주세요.';const back=document.createElement('a');back.href=`math_formula.html?formula=${formulaNumber}&mode=study`;back.textContent='공식 내용으로 돌아가기';$('content').append(message,back);return;
         }
+        if (submitted) integrity.stop();
+        else integrity.start();
         const item = formula();
         const score = submitted ? questions.filter((q, i) => window.MathFormulaQuiz.isCorrect(q, answers[i])).length : 0;
         const quizLabels = questions.map(q=>q.level||'오답 복습');
@@ -511,7 +556,7 @@ const MathFormulaApp = (() => {
             renderQuiz();
         }));
         document.querySelectorAll('[data-written]').forEach(area => {
-            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; submitted = false; if ($('submitQuizBtn')) $('submitQuizBtn').disabled = false; });
+            area.addEventListener('input', () => { answers[Number(area.dataset.written)] = area.value; submitted = false; integrity.start(); if ($('submitQuizBtn')) $('submitQuizBtn').disabled = false; });
         });
         document.querySelectorAll('[data-hint]').forEach(button => button.addEventListener('click', () => {
             hintUsed.add(Number(button.dataset.hint));
@@ -550,12 +595,15 @@ const MathFormulaApp = (() => {
             const score = attempts.filter(attempt => attempt.correct).length;
             if (initialScore === null) { initialScore = score; submittedAt = Date.now(); }
             attemptHistory.push(...attempts.filter((_, index) => nextRound === 1 || answers[index] !== gradedAnswers[index]));
+            integrity.stop();
+            const integritySummary = integrity.summary();
             if (typeof saveQuizResult === 'function') saveQuizResult(
                 sessionId, 'math', item.level, questions.length, score, initialScore,
                 window.MathFormulaTime?.getQuizSessionSeconds() || 0, score === questions.length,
                 {source: 'math-formula', quizFormat:'formula-review-v2', review:reviewMode, formulaNumber, formulaTitle: item.title, levelId: 'formula',
                     semesterId: item.level, unitId: `formula-${formulaNumber}`, attempts,
-                    attemptHistory: [...attemptHistory], submittedAt, status: 'submitted', round: nextRound}
+                    attemptHistory: [...attemptHistory], submittedAt, status: 'submitted', round: nextRound,
+                    ...(integritySummary ? { integrity: integritySummary } : {})}
             );
             if (typeof WrongNote !== 'undefined') attempts.forEach((attempt, index) => {
                 if (nextRound > 1 && answers[index] === gradedAnswers[index]) return;
