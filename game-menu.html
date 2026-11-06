@@ -5,13 +5,11 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>포켓몬 학습 게임 · Smart Study</title>
     <link rel="stylesheet" href="theme.css" />
-    <link
-      rel="stylesheet"
-      href="learning-games.css?v=20261106-learning-games-r2"
-    />
-    <link rel="stylesheet" href="game-menu.css?v=20261106-learning-games-r2" />
+    <link rel="stylesheet" href="learning-games.css?v=20261106-arcade-levels" />
+    <link rel="stylesheet" href="game-menu.css?v=20261106-arcade-levels" />
+    <link rel="stylesheet" href="arcade.css?v=20261106-arcade-levels" />
   </head>
-  <body>
+  <body class="arcade">
     <main class="games-shell">
       <a class="back" href="index.html">← 대시보드</a>
       <header class="game-menu-hero">
@@ -50,7 +48,7 @@
             />
             <h3>십자말 숲</h3>
             <p>뜻을 읽고 가로·세로 낱말을 채워요.</p>
-            <span class="game-tile-meta">국어 · 영어 · 10분</span
+            <span class="game-tile-meta">Lv.1–10 · 국어·영어 · 10분</span
             ><strong>퍼즐 시작 →</strong></a
           >
           <a href="word-chain.html" class="game-tile tile-water"
@@ -63,7 +61,7 @@
             />
             <h3>끝말잇기 항구</h3>
             <p>끝 글자를 잇고 단어의 뜻도 맞혀요.</p>
-            <span class="game-tile-meta">국어 · 영어 · 3분</span
+            <span class="game-tile-meta">Lv.1–10 · 국어·영어 · 3분</span
             ><strong>항구로 출항 →</strong></a
           >
           <article class="game-tile tile-fire upcoming">
@@ -136,12 +134,12 @@
         >. Pokémon © Nintendo / Creatures / GAME FREAK. 비공식 학습 게임입니다.
       </footer>
     </main>
-    <script src="game-config.js?v=20261106-learning-games-r2"></script>
+    <script src="game-config.js?v=20261106-arcade-levels"></script>
     <script>
       document.getElementById("menuOnlineStatus").textContent = window
         .SmartStudy.GameConfig.onlineEnabled
         ? "오늘의 최초 도전 점수로 경쟁해요."
-        : "온라인 순위는 준비 중이에요. 두 게임의 연습 모드를 이용할 수 있어요.";
+        : "온라인 순위는 준비 중이에요. 게임은 바로 시작할 수 있어요.";
     </script>
   </body>
 </html>

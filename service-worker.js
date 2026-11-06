@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261106-learning-games-r2';
+const CACHE_NAME = 'smart-study-20261106-arcade-levels';
 
 try {
     importScripts('./firebase-config.js');
@@ -151,6 +151,10 @@ const STATIC_ASSETS = [
     './learning-games.js',
     './functions/crossword-core.js',
     './functions/game-words.json',
+    './functions/game-level-words.json',
+    './game-levels.js',
+    './game-setup.js',
+    './arcade.css',
     './assets/game-companions/1.png',
     './assets/game-companions/4.png',
     './assets/game-companions/25.png',

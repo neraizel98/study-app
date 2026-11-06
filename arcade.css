@@ -1,0 +1,483 @@
+.arcade {
+  --ink: #f1f6ff;
+  --muted: #afc2db;
+  --edge: #344969;
+  --panel: #182940;
+  --gold: #ffce52;
+  background: #0c1628;
+  background-image:
+    linear-gradient(#ffffff03 1px, transparent 1px),
+    linear-gradient(90deg, #ffffff03 1px, transparent 1px);
+  background-size: 32px 32px;
+  color: var(--ink);
+  min-height: 100vh;
+}
+.arcade * {
+  box-sizing: border-box;
+}
+.arcade .games-shell {
+  max-width: 1000px;
+  color: var(--ink);
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
+}
+.arcade a {
+  color: #8edcff;
+}
+.arcade button {
+  background: #263c58;
+  border: 1px solid #4b6382;
+  color: var(--ink);
+  box-shadow: 0 3px 0 #09121f;
+  border-radius: 10px;
+  transition:
+    transform 0.12s,
+    background 0.12s;
+}
+.arcade button:hover:not(:disabled) {
+  background: #345275;
+  transform: translateY(-1px);
+}
+.arcade button:active:not(:disabled) {
+  transform: translateY(2px);
+  box-shadow: none;
+}
+.arcade button:disabled {
+  cursor: default;
+}
+.arcade button:focus-visible,
+.arcade a:focus-visible {
+  outline: 3px solid var(--gold);
+  outline-offset: 4px;
+}
+.arcade-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+.arcade-nav a {
+  text-decoration: none;
+}
+.arcade-nav span {
+  color: var(--muted);
+}
+.arcade .game-hero,
+.arcade .game-menu-hero {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(120deg, #234d4b, #1c324f 70%);
+  border: 2px solid #45677b;
+  border-radius: 20px;
+  box-shadow: 0 8px 0 #07101e;
+  padding: 24px 30px;
+  margin: 22px 0 28px;
+}
+.arcade .game-hero:after,
+.arcade .game-menu-hero:after {
+  content: "";
+  position: absolute;
+  inset: auto 0 0;
+  height: 8px;
+  background: repeating-linear-gradient(
+    90deg,
+    #6cb7a5 0 24px,
+    #294d58 24px 48px
+  );
+  opacity: 0.55;
+}
+.arcade .eyebrow {
+  color: #a3e8d1;
+  font-size: 0.7rem;
+  letter-spacing: 0.13em;
+}
+.arcade .game-hero h1 {
+  font-size: clamp(1.8rem, 5vw, 2.8rem);
+  font-weight: 900;
+  letter-spacing: -0.04em;
+  text-shadow: 0 3px #091d2a;
+}
+.arcade .game-hero p:last-child {
+  color: #c8e1e7;
+  margin-bottom: 8px;
+  font-size: 0.95rem;
+}
+.arcade .companion img {
+  width: 144px;
+  height: 144px;
+  filter: drop-shadow(0 10px 0 #08192866);
+}
+.arcade .game-panel {
+  background: var(--panel);
+  border: 1px solid var(--edge);
+  box-shadow: 0 5px 0 #08111f;
+  padding: 26px;
+  border-radius: 18px;
+}
+.arcade .arcade-setup {
+  max-width: 760px;
+  margin: 24px auto;
+}
+.player-badge {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  border-bottom: 1px solid var(--edge);
+  padding-bottom: 18px;
+  margin-bottom: 20px;
+}
+.player-badge > span:first-child {
+  font-size: 1.4rem;
+}
+.player-badge strong {
+  font-size: 1.15rem;
+}
+.player-ready {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #8ce2b2;
+  letter-spacing: 0.12em;
+}
+.language-picks {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 26px;
+}
+.arcade .language-picks button {
+  font-size: 1rem;
+}
+.arcade .language-picks button[aria-pressed="true"] {
+  background: #307760;
+  border-color: #8cdbc1;
+  color: #fff;
+  box-shadow: 0 3px 0 #113f37;
+}
+.level-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.arcade .level-heading h2 {
+  margin: 0;
+  font-size: 1rem;
+}
+.level-heading > span {
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+.arcade-levels {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+.arcade .arcade-level {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 5px;
+  min-width: 0;
+  min-height: 92px;
+  padding: 12px 4px;
+  background: #21334d;
+  border: 2px solid #3c526f;
+  box-shadow: 0 4px 0 #0b1628;
+}
+.arcade-level b {
+  font-size: 1.65rem;
+  line-height: 1.2;
+}
+.arcade-level span {
+  font-size: 0.68rem;
+  white-space: nowrap;
+  color: #c2d2e5;
+}
+.arcade .arcade-level.selected {
+  background: #ffe08a;
+  color: #312712;
+  border-color: #fff1c4;
+  box-shadow: 0 4px 0 #a47625;
+}
+.arcade .arcade-level.selected span {
+  color: #57451f;
+}
+.arcade .arcade-level.recommended:after {
+  content: "★";
+  position: absolute;
+  top: 3px;
+  right: 5px;
+  font-size: 0.65rem;
+  color: #ffcc4d;
+}
+.arcade .arcade-level.selected.recommended:after {
+  color: #8a5b00;
+}
+.arcade .arcade-progress {
+  color: var(--muted);
+  text-align: center;
+  font-size: 0.8rem;
+  margin: 22px 0 16px;
+}
+.arcade .arcade-start {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+  width: 100%;
+  min-height: 60px;
+  border: 2px solid #fff0b4;
+  background: var(--gold);
+  color: #242a35;
+  box-shadow: 0 5px 0 #a26c22;
+  font-size: 1.15rem;
+  font-weight: 900;
+}
+.arcade .arcade-start:hover:not(:disabled) {
+  background: #ffe18c;
+}
+.arcade #arcadeNotice:empty {
+  display: none;
+}
+.arcade #arcadeNotice {
+  color: #ffd99e;
+  text-align: center;
+}
+.arcade-rules {
+  margin-top: 24px;
+  font-size: 0.8rem;
+  color: var(--muted);
+  border-top: 1px solid var(--edge);
+  padding-top: 16px;
+}
+.arcade-rules summary {
+  cursor: pointer;
+}
+.arcade .arcade-rules p {
+  font-size: 0.8rem;
+}
+.arcade .play-header {
+  flex-wrap: wrap;
+}
+.arcade .play-header h2 {
+  font-size: 1rem;
+  margin: 0;
+  margin-right: auto;
+}
+.arcade .arcade-quiet {
+  font-size: 0.75rem;
+  padding: 8px 10px;
+  min-height: 36px;
+}
+.arcade .clock {
+  background: #0a172b;
+  color: var(--gold);
+  border: 1px solid #50617a;
+  border-radius: 10px;
+  padding: 9px 14px;
+  font-size: 1.2rem;
+}
+.arcade .primary {
+  background: #3b967b;
+  border-color: #82d5b8;
+}
+.arcade input,
+.arcade select {
+  background: #0e1d31;
+  color: var(--ink);
+  border: 1px solid #536b88;
+}
+.arcade .crossword-grid {
+  background: #0d1a2c;
+  gap: 3px;
+  border: 1px solid #3c536a;
+  padding: 7px;
+}
+.arcade .crossword-cell {
+  background: #e7edf4;
+  color: #142438;
+  box-shadow: none;
+  padding: 0;
+  min-height: 0;
+  border: 0;
+  border-radius: 3px;
+}
+.arcade .crossword-cell.block {
+  background: #172a3d;
+}
+.arcade .crossword-cell.active {
+  background: #ffdf7c;
+  outline-color: #d6aa35;
+}
+.arcade .clue-item {
+  text-align: left;
+  background: #213650;
+  border: 1px solid #3f5674;
+  font-size: 0.88rem;
+  line-height: 1.5;
+}
+.arcade .clue-item.selected {
+  background: #385b70;
+  border-color: #a8dfdf;
+}
+.arcade #selectedClue {
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+.arcade #hintStatus,
+.arcade #chainFeedback {
+  font-size: 0.85rem;
+  color: #bae7d8;
+  min-height: 1.4em;
+}
+.arcade #gameResult:not(:empty),
+.arcade #chainResult:not(:empty) {
+  padding: 20px;
+  border: 1px solid #7e9877;
+  background: #203e3a;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin: 18px 0;
+  color: #fff1b9;
+}
+.arcade .chain-prompt {
+  background: linear-gradient(120deg, #173e54, #203751);
+  border-color: #457e9e;
+}
+.arcade .chain-prompt strong {
+  color: #a2e9ff;
+}
+.arcade .chain-prompt span {
+  color: #c3ddeb;
+}
+.arcade .chain-history span {
+  background: #2c4560;
+  color: #d9edff;
+  border-color: #496780;
+}
+.arcade .chain-choices button {
+  text-align: left;
+}
+.arcade progress {
+  accent-color: #6cddba;
+  width: 100%;
+}
+.arcade .chain-stats strong {
+  color: var(--gold);
+}
+.arcade .muted,
+.arcade footer {
+  color: var(--muted);
+}
+.arcade .game-tile {
+  background: linear-gradient(155deg, #2b445b, #1a2c43);
+  border: 1px solid #49617a;
+  color: var(--ink);
+  box-shadow: 0 5px 0 #07111f;
+}
+.arcade .tile-electric {
+  background: linear-gradient(150deg, #514b28, #1a2b40 75%);
+  border-color: #80773a;
+}
+.arcade .tile-water {
+  background: linear-gradient(150deg, #23596d, #1a2b40 75%);
+  border-color: #457f99;
+}
+.arcade .game-tile strong {
+  color: var(--gold);
+}
+.arcade .game-tile p,
+.arcade .game-tile-meta {
+  color: var(--muted);
+}
+.arcade .game-tile-state {
+  background: #1e5949;
+  color: #b3f6ce;
+}
+.arcade .upcoming .game-tile-state {
+  background: #344052;
+  color: #c4cbd9;
+}
+.arcade .menu-section-title > span {
+  color: var(--muted);
+}
+.arcade .ranking-portal {
+  background: #213650;
+  border-color: #4b6180;
+  color: var(--ink);
+}
+.arcade .ranking-portal p {
+  color: var(--muted);
+}
+.arcade .rank-row {
+  border-color: var(--edge);
+}
+@media (max-width: 680px) {
+  .arcade .games-shell {
+    padding: 18px 14px 36px;
+  }
+  .arcade .game-hero,
+  .arcade .game-menu-hero {
+    padding: 18px;
+    margin: 18px 0 24px;
+  }
+  .arcade .companion img {
+    width: 104px;
+    height: 104px;
+  }
+  .arcade .game-hero p:last-child {
+    font-size: 0.82rem;
+  }
+  .arcade .eyebrow {
+    font-size: 0.57rem;
+  }
+  .arcade .game-panel {
+    padding: 20px 16px;
+  }
+  .arcade-levels {
+    gap: 8px;
+  }
+  .arcade .arcade-level {
+    min-height: 78px;
+    padding: 12px 0 8px;
+  }
+  .arcade-level b {
+    font-size: 1.45rem;
+  }
+  .arcade-level span {
+    font-size: 0.6rem;
+  }
+  .arcade .language-picks {
+    margin-bottom: 22px;
+  }
+  .arcade .crossword-grid {
+    padding: 4px;
+    gap: 2px;
+  }
+  .arcade .crossword-cell {
+    font-size: clamp(0.65rem, 3vw, 1rem);
+  }
+  .arcade .play-layout {
+    gap: 14px;
+  }
+  .arcade .game-tile {
+    padding: 16px 10px;
+  }
+  .arcade .game-tile p {
+    font-size: 0.78rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .arcade button,
+  .arcade .game-tile {
+    transition: none;
+  }
+}

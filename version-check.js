@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261106-learning-games-r2';
+    const APP_VERSION = '20261106-arcade-levels';
 
     (async function () {
         try {
