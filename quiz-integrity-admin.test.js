@@ -5,7 +5,7 @@ const vm=require('node:vm');
 const {webcrypto}=require('node:crypto');
 const {IDBFactory}=require('fake-indexeddb');
 
-const read=file=>fs.readFileSync(file,'utf8');
+const read=file=>fs.readFileSync(file,'utf8').replace(/\r\n/g,'\n');
 const plain=value=>value===undefined?value:JSON.parse(JSON.stringify(value));
 const same=(actual,expected,message)=>assert.deepEqual(plain(actual),plain(expected),message);
 const englishIntegrity={v:1,kind:'translator',leaves:2,awaySeconds:70,longestAwaySeconds:50,translationDetected:false,translationSignal:null,

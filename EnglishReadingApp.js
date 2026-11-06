@@ -62,9 +62,10 @@
             return Array.isArray(item.sentences) && item.sentences.length > 0
                 && item.translations?.length === item.sentences.length && Array.isArray(item.questions) && item.questions.length >= 5
                 && new Set(item.questions.map(question => question.id)).size === item.questions.length
-                && item.questions.every(question => question.choices?.length === 4
-                    && new Set(question.choices.map(choice => String(choice).normalize('NFC').trim())).size === 4
-                    && Number.isInteger(question.answerIndex) && question.answerIndex >= 0 && question.answerIndex < 4
+                && item.questions.every(question => (question.type === 'arrange'
+                    ? Array.isArray(question.tokens) && question.tokens.length >= 3 && question.answer && !question.choices
+                    : question.choices?.length === 4 && new Set(question.choices.map(choice => String(choice).normalize('NFC').trim())).size === 4
+                        && Number.isInteger(question.answerIndex) && question.answerIndex >= 0 && question.answerIndex < 4)
                     && question.explanation && question.evidence?.every(index => Number.isInteger(index) && index >= 0 && index < item.sentences.length));
         });
     }
@@ -170,7 +171,9 @@
         return params.get('mode') === 'review' || typeof StudyTimer === 'undefined' || StudyTimer.isUnlocked(SUBJECT, context(), aliases());
     }
     function questionSnapshot(item) {
-        return item.questions.map(question => ({ ...question, choices: [...question.choices], evidence: [...question.evidence] }));
+        return item.questions.map(question => ({ ...question,
+            ...(Array.isArray(question.choices) ? { choices: [...question.choices] } : {}),
+            ...(Array.isArray(question.tokens) ? { tokens: [...question.tokens] } : {}), evidence: [...question.evidence] }));
     }
     function startQuiz(kind = 'practice', selectedPassage = null) {
         if (!quizUnlocked()) {
@@ -181,15 +184,51 @@
         const item = selectedPassage || passage();
         if (!item) { alert('풀 수 있는 지문이 없습니다.'); return; }
         const allQuestions = questionSnapshot(item);
-        const freshQuestions = window.QuizExposure ? QuizExposure.fresh(SUBJECT, allQuestions) : allQuestions;
-        const practiceReview = params.get('mode') === 'review' || freshQuestions.length < 5;
-        if (kind === 'assessment' && practiceReview) { alert('새 문제 5개가 있는 지문으로 평가해야 해요. 다른 지문을 선택해 주세요.'); return; }
         const focusSkill = diagnosticSkillFocus();
-        const candidates = practiceReview ? allQuestions : freshQuestions;
-        const questionPool = [
-            ...candidates.filter(question => (question.skill || question.type) === focusSkill).map(question => ({ ...question, diagnosticFocus: true })),
-            ...candidates.filter(question => (question.skill || question.type) !== focusSkill)
-        ].slice(0,10);
+        const shuffle = items => {
+            const result = [...items];
+            for (let index = result.length - 1; index > 0; index--) {
+                const selected = Math.floor(Math.random() * (index + 1));
+                [result[index], result[selected]] = [result[selected], result[index]];
+            }
+            return result;
+        };
+        const arrange = allQuestions.find(question => question.type === 'arrange');
+        const remaining = allQuestions.filter(question => question !== arrange);
+        const focused = remaining.filter(question => focusSkill && (question.skill || question.type) === focusSkill)
+            .map(question => ({ ...question, diagnosticFocus: true }));
+        const others = remaining.filter(question => !focusSkill || (question.skill || question.type) !== focusSkill);
+        const orderedCandidates = [...(arrange ? [arrange] : []), ...shuffle(focused), ...shuffle(others)].map(question => ({ ...question, passageId: item.id, passageText: [...item.sentences] }));
+        const exposureSelection = window.QuizExposure?.select
+            ? QuizExposure.select(userId(), SUBJECT, orderedCandidates, 10, { review: params.get('mode') === 'review' })
+            : null;
+        const fallbackFresh = window.QuizExposure?.fresh ? QuizExposure.fresh(SUBJECT, orderedCandidates) : orderedCandidates;
+        const fallbackReview = params.get('mode') === 'review' || fallbackFresh.length < 5;
+        const fallbackCandidates = fallbackReview ? [...fallbackFresh, ...orderedCandidates.filter(question => !fallbackFresh.some(fresh => fresh.id === question.id))] : fallbackFresh;
+        const selectedQuestions = [...(exposureSelection?.items || fallbackCandidates.slice(0, 10))];
+        // New lookup drills must not crowd out the comprehension skills that establish reading mastery.
+        const required = [
+            question => question.type === 'arrange',
+            question => (question.skill || question.type) === 'main',
+            question => (question.skill || question.type) === 'inference',
+            question => (question.skill || question.type) === 'evidence',
+            ...(focusSkill ? [question => (question.skill || question.type) === focusSkill] : [])
+        ].filter((predicate, index, list) => orderedCandidates.some(predicate) && list.findIndex(other => orderedCandidates.find(other)?.id === orderedCandidates.find(predicate)?.id) === index);
+        const inspections = window.QuizExposure?.inspect ? QuizExposure.inspect(userId(), SUBJECT, orderedCandidates) : [];
+        const inspected = new Map(inspections.map(row => [row.item.id, row]));
+        for (const predicate of required) {
+            if (selectedQuestions.some(predicate)) continue;
+            const candidate = orderedCandidates.find(question => predicate(question) && !selectedQuestions.some(item => item.id === question.id));
+            if (!candidate) continue;
+            const removable = selectedQuestions.findIndex((question, index) => index === selectedQuestions.length - 1 || !required.some(rule => rule(question) && selectedQuestions.filter(rule).length === 1));
+            const row = inspected.get(candidate.id);
+            const replacement = row ? { ...candidate, exposure: { fingerprint: row.fingerprint, priorCount: row.count, kind: row.kind, reviewRequired: row.count >= 2 } } : candidate;
+            if (removable >= 0) selectedQuestions.splice(removable, 1, replacement); else selectedQuestions.push(replacement);
+        }
+        const coverageReview = selectedQuestions.some(question => question.exposure?.reviewRequired);
+        const practiceReview = exposureSelection ? exposureSelection.reviewRequired || coverageReview : fallbackReview;
+        if (kind === 'assessment' && practiceReview) { alert('새 문제 5개가 있는 지문으로 평가해야 해요. 다른 지문을 선택해 주세요.'); return; }
+        const questionPool = shuffle(selectedQuestions.slice(0, 10));
         if (!questionPool.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 선택하거나 오답 복습을 진행해 주세요.'); return; }
         const isNovel = kind === 'assessment' && !exposedIds().includes(item.id);
         const practiceAssessment = !practiceReview && !peekedLines(item.id).length && !reports().some(r=>r.subject===SUBJECT&&r.metadata?.passageId===item.id&&r.metadata?.status!=='draft');
@@ -198,9 +237,11 @@
             schema: 1, sessionId: `english-reading-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
             levelId, unitId: units().find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
             passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', practiceAssessment, review: practiceReview,
-            isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, diagnosticSkill: focusSkill, status: 'active', activeSeconds: 0,
+            isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, diagnosticSkill: focusSkill,
+            exposurePolicy: exposureSelection ? { policyVersion: exposureSelection.policyVersion, reason: exposureSelection.reason, freshCount: exposureSelection.freshCount, repeatCount: exposureSelection.repeatCount, reviewCount: exposureSelection.reviewCount } : null,
+            status: 'active', activeSeconds: 0,
             questions: questionPool, roundQuestionIds: questionPool.map(question => question.id), questionIndex: 0, round: 1,
-            answers: [], initialAttempts: [], attempts: [], initialScore: null, finalScore: 0, hintUsed: false, startedAt: Date.now()
+            answers: [], arrangeDrafts: {}, initialAttempts: [], attempts: [], initialScore: null, finalScore: 0, hintUsed: false, startedAt: Date.now()
         };
         expose(item.id, kind === 'assessment' ? 'assessment' : 'practice');
         enterQuiz(); saveSession();
@@ -221,15 +262,25 @@
         const answer = currentAnswer(); const correctCount = session.answers.filter(entry => entry.correct).length;
         $('quizPassageTitle').textContent = item.title; $('quizPassage').innerHTML = renderPassageLines(item, false);
         $('quizProgress').textContent = `${session.questionIndex + 1} / ${session.roundQuestionIds.length}${session.round > 1 ? ` · 재도전 ${session.round - 1}` : ''}`;
-        $('quizScore').textContent = `${correctCount}개 정답`; $('quizQuestion').textContent = question.prompt;
-        $('toggleQuizTranslation').hidden = !(session.round > 1 || session.review);
-        $('toggleQuizTranslation').textContent = '번역 보기';
-        $('toggleQuizTranslation').setAttribute('aria-expanded', 'false');
-        $('quizTranslation').hidden = true;
-        $('quizTranslation').innerHTML = '';
-        $('quizChoices').innerHTML = question.choices.map((choice, index) => `<button class="choice" data-choice="${index}"><b>${index + 1}</b> ${escapeHTML(choice)}</button>`).join('');
+        $('quizScore').textContent = `${correctCount}개 정답`; $('quizQuestion').textContent = question.promptKo || question.prompt;
+        const arranged = question.type === 'arrange';
+        $('quizChoices').hidden = arranged; $('arrangeArea').hidden = !arranged;
+        $('quizChoices').innerHTML = arranged ? '' : question.choices.map((choice, index) => `<button class="choice" data-choice="${index}"><b>${index + 1}</b> ${escapeHTML(choice)}</button>`).join('');
+        if (arranged) renderArrange(question, answer);
         $('quizFeedback').hidden = !answer; $('nextQuestion').hidden = !answer; $('showHint').disabled = Boolean(answer);
         if (answer) showAnswer(answer, false); else $('quizFeedback').innerHTML = '';
+    }
+    const normalizeSentence = value => String(value ?? '').normalize('NFKC').trim().toLocaleLowerCase().replace(/\s+([,.;:!?])/g, '$1').replace(/\s+/g, ' ');
+    const draftKey = question => `${session.round}:${question.id}`;
+    function arrangeDraft(question) {
+        session.arrangeDrafts ||= {};
+        return session.arrangeDrafts[draftKey(question)] ||= { value: '', used: [] };
+    }
+    function renderArrange(question, answer = null) {
+        const draft = arrangeDraft(question);
+        $('arrangeBank').innerHTML = question.tokens.map((token, index) => `<button type="button" class="arrange-token" data-token-index="${index}" ${draft.used.includes(index) || answer ? 'disabled' : ''}>${escapeHTML(token)}</button>`).join('');
+        $('arrangeInput').value = answer?.selectedAnswer ?? draft.value;
+        $('arrangeInput').disabled = Boolean(answer); $('arrangeUndo').disabled = Boolean(answer); $('arrangeReset').disabled = Boolean(answer); $('arrangeSubmit').disabled = Boolean(answer);
     }
     function evidenceText(question) {
         const item = quizPassage();
@@ -237,18 +288,29 @@
     }
     function submitAnswer(index) {
         if (currentAnswer()) return;
-        const question = currentQuestion(); const correct = index === question.answerIndex;
+        const question = currentQuestion();
+        completeQuestion(question.choices[index], index === question.answerIndex, index);
+    }
+    function submitArrange() {
+        if (currentAnswer() || currentQuestion()?.type !== 'arrange') return;
+        const selected = $('arrangeInput').value.trim(); if (!selected) return;
+        completeQuestion(selected, normalizeSentence(selected) === normalizeSentence(currentQuestion().answer), null);
+    }
+    function completeQuestion(selectedAnswer, correct, selectedIndex) {
+        const question = currentQuestion();
+        const correctAnswer = question.type === 'arrange' ? question.answer : question.choices[question.answerIndex];
         const detail = {
             type: `${session.passageId}:${question.id}`, wrongNoteId: `${session.passageId}:${question.id}`, category: SUBJECT,
             levelId: session.levelId, level: level().title, unitId: session.unitId, unitTitle: data().units.find(item => item.id === session.unitId)?.title,
             passageId: session.passageId, passageTitle: quizPassage().title, passageText: [...quizPassage().sentences], band: session.band,
-            questionId: question.id, skill: question.skill || question.type || null, question: question.prompt, choices: [...question.choices], selectedAnswer: question.choices[index],
+            questionId: question.id, questionType: question.type, skill: question.skill || question.type || null, question: question.prompt, choices: question.choices ? [...question.choices] : [], tokens: question.tokens ? [...question.tokens] : [], selectedAnswer,
             conceptId: `reading-skill:${question.skill || question.type}`,
             learningTarget: { kind: 'reading-skill', conceptId: `reading-skill:${question.skill || question.type}`, skill: question.skill || question.type, context: { levelId: session.levelId, unitId: session.unitId } },
-            correctAnswer: question.choices[question.answerIndex], answer: question.choices[question.answerIndex], explanation: question.explanation,
-            evidence: [...question.evidence], correct, translationUsed: Boolean(session.translationReadRound === session.round), hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed || session.translationReadRound === session.round), round: session.round
+            correctAnswer, answer: correctAnswer, explanation: question.explanation,
+            evidence: [...question.evidence], correct, translationUsed: false, hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed), round: session.round
         };
-        session.answers.push({ round: session.round, questionId: question.id, selectedIndex: index, correct, hintUsed: detail.hintUsed });
+        if (question.exposure) detail.exposure = { ...question.exposure };
+        session.answers.push({ round: session.round, questionId: question.id, selectedIndex, selectedAnswer, correct, hintUsed: detail.hintUsed });
         session.attempts.push(detail); if (session.round === 1) session.initialAttempts.push({ ...detail });
         session.hintUsed = session.hintUsed || detail.hintUsed; session.currentHintUsed = false;
         if (typeof WrongNote !== 'undefined') WrongNote.save(SUBJECT, detail, correct ? 'correct' : 'wrong', session.sessionId, session.round);
@@ -256,8 +318,9 @@
     }
     function showAnswer(answer, updateScore) {
         const question = currentQuestion();
-        [...$('quizChoices').children].forEach((button, index) => { button.disabled = true; if (index === question.answerIndex) button.classList.add('correct'); else if (index === answer.selectedIndex) button.classList.add('wrong'); });
-        $('quizFeedback').hidden = false; $('quizFeedback').innerHTML = `<strong>${answer.correct ? '정답입니다.' : '다시 확인해 보세요.'}</strong><p>${escapeHTML(question.explanation)}</p><p class="evidence"><b>본문 근거</b><br>${escapeHTML(evidenceText(question))}</p>`;
+        if (question.type === 'arrange') renderArrange(question, answer);
+        else [...$('quizChoices').children].forEach((button, index) => { button.disabled = true; if (index === question.answerIndex) button.classList.add('correct'); else if (index === answer.selectedIndex) button.classList.add('wrong'); });
+        $('quizFeedback').hidden = false; $('quizFeedback').innerHTML = `<strong>${answer.correct ? '정답입니다.' : '다시 확인해 보세요.'}</strong><p class="evidence"><b>본문 근거</b><br>${escapeHTML(evidenceText(question))}</p>`;
         $('nextQuestion').hidden = false; $('nextQuestion').textContent = session.questionIndex === session.roundQuestionIds.length - 1 ? '결과 보기' : '다음 문제';
         if (updateScore) $('quizScore').textContent = `${session.answers.filter(entry => entry.correct).length}개 정답`;
     }
@@ -297,7 +360,7 @@
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
             band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
             hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts, ...(session.integrity ? { integrity: session.integrity } : {}),
-            vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason, diagnosticSkill: session.diagnosticSkill,
+            vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason, diagnosticSkill: session.diagnosticSkill, exposurePolicy: session.exposurePolicy,
             submittedAt: Date.now()
         });
     }
@@ -375,21 +438,6 @@
         window.speechSynthesis.speak(utterance);
     }
     function bind() {
-        $('toggleQuizTranslation').addEventListener('click', () => {
-            if (!session || !(session.round > 1 || session.review)) return;
-            const panel = $('quizTranslation');
-            panel.hidden = !panel.hidden;
-            $('toggleQuizTranslation').textContent = panel.hidden ? '번역 보기' : '번역 숨기기';
-            $('toggleQuizTranslation').setAttribute('aria-expanded', String(!panel.hidden));
-            if (panel.hidden) return;
-            const item = quizPassage(), question = currentQuestion();
-            const canonical = item.questions.find(entry => entry.id === question.id);
-            panel.innerHTML = `<strong>지문 번역</strong>${item.translations.map((line, index) => `<p>${index + 1}. ${escapeHTML(line)}</p>`).join('')}<strong>질문 번역</strong><p>${escapeHTML(canonical?.promptKo || question.promptKo || '질문 번역을 준비 중입니다.')}</p>`;
-            session.translationReadRound = session.round;
-            session.translationQuestions = [...new Set([...(session.translationQuestions || []), `${session.round}:${question.id}`])];
-            session.currentHintUsed = true; session.hintUsed = true;
-            saveSession();
-        });
         $('listenPassage').innerHTML = soundIcon;
         $('listenPassage').addEventListener('click', () => playSpeech(passage().sentences.join(' '), $('listenPassage')));
         window.addEventListener('pagehide', stopSpeech);
@@ -420,6 +468,11 @@
         $('practiceQuiz').addEventListener('click', () => startQuiz('practice'));
         $('freshAssessment').addEventListener('click', () => { const item = chooseAssessmentPassage(); if (!item) return alert('현재 난이도에서 아직 읽지 않은 평가 지문이 없습니다. 다른 단원을 학습해 보세요.'); selectPassageById(item.id); renderSelectors(); startQuiz('assessment', item); });
         $('quizChoices').addEventListener('click', event => { const button = event.target.closest('[data-choice]'); if (button) submitAnswer(Number(button.dataset.choice)); });
+        $('arrangeBank').addEventListener('click', event => { const button = event.target.closest('[data-token-index]'); if (!button || currentAnswer()) return; const question = currentQuestion(), draft = arrangeDraft(question), index = Number(button.dataset.tokenIndex); if (draft.used.includes(index)) return; draft.used.push(index); draft.value = [...draft.used.map(item => question.tokens[item])].join(' '); saveSession(); renderArrange(question); });
+        $('arrangeInput').addEventListener('input', () => { if (currentAnswer()) return; const draft = arrangeDraft(currentQuestion()); draft.value = $('arrangeInput').value; draft.used = []; saveSession(); renderArrange(currentQuestion()); $('arrangeInput').focus(); $('arrangeInput').setSelectionRange(draft.value.length, draft.value.length); });
+        $('arrangeUndo').addEventListener('click', () => { const question = currentQuestion(), draft = arrangeDraft(question); if (draft.used.length) { draft.used.pop(); draft.value = draft.used.map(index => question.tokens[index]).join(' '); } else draft.value = draft.value.trim().split(/\s+/).slice(0, -1).join(' '); saveSession(); renderArrange(question); });
+        $('arrangeReset').addEventListener('click', () => { const draft = arrangeDraft(currentQuestion()); draft.value = ''; draft.used = []; saveSession(); renderArrange(currentQuestion()); });
+        $('arrangeSubmit').addEventListener('click', submitArrange); $('arrangeInput').addEventListener('keydown', event => { if (event.key === 'Enter') submitArrange(); });
         $('showHint').addEventListener('click', showHint); $('nextQuestion').addEventListener('click', nextQuestion); $('retryWrong').addEventListener('click', retryWrong);
         $('backToStudy').addEventListener('click', renderStudy); $('closeResult').addEventListener('click', renderStudy);
     }
@@ -446,6 +499,6 @@
         window.addEventListener('beforeunload', () => { checkpoint(); timerController?.stopTimer?.(); });
     }
     window.EnglishReadingApp = { init, validateContent, startQuiz, restoreSession, getSession: () => session, chooseAssessmentPassage,
-        submitAnswer, nextQuestion, retryWrong, switchGrade, selectPassageById, getLevelId: () => levelId };
+        submitAnswer, submitArrange, nextQuestion, retryWrong, switchGrade, selectPassageById, getLevelId: () => levelId };
     document.addEventListener('DOMContentLoaded', init);
 })();

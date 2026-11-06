@@ -96,7 +96,10 @@ function updateCard() {
     const d = studyWords[currentIndex];
     mainHanja.textContent = d.hanja;
     hanjaMeaning.textContent = `${d.eum} [${d.meaning}]`;
-    radicalBadge.textContent = `부수: ${d.radical}`;
+    const basic = String(d.radical || '').match(/^([^()]+)\((\d+)획\)$/);
+    radicalBadge.textContent = '부수: ' + (basic ? basic[1] : d.radical || '확인 중');
+    const totalBadge = $('totalStrokesBadge');
+    if (totalBadge) totalBadge.textContent = basic ? '총 ' + basic[2] + '획' : '총획수 확인 중';
     hanjaIndex.textContent = `${currentIndex + 1} / ${studyWords.length}`;
 
     // 사자성어
@@ -168,16 +171,23 @@ function startQuiz(customList) {
         const pool = vocabHanja[currentLevel] || [];
         const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().hanja || []) : [];
         quizWords = typeof AdaptiveQuiz !== 'undefined'
-            ? AdaptiveQuiz.mix(pool, wrongItems, item => item.hanja, item => item.hanja, 10, currentQuizBand.wrongRatio)
-            : Utils.shuffle([...pool]).slice(0, 10);
+            ? AdaptiveQuiz.mix(pool, wrongItems, item => item.hanja, item => item.hanja, pool.length, currentQuizBand.wrongRatio)
+            : Utils.shuffle([...pool]);
     } else {
         quizWords = customList || Utils.shuffle(reviewWords);
     }
+    if (window.HanjaQuiz) {
+        const sourceWords = quizWords, optionPool = isReviewMode || customList ? Object.values(vocabHanja).flat() : vocabHanja[currentLevel] || [];
+        const dueCharacters = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().hanja || []).filter(w => !w.deleted && !w.invalid && (!w.isMastered || LearningPolicy.isDue(w))).map(w => w.hanja) : [];
+        quizWords = HanjaQuiz.select({ words: sourceWords, pool: optionPool, count: customList || reviewWords ? sourceWords.length : 10, priority: dueCharacters,
+            rank: window.QuizExposure?.select ? candidates => QuizExposure.select(window.SmartStudy.LocalRepository.getActiveUser(), 'hanja', candidates, candidates.length, { review: isReviewMode || !!customList }).items : undefined });
+    }
+    if (!quizWords.length) { alert('이 범위에서 출제할 수 있는 한자 문제가 없습니다.'); return; }
     quizIndex = 0;
     quizScore = 0;
     quizHistory = [];
     retryWrongList = [];
-    
+
     // 세션 정보 초기화
     if (!customList) {
         quizActiveTimer?.destroy();
@@ -190,6 +200,7 @@ function startQuiz(customList) {
             initialScore: null,
             roundCount: 1
         };
+        quizSessionData.reviewRequired = quizWords.some(q => q.exposure?.reviewRequired);
     } else {
         quizSessionData.roundCount++;
     }
@@ -199,7 +210,7 @@ function startQuiz(customList) {
 
 function showQuestion() {
     const q = quizWords[quizIndex];
-    quizQNum.textContent = `문제 ${quizIndex + 1} / ${quizWords.length}`;
+    quizQNum.textContent = `문제 ${quizIndex + 1} / ${quizWords.length}${quizSessionData.reviewRequired ? ' · 반복 복습' : ''}`;
     quizScoreEl.textContent = `${quizScore}점`;
     quizProgressBar.style.width = `${((quizIndex) / quizWords.length) * 100}%`;
 
@@ -211,10 +222,11 @@ function showQuestion() {
     phaseFeedback.style.display = 'none';
     quizHanja.style.fontSize = '';
 
-    currentQuizType = pickQuizType(q);
+    currentQuizType = q.questionType || pickQuizType(q);
     const dispatch = {
         meaning: setupMeaningQuiz,
         reverse: setupReverseQuiz,
+        sound: setupSoundQuiz,
         radical: setupRadicalQuiz,
         idiom:   setupIdiomQuiz,
         relation: setupRelationQuiz,
@@ -234,6 +246,8 @@ function pickQuizType(q) {
 }
 
 function showChoices(choiceList, correct) {
+    const prepared = quizWords[quizIndex];
+    if (prepared?.quizChoices?.length) { choiceList = prepared.quizChoices; correct = prepared.answer; }
     currentCorrectAnswer = correct;
     const shuffled = Utils.shuffle([...choiceList]);
     const btns = document.querySelectorAll('.choice-btn');
@@ -242,6 +256,12 @@ function showChoices(choiceList, correct) {
         btn.textContent = shuffled[i];
         btn.onclick = () => checkAnswer(shuffled[i], correct);
     });
+}
+
+function setupSoundQuiz(q) {
+    phaseBadge.textContent = '음 찾기'; $('phase1Area').style.display = 'block';
+    $('quizQuestionLabel').textContent = '이 한자의 음은?'; quizHanja.textContent = q.hanja;
+    showChoices(q.quizChoices, q.eum);
 }
 
 function setupMeaningQuiz(q) {
@@ -303,7 +323,7 @@ function setupRelationQuiz(q) {
     phaseBadge.textContent = '유의어·반의어';
     $('phase1Area').style.display = 'block';
 
-    const useAntonym = q.antonym && (!q.synonym || Math.random() < 0.5);
+    const useAntonym = q.relationKind ? q.relationKind === 'antonym' : q.antonym && (!q.synonym || Math.random() < 0.5);
     const relType = useAntonym ? '반의어' : '유의어';
     const correct = useAntonym ? q.antonym : q.synonym; // "水(수)" 형태
 
@@ -371,13 +391,16 @@ function checkAnswer(selected, correct) {
         quizScore += 10;
         quizSessionData.currentScore++;
     }
-    
+
     const currentWord = quizWords[quizIndex];
     quizHistory.push({
         assisted: currentQuizType === 'writing' && writingAssisted,
         questionType: currentQuizType,
         word: currentWord.hanja,
-        question: `${currentWord.hanja} (${currentWord.eum})`,
+        question: currentWord.question || `${currentWord.hanja} (${currentWord.eum})`,
+        questionId: currentWord.questionId,
+        exposure: currentWord.exposure,
+        choices: currentWord.quizChoices,
         selectedAnswer: selected,
         correctAnswer: correct,
         explanation: `${currentWord.meaning} · 음: ${currentWord.eum}`,
@@ -400,7 +423,7 @@ function checkAnswer(selected, correct) {
             level: lvName
         }, status, quizSessionData.id, quizSessionData.roundCount);
     }
-    
+
     const feedbackOk = isOk ? '정답입니다! ✨' : `아쉬워요! 정답은 [ ${correct} ] 입니다.`;
     phaseFeedback.textContent = (currentQuizType === 'writing') ? (writingAssisted ? '끝까지 썼어요! 다음에는 도움 없이 다시 확인해요 ✏️' : '도움 없이 완성했어요! ✨') : feedbackOk;
     phaseFeedback.className = `phase-feedback ${isOk ? 'correct' : 'wrong'}`;
@@ -424,7 +447,7 @@ function nextQuestion() {
 function showResult() {
     quizProgressBar.style.width = '100%';
     resultScore.textContent = `${quizScore} / ${quizWords.length * 10}점`;
-    
+
     // 최초 점수 기록
     if (quizSessionData.initialScore === null) {
         quizSessionData.initialScore = quizSessionData.currentScore;
@@ -432,16 +455,16 @@ function showResult() {
 
     scoreCard.innerHTML = '';
     retryWrongList = [];
-    
+
     quizHistory.forEach((r, i) => {
         const row = document.createElement('div');
         row.className = 'score-row';
         const badge = r.isOk ? '<span class="sc-badge pass">PASS</span>' : '<span class="sc-badge fail">FAIL</span>';
-        
+
         const wData = Object.values(vocabHanja || {}).flat().find(v => v.hanja === r.word);
         let expBoxHtml = '';
         let expHtml = '';
-        
+
         if (currentMode === 'study' || !r.isOk) {
             let exText = `<br>부수: ${wData.radical}`;
             if (wData.idiom) exText += `<br>사자성어: ${wData.idiom} (${wData.idiomMean})`;
@@ -474,12 +497,18 @@ function showResult() {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'hanja', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
             category: 'hanja',
-            review: isReviewMode,
+            review: isReviewMode || quizSessionData.reviewRequired,
+            familiarAttempt: Boolean(quizSessionData.reviewRequired),
             unitId: currentLevel,
             unitTitle: lvName,
             attempts: quizHistory.map(r => ({
                 assisted: Boolean(r.assisted),
                 questionType: r.questionType,
+                questionId: r.questionId,
+                word: r.word,
+                hanja: r.word,
+                exposure: r.exposure,
+                choices: r.choices,
                 question: r.question || r.word,
                 selectedAnswer: r.selectedAnswer,
                 correctAnswer: r.correctAnswer,
@@ -491,7 +520,7 @@ function showResult() {
             StudyTimer.recordResult('hanja', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_hanjaTimerCtrl) _hanjaTimerCtrl.refresh();
         }
-        
+
         const result = UserSession.addEXP(quizScore);
         if (result && result.levelUp) {
             if (window.SmartStudyCelebrate) SmartStudyCelebrate(`레벨 ${result.user.level} 달성!`, '꾸준히 쌓은 경험치로 한 단계 올라갔어요.', `Lv.${result.user.level}`); else alert(`🎊 축하합니다! 레벨 ${(result.user.level)}로 레벨업하셨습니다!`);
@@ -506,7 +535,7 @@ function showResult() {
         retryWrongBtn.style.display = 'none';
         retryBtn.style.display = '';
     }
-    
+
     if (kakaoReportBtn) kakaoReportBtn.style.display = 'block';
     resultModal.classList.remove('hidden');
 }

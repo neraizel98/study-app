@@ -210,6 +210,7 @@
             </div>
 
             <div class="question-box" id="questionBox">문제가 로딩 중입니다...</div>
+            <p class="thinking-tip" id="exposureNotice" hidden></p>
             <p class="thinking-tip" id="thinkingTip" hidden></p>
 
             <div class="options-grid" id="optionsGrid">
@@ -229,13 +230,14 @@
     <script src="utils.js?v=20261021-stabilization"></script>
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
     <script src="subject-progression.js?v=20261024-internal-levels"></script><script src="concept-mastery.js?v=20261023-korean-reading"></script><script src="report.js?v=20261020-korean-vocab"></script>
-    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261104-mock-learning"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261104-mock-integrity"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
+    <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261104-mock-learning"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261106-learning-games"></script><script src="notification-client.js?v=20260924-notification-click"></script><script src="in-app-study-request.js?v=20261014-redesign"></script>
     <script src="ui-core.js?v=20261014-redesign"></script>
     <script src="english-curriculum.js?v=20261021-english-three-levels"></script><script src="study-timer.js?v=20261102-paper-omr-fix"></script>
     <script src="MathData.js?v=20261019-content-fix"></script>
     <script src="MathDataMiddle1.js?v=20261019-content-fix"></script>
     <script src="MathDataMiddle1Semester2.js?v=20261019-content-fix"></script>
     <script src="math-session-questions.js?v=20261023-progression"></script>
+    <script src="quiz-exposure.js?v=20261106-learning-games"></script>
     <script src="MathQuizData.js?v=20261019-content-fix"></script>
     <script src="MathQuizMiddle1.js?v=20261021-stabilization"></script>
     <script src="MathQuizMiddle1Semester2.js?v=20261019-content-fix"></script>
@@ -367,8 +369,16 @@
             }
             
             // 모든 퀴즈에 대해 동적 생성기 실행 (템플릿일 경우에만) 및 셔플 (Utils 활용)
-            quizzes = isReviewMode ? quizzes.map(q => Utils.generateMathQuiz(q))
-                : MathSessionQuestions.build(quizzes, q => Utils.generateMathQuiz(q), Math.max(10, quizzes.length));
+            const requestedQuestions = Math.max(10, quizzes.length);
+            const candidates = isReviewMode ? quizzes.map(q => Utils.generateMathQuiz(q))
+                : MathSessionQuestions.build(quizzes, q => Utils.generateMathQuiz(q), requestedQuestions * 4);
+            const exposureSelection = window.QuizExposure?.select
+                ? QuizExposure.select(window.SmartStudy.LocalRepository.getActiveUser(), 'math', candidates.map(q => ({ ...q, correctAnswer: q.choices?.[q.answer] ?? q.answer })), isReviewMode ? candidates.length : requestedQuestions, { review: isReviewMode })
+                : { items: candidates.slice(0, requestedQuestions), reviewRequired: isReviewMode };
+            quizzes = exposureSelection.items;
+            if (exposureSelection.reviewRequired) {
+                const notice = document.getElementById('exposureNotice'); notice.hidden = false; notice.textContent = '같은 문제를 다시 확인하는 복습이에요. 학습 완료에는 반영하고 새 문제 평가와는 구분해요.';
+            }
             quizzes = Utils.shuffle(quizzes);
 
             let quizSessionData = {
@@ -622,7 +632,8 @@
                         saveQuizResult(quizSessionData.id, 'math', `${unit.title} - ${typeName}`, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
                             ...(integrity ? { integrity } : {}),
                             category: 'math',
-                            review: isReviewMode,
+                            review: isReviewMode || exposureSelection.reviewRequired,
+                            familiarAttempt: exposureSelection.reviewRequired,
                             levelId,
                             semesterId,
                             unitId,
@@ -630,6 +641,8 @@
                             attempts: results.map((r, i) => ({
                                 hintUsed: Boolean(quizzes[i]?.hintUsed),
                                 generator: quizzes[i]?.generator,
+                                exposure: quizzes[i]?.exposure,
+                                choices: quizzes[i]?.choices,
                                 question: quizzes[i]?.question || `문제 ${i + 1}`,
                                 selectedAnswer: quizzes[i]?.choices?.[Number(r.selected)] ?? r.selected,
                                 correctAnswer: quizzes[i]?.choices?.[Number(r.correct)] ?? r.correct,
@@ -679,8 +692,8 @@
             });
         }
     </script>
-<script src="version-check.js?v=20261024-mock-retakes"></script>
-<script src="parent-scope-guard.js?v=20261023-korean-reading"></script><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261024-internal-levels"></script><script src="unified-learning.js?v=20261104-mock-learning"></script><script src="today-journey.js?v=20261104-mock-learning"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="celebrate.js?v=20261014-redesign"></script>
+<script src="version-check.js?v=20261106-learning-games"></script>
+<script src="parent-scope-guard.js?v=20261023-korean-reading"></script><script src="weekly-schedule.js?v=20261021-stabilization"></script><script src="KoreanVocabData.js?v=20261020-korean-vocab"></script><script src="learning-budget-policy.js?v=20261021-stabilization"></script><script src="learning-plan.js?v=20261024-internal-levels"></script><script src="unified-learning.js?v=20261106-learning-games"></script><script src="today-journey.js?v=20261104-mock-learning"></script><script src="today-flow.js?v=20261021-stabilization"></script><script src="celebrate.js?v=20261014-redesign"></script>
 <script src="icons.js?v=20261014-scratchpad"></script><script src="scratchpad.js?v=20261014-scratchpad"></script>
 </body>
 </html>

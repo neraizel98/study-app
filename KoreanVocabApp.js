@@ -79,7 +79,8 @@
         const due = dueWrongWordIds();
         // Review mode practises every unmastered wrong word of the level; a normal quiz covers the unit.
         const words = reviewMode ? levelWords().filter(word => due.includes(word.id)) : unitWords();
-        questions = KoreanVocabQuiz.build({ words, pool: levelWords(), count: reviewMode ? Math.min(10, Math.max(5, words.length)) : 10, priority: due });
+        questions = KoreanVocabQuiz.build({ words, pool: levelWords(), count: reviewMode ? Math.min(10, Math.max(5, words.length)) : 10, priority: due,
+            rank: window.QuizExposure?.select ? candidates => QuizExposure.select(window.SmartStudy.LocalRepository.getActiveUser(), SUBJECT, candidates, candidates.length, { review: reviewMode }).items : undefined });
         if (!questions.length) { alert(reviewMode ? '복습할 어휘 오답이 없습니다.' : '이 단원의 퀴즈를 준비하지 못했습니다.'); renderStudy(); return; }
         questionIndex = 0; score = 0; attempts = []; sessionId = `${SUBJECT}-${Date.now()}`; startTime = Date.now(); mode = 'quiz';
         quizActiveTimer?.destroy();
@@ -93,7 +94,7 @@
         const item = questions[questionIndex];
         answered = false;
         $('typeBadge').textContent = item.typeLabel;
-        $('quizProgress').textContent = `${questionIndex + 1} / ${questions.length} · ${score}점`;
+        $('quizProgress').textContent = `${questionIndex + 1} / ${questions.length} · ${score}점${questions.some(q => q.exposure?.reviewRequired) ? ' · 반복 복습' : ''}`;
         $('quizPassage').hidden = !item.passage;
         const word = levelWords().find(entry => entry.id === item.wordId);
         $('quizPassage').innerHTML = item.passage ? passageHTML({ usage: word?.usage || '', passage: item.passage }) : '';
@@ -112,7 +113,7 @@
             wrongNoteId: item.wordId, wordId: item.wordId, word: item.word, meaning: word.meaning, type: item.type, category: SUBJECT,
             levelId, level: level().title, unitId: item.unitId, unitTitle: item.unitTitle, questionId: item.id, question: item.question,
             choices: [...item.choices], selectedAnswer: selected, correctAnswer: item.answer, answer: item.answer,
-            passageTitle: item.passage?.title || '', passageText: item.passage?.lines || [], explanation: item.explanation, correct
+            passageTitle: item.passage?.title || '', passageText: item.passage?.lines || [], explanation: item.explanation, correct, exposure: item.exposure
         };
         attempts.push(detail);
         if (typeof WrongNote !== 'undefined') WrongNote.save(SUBJECT, detail, correct ? 'correct' : 'wrong', sessionId, 1);
@@ -133,7 +134,7 @@
         const pct = Math.round(score / questions.length * 100);
         if (!reviewMode && typeof StudyTimer !== 'undefined') StudyTimer.recordResult(SUBJECT, context(), score, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, SUBJECT, `${level().title} · ${reviewMode ? '오답 복습' : unit().title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
-            category: SUBJECT, review: reviewMode, levelId, unitId: reviewMode ? null : unit().id, unitTitle: reviewMode ? '오답 복습' : unit().title,
+            category: SUBJECT, review: reviewMode || questions.some(q => q.exposure?.reviewRequired), familiarAttempt: questions.some(q => q.exposure?.reviewRequired), levelId, unitId: reviewMode ? null : unit().id, unitTitle: reviewMode ? '오답 복습' : unit().title,
             questionTypes: attempts.map(item => item.type), attempts
         });
         $('resultScore').textContent = `${score} / ${questions.length} (${pct}%)`;

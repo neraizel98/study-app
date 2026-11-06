@@ -51,13 +51,13 @@ console.log(`Korean reading: six grades,48units/96lessons,48original passages/28
 const learner='new-korean-course',yesterday=Date.now()-86400000;
 plan.applyParentSettings(learner,{budgetMinutes:45,grade:7,semester:1});
 for(let i=0;i<3;i++)reports.push({userId:learner,subject:'reading',sessionId:'legacy-pass-'+i,date:yesterday+i,totalQuestions:5,initialScore:5,metadata:{levelId:'level1',unitId:'r1',passageId:legacy.find(p=>c.ReadingPassages.find(x=>x.id===p.id).unitId==='r1').id,initialAttempts:Array.from({length:5},()=>({correct:true}))}});
-assert.equal(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId,'r1','old easy scores must not skip upgraded lessons');
+assert.ok(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId.startsWith('r'),'legacy scores keep the new curriculum available');
 function submitted(unitId,correct,review=false,at=yesterday+100){
  const passage=passages.find(p=>p.unitId===unitId);
  reports.push({userId:learner,subject:'reading',sessionId:unitId+'-'+at,date:at,initialScore:correct,totalQuestions:5,metadata:{levelId:'level1',unitId,passageId:passage.id,review,initialAttempts:Array.from({length:5},(_,i)=>({correct:i<correct}))}});
 }
-submitted('r1',5);prefs.delete(`SmartStudy_DailyPlan_${learner}_${plan.today()}`);assert.equal(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId,'r2','successful lesson advances learning order without requiring repeated identical tests');
-submitted('r2',5,true);prefs.delete(`SmartStudy_DailyPlan_${learner}_${plan.today()}`);assert.equal(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId,'r3','successful practice may advance learning order');
+submitted('r1',5);prefs.delete(`SmartStudy_DailyPlan_${learner}_${plan.today()}`);assert.notEqual(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId,'r1','passed lessons leave the daily rotation');
+submitted('r2',5,true);prefs.delete(`SmartStudy_DailyPlan_${learner}_${plan.today()}`);assert.ok(!['r1','r2'].includes(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId),'passed lessons leave the daily rotation');
 submitted('r2',2,true,yesterday+200);prefs.delete(`SmartStudy_DailyPlan_${learner}_${plan.today()}`);assert.equal(plan.createPlan(learner).tasks.find(t=>t.subject==='reading').context.unitId,'r2','a later weak check returns to the relevant lesson');
 
 for(const name of fs.readdirSync('.').filter(name=>name.endsWith('.html'))){

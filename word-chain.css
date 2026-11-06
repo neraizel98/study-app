@@ -1,0 +1,69 @@
+.chain-hero {
+  background: #e3f1f5;
+  border-color: #bfd7df;
+}
+.chain-stats {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+.chain-stats strong {
+  font-size: 1.35rem;
+  color: #23845c;
+}
+#chainProgress {
+  display: block;
+  width: 100%;
+  height: 10px;
+  accent-color: #23845c;
+  margin: 16px 0;
+}
+.chain-prompt {
+  display: grid;
+  gap: 10px;
+  text-align: center;
+  background: #edf6f8;
+  border: 1px solid #d0e3e7;
+  border-radius: 14px;
+  padding: 22px;
+  margin: 20px 0;
+}
+.chain-prompt strong {
+  font-size: clamp(1.8rem, 8vw, 2.8rem);
+  overflow-wrap: anywhere;
+}
+.chain-prompt span {
+  font-size: 0.9rem;
+}
+.chain-choices {
+  display: grid;
+  gap: 12px;
+}
+.chain-choices button {
+  text-align: left;
+  white-space: normal;
+  line-height: 1.6;
+}
+.chain-history {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.chain-history span {
+  background: #edf3e9;
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 0.85rem;
+}
+#chainFeedback {
+  line-height: 1.7;
+  overflow-wrap: anywhere;
+}
+#chainResult {
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+#chainInput {
+  font-size: 1.2rem;
+}

@@ -119,3 +119,4 @@ exports.sendNightlyStudyReminder = onSchedule({
 });
 
 exports._test = { kstDateKey };
+exports.gameApi = require('./game-api').gameApi;

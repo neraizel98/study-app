@@ -1,0 +1,271 @@
+.games-shell {
+  max-width: 1080px;
+  margin: auto;
+  padding: 24px 18px 60px;
+  color: #29382d;
+  font-family: system-ui, sans-serif;
+}
+body {
+  margin: 0;
+  background: #fbf7ef;
+}
+button,
+input,
+select {
+  font: inherit;
+}
+button {
+  cursor: pointer;
+  border: 1px solid #cbd9cc;
+  background: #f3f7ee;
+  color: #294c37;
+  border-radius: 12px;
+  padding: 12px 16px;
+  font-weight: 700;
+  min-height: 44px;
+}
+button:disabled {
+  opacity: 0.5;
+  cursor: wait;
+}
+.primary {
+  background: #23845c;
+  color: #fff;
+  border-color: #23845c;
+}
+.back,
+a {
+  color: #23845c;
+}
+.game-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  padding: 26px;
+  background: #e6f0df;
+  border: 1px solid #c6d8be;
+  border-radius: 20px;
+  margin: 20px 0;
+}
+.game-hero h1 {
+  font-size: 2rem;
+  margin: 8px 0;
+}
+.eyebrow {
+  font-size: 0.72rem;
+  letter-spacing: 0.12em;
+  font-weight: 800;
+  color: #547354;
+}
+.companion {
+  display: grid;
+  justify-items: center;
+  flex-shrink: 0;
+  font-size: 0.8rem;
+}
+.companion img {
+  image-rendering: pixelated;
+}
+.game-panel {
+  padding: 24px;
+  border: 1px solid #dfd8c9;
+  border-radius: 18px;
+  background: #fff;
+  margin: 18px 0;
+  min-width: 0;
+}
+.game-panel h2 {
+  margin: 0 0 12px;
+  font-size: 1.2rem;
+}
+.game-panel p {
+  line-height: 1.6;
+}
+.rules {
+  display: grid;
+  gap: 8px;
+  padding-left: 24px;
+  font-size: 0.95rem;
+}
+.setup {
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  margin: 20px 0;
+}
+.setup label {
+  flex: 1;
+  min-width: 200px;
+}
+label {
+  display: grid;
+  gap: 8px;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+input,
+select {
+  box-sizing: border-box;
+  max-width: 100%;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #b8c7b8;
+  background: #fff;
+  border-radius: 9px;
+  color: #29382d;
+}
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin: 16px 0;
+}
+.muted,
+footer {
+  font-size: 0.82rem;
+  color: #6d7569;
+}
+.play-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.clock {
+  font-variant-numeric: tabular-nums;
+  font-weight: 800;
+  white-space: nowrap;
+}
+.play-layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(240px, 1fr);
+  gap: 24px;
+  align-items: start;
+}
+.crossword-grid {
+  display: grid;
+  gap: 2px;
+  padding: 4px;
+  background: #d9e1d4;
+  border-radius: 8px;
+}
+.crossword-cell {
+  aspect-ratio: 1;
+  position: relative;
+  display: grid;
+  place-items: center;
+  min-width: 0;
+  padding: 0;
+  border-radius: 3px;
+  min-height: 0;
+  border: 0;
+  background: #fff;
+  font-size: clamp(0.65rem, 2.6vw, 1.2rem);
+  font-weight: 700;
+}
+.crossword-cell.block {
+  background: #71836d;
+}
+.crossword-cell.active {
+  background: #d5eed9;
+  outline: 2px solid #23845c;
+  outline-offset: -2px;
+}
+.crossword-cell small {
+  position: absolute;
+  top: 0;
+  left: 2px;
+  font-size: 0.52rem;
+  font-weight: 600;
+}
+.clue-item {
+  display: block;
+  text-align: left;
+  width: 100%;
+  margin: 7px 0;
+  background: #fff;
+  font-weight: 500;
+}
+.clue-item.selected {
+  background: #e6f0df;
+}
+.rank-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 0;
+  border-bottom: 1px solid #e4e7dc;
+}
+.rank-row b:last-child {
+  margin-left: auto;
+}
+.rank-row.me {
+  color: #1c7950;
+}
+.kakao {
+  background: #fee500;
+  color: #382b1d;
+  border-color: #fee500;
+}
+.future-games {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.future-games details {
+  border: 1px solid #e1e7db;
+  border-radius: 12px;
+  padding: 14px;
+}
+.future-games summary {
+  cursor: pointer;
+  font-weight: 700;
+}
+footer {
+  line-height: 1.6;
+  padding: 14px;
+}
+[hidden] {
+  display: none !important;
+}
+:focus-visible {
+  outline: 3px solid #d4a63c;
+  outline-offset: 3px;
+}
+@media (max-width: 680px) {
+  .games-shell {
+    padding: 16px 12px 40px;
+  }
+  .game-panel {
+    padding: 18px 14px;
+  }
+  .game-hero {
+    padding: 20px 14px;
+  }
+  .play-layout {
+    grid-template-columns: 1fr;
+  }
+  .future-games {
+    grid-template-columns: 1fr;
+  }
+  .companion img {
+    width: 80px;
+    height: 80px;
+  }
+  .game-hero h1 {
+    font-size: 1.55rem;
+  }
+}
+
+.companion-picker {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+.companion-picker button {
+  padding: 4px 8px;
+  min-height: 36px;
+  background: #fff;
+}

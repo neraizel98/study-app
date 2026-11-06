@@ -64,7 +64,7 @@ for (const levelId of ['level1', 'level2']) {
     }
 }
 const types = new Set(); for (const w of words) for (const t of quiz.available(w)) types.add(t);
-assert.deepEqual([...types].sort(), ['antonym', 'blank', 'context', 'meaning', 'synonym']);
+assert.deepEqual([...types].sort(), ['antonym', 'blank', 'context', 'definition', 'meaning', 'synonym']);
 
 // Learning plan: 중학 이하는 레벨 1, 고등은 레벨 2 단원을 고른다.
 const store = new Map(), local = { getPreference: (k, f) => store.has(k) ? store.get(k) : f, setPreference: (k, v) => store.set(k, v), listReports: () => [], getWrongAnswers: () => ({}) };

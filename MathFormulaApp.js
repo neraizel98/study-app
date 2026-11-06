@@ -2,6 +2,7 @@ const MathFormulaApp = (() => {
     let formulaNumber = 1;
     let mode = 'study';
     let reviewMode = false;
+    let practiceReexposure = false;
     let questions = [];
     let answers = {};
     let submitted = false;
@@ -457,6 +458,7 @@ const MathFormulaApp = (() => {
                 ? (WrongNote.getAll().math || []).filter(item => item.levelId === 'formula'
                     && item.unitId === `formula-${formulaNumber}` && (item.kind === 'written' || (Array.isArray(item.choices) && item.choices.length)) && item.question && item.answer !== undefined && ['formula-recall','symbol-recall','guided-calculation','calculation'].includes(item.type))
                 : [];
+            practiceReexposure = false;
             questions = (savedWrong.length ? savedWrong.map(item => ({
                 kind: item.kind || 'choice', strictNumeric:item.strictNumeric, tolerance:item.tolerance, prompt: item.question, choices: item.choices, answer: item.answer,
                 solution: item.explanation || '', noteType: item.type, givens:item.givens, formulaTex:item.formulaTex, displayMath:item.displayMath, solutionMath:item.solutionMath, assisted:item.assisted
@@ -486,7 +488,7 @@ const MathFormulaApp = (() => {
             <article class="lesson-card">
                 <div class="lesson-kicker">FORMULA ${String(item.number).padStart(3, '0')} · FORMULA REVIEW</div>
                 <h2>${item.title} 퀴즈</h2>
-                <p class="lesson-summary">${reviewMode ? '틀린 문제와 연결된 공식을 짧게 다시 연습해요.' : '공식을 기억하고, 값을 넣어 짧게 계산해요. 처음에는 공식을 보며 연습하고, 최근 복습 결과에 따라 혼자 계산하는 문항을 늘려요.'}</p>
+                <p class="lesson-summary">${reviewMode ? '틀린 문제와 연결된 공식을 짧게 다시 연습해요.' : practiceReexposure ? '최근 7일에 두 번 푼 문항이 포함되어, 같은 공식 범위에서 복습으로 연습해요.' : '공식을 기억하고, 값을 넣어 짧게 계산해요. 처음에는 공식을 보며 연습하고, 최근 복습 결과에 따라 혼자 계산하는 문항을 늘려요.'}</p>
                 <div class="quiz-list">${questions.map((q, qi) => {
                     const result = submitted ? window.MathFormulaQuiz.isCorrect(q, answers[qi]) : null;
                     return `<section class="quiz-card ${submitted ? (result ? 'correct' : 'wrong') : ''}">
@@ -541,12 +543,12 @@ const MathFormulaApp = (() => {
         const user=SmartStudy.LocalRepository.getActiveUser();
         const reports=user?SmartStudy.LocalRepository.listReports(user):[];
         const stage=window.MathFormulaReview.band(reports,number), pool=[],seen=new Set();
-        for(let batch=0;batch<20&&pool.length<5;batch++){
+        for(let batch=0;batch<20;batch++){
             const candidates=window.MathFormulaReview.create(number,stage);
-            const fresh=window.QuizExposure?QuizExposure.fresh('math',candidates):candidates;
-            for(const q of fresh){const fingerprint=window.QuizExposure?QuizExposure.fingerprint(q):q.prompt+'|'+q.answer;if(seen.has(fingerprint))continue;seen.add(fingerprint);pool.push(q);if(pool.length===5)break;}
+            for(const q of candidates){const fingerprint=window.QuizExposure?QuizExposure.fingerprint(q):q.prompt+'|'+q.answer;if(seen.has(fingerprint))continue;seen.add(fingerprint);pool.push(q);}
         }
-        return pool;
+        if(window.QuizExposure?.select){const selection=QuizExposure.select(user,'math_formula',pool,5);practiceReexposure=selection.reviewRequired;return selection.items;}
+        return pool.slice(0,5);
     }
 
     function bindQuiz() {
@@ -587,6 +589,7 @@ const MathFormulaApp = (() => {
                 question: q.prompt,
                 selectedAnswer: answers[index] ?? '',kind:q.kind,strictNumeric:q.strictNumeric,tolerance:q.tolerance,
                 correctAnswer: q.answer,
+                givens: q.givens || '', exposure: q.exposure || null, familiarAttempt: practiceReexposure,
                 correct: window.MathFormulaQuiz.isCorrect(q, answers[index]),
                 assisted: Boolean(q.assisted||hintUsed.has(index)),
                 hintUsed: hintUsed.has(index),
@@ -600,7 +603,7 @@ const MathFormulaApp = (() => {
             if (typeof saveQuizResult === 'function') saveQuizResult(
                 sessionId, 'math', item.level, questions.length, score, initialScore,
                 window.MathFormulaTime?.getQuizSessionSeconds() || 0, score === questions.length,
-                {source: 'math-formula', quizFormat:'formula-review-v2', review:reviewMode, formulaNumber, formulaTitle: item.title, levelId: 'formula',
+                {source: 'math-formula', quizFormat:'formula-review-v2', review:reviewMode||practiceReexposure, familiarAttempt:practiceReexposure, exposurePolicy:window.QuizExposure?.policyVersion||null, formulaNumber, formulaTitle: item.title, levelId: 'formula',
                     semesterId: item.level, unitId: `formula-${formulaNumber}`, attempts,
                     attemptHistory: [...attemptHistory], submittedAt, status: 'submitted', round: nextRound,
                     ...(integritySummary ? { integrity: integritySummary } : {})}

@@ -17,7 +17,7 @@
     const requestedQuiz = params.get('mode') === 'quiz' || requestedReview;
     let mode = requestedQuiz ? 'quiz' : 'study';
     let questions = [], questionIndex = 0, score = 0, answered = false, timerController = null, quizActiveTimer = null;
-    let sessionId = '', attempts = [], quizIntegrity = null;
+    let sessionId = '', attempts = [], quizIntegrity = null, practiceReexposure = false;
     const principleDetails = {
         e1: '한국어는 조사가 문장 성분을 알려 주지만 영어는 자리와 순서가 그 역할을 합니다. 그래서 단어 뜻만 아는 것보다 주어와 동사의 위치를 먼저 찾는 습관이 중요합니다. 문장을 읽을 때 “누가 또는 무엇이”를 찾고, 바로 뒤에서 그 대상의 행동이나 상태를 나타내는 동사를 확인하세요.',
         e2: 'be동사는 행동이 아니라 주어의 정체, 상태, 위치를 이어 주는 연결 동사입니다. 주어에 따라 am·are·is의 모양이 달라지지만 뜻과 역할은 같습니다. 부정문과 의문문에서도 별도의 do를 쓰지 않고 be동사 자체의 위치만 바꾼다는 점이 핵심입니다.',
@@ -147,6 +147,7 @@
     }
 
     function startQuiz() {
+        practiceReexposure = false;
         if (!quizUnlocked()) {
             const status = StudyTimer.getStatus('grammar', context(), aliases());
             alert(`${unit().title} 학습 시간이 ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 부족합니다.`);
@@ -172,9 +173,9 @@
                 : activeWrong.slice(0, wrongTarget);
             const priorityQuestions = getReviewQuestions(selectedWrong);
             let currentQuestions = [];
-            for (let batch=0; batch<8 && currentQuestions.length<20; batch++) {
+            for (let batch=0; batch<8; batch++) {
                 const candidates=EnglishGrammarQuiz.generate(unit().id, 20, band.name).filter(q=>q.type&&q.type!=='choice'?Boolean(q.answer):!window.AnswerValidation||AnswerValidation.choice({...q,answer:q.answer||q.choices?.[q.answerIndex]},q.answer||q.choices?.[q.answerIndex]).status==='correct');
-                currentQuestions.push(...(window.QuizExposure?QuizExposure.fresh('grammar',candidates):candidates));
+                currentQuestions.push(...candidates);
             }
             let challengeQuestions = [];
             const seen = new Set(priorityQuestions.map(item => item.question));
@@ -183,15 +184,24 @@
                 seen.add(item.question);
                 return true;
             });
-            const builtFocus = window.QuizExposure ? QuizExposure.fresh('grammar', lessonFocusQuestions(focusLesson)) : lessonFocusQuestions(focusLesson);
+            const builtFocus = lessonFocusQuestions(focusLesson);
             const focused = [...builtFocus, ...fresh.filter(item => lessonIndexOfQuestion(item) === focusLesson).map(item => ({ ...item, lessonIndex: focusLesson, diagnosticFocus: true }))]
                 .filter((item, index, rows) => rows.findIndex(candidate => candidate.question === item.question) === index);
             const general = fresh.filter(item => lessonIndexOfQuestion(item) !== focusLesson);
-            questions = [...priorityQuestions, ...(typeof Utils !== 'undefined' ? Utils.shuffle(focused) : focused), ...(typeof Utils !== 'undefined' ? Utils.shuffle(general) : general)].slice(0, 10);
+            const pool = [...(typeof Utils !== 'undefined' ? Utils.shuffle(focused) : focused), ...(typeof Utils !== 'undefined' ? Utils.shuffle(general) : general), ...priorityQuestions];
+            if (window.QuizExposure?.select) {
+                const learner = SmartStudy.LocalRepository.getActiveUser();
+                const focusedSelection = focusLesson !== null && focused.length
+                    ? QuizExposure.select(learner, 'grammar', focused, Math.min(2, focused.length)) : { items: [] };
+                const reserved = new Set(focusedSelection.items.map(item => item.exposure.fingerprint));
+                const selection = QuizExposure.select(learner, 'grammar', pool.filter(item => !reserved.has(QuizExposure.fingerprint(item))), 10 - focusedSelection.items.length);
+                questions = [...focusedSelection.items, ...selection.items];
+                practiceReexposure = questions.some(item => item.exposure.reviewRequired);
+            } else questions = pool.slice(0, 10);
             if (typeof Utils !== 'undefined' && focusLesson === null) questions = Utils.shuffle(questions);
         }
         if (!questions.length) {
-            alert(requestedReview ? '이 단원에서 다시 풀 오답이 없습니다.' : '최근에 풀지 않은 새 문항이 부족해요. 다른 범위를 학습하거나 오답 복습을 선택해 주세요.');
+            alert(requestedReview ? '이 단원에서 다시 풀 오답이 없습니다.' : '이 단원의 문항을 불러오지 못했어요. 학습 내용을 확인하고 다시 시작해 주세요.');
             if (requestedReview) location.href = 'wrong_note.html';
             return;
         }
@@ -213,7 +223,7 @@
     function renderQuestion() {
         const q = questions[questionIndex];
         answered = false;
-        $('quizProgress').textContent = `문제 ${questionIndex + 1} / ${questions.length}`;
+        $('quizProgress').textContent = `문제 ${questionIndex + 1} / ${questions.length}${practiceReexposure ? ' · 최근 문제 복습' : ''}`;
         $('quizScore').textContent = `${score}점`;
         $('quizQuestion').textContent = q.question;
         $('quizFeedback').hidden = true;
@@ -285,6 +295,9 @@
             tokens: q.tokens || [],
             acceptedAnswers: q.acceptedAnswers || [],
             explanation: q.explanation,
+            exposure: q.exposure || null,
+            review: requestedReview || practiceReexposure,
+            familiarAttempt: practiceReexposure,
             correct
         };
         attempts.push(detail);
@@ -313,11 +326,13 @@
         const initialScore = score / 10;
         const activeQuizSeconds = quizActiveTimer?.getSeconds() || 0;
         const integrity = quizIntegrity?.stop() || null; quizIntegrity = null;
-        if (!requestedReview && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
+        if (!requestedReview && !practiceReexposure && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('grammar', context(), initialScore, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') {
             saveQuizResult(sessionId, 'grammar', `${levelLabel()} · ${unit().title}`, questions.length, initialScore, initialScore, activeQuizSeconds, true, {
                 category: 'grammar',
-                review: requestedReview,
+                review: requestedReview || practiceReexposure,
+                familiarAttempt: practiceReexposure,
+                exposurePolicy: window.QuizExposure?.policyVersion || null,
                 stageId,
                 stageTitle: stage().title,
                 unitId: unit().id,
@@ -330,7 +345,7 @@
         $('resultEmoji').textContent = score >= 90 ? '🏆' : score >= 70 ? '👍' : '📚';
         $('resultTitle').textContent = score >= 90 ? '문법 마스터!' : score >= 70 ? '잘했어요!' : '조금 더 연습해요!';
         $('resultScore').textContent = `${initialScore} / ${questions.length}점`;
-        $('resultMessage').textContent = `${levelLabel()} · ${unit().title} 퀴즈를 완료했습니다.`;
+        $('resultMessage').textContent = `${levelLabel()} · ${unit().title} 퀴즈를 완료했습니다.${practiceReexposure ? ' 최근 7일에 두 번 푼 문항은 복습으로 기록했어요.' : ''}`;
         $('resultModal').classList.remove('hidden');
     }
 

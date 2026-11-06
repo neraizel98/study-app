@@ -1,0 +1,293 @@
+.game-menu-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 20px;
+  background: #edf2e6;
+  border: 1px solid #d1dec5;
+  border-radius: 20px;
+  padding: 30px 26px;
+  margin: 20px 0 30px;
+}
+.game-menu-hero h1 {
+  font-size: clamp(1.6rem, 5vw, 2.2rem);
+  margin: 10px 0;
+}
+.game-menu-hero p {
+  line-height: 1.7;
+  margin-bottom: 0;
+}
+.menu-team {
+  display: flex;
+  flex-shrink: 0;
+}
+.menu-team img {
+  image-rendering: pixelated;
+}
+.menu-team img + img {
+  margin-left: -22px;
+  margin-top: 24px;
+}
+.menu-section-title {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0;
+}
+.menu-section-title h2 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+.menu-section-title > span {
+  font-size: 0.8rem;
+  color: #567050;
+}
+.game-menu-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+.game-tile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  padding: 18px 16px 20px;
+  border: 1px solid #ddd8c9;
+  border-radius: 18px;
+  text-decoration: none;
+  min-width: 0;
+  color: #29382d;
+  position: relative;
+  background: #fff;
+  transition:
+    transform 0.15s,
+    border-color 0.15s;
+}
+.game-tile[href]:hover {
+  transform: translateY(-3px);
+  border-color: #23845c;
+}
+.game-tile img {
+  image-rendering: pixelated;
+  margin: 10px 0 2px;
+  max-width: 100%;
+}
+.game-tile h3 {
+  font-size: 1.1rem;
+  margin: 5px 0 8px;
+}
+.game-tile p {
+  line-height: 1.6;
+  font-size: 0.86rem;
+  margin: 0 0 10px;
+}
+.game-tile strong {
+  margin-top: 12px;
+  font-size: 0.9rem;
+}
+.game-tile-meta {
+  font-size: 0.76rem;
+  color: #66735c;
+}
+.game-tile-state {
+  align-self: flex-end;
+  font-size: 0.67rem;
+  border-radius: 6px;
+  padding: 4px 7px;
+  background: #e3efde;
+  color: #3a623d;
+}
+.tile-electric {
+  background: linear-gradient(180deg, #fff7d7, #fff 72%);
+}
+.tile-water {
+  background: linear-gradient(180deg, #e2f2f8, #fff 72%);
+}
+.tile-fire {
+  background: linear-gradient(180deg, #fcf0e4, #fff 72%);
+}
+.tile-grass {
+  background: linear-gradient(180deg, #e7f2df, #fff 72%);
+}
+.tile-mystery {
+  background: linear-gradient(180deg, #fff6db, #fff 72%);
+}
+.tile-story {
+  background: linear-gradient(180deg, #f2e9df, #fff 72%);
+}
+.upcoming .game-tile-state {
+  background: #ecebe7;
+  color: #706b61;
+}
+.ranking-portal {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  border: 1px solid #d6c99c;
+  background: #faf3de;
+  border-radius: 18px;
+  padding: 24px;
+  margin: 32px 0 18px;
+}
+.ranking-portal h2 {
+  margin: 6px 0;
+  font-size: 1.25rem;
+}
+.ranking-portal p {
+  margin: 6px 0;
+  line-height: 1.6;
+  font-size: 0.9rem;
+}
+.rank-medal {
+  font-size: 2.8rem;
+}
+.rank-portal-link {
+  margin-left: auto;
+  white-space: nowrap;
+  background: #23845c;
+  color: #fff;
+  padding: 13px 17px;
+  border-radius: 11px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.game-entry {
+  display: flex !important;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 20px !important;
+  margin: 16px 0;
+  text-decoration: none;
+  min-width: 0;
+  background: #edf2e6 !important;
+  border: 1px solid #d2dec6 !important;
+}
+.game-entry .entry-team {
+  display: flex;
+  flex-shrink: 0;
+}
+.game-entry img {
+  width: 64px;
+  height: 64px;
+  image-rendering: pixelated;
+}
+.game-entry img + img {
+  margin-left: -15px;
+}
+.game-entry .entry-text {
+  min-width: 0;
+  display: grid;
+  gap: 5px;
+}
+.game-entry .entry-text strong {
+  font-size: 1.1rem;
+}
+.game-entry .entry-text span {
+  font-size: 0.83rem;
+  color: #64725d;
+  line-height: 1.5;
+}
+.game-entry .entry-arrow {
+  margin-left: auto;
+  font-weight: 800;
+  color: #23845c;
+}
+.ranking-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.rankings-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 14px;
+  margin: 20px 0;
+}
+.rankings-summary {
+  color: #64725d;
+  font-size: 0.86rem;
+  line-height: 1.6;
+}
+.rankings-empty {
+  padding: 24px;
+  text-align: center;
+  background: #f2f5ef;
+  border-radius: 12px;
+  line-height: 1.7;
+}
+.rankings-play {
+  display: inline-block;
+  background: #23845c;
+  color: #fff;
+  border-radius: 10px;
+  text-decoration: none;
+  padding: 12px 16px;
+  font-weight: 700;
+}
+.rankings-row-title {
+  font-size: 0.85rem;
+  color: #68735e;
+}
+@media (max-width: 700px) {
+  .game-menu-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .game-menu-hero {
+    padding: 22px 16px;
+    gap: 8px;
+  }
+  .menu-team img {
+    width: 72px;
+    height: 72px;
+  }
+  .menu-team img + img {
+    margin-left: -24px;
+  }
+  .ranking-portal {
+    gap: 12px;
+    padding: 18px 14px;
+    flex-wrap: wrap;
+  }
+  .rank-portal-link {
+    width: 100%;
+    text-align: center;
+    margin: 4px 0 0;
+    box-sizing: border-box;
+  }
+  .ranking-portal > div:nth-child(2) {
+    flex: 1;
+  }
+  .game-entry {
+    padding: 12px !important;
+    gap: 10px;
+  }
+  .game-entry img {
+    width: 52px;
+    height: 52px;
+  }
+  .game-entry .entry-text strong {
+    font-size: 1rem;
+  }
+}
+@media (max-width: 360px) {
+  .game-tile {
+    padding: 14px 10px;
+  }
+  .game-tile h3 {
+    font-size: 1rem;
+  }
+  .menu-team img + img {
+    display: none;
+  }
+  .game-entry img + img {
+    display: none;
+  }
+  .rankings-controls {
+    grid-template-columns: 1fr;
+  }
+}

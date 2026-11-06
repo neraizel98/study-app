@@ -53,9 +53,10 @@ class Element {
     get innerHTML() { return this._innerHTML || ''; }
     set textContent(value) { this._textContent = String(value); }
     get textContent() { return this._textContent || ''; }
+    focus() {} setSelectionRange() {}
 }
 function makeBrowser(sharedPreferences, sharedReports, options = {}) {
-    const ids = ['gradeTabs','levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','peekStatus','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','toggleQuizTranslation','quizTranslation','quizChoices','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
+    const ids = ['gradeTabs','levelTabs','unitTabs','adaptiveNotice','recommendationNotice','studyPanel','quizPanel','resultModal','passageMeta','passageTitle','studyPassage','vocabulary','grammarNotes','grammarLinks','listenPassage','peekStatus','prevPassage','nextPassage','practiceQuiz','freshAssessment','quizPassageTitle','quizPassage','quizProgress','quizScore','quizQuestion','quizChoices','arrangeArea','arrangeBank','arrangeInput','arrangeUndo','arrangeReset','arrangeSubmit','quizFeedback','showHint','nextQuestion','backToStudy','resultScore','initialScoreNote','resultMessage','retryWrong','closeResult'];
     const elements = Object.fromEntries(ids.map(id => [id, new Element()]));
     const documentListeners = {};
     const document = { getElementById: id => elements[id], querySelector: () => new Element(), addEventListener: (name, callback) => { documentListeners[name] = callback; } };
@@ -81,6 +82,7 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     vm.runInContext(fs.readFileSync('EnglishGrammarData.js', 'utf8'), sandbox);
     vm.runInContext(fs.readFileSync('EnglishReadingData.js', 'utf8'), sandbox);
     if (options.secondary) for (const file of ['EnglishReadingSecondary.js','EnglishReadingExpansion.js','EnglishReadingMiddleExpansion.js','EnglishReadingHighExpansion.js']) vm.runInContext(fs.readFileSync(file, 'utf8'), sandbox);
+    if (options.expansion) { vm.runInContext(fs.readFileSync('reading-question-variants.js', 'utf8'), sandbox); vm.runInContext(fs.readFileSync('reading-question-expansion.js', 'utf8'), sandbox); }
     vm.runInContext(fs.readFileSync('EnglishReadingApp.js', 'utf8'), sandbox);
     return { window, elements, init: documentListeners.DOMContentLoaded };
 }
@@ -103,8 +105,25 @@ function makeBrowser(sharedPreferences, sharedReports, options = {}) {
     const diagnosticReading = makeBrowser(diagnosticPrefs, [], { plan: { tasks: [{ subject: 'english_reading', context: { levelId: 'grade6', unitId: 'er1' }, diagnostic: { kind: 'reading-skill', skill: 'evidence' } }] } });
     await diagnosticReading.init(); diagnosticReading.window.EnglishReadingApp.startQuiz('practice');
     assert.notEqual(diagnosticReading.window.EnglishReadingApp.getSession().passageId, 'er1-p0', 'diagnostic reading starts from an unseen passage in the mapped unit');
-    assert.equal(diagnosticReading.window.EnglishReadingApp.getSession().questions[0].type, 'evidence', 'mock-exam reading weakness leads the new passage quiz with the mapped skill');
+    assert.ok(diagnosticReading.window.EnglishReadingApp.getSession().questions.some(q => q.type === 'evidence'), 'the mapped skill remains in the randomized quiz');
     assert.equal(diagnosticReading.window.EnglishReadingApp.getSession().diagnosticSkill, 'evidence');
+
+    const arrangePrefs = new Map(), arrangeReports = [];
+    const arrangeBrowser = makeBrowser(arrangePrefs, arrangeReports, { expansion: true }); await arrangeBrowser.init(); arrangeBrowser.window.EnglishReadingApp.startQuiz('practice');
+    let arrangeSession = arrangeBrowser.window.EnglishReadingApp.getSession();
+    while (arrangeSession.questions.find(item => item.id === arrangeSession.roundQuestionIds[arrangeSession.questionIndex]).type !== 'arrange') {
+        const q = arrangeSession.questions.find(item => item.id === arrangeSession.roundQuestionIds[arrangeSession.questionIndex]); arrangeBrowser.window.EnglishReadingApp.submitAnswer(q.answerIndex); arrangeBrowser.window.EnglishReadingApp.nextQuestion();
+    }
+    const arrangeQuestion = arrangeSession.questions.find(item => item.id === arrangeSession.roundQuestionIds[arrangeSession.questionIndex]);
+    arrangeBrowser.elements.arrangeInput.value = arrangeQuestion.tokens.slice(0, 2).join(' '); arrangeBrowser.elements.arrangeInput.listeners.input();
+    const restoredArrange = makeBrowser(arrangePrefs, arrangeReports, { expansion: true }); await restoredArrange.init();
+    assert.equal(restoredArrange.elements.arrangeInput.value, arrangeQuestion.tokens.slice(0, 2).join(' '), 'unfinished sentence input restores after reload');
+    restoredArrange.elements.arrangeInput.value = arrangeQuestion.answer; restoredArrange.window.EnglishReadingApp.submitArrange();
+    const arrangeAttempt = restoredArrange.window.EnglishReadingApp.getSession().attempts.at(-1);
+    assert.equal(arrangeAttempt.questionType, 'arrange'); assert.equal(arrangeAttempt.correct, true); assert.equal(arrangeAttempt.selectedAnswer, arrangeQuestion.answer); assert.equal(JSON.stringify(arrangeAttempt.tokens), JSON.stringify(arrangeQuestion.tokens));
+    const arrangeFirstAttempt = restoredArrange.window.EnglishReadingApp.getSession().initialAttempts.at(-1);
+    assert.equal(arrangeFirstAttempt.questionId, arrangeQuestion.id, 'typed answer is preserved in the first-attempt record');
+    assert.equal(arrangeFirstAttempt.selectedAnswer, arrangeQuestion.answer, 'typed first answer is not replaced by a later retry value');
 
     const nearlyUsed = makeBrowser(new Map(), [], {freshCount:1}); await nearlyUsed.init();
     nearlyUsed.window.EnglishReadingApp.startQuiz('practice');

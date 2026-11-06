@@ -78,10 +78,10 @@ function updateCard() {
     // 랜덤 순서 인덱스가 없으면 생성 (학습 모드용)
     if (!shuffledStudyIndices.length || studyVocabularyKey !== vocabularyBand().name + currentLevel) refreshStudyOrder();
     currentIndex %= shuffledStudyIndices.length;
-    
+
     const realIdx = shuffledStudyIndices[currentIndex];
     const d = dataList[realIdx];
-    
+
     wordIndexEl.textContent = `${currentIndex + 1} / ${shuffledStudyIndices.length}${window.EnglishVocabularyProgress?.isGraded(currentLevel) ? " · " + EnglishVocabularyProgress.label(currentLevel, studyVocabularyBand) + " 단계" : ""}`;
     englishWordEl.textContent = d.word;
     window.VocabularyVisual?.render(document.getElementById('vocabularyVisual'), d);
@@ -293,7 +293,7 @@ function blankNonVerbSentence(sentence, word) {
 // ============================================================
 function startQuiz(wordList) {
     try {
-        
+
         // 퀴즈 상태 초기화
         quizIndex = 0;
         quizScore = 0;
@@ -315,6 +315,7 @@ function startQuiz(wordList) {
             quizSessionData.currentScore = 0;
             quizSessionData.roundCount = 1;
             quizSessionData.integrity = null;
+            quizSessionData.reviewRequired = false;
 
             if (isReviewMode) {
                 const wrongAnswers = (typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [])
@@ -345,14 +346,14 @@ function startQuiz(wordList) {
                     }
                     notice.textContent = `${EnglishVocabularyProgress.label(currentLevel, currentQuizBand)} 단어 중심 · ${currentQuizBand.reason || '점수에 맞춰 단어를 골라요.'}`;
                 }
-                if (window.QuizExposure?.practiceWords) {
+                if (window.QuizExposure?.practiceWords && !QuizExposure.select) {
                     dataList = QuizExposure.practiceWords(dataList, QUIZ_COUNT);
                 }
                 if (!dataList.length) {
                     alert('단어 데이터를 불러오지 못했어요. 화면을 새로고침한 뒤 다시 시작해 주세요.');
                     setMode('study'); return;
                 }
-                const baseCount = Math.min(QUIZ_COUNT, dataList.length) - challengeWords.length;
+                const baseCount = (window.QuizExposure?.select ? dataList.length : Math.min(QUIZ_COUNT, dataList.length)) - challengeWords.length;
                 const wrongItems = typeof WrongNote !== 'undefined' ? (WrongNote.getAll().english || []) : [];
                 const focusWord = diagnosticWordFocus();
                 const eligibleFocusPool = window.EnglishVocabularyProgress?.eligible
@@ -364,12 +365,14 @@ function startQuiz(wordList) {
                     ? AdaptiveQuiz.mix(selectionPool, wrongItems, item => item.word, item => item.word, Math.max(0, baseCount - (focusItem ? 1 : 0)), currentQuizBand.wrongRatio)
                     : Utils.shuffle([...selectionPool]).slice(0, Math.max(0, baseCount - (focusItem ? 1 : 0)));
                 quizWords = [...(focusItem ? [focusItem] : []), ...Utils.shuffle([...baseWords, ...challengeWords])].slice(0, QUIZ_COUNT);
+                if (window.QuizExposure?.select) quizWords = [...(focusItem ? [focusItem] : []), ...Utils.shuffle([...baseWords, ...challengeWords])];
             }
             quizSessionData.total = quizWords.length;
         }
-        
+
         // qType 할당 로직
         if (quizWords.length > 0) {
+            quizWords = quizWords.map(w => ({ ...w }));
             quizWords.forEach(w => {
                 if (!w._keepQType) {
                     const rand = Math.random();
@@ -403,12 +406,65 @@ function startQuiz(wordList) {
             });
         }
 
+        if (!wordList && window.QuizExposure?.select) {
+            quizWords = selectVocabularyPractice(quizWords, isReviewMode ? quizWords.length : QUIZ_COUNT);
+            quizSessionData.total = quizWords.length;
+            quizSessionData.reviewRequired = quizWords.some(w => w.exposure?.reviewRequired);
+        }
+
         startQuizIntegrity(Boolean(wordList));
         showQuestion();
     } catch (e) {
         console.error('[startQuiz Error]', e);
         reportCriticalError('퀴즈 초기화 중 오류가 발생했습니다: ' + e.message);
     }
+}
+
+// Build from authoritative word content before choosing a question. A change of
+// choice order or input widget does not create a new meaning/application item.
+function vocabularyQuestionVariants(word) {
+    const rows = [], plain = html => String(html).replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim();
+    const add = (qType, question, correctAnswer, extra = {}) => {
+        const candidate = { ...word, qType, question, correctAnswer, ...extra };
+        if (window.QuizExposure?.fingerprint) candidate.exposureAliases = [QuizExposure.fingerprint({ question: word.word, correctAnswer })];
+        rows.push(candidate);
+    };
+    add(1, `이 단어의 뜻은? ${word.word}`, word.meaning);
+    if (isVerb(word) && word.forms && word.tenseExs?.length === 3 && word.tenseExs.every((sentence, index) => blankVerbSentence(sentence, word.forms, index))) {
+        word.tenseExs.forEach((sentence, index) => {
+            const blank = blankVerbSentence(sentence, word.forms, index);
+            if (blank) add(2, `빈칸: ${plain(blank.html)}`, blank.matchedWord, { _tenseIdx: index });
+        });
+    } else if (!isVerb(word) && word.ex) {
+        const blank = blankNonVerbSentence(word.ex, word.word);
+        if (blank) add(2, `빈칸: ${plain(blank.html)}`, blank.matchedWord);
+    }
+    if (currentQuizBand.name === 'foundation') return rows;
+    if (word.phrasalVerbs?.length) word.phrasalVerbs.forEach((pv, index) => {
+        const [verb, ...parts] = pv.phrase.split(' '), particle = parts.join(' '), extra = { _phrasalIndex: index };
+        add(3, `구동사 '${pv.phrase}'의 뜻은?`, pv.meaning, extra);
+        add(4, `아래 뜻과 전치사에 어울리는 동사는? ( ___ ) ${particle} 뜻: ${pv.meaning}`, verb, extra);
+        add(5, `아래 뜻과 동사에 어울리는 전치사는? ${verb} ( ___ ) 뜻: ${pv.meaning}`, particle, extra);
+        add(6, `뜻 '${pv.meaning}'에 알맞은 구동사는?`, pv.phrase, extra);
+    });
+    if (isVerb(word) && word.forms?.length === 3) add(7, `동사의 과거형과 과거분사형을 입력하세요: ${word.forms[0]}`, `${word.forms[1]} - ${word.forms[2]}`);
+    if (word.ex) {
+        const blank = isVerb(word) ? word.forms && blankVerbSentence(word.ex, word.forms) : blankNonVerbSentence(word.ex, word.word);
+        if (blank) add(8, `빈칸: ${plain(blank.html)}`, blank.matchedWord);
+        if (word.exKo) add(9, `문장 배열: ${word.exKo}`, word.ex);
+    }
+    if (POS_LABEL[word.pos]) add(10, `다음 예문에서 '${word.word}'의 품사는 무엇인가요? ${word.ex || ''}`, POS_LABEL[word.pos].label.replace(/^\S+\s*/, ''));
+    if (word.comp && word.sup) add(11, `"${word.word}"의 비교급과 최상급을 입력하세요`, `${word.comp} / ${word.sup}`);
+    return rows;
+}
+function selectVocabularyPractice(words, count) {
+    const user = window.UserSession?.getActiveUser?.() || window.SmartStudy?.LocalRepository?.getActiveUser?.() || '';
+    const candidates = words.flatMap(word => Utils.shuffle(vocabularyQuestionVariants(word)));
+    const ranked = QuizExposure.select(user, 'english', candidates, candidates.length, { review: isReviewMode }).items;
+    const focus = diagnosticWordFocus(), chosen = [], seen = new Set();
+    const add = item => { if (item && !seen.has(item.word) && chosen.length < count) { chosen.push(item); seen.add(item.word); } };
+    if (focus) add(ranked.find(item => item.word.toLowerCase() === focus));
+    ranked.forEach(add); return chosen;
 }
 
 // 틀린 문제 재도전은 같은 성적 기록을 갱신하므로 이탈 기록도 이어서 센다.
@@ -423,7 +479,7 @@ function stopQuizIntegrity() {
 
 function updateHeader() {
     quizProgressBar.style.width = `${(quizIndex / quizWords.length) * 100}%`;
-    quizQNumEl.textContent = `문제 ${quizIndex + 1} / ${quizWords.length}`;
+    quizQNumEl.textContent = `문제 ${quizIndex + 1} / ${quizWords.length}${quizSessionData.reviewRequired ? ' · 반복 복습' : ''}`;
     quizScoreEl.textContent = `${quizScore}점`;
 }
 
@@ -452,7 +508,7 @@ function showQuestion() {
             quizQuestionLabel.textContent = '이 단어의 뜻은?';
             phase1Area.style.display = '';
             quizChoicesParent.style.display = 'grid';
-            
+
             quizWordEl.textContent = cur.word;
             const dataList = vocabularyPool();
             const seenMeanings = new Set([cur.meaning]);
@@ -480,7 +536,7 @@ function showQuestion() {
 
             let choices, correctAnswer;
             if (isVerb(cur)) {
-                currentTenseIdx = Math.floor(Math.random() * 3);
+                currentTenseIdx = Number.isInteger(cur._tenseIdx) ? cur._tenseIdx : Math.floor(Math.random() * 3);
                 const tenseName = TENSE_NAMES[currentTenseIdx];
                 tenseBadgeEl.textContent = `⏱ 시제: ${tenseName}`;
                 const rawSentence = cur.tenseExs ? cur.tenseExs[currentTenseIdx] : cur.ex;
@@ -517,11 +573,11 @@ function showQuestion() {
             // 구동사 퀴즈 (기존 로직 복구 및 hideAllPhases 적용)
             phase2Area.style.display = '';
             quizChoicesParent.style.display = 'grid';
-            const pv = Utils.shuffle(cur.phrasalVerbs)[0];
+            const pv = Number.isInteger(cur._phrasalIndex) ? cur.phrasalVerbs[cur._phrasalIndex] : Utils.shuffle(cur.phrasalVerbs)[0];
             const vPart = pv.phrase.split(' ')[0];
             const pPart = pv.phrase.split(' ').slice(1).join(' ');
             tenseBadgeEl.textContent = '🔥 구동사 퀴즈';
-            
+
             let correctAnswer, choices, qText, contextHtml;
             const dataList = vocabularyPool();
             const others = Utils.shuffle(dataList.filter(w => w !== cur)).slice(0, 3);
@@ -574,7 +630,7 @@ function showQuestion() {
             vQuizPastEl.focus();
 
             quizQuestionLabel.textContent = '동사의 과거형과 과거분사형을 입력하세요';
-            questionResults[quizIndex] = { 
+            questionResults[quizIndex] = {
                 word: cur.word, meaning: cur.meaning, qType: 7,
                 correctValue: cur.forms.slice(1).join('|'),
                 displayCorrect: `${cur.forms[1]} - ${cur.forms[2]}`
@@ -589,13 +645,13 @@ function showQuestion() {
             const blankRes = isVerb(cur)
                 ? blankVerbSentence(cur.ex || '', cur.forms)
                 : blankNonVerbSentence(cur.ex || '', cur.word);
-            
+
             subjectiveContextEl.innerHTML = blankRes.html;
             subjectiveInputEl.value = '';
             subjectiveInputEl.focus();
 
             quizQuestionLabel.textContent = `‘${cur.word}’의 알맞은 형태를 쓰세요. 뜻: ${cur.meaning}`;
-            questionResults[quizIndex] = { 
+            questionResults[quizIndex] = {
                 word: cur.word, meaning: cur.meaning, qType: 8,
                 correctValue: blankRes.matchedWord,
                 displayCorrect: blankRes.matchedWord
@@ -609,12 +665,12 @@ function showQuestion() {
             const sentence = cur.ex;
             const words = sentence.replace(/[.?!,]/g, '').split(/\s+/);
             const shuffled = Utils.shuffle([...words]);
-            
+
             unscrambleTargetEl.innerHTML = '';
             unscrambleChipsEl.innerHTML = shuffled.map(w => `<span class="unscramble-word" onclick="handleUnscrambleClick(this)">${w}</span>`).join('');
-            
+
             quizQuestionLabel.textContent = `뜻: ${cur.exKo}`;
-            questionResults[quizIndex] = { 
+            questionResults[quizIndex] = {
                 word: cur.word, meaning: cur.meaning, qType: 9,
                 correctValue: words.join(' '),
                 displayCorrect: sentence
@@ -636,7 +692,7 @@ function showQuestion() {
                 { id: 'prep.', label: '전치사' },
                 { id: 'conj.', label: '접속사' }
             ];
-            
+
             const correctPos = posOptions.find(p => p.id === cur.pos) || { id: cur.pos, label: cur.pos };
             const otherPos = posOptions.filter(p => p.id !== cur.pos);
             const choices = Utils.shuffle([correctPos, ...Utils.shuffle(otherPos).slice(0, 3)]);
@@ -678,6 +734,11 @@ function showQuestion() {
                 correctValue: `${cur.comp}|${cur.sup}`,
                 displayCorrect: `${cur.comp} / ${cur.sup}`
             };
+        }
+
+        if (questionResults[quizIndex]) {
+            questionResults[quizIndex].question = cur.question || `${quizQuestionLabel.textContent} ${cur.word}`;
+            questionResults[quizIndex].exposure = cur.exposure || null;
         }
 
         // 동사 3단 변화 이후 라벨 원상복구 (qType 7에서 변경됐을 수 있으므로)
@@ -728,11 +789,11 @@ function handleAnswer(btn) {
     const res = questionResults[quizIndex];
     const normalizeAnswer = value => String(value ?? '').normalize('NFC').trim().replace(/\s+/g, ' ').toLocaleLowerCase();
     const ok = normalizeAnswer(btn.dataset.answer) === normalizeAnswer(res.correctValue);
-    
+
     // 비주얼 피드백 (선택한 버튼 표시)
     quizChoices.forEach(b => { b.disabled = true; });
     btn.classList.add(ok ? 'correct' : 'wrong');
-    
+
     finishQuestion(ok, btn.textContent);
 }
 
@@ -741,7 +802,7 @@ function handleAnswer(btn) {
 // ============================================================
 function handleUnscrambleClick(chip) {
     if (chip.classList.contains('used')) return;
-    
+
     // 타겟 영역으로 이동
     const clone = chip.cloneNode(true);
     clone.onclick = () => {
@@ -760,7 +821,7 @@ function handleUnscrambleClick(chip) {
             .map(c => c.textContent).join(' ');
         const res = questionResults[quizIndex];
         const ok = userSentence === res.correctValue;
-        
+
         finishQuestion(ok, userSentence);
     }
 }
@@ -814,10 +875,10 @@ function finishQuestion(ok, userVal) {
     res.isOk = ok;
     res.selectedAnswer = userVal;
     res.correctAnswer = res.displayCorrect || res.correctValue || '';
-    
+
     const status = ok ? 'correct' : 'wrong';
     const wData = Object.values(vocabData).flat().find(w => w.word === res.word);
-    
+
     if (ok) {
         quizScore++;
         phaseFeedback.textContent = '정답입니다! ✨';
@@ -826,7 +887,7 @@ function finishQuestion(ok, userVal) {
         quizWrongWordCounts[res.word] = (quizWrongWordCounts[res.word] || 0) + 1;
         phaseFeedback.textContent = `오답입니다. 정답: ${res.displayCorrect}`;
         phaseFeedback.className = 'phase-feedback wrong-fb';
-        
+
         // 주관식일 때 흔들기 효과
         if (res.qType === 7 || res.qType === 8) {
             const area = res.qType === 7 ? phaseVerbFormsArea : phaseSubjectiveArea;
@@ -834,7 +895,7 @@ function finishQuestion(ok, userVal) {
             setTimeout(() => area.classList.remove('shake'), 500);
         }
     }
-    
+
     phaseFeedback.style.display = 'block';
 
     if (wData) {
@@ -892,7 +953,7 @@ function showResult() {
     resultEmoji.textContent = emoji;
     resultTitle.textContent = title;
     resultScore.textContent = `${quizSessionData.currentScore} / ${total}문제 정답 (${pct}%)`;
-    resultMessage.textContent = msg;
+    resultMessage.textContent = msg + (quizSessionData.reviewRequired ? ' 최근 7일에 두 번 푼 문항은 복습으로 기록했어요.' : '');
 
     scoreCard.innerHTML = '';
     retryWrongList = [];
@@ -903,9 +964,9 @@ function showResult() {
         const types = ['뜻 맞추기', '빈칸 맞추기', '구동사 뜻', '동사 찾기', '전치사 찾기', '구동사 완성', '3단 변화', '주관식 빈칸', '문장 완성', '품사 맞히기'];
         const badgeType = types[r.qType - 1] || '퀴즈';
         const badge = `<span class="sc-badge ${ok ? 'ok' : 'ng'}">${ok ? '✓' : '✗'} ${badgeType}</span>`;
-        
+
         const wData = vocabData[currentLevel].find(w => w.word === r.word);
-        
+
         let expHtml = '';
         let expBoxHtml = '';
         if (ok && wData) {
@@ -937,18 +998,21 @@ function showResult() {
     const isCompleted = (retryWrongList.length === 0);
     const timeSpent = quizActiveTimer?.getSeconds() || 0;
     const integrity = stopQuizIntegrity();
-    
+
     if (typeof saveQuizResult === 'function') {
         const lvName = document.querySelector('.level-btn.active').textContent;
         saveQuizResult(quizSessionData.id, 'english', lvName, quizSessionData.total, quizSessionData.currentScore, quizSessionData.initialScore, timeSpent, isCompleted, {
             category: 'english',
-            review: isReviewMode,
+            review: isReviewMode || quizSessionData.reviewRequired,
+            familiarAttempt: Boolean(quizSessionData.reviewRequired),
+            exposurePolicy: window.QuizExposure?.policyVersion || null,
             unitId: currentLevel,
             unitTitle: lvName,
             adaptiveBandSnapshot: currentQuizBand.name,
             ...(integrity ? { integrity } : {}),
             attempts: questionResults.map(r => ({
-                question: r.word,
+                question: r.question || r.word,
+                exposure: r.exposure || null,
                 word: r.word,
                 conceptId: `word:${r.word}`,
                 learningTarget: { kind: 'word', conceptId: `word:${r.word}`, word: r.word, context: { unitId: currentLevel } },
@@ -960,7 +1024,7 @@ function showResult() {
                 explanation: r.meaning || ''
             }))
         });
-        if (!isReviewMode && typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
+        if (!isReviewMode && !quizSessionData.reviewRequired && typeof StudyTimer !== 'undefined' && quizSessionData.initialScore !== null) {
             StudyTimer.recordResult('english', currentLevel, quizSessionData.initialScore, quizSessionData.total, quizSessionData.id);
             if (_studyTimerCtrl) _studyTimerCtrl.refresh();
         }
@@ -981,7 +1045,7 @@ function showResult() {
         retryWrongBtn.style.display = 'none';
         retryBtn.style.display = '';
     }
-    
+
     // 카카오톡 보고 버튼 노출 (항상 노출하도록 설정)
     if (kakaoReportBtn) kakaoReportBtn.style.display = 'block';
 
@@ -1089,7 +1153,7 @@ window.AppEngine = {
 
     init: function(retryCount = 0) {
         console.log(`[AppEngine] Initializing... (Attempt ${retryCount + 1}/5)`);
-        
+
         // 1. 데이터 로드 대기 확인 (최대 5회 재시도)
         if (!window.vocabData || Object.keys(window.vocabData).length === 0) {
             if (retryCount < 5) {
@@ -1197,7 +1261,7 @@ window.AppEngine = {
                 currentLevel = btn.dataset.level;
                 currentIndex = 0;
                 if (_studyTimerCtrl) _studyTimerCtrl.refresh();
-                
+
                 if (currentMode === 'study') {
                     refreshStudyOrder();
                     updateCard();
@@ -1262,7 +1326,7 @@ window.AppEngine = {
                 if (e.key === 'Enter') handleQuizSubmit();
             });
         });
-        
+
         document.addEventListener('keydown', e => {
             if (currentMode === 'study') {
                 if (e.key === 'ArrowRight') handleNext();

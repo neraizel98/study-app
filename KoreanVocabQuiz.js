@@ -2,8 +2,8 @@
 // 유형: 뜻 고르기, 지문 속 문맥 의미, 빈칸 채우기, 유의어, 반의어.
 (function (root) {
     'use strict';
-    const TYPES = ['meaning', 'context', 'blank', 'synonym', 'antonym'];
-    const LABELS = { meaning: '뜻', context: '문맥 의미', blank: '빈칸', synonym: '유의어', antonym: '반의어' };
+    const TYPES = ['meaning', 'definition', 'context', 'blank', 'synonym', 'antonym'];
+    const LABELS = { meaning: '뜻', definition: '뜻에서 낱말 찾기', context: '문맥 의미', blank: '빈칸', synonym: '유의어', antonym: '반의어' };
 
     function shuffle(values, random) {
         const copy = [...values];
@@ -55,6 +55,8 @@
         let prompt, answer, distractors, passage = null;
         if (type === 'meaning') {
             prompt = `‘${word.word}’의 뜻으로 알맞은 것은?`; answer = word.meaning; distractors = meanings(3);
+        } else if (type === 'definition') {
+            prompt = `다음 뜻에 알맞은 낱말은?\n${word.meaning}`; answer = word.word; distractors = words();
         } else if (type === 'context') {
             const lines = word.passage?.lines || [];
             passage = { title: word.passage?.title || '', lines, source: word.passage?.source || '' };
@@ -82,8 +84,19 @@
     }
 
     // Build a quiz from `words` (the unit) using `pool` (the level). `priority` word ids come first (due wrong notes).
-    function build({ words, pool, count = 10, priority = [], random = Math.random }) {
+    function build({ words, pool, count = 10, priority = [], random = Math.random, rank }) {
         const ordered = [...shuffle(words.filter(word => priority.includes(word.id)), random), ...shuffle(words.filter(word => !priority.includes(word.id)), random)];
+        if (rank) {
+            // Keep every verified type available; choose at most one question per word.
+            const candidates = ordered.flatMap(word => shuffle(available(word), random).map(type => question(word, type, pool, random)).filter(Boolean));
+            const ranked = rank(candidates), seen = new Set(), items = [];
+            for (const item of ranked) {
+                if (seen.has(item.wordId)) continue;
+                seen.add(item.wordId); items.push(item);
+                if (items.length >= count) break;
+            }
+            return shuffle(items, random);
+        }
         const items = [], used = new Map();
         for (const word of ordered) {
             if (items.length >= count) break;

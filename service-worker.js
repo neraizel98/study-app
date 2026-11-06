@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261104-mock-integrity';
+const CACHE_NAME = 'smart-study-20261106-learning-games';
 
 try {
     importScripts('./firebase-config.js');
@@ -101,6 +101,8 @@ const STATIC_ASSETS = [
     './EnglishGrammarAdvancedQuiz.js',
     './EnglishReadingPolicy.js',
     './EnglishReadingApp.js',
+    './reading-question-expansion.js',
+    './hanja-quiz.js',
     './hanja.html',
     './wrong_note.html',
     './report.html',
@@ -132,6 +134,26 @@ const STATIC_ASSETS = [
     './learning-budget-policy.js',
     './answer-validation.js',
     './quiz-exposure.js',
+    './learning-games.html',
+    './game-menu.html',
+    './game-menu.css',
+    './game-config.js',
+    './game-rankings.html',
+    './game-rankings.js',
+    './assets/game-companions/54.png',
+    './assets/game-companions/133.png',
+    './word-chain.html',
+    './word-chain.css',
+    './word-chain.js',
+    './functions/word-chain-core.js',
+    './assets/game-companions/7.png',
+    './learning-games.css',
+    './learning-games.js',
+    './functions/crossword-core.js',
+    './functions/game-words.json',
+    './assets/game-companions/1.png',
+    './assets/game-companions/4.png',
+    './assets/game-companions/25.png',
     './reading-question-variants.js',
     './mock-exam.html',
     './mock-exam.js',

@@ -106,7 +106,17 @@
             if (band.name === 'challenge') return item.difficulty !== 'foundation';
             return true;
         });
-        const eligible = matched.length ? matched : unitPassages;
+        let eligible = matched.length ? matched : unitPassages;
+        if (!reviewMode && window.QuizExposure?.inspect) {
+            const scores = eligible.map(item => {
+                const vocabulary = typeof ReadingVocabulary !== 'undefined' ? ReadingVocabulary.getQuestions(item) : [];
+                const rows = QuizExposure.inspect(userId(), 'reading', [...item.questions, ...vocabulary].map(q => ({ ...q, passageId: item.id, passageText: item.lines })));
+                return { item, fresh: Math.min(5, rows.filter(r => r.count === 0).length), normal: Math.min(5, rows.filter(r => r.count < 2).length) };
+            });
+            const bestFresh = Math.max(0, ...scores.map(s => s.fresh));
+            const bestNormal = Math.max(0, ...scores.filter(s => s.fresh === bestFresh).map(s => s.normal));
+            eligible = scores.filter(s => s.fresh === bestFresh && s.normal === bestNormal).map(s => s.item);
+        }
         const unseen = eligible.filter(item => !recentPassageIds().includes(item.id));
         let pool = unseen.length ? unseen : eligible;
         const priority = pool.filter(item => wrongPassageIds.has(item.id));
@@ -155,7 +165,7 @@
             return true;
         });
         let freshQuestions = [];
-        if (!reviewMode && window.QuizExposure) {
+        if (!reviewMode && window.QuizExposure && !QuizExposure.select) {
             freshQuestions = QuizExposure.fresh('reading', base);
             practiceReexposure = freshQuestions.length < Math.min(5, base.length);
             if (!practiceReexposure) base = base.filter(item => wrongIds.has(item.id) || freshQuestions.includes(item));
@@ -174,7 +184,14 @@
         Utils.shuffle(base).forEach(item => {
             if (selected.length < Math.min(5, base.length)) addUnique(item);
         });
-        questions = selected.slice(0, Math.min(5, base.length)).map(item => ({
+        let chosen = selected.slice(0, Math.min(5, base.length));
+        if (window.QuizExposure?.select) {
+            const candidates = [...priority, ...Utils.shuffle(base.filter(item => item.vocabularyType)), ...Utils.shuffle(base)]
+                .map(item => ({ ...item, passageId: passage.id, passageText: passage.lines }));
+            const selection = QuizExposure.select(userId(), 'reading', candidates, 5, { review: reviewMode });
+            chosen = selection.items; practiceReexposure = !reviewMode && selection.reviewRequired;
+        }
+        questions = chosen.map(item => ({
             ...item,
             choices: [...item.choices],
             snapshotId: `${passage.id}:${item.id}:${Date.now()}:${Math.random().toString(36).slice(2, 8)}`
@@ -219,7 +236,7 @@
             review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure,
             unitId: passage.unitId, unitTitle: level().units.find(candidate => candidate.id === passage.unitId)?.title || '',
             passageId: passage.id, passageTitle: passage.title, passageText: passage.lines,
-            questionId: item.id, snapshotId: item.snapshotId, skill: item.skill, question: item.question, choices: [...item.renderedChoices],
+            questionId: item.id, snapshotId: item.snapshotId, skill: item.skill, question: item.question, choices: [...item.renderedChoices], exposure: item.exposure || null,
             selectedAnswer: selected, correctAnswer: item.answer, answer: item.answer,
             explanation: `${item.evidence} 정답: ${item.answer}`, correct
         };
@@ -243,11 +260,11 @@
         const pct = Math.round(score / questions.length * 100);
         if (!reviewMode && !practiceReexposure && typeof StudyTimer !== 'undefined') StudyTimer.recordResult('reading', context(), score, questions.length, sessionId);
         if (typeof saveQuizResult === 'function') saveQuizResult(sessionId, 'reading', `${learnerLabel()} · ${passage.title}`, questions.length, score, score, quizActiveTimer?.getSeconds() || 0, true, {
-            category: 'reading', review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure, levelId, grade, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
+            category: 'reading', review: reviewMode || practiceReexposure, familiarAttempt: practiceReexposure, exposurePolicy: window.QuizExposure?.policyVersion || null, levelId, grade, readingSummary: $('passageSummary').value.trim().slice(0, 200), passageId: passage.id, passageTitle: passage.title,
             unitId: passage.unitId, skills: attempts.map(item => item.skill), attempts
         });
         $('resultScore').textContent = `${score} / ${questions.length} (${pct}%)`;
-        $('resultMessage').textContent = `${passage.title} · ${pct >= 90 ? '근거를 정확히 찾았습니다!' : pct >= 70 ? '좋아요. 틀린 근거를 확인해 보세요.' : '학습 원리를 복습하고 다시 도전해 보세요.'}`;
+        $('resultMessage').textContent = `${passage.title} · ${pct >= 90 ? '근거를 정확히 찾았습니다!' : pct >= 70 ? '좋아요. 틀린 근거를 확인해 보세요.' : '학습 원리를 복습하고 다시 도전해 보세요.'}${practiceReexposure ? ' 최근 7일에 두 번 푼 문항은 복습으로 기록했어요.' : ''}`;
         $('resultModal').hidden = false;
     }
 

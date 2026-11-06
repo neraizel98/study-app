@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>끝말잇기 항구 · Smart Study</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link rel="stylesheet" href="learning-games.css?v=20261106-learning-games" />
+    <link rel="stylesheet" href="word-chain.css?v=20261106-learning-games" />
+  </head>
+  <body>
+    <main class="games-shell">
+      <a href="game-menu.html" class="back">← 게임 선택</a>
+      <header class="game-hero chain-hero">
+        <div>
+          <p class="eyebrow">WORD CHAIN · STUDY ADVENTURE</p>
+          <h1>끝말잇기 항구</h1>
+          <p>단어를 잇고 뜻을 맞혀 항로를 완성해요.</p>
+        </div>
+        <div class="companion">
+          <img
+            src="assets/game-companions/7.png"
+            alt="꼬부기 동료"
+            width="96"
+            height="96"
+          /><span>항구의 동료 · 꼬부기</span>
+        </div>
+      </header>
+      <section class="game-panel">
+        <h2>출항 규칙</h2>
+        <ol class="rules">
+          <li>국어는 마지막 음절, 영어는 마지막 알파벳으로 시작해요.</li>
+          <li>
+            이 레벨의 등록된 단어를 입력한 뒤 뜻을 골라요. 같은 단어는 한 판에
+            한 번이에요.
+          </li>
+          <li>
+            단어 연결 50점, 뜻 정답 추가 50점. 추천 단어 힌트는 턴당 20점
+            차감해요.
+          </li>
+          <li>
+            3분 또는 10턴에 종료해요. 연결어가 부족하면 자동으로 새 시작어를
+            받아요.
+          </li>
+          <li>
+            두음법칙 변환은 적용하지 않아요. 순위 도전은 학습 기록이 있는 레벨의
+            최초 한 판만 반영해요.
+          </li>
+        </ol>
+        <div class="setup">
+          <label
+            >학습 범위<select id="chainScope">
+              <option value="ko-level1">국어 어휘 레벨 1</option>
+              <option value="ko-level2">국어 어휘 레벨 2</option>
+              <option value="en-level1">영어 단어 레벨 1</option>
+              <option value="en-level2">영어 단어 레벨 2</option>
+              <option value="en-level3">영어 단어 레벨 3</option>
+              <option value="en-level4">영어 단어 레벨 4</option>
+            </select></label
+          ><label
+            >공개 닉네임<input
+              id="chainNickname"
+              minlength="2"
+              maxlength="12"
+              placeholder="예) 파도트레이너"
+          /></label>
+        </div>
+        <p class="muted">
+          순위에는 모든 학습자가 보는 닉네임과 점수가 공개돼요. 실명 대신 별명을
+          사용해 주세요.
+        </p>
+        <div class="actions">
+          <button id="chainStart" class="primary">오늘의 순위 도전</button
+          ><button id="chainPractice">연습으로 시작</button>
+        </div>
+        <p id="chainStatus" role="status" aria-live="polite"></p>
+      </section>
+      <section id="chainPlay" class="game-panel" hidden>
+        <div class="play-header">
+          <h2 id="chainMode"></h2>
+          <span id="chainClock" class="clock"></span>
+        </div>
+        <div class="chain-stats">
+          <strong id="chainScore"></strong><span id="chainTurn"></span>
+        </div>
+        <progress
+          id="chainProgress"
+          max="10"
+          value="0"
+          aria-label="완료한 턴"
+        ></progress>
+        <div class="chain-prompt">
+          <span>앞 단어</span><strong id="chainCurrent"></strong
+          ><span id="chainRequired"></span>
+        </div>
+        <p id="chainReset" class="muted" hidden>
+          항로가 막혀 새로운 시작어를 받았어요. 계속 이어가면 돼요.
+        </p>
+        <div id="chainWordArea">
+          <label for="chainInput"
+            >이을 단어<input
+              id="chainInput"
+              autocomplete="off"
+              spellcheck="false"
+              maxlength="20"
+          /></label>
+          <div class="actions">
+            <button id="chainWord" class="primary">단어 연결</button
+            ><button id="chainHint">추천 단어 −20점</button>
+          </div>
+        </div>
+        <div id="chainMeaningArea" hidden>
+          <h3 id="chainMeaningTitle"></h3>
+          <p>알맞은 뜻을 골라 주세요.</p>
+          <div id="chainChoices" class="chain-choices"></div>
+        </div>
+        <p id="chainFeedback" role="status" aria-live="polite"></p>
+        <div
+          id="chainHistory"
+          class="chain-history"
+          aria-label="이번 판 단어 기록"
+        ></div>
+        <div class="actions">
+          <button id="chainFinish">현재 점수로 마무리</button
+          ><button id="chainLeave">나중에 이어하기</button>
+        </div>
+        <p class="muted">
+          화면을 닫아도 도전 제한 시간은 계속 흘러요. 연습 기록과 입력 중 단어는
+          이 기기에 저장돼요.
+        </p>
+        <div id="chainResult" aria-live="polite"></div>
+      </section>
+      <section class="game-panel">
+        <div class="play-header">
+          <h2>오늘의 항구 순위</h2>
+          <button id="chainRankRefresh">새로 확인</button>
+        </div>
+        <p class="muted">
+          같은 날짜·레벨·규칙으로 비교해요. 같은 점수는 공동 순위예요.
+        </p>
+        <p id="chainRankStatus" role="status"></p>
+        <div id="chainRanking"></div>
+        <section id="chainChallenge" hidden>
+          <h3>추월 도전장</h3>
+          <label>상대 선택<select id="chainTarget"></select></label>
+          <p id="chainMessage"></p>
+          <button id="chainShare" class="kakao">
+            카카오톡으로 도전장 보내기
+          </button>
+          <p class="muted">카카오톡에서 받는 사람을 직접 선택해요.</p>
+        </section>
+      </section>
+      <footer>
+        포켓몬 이미지 ·
+        <a
+          href="https://github.com/PokeAPI/sprites"
+          target="_blank"
+          rel="noopener"
+          >PokeAPI Sprites</a
+        >. Pokémon © Nintendo / Creatures / GAME FREAK. 비공식 학습 게임입니다.
+      </footer>
+    </main>
+    <script src="storage-keys.js"></script>
+    <script src="storage-events.js"></script>
+    <script src="schema-migrations.js"></script>
+    <script src="durable-store.js"></script>
+    <script src="local-repository.js"></script>
+    <script src="app-bootstrap.js"></script>
+    <script src="game-config.js?v=20261106-learning-games"></script>
+    <script src="firebase-config.js"></script>
+    <script src="firebase-client.js"></script>
+    <script src="kakao-share.js"></script>
+    <script src="functions/crossword-core.js?v=20261106-learning-games"></script>
+    <script src="functions/word-chain-core.js?v=20261106-learning-games"></script>
+    <script src="word-chain.js?v=20261106-learning-games"></script>
+  </body>
+</html>

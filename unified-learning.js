@@ -131,8 +131,21 @@
         // Submission confirms today's activity; passing is only a provisional recommendation signal.
         const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)&&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId))).sort((a,b)=>b.at-a.at)[0];
         const secure=c=>{const state=mastery(user,subject,c.context);if(state)return state.concepts.length>0&&state.concepts.every(x=>x.name!=='foundation');const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
+        const weak=choices.find(c=>{
+            const latest=passed(c);
+            return latest&&latest.attempts.filter(a=>a.correct).length/latest.attempts.length<.6;
+        });
+        if(weak)return {...weak,dailyRotation:true,reason:'최근에 어려웠던 범위를 먼저 보충해요.'};
         const open=choices.filter(c=>!isOutgrown(c));
-        const choice=open.find(c=>!secure(c))||open[0]||[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
+        const pending=open.filter(c=>!secure(c));
+        const anchor=pending[0]||open[0];
+        const sameLevel=(a,b)=>a?.levelId?a.levelId===b?.levelId&&a.semesterId===b?.semesterId:a?.unitId===b?.unitId;
+        const pool=(pending.length?pending:open).filter(c=>sameLevel(c.context,anchor?.context));
+        // Stable throughout one Seoul day, rotating across the current internal level.
+        const dateNumber=Math.floor(Date.parse(plan.today()+'T00:00:00+09:00')/86400000);
+        let learnerSeed=0;
+        for(const character of String(user)+subject)learnerSeed=(learnerSeed*31+character.charCodeAt(0))>>>0;
+        const choice=pool.length?pool[(dateNumber+learnerSeed)%pool.length]:[...choices].sort((a,b)=>(passed(a)?.at||0)-(passed(b)?.at||0))[0];
         if(!choice)return null;
         // Name the level just outgrown so the step up is visible on the today page.
         const before=choices.slice(0,choices.indexOf(choice)).filter(isOutgrown).at(-1);
@@ -141,7 +154,7 @@
             const s=statsOf(before);
             return {...choice,reason:`${before.label}은(는) 최근 첫 시도 평균 ${Math.round(s.average*100)}%(${s.sessions}회)로 충분히 익혔어요. 한 단계 높은 범위를 제안해요.`,promotedFrom:before.context};
         }
-        return {...choice,reason:'공통 학습 기록을 기준으로 다음 범위를 연결했어요. 숙달 확정은 아니에요.'};
+        return {...choice,dailyRotation:true,reason:'현재 수준의 학습 범위를 날짜에 따라 골랐어요.'};
     }
     function upgrade(p){
         if(!p||p.date!==plan.today())return p;
@@ -161,7 +174,7 @@
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
             const assignedChoice=scope?.mode==='assigned'?catalog(subject,{...p.profile,allGrades:true}).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
             let rec=recommend(subject,p.profile,entries,p.userId);
-            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic){
+            if(['english','grammar','english_reading'].includes(subject)&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic&&!rec?.dailyRotation){
                 const step=course.steps.find(s=>s.id===({english:'words',grammar:'grammar',english_reading:'reading'}[subject]));
                 const params=new URLSearchParams(step.href.split('?')[1]);
                 const linked=subject==='english'?{unitId:params.get('level')}:subject==='grammar'?{levelId:params.get('stage'),unitId:params.get('unit')}:{levelId:course.unit.gradeId||'grade6',unitId:course.unit.id};
@@ -169,7 +182,7 @@
                 if(found)rec={...found,reason:'영어 통합 과정과 같은 단어·문법·독해 범위예요.'};
             }
             const context=assigned?(assignedChoice?.context||existing?.context||null):rec?.context||null;
-            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
+            const linkedPassage=subject==='english_reading'&&course&&!assigned&&!rec?.todayEvidence&&!rec?.promotedFrom&&!rec?.diagnostic&&!rec?.dailyRotation&&context?.unitId===course.unit.id?`&passage=${encodeURIComponent(course.passage.id)}`:'';
             const diagnostic=assigned?null:rec?.diagnostic||null;
             const focus=diagnostic?.kind==='word'?'&word='+encodeURIComponent(diagnostic.word):diagnostic?.kind==='lesson'?'&lesson='+encodeURIComponent(diagnostic.lessonIndex):'';
             return {...(existing||{}),diagnostic,id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage+focus,

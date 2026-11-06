@@ -1,0 +1,147 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>포켓몬 학습 게임 · Smart Study</title>
+    <link rel="stylesheet" href="theme.css" />
+    <link
+      rel="stylesheet"
+      href="learning-games.css?v=20261106-learning-games"
+    />
+    <link rel="stylesheet" href="game-menu.css?v=20261106-learning-games" />
+  </head>
+  <body>
+    <main class="games-shell">
+      <a class="back" href="index.html">← 대시보드</a>
+      <header class="game-menu-hero">
+        <div>
+          <p class="eyebrow">SMART STUDY · TRAINER GAMES</p>
+          <h1>포켓몬 학습 게임</h1>
+          <p>게임을 고르고, 배운 단어로 모험을 시작해요.</p>
+        </div>
+        <div class="menu-team">
+          <img
+            src="assets/game-companions/25.png"
+            alt="피카츄"
+            width="96"
+            height="96"
+          /><img
+            src="assets/game-companions/7.png"
+            alt="꼬부기"
+            width="96"
+            height="96"
+          />
+        </div>
+      </header>
+      <section aria-labelledby="gamesTitle">
+        <div class="menu-section-title">
+          <h2 id="gamesTitle">게임 선택</h2>
+          <span>2개 게임 오픈</span>
+        </div>
+        <div class="game-menu-grid">
+          <a href="learning-games.html" class="game-tile tile-electric"
+            ><span class="game-tile-state">플레이 가능</span
+            ><img
+              src="assets/game-companions/25.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>십자말 숲</h3>
+            <p>뜻을 읽고 가로·세로 낱말을 채워요.</p>
+            <span class="game-tile-meta">국어 · 영어 · 10분</span
+            ><strong>퍼즐 시작 →</strong></a
+          >
+          <a href="word-chain.html" class="game-tile tile-water"
+            ><span class="game-tile-state">플레이 가능</span
+            ><img
+              src="assets/game-companions/7.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>끝말잇기 항구</h3>
+            <p>끝 글자를 잇고 단어의 뜻도 맞혀요.</p>
+            <span class="game-tile-meta">국어 · 영어 · 3분</span
+            ><strong>항구로 출항 →</strong></a
+          >
+          <article class="game-tile tile-fire upcoming">
+            <span class="game-tile-state">준비 중</span
+            ><img
+              src="assets/game-companions/4.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>문장 조립 화산</h3>
+            <p>단어 카드를 이어 질문에 답해요.</p>
+            <span class="game-tile-meta">문장 만들기</span>
+          </article>
+          <article class="game-tile tile-grass upcoming">
+            <span class="game-tile-state">준비 중</span
+            ><img
+              src="assets/game-companions/1.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>어휘 분류 정원</h3>
+            <p>뜻·품사·관계에 맞는 상자를 찾아요.</p>
+            <span class="game-tile-meta">어휘 관계</span>
+          </article>
+          <article class="game-tile tile-mystery upcoming">
+            <span class="game-tile-state">준비 중</span
+            ><img
+              src="assets/game-companions/54.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>근거 탐정 동굴</h3>
+            <p>답을 뒷받침하는 지문 속 근거를 찾아요.</p>
+            <span class="game-tile-meta">독해 · 근거 찾기</span>
+          </article>
+          <article class="game-tile tile-story upcoming">
+            <span class="game-tile-state">준비 중</span
+            ><img
+              src="assets/game-companions/133.png"
+              alt=""
+              width="96"
+              height="96"
+            />
+            <h3>이야기 복원 도서관</h3>
+            <p>사건과 문장을 흐름에 맞게 배열해요.</p>
+            <span class="game-tile-meta">독해 · 순서</span>
+          </article>
+        </div>
+      </section>
+      <section class="ranking-portal" aria-labelledby="rankingTitle">
+        <div class="rank-medal" aria-hidden="true">🏆</div>
+        <div>
+          <p class="eyebrow">TRAINER RANKINGS</p>
+          <h2 id="rankingTitle">랭킹 보기</h2>
+          <p>게임별·레벨별로 트레이너들의 기록을 확인해요.</p>
+          <span id="menuOnlineStatus" class="muted"></span>
+        </div>
+        <a href="game-rankings.html" class="rank-portal-link">순위 확인 →</a>
+      </section>
+      <footer>
+        캐릭터 이미지 ·
+        <a
+          href="https://github.com/PokeAPI/sprites"
+          target="_blank"
+          rel="noopener"
+          >PokeAPI Sprites</a
+        >. Pokémon © Nintendo / Creatures / GAME FREAK. 비공식 학습 게임입니다.
+      </footer>
+    </main>
+    <script src="game-config.js?v=20261106-learning-games"></script>
+    <script>
+      document.getElementById("menuOnlineStatus").textContent = window
+        .SmartStudy.GameConfig.onlineEnabled
+        ? "오늘의 최초 도전 점수로 경쟁해요."
+        : "온라인 순위는 준비 중이에요. 두 게임의 연습 모드를 이용할 수 있어요.";
+    </script>
+  </body>
+</html>
