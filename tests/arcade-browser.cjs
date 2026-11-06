@@ -55,14 +55,17 @@ module.exports = async function run(kind) {
             kind +
             "_" +
             encodeURIComponent(r.getActiveUser()) +
-            "_ko-stage1",
+            (kind === "chain" ? "_ko-free" : "_ko-stage1"),
           null,
         );
       }, kind);
     await page.goto(base + "/" + filename);
     await page.waitForSelector("#gameStart");
     assert.equal(await page.locator("#arcadePlayer").textContent(), "우준이");
-    assert.equal(await page.locator("[data-level]").count(), 10);
+    assert.equal(
+      await page.locator("[data-level]").count(),
+      kind === "chain" ? 0 : 10,
+    );
     assert.equal(await page.locator("input").count(), 1);
     assert(
       await page.evaluate(
@@ -186,33 +189,22 @@ module.exports = async function run(kind) {
           })
           .click();
       }
-      await page.waitForFunction(
-        () =>
-          SmartStudy.LocalRepository.getPreference(
-            "SmartStudy_Arcade_chain_" +
-              encodeURIComponent("우준") +
-              "_ko-stage1",
-            {},
-          ).progressRecorded,
-      );
       assert.equal((await stored()).state.score, 1000);
       assert(
         (await page.locator("#chainResult").textContent()).includes("10턴"),
       );
       await page.click("#chainNext");
-      for (const lang of ["ko", "en"])
-        for (const level of [1, 4, 6, 7, 10]) {
-          await page.click("[data-language=" + lang + "]");
-          await page.click('[data-level="' + level + '"]');
-          await page.click("#gameStart");
-          await page.waitForSelector("#chainPlay:not([hidden])");
-          assert(
-            await page.evaluate(
-              () => document.documentElement.scrollWidth <= innerWidth + 1,
-            ),
-          );
-          await page.click("#chainChangeLevel");
-        }
+      for (const lang of ["ko", "en"]) {
+        await page.click("[data-language=" + lang + "]");
+        await page.click("#gameStart");
+        await page.waitForSelector("#chainPlay:not([hidden])");
+        assert(
+          await page.evaluate(
+            () => document.documentElement.scrollWidth <= innerWidth + 1,
+          ),
+        );
+        await page.click("#chainChangeLevel");
+      }
     }
     assert.deepEqual(errors, []);
     console.log(

@@ -77,7 +77,7 @@ const assert = require("node:assert/strict"),
     await page.waitForFunction(
       () => document.getElementById("gameStart")?.onclick,
     );
-    assert.equal(await page.locator("[data-level]").count(), 10);
+    assert.equal(await page.locator("[data-level]").count(), 0);
     await page.click("#gameStart");
     await page.waitForSelector("#chainPlay:not([hidden])");
     await page.goto(base + "/game-rankings.html", {

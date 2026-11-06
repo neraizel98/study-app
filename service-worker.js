@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261106-arcade-levels';
+const CACHE_NAME = 'smart-study-20261106-free-chain';
 
 try {
     importScripts('./firebase-config.js');
@@ -145,6 +145,7 @@ const STATIC_ASSETS = [
     './word-chain.html',
     './word-chain.css',
     './word-chain.js',
+    './word-chain-dictionary.js',
     './functions/word-chain-core.js',
     './assets/game-companions/7.png',
     './learning-games.css',

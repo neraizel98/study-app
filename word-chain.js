@@ -19,6 +19,8 @@
     for (const id of ["chainWord", "chainHint", "chainFinish", "chainInput"]) {
       $(id).disabled = value || Boolean(state()?.finishedAt);
     }
+    for (const id of ["chainChangeLevel", "chainLeave", "chainNext"])
+      $(id).disabled = value;
     for (const button of $("chainChoices").querySelectorAll("button"))
       button.disabled = value;
   }
@@ -37,12 +39,22 @@
   }
   async function start(config) {
     if (!current()) throw Error("학습자를 다시 선택해 주세요.");
-    const old =
-      repo.getPreference(key(config.scope), null) ||
-      GameSetup.resumeLegacy(repo, user, "chain", config.scope);
+    const prefix =
+      "SmartStudy_Arcade_chain_" +
+      encodeURIComponent(user) +
+      "_" +
+      config.language +
+      "-stage";
+    const legacy = repo
+      .keys()
+      .filter((key) => key.startsWith(prefix))
+      .map((key) => repo.getPreference(key, null))
+      .filter((saved) => saved?.privateState && !saved.state.finishedAt)
+      .sort((a, b) => b.privateState.startedAt - a.privateState.startedAt)[0];
+    const old = repo.getPreference(key(config.scope), null) || legacy;
     if (old && !old.state.finishedAt && old.privateState)
       game = {
-        ...old,
+        ...JSON.parse(JSON.stringify(old)),
         ...config,
         nickname: config.name,
         drafts: old.drafts || {},
@@ -52,7 +64,14 @@
       if (!response.ok)
         throw Error("단어 자료를 불러오지 못했어요. 다시 눌러 주세요.");
       const bank = await response.json(),
-        words = GameLevels.chainPool(bank, config.scope),
+        words = [
+          ...new Map(
+            Object.entries(bank)
+              .filter(([scope]) => scope.startsWith(config.language + "-"))
+              .flatMap(([, words]) => words)
+              .map((word) => [word.answer, word]),
+          ).values(),
+        ],
         seed = config.scope + ":" + Date.now() + ":" + crypto.randomUUID();
       const privateState = core.create(words, config.scope, seed, Date.now());
       game = {
@@ -65,6 +84,8 @@
         draft: "",
       };
     }
+    game.privateState.scope = config.scope;
+    game.state = core.publicState(game.privateState);
     render();
     await safeSave();
   }
@@ -72,6 +93,19 @@
     if (busy || !game || state().finishedAt || !current()) return;
     lock(true);
     try {
+      if (action === "word" && !state().pending) {
+        const word = core.normalize(extra.word);
+        if (state().used.includes(word))
+          throw Error("이번 판에서 이미 나온 단어예요.");
+        if (!word.startsWith([...state().currentWord].at(-1)))
+          throw Error("앞 단어의 마지막 글자로 시작해 주세요.");
+        if (!game.words.some((entry) => entry.answer === word)) {
+          status("사전에서 단어 확인 중…");
+          const entry = await WordChainDictionary.lookup(game.language, word);
+          if (!current()) throw Error("학습자가 바뀌었습니다.");
+          game.words.push(entry);
+        }
+      }
       game.privateState = core.apply(
         game.privateState,
         game.words,
@@ -83,25 +117,6 @@
       if (action === "word" && state().pending) game.draft = "";
       render();
       await safeSave();
-      if (state().finishedAt && !game.progressRecorded) {
-        const s = state(),
-          maxScore =
-            s.finishReason === "exhausted" ? Math.max(1, s.turn) * 100 : 1000;
-        const promotion = await setup.record({
-          id: game.puzzleId,
-          language: game.language,
-          level: game.level,
-          score: Math.min(s.score, maxScore),
-          maxScore,
-          words: s.history.map((e) => e.word),
-        });
-        game.progressRecorded = true;
-        await safeSave();
-        $("chainResult").textContent +=
-          " · " +
-          (promotion.promoted ? "LEVEL UP! 추천 Lv." : "추천 Lv.") +
-          promotion.recommended;
-      }
     } catch (e) {
       status(e.message);
     } finally {
@@ -113,7 +128,8 @@
     if (!s) return;
     $("chainPlay").hidden = false;
     $("chainSetupPanel").hidden = true;
-    $("chainMode").textContent = game.nickname + " · Lv." + game.level;
+    $("chainMode").textContent =
+      game.nickname + " · " + (game.language === "ko" ? "국어" : "영어");
     $("chainScore").textContent = s.score + "점";
     $("chainTurn").textContent = s.turn + " / " + s.maxTurns + "턴 완료";
     $("chainProgress").value = s.turn;
@@ -207,7 +223,7 @@
       $("gameSetup").textContent = "대시보드에서 학습자를 선택해 주세요.";
       return;
     }
-    setup = GameSetup.mount({ user, game: "chain", onStart: start });
+    setup = GameSetup.mountFree({ user, onStart: start });
     $("chainWord").onclick = () => act("word", { word: $("chainInput").value });
     $("chainHint").onclick = () => act("hint");
     $("chainInput").onkeydown = (e) => {

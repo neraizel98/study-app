@@ -15,16 +15,18 @@
   const score = (state) =>
     Math.max(0, state.earned - state.hintedTurns.length * 20);
   function dictionary(words, scope) {
-    const english = scope.startsWith("en-");
+    const english = scope.startsWith("en-"),
+      free = scope.endsWith("-free");
     const seen = new Set();
     return words.filter((word) => {
       const value = normalize(word.answer);
       const valid =
         (english
-          ? /^[a-z]{2,9}$/.test(value) &&
+          ? (free ? /^[a-z]{2,30}$/ : /^[a-z]{2,9}$/).test(value) &&
             typeof word.id === "string" &&
             word.id === word.id.toLowerCase()
-          : /^[가-힣]{2,8}$/.test(value)) && word.clue;
+          : (free ? /^[가-힣]{2,20}$/ : /^[가-힣]{2,8}$/).test(value)) &&
+        word.clue;
       if (!valid || seen.has(value)) return false;
       seen.add(value);
       return true;
@@ -126,7 +128,7 @@
       if (!answer.startsWith([...state.currentWord].at(-1)))
         throw Error("앞 단어의 마지막 글자로 시작해 주세요.");
       const word = pool.find((item) => item.answer === answer);
-      if (!word) throw Error("이 학습 범위에 등록된 단어를 입력해 주세요.");
+      if (!word) throw Error("단어의 철자를 확인해 주세요.");
       const alternatives = [
         ...new Set(
           pool

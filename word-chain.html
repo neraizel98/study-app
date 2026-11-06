@@ -5,9 +5,9 @@
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>끝말잇기 항구 · 포켓몬 학습 게임</title>
     <link rel="stylesheet" href="theme.css" />
-    <link rel="stylesheet" href="learning-games.css?v=20261106-arcade-levels" />
-    <link rel="stylesheet" href="word-chain.css?v=20261106-arcade-levels" />
-    <link rel="stylesheet" href="arcade.css?v=20261106-arcade-levels" />
+    <link rel="stylesheet" href="learning-games.css?v=20261106-free-chain" />
+    <link rel="stylesheet" href="word-chain.css?v=20261106-free-chain" />
+    <link rel="stylesheet" href="arcade.css?v=20261106-free-chain" />
   </head>
   <body class="arcade">
     <main class="games-shell">
@@ -36,14 +36,15 @@
           <p>
             국어는 마지막 음절, 영어는 마지막 알파벳으로 이어요. 단어 50점, 뜻
             정답 50점, 추천 힌트 −20점. 3분·10턴이며 막히면 새 시작어를 받아요.
-            두음법칙 변환은 적용하지 않아요.
+            학습 범위와 레벨 제한 없이 사전에서 확인되는 단어를 쓸 수 있어요. 새
+            단어 확인에는 인터넷이 필요해요. 두음법칙 변환은 적용하지 않아요.
           </p>
         </details>
       </section>
       <section id="chainPlay" class="game-panel" hidden>
         <div class="play-header">
           <h2 id="chainMode"></h2>
-          <button id="chainChangeLevel" class="arcade-quiet">레벨 선택</button>
+          <button id="chainChangeLevel" class="arcade-quiet">언어 선택</button>
           <span id="chainClock" class="clock"></span>
         </div>
         <div class="chain-stats">
@@ -98,7 +99,9 @@
         <button id="chainNext" class="arcade-start" hidden>다음 게임 ▶</button>
       </section>
       <footer>
-        캐릭터 이미지 ·
+        단어 사전 · <a href="https://ko.wiktionary.org/">위키낱말사전</a> ·
+        <a href="https://dictionaryapi.dev/">Free Dictionary API</a>
+        (Wiktionary, CC BY-SA).<br />캐릭터 이미지 ·
         <a href="https://github.com/PokeAPI/sprites">PokeAPI Sprites</a>.
         Pokémon © Nintendo / Creatures / GAME FREAK.
       </footer>
@@ -111,8 +114,9 @@
     <script src="app-bootstrap.js"></script>
     <script src="functions/crossword-core.js"></script>
     <script src="functions/word-chain-core.js"></script>
-    <script src="game-levels.js?v=20261106-arcade-levels"></script>
-    <script src="game-setup.js?v=20261106-arcade-levels"></script>
-    <script src="word-chain.js?v=20261106-arcade-levels"></script>
+    <script src="game-levels.js?v=20261106-free-chain"></script>
+    <script src="game-setup.js?v=20261106-free-chain"></script>
+    <script src="word-chain-dictionary.js?v=20261106-free-chain"></script>
+    <script src="word-chain.js?v=20261106-free-chain"></script>
   </body>
 </html>

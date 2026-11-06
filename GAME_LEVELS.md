@@ -14,3 +14,7 @@ Crosswords use 4–8 words and 10 minutes. Word chains use 10 turns and 3 minute
 `node scripts/build-game-levels.cjs` rebuilds the bank from existing vocabulary sources plus `functions/game-foundation.json`. Keep definitions accurate and add connecting words when extending Korean chains. `node --test game-levels.test.js` checks all 20 pools and difficulty policy. Browser flows live in `tests/arcade-browser.cjs`.
 
 Online ranking stays disabled per the approved release scope. The legacy server dictionaries and APIs remain intact. A future online release must extend the server validation to the new stage scopes and define shared puzzle versions before enabling `GameConfig.onlineEnabled`; local scores are not authoritative competition scores.
+
+## Free word chain update
+
+Word chain now has language selection only, using `ko-free` / `en-free`. It draws starting words and hints from the combined banks across all levels. Words outside those banks are verified on demand through Korean Wiktionary or Free Dictionary API before being accepted. Network errors preserve the current turn. The usual last-letter, duplicate and meaning-choice rules remain. Word-chain level recommendations no longer change; previous recommendation data and unfinished stage snapshots are retained. Previous unfinished stage games can be resumed under their language-only mode. Crossword levels remain unchanged.

@@ -155,5 +155,56 @@
     }
     return null;
   }
-  root.GameSetup = { mount, resumeLegacy };
+  function mountFree({ user, onStart }) {
+    const host = document.getElementById("gameSetup"),
+      name = GameLevels.displayName(user, repo().getUser(user));
+    let language = new URLSearchParams(location.search)
+      .get("scope")
+      ?.startsWith("en-")
+      ? "en"
+      : repo().getPreference(
+          "SmartStudy_ArcadeLanguage_" + encodeURIComponent(user),
+          "ko",
+        );
+    if (!["ko", "en"].includes(language)) language = "ko";
+    host.innerHTML =
+      '<div class="player-badge"><span aria-hidden="true">🎮</span><strong id="arcadePlayer"></strong><span class="player-ready">READY</span></div><div class="language-picks" role="group" aria-label="게임 언어"><button type="button" data-language="ko">국어</button><button type="button" data-language="en">영어</button></div><p class="arcade-progress">끝 글자로 이어지는 단어라면 OK!</p><button id="gameStart" class="arcade-start">게임 시작 ▶</button><p id="arcadeNotice" role="status" aria-live="polite"></p>';
+    document.getElementById("arcadePlayer").textContent = name;
+    const buttons = [...host.querySelectorAll("button")];
+    let busy = false;
+    function render() {
+      for (const button of host.querySelectorAll("[data-language]"))
+        button.setAttribute(
+          "aria-pressed",
+          String(button.dataset.language === language),
+        );
+      for (const button of buttons) button.disabled = busy;
+    }
+    for (const button of host.querySelectorAll("[data-language]"))
+      button.onclick = () => {
+        language = button.dataset.language;
+        repo().setPreference(
+          "SmartStudy_ArcadeLanguage_" + encodeURIComponent(user),
+          language,
+        );
+        render();
+      };
+    document.getElementById("gameStart").onclick = async () => {
+      if (busy) return;
+      busy = true;
+      render();
+      document.getElementById("arcadeNotice").textContent = "";
+      try {
+        await onStart({ user, language, scope: language + "-free", name });
+      } catch (e) {
+        document.getElementById("arcadeNotice").textContent = e.message;
+      } finally {
+        busy = false;
+        render();
+      }
+    };
+    render();
+    return { refresh: render };
+  }
+  root.GameSetup = { mount, resumeLegacy, mountFree };
 })(window);
