@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261106-learning-games';
+    const APP_VERSION = '20261106-learning-games-r2';
 
     (async function () {
         try {

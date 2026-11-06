@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261106-learning-games';
+const CACHE_NAME = 'smart-study-20261106-learning-games-r2';
 
 try {
     importScripts('./firebase-config.js');
