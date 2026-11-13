@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261113-science-three-r187';
+const CACHE_NAME = 'smart-study-20261114-science-completion';
 
 try {
     importScripts('./firebase-config.js');
@@ -52,6 +52,7 @@ self.addEventListener('activate', event => {
 
 // 캐시할 파일 목록 (앱 핵심 파일)
 const STATIC_ASSETS = [
+    './science-extension-models.js?v=20261114-l1-completion', './science-cosmos-model.js?v=20261114-l1-completion', './ScienceLifeEarthExpansion.js?v=20261114-l1-completion', './SciencePhysicalExpansion.js?v=20261114-l1-completion', './ScienceMockLifeEarthExpansion.js?v=20261113-science-complete', './ScienceMockPhysicalExpansion.js?v=20261113-science-complete',
     './science-orbit-three.js?v=20261113-three-r187', './vendor/three/three.module.js', './vendor/three/three.core.js',
     './science.html', './science.css?v=20261112-science-level1', './science-app.js?v=20261112-science-level1', './science-models.js?v=20261112-science-level1', './ScienceData.js?v=20261112-science-level1', './ScienceMockPhysical.js?v=20261112-science-level1', './ScienceMockData.js?v=20261112-science-level1', './science-policy.js',
     './',

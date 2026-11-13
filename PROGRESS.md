@@ -22,3 +22,9 @@ Expansion practice definitions are mostly written; assessment expansion banks ar
 
 ## Runtime and cautions
 Local preview http://127.0.0.1:8766. Playwright runtime NODE_PATH=C:/Users/NX3GAMES/AppData/Local/npm-cache/_npx/9833c18b2d85bc59/node_modules. Firebase tools/Java isolated in ../work/science-rules-runtime. Existing English changes in this branch must be preserved. Incomplete data modules may produce syntax/404 errors during authoring: full browser completion is not yet verified. Do not substitute generic titles/colors for real topic-specific models or use irrelevant distractors. Do not claim exact school semester coverage; primary curriculum mapping is incomplete.
+
+## Latest checkpoint
+- Full practice inventory loads32 units (8 per domain) and650 questions, including10 supplementary questions. Content/answer QA still in progress.
+- All new renderer kinds are connected; browser checks cover32 units/lesson bindings. Body anatomy and Moon observer labels are being improved after visual review.
+- Both expansion assessment banks are still being authored; full mock inventory/SDK validation pending. Temporary authoring chunk files must not be published.
+
