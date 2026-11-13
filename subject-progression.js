@@ -26,7 +26,7 @@
         for(const report of reports||[]){
             const m=report.metadata||{},total=Number(report.totalQuestions),attempts=m.initialAttempts||m.attempts||[];
             if(report.subject!==subject||!report.sessionId||(user&&report.userId&&report.userId!==user)||(user&&report.learnerId&&report.learnerId!==user))continue;
-            if(report.isCompleted===false||m.status==='draft'||report.status==='draft'||m.assessment||m.mockExam||m.review||m.hintUsed||total<5||!Number.isInteger(total)||attempts.length<total)continue;
+            if(report.isCompleted===false||m.status==='draft'||report.status==='draft'||m.assessment||m.mockExam||m.writingPack||m.review||m.hintUsed||total<5||!Number.isInteger(total)||attempts.length<total)continue;
             const first=attempts.slice(0,total);
             if(first.some(a=>typeof a.correct!=='boolean'||a.assisted||a.hintUsed))continue;
             if(subject==='reading'&&root.KoreanReadingCurriculum&&!root.KoreanReadingCurriculum.isCurrentPassageId(m.passageId))continue;

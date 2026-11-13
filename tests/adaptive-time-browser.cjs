@@ -31,7 +31,7 @@ const {chromium}=require('playwright'),fs=require('node:fs'),http=require('node:
   const status=await page.evaluate(()=>StudyTimer.getStatus('english_reading','english_reading:grade6',['초6']));
   assert.equal(status.source,'daily');assert.equal(status.score,90);assert.equal(status.requiredSeconds,0);
   assert.match(await page.locator('#studyTimerBar').innerText(),/평균 90점.*퀴즈 가능/);
-  await page.locator('#practiceQuiz').click();await page.waitForSelector('#quizChoices button:visible');
+  await page.locator('#practiceQuiz').click();await page.waitForSelector('#quizPanel:visible');
   const again=await seed([8,8,8]);await page.goto(base+'/'+again);await page.waitForSelector('#studyTimerBar');
   const below=await page.evaluate(()=>StudyTimer.getStatus('english_reading','english_reading:grade6',['초6']));
   assert.equal(below.source,'daily');assert.equal(below.score,80);assert.equal(below.requiredSeconds,720);

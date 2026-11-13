@@ -2,10 +2,10 @@
  'use strict';
  const app=root.SmartStudy=root.SmartStudy||{},DAY=86400000;
  const quotas=Object.freeze({reading:11,korean_vocab:4,english:4,grammar:4,english_reading:7,math:12,math_formula:3,hanja:10});
- const version='20261104-weekly-ready-v6';
+ const version='20261111-writing-ready-v7';
  const normalize=value=>String(value??'').normalize('NFKC').toLowerCase().replace(/\s+/g,'').trim();
  // Choice order, case, and spacing are presentation, not a new question.
- function fingerprint(q){const lines=q.passageLines||q.passageText||q.sentences||[];return [q.subject,normalize(q.question||q.prompt),normalize(q.answer??q.correctAnswer),...(Array.isArray(lines)?lines:[lines]).map(normalize)].join('|');}
+ function fingerprint(q){const lines=q.passageLines||q.passageText||q.sentences||[];return [q.subject,normalize(q.question||q.prompt),normalize(q.answer??q.correctAnswer),...(q.subject==='science'?[normalize(q.givens)]:[]),...(Array.isArray(lines)?lines:[lines]).map(normalize)].join('|');}
  function choiceKey(value){
   const text=normalize(value).replace(/\$/g,'');
   const fraction=text.match(/^(-?\d+)\/(\d+)([a-z%²³]*)$/)||text.match(/^\\frac\{(-?\d+)\}\{(\d+)\}([a-z%²³]*)$/);
@@ -13,7 +13,7 @@
   const decimal=text.match(/^(-?\d+(?:\.\d+)?)([a-z%²³]*)$/);
   return decimal?`number:${Number(decimal[1])}:${decimal[2]}`:text;
  }
- function valid(q){return Boolean(q&&q.question&&!/아직 개발 중|임시 문제/.test(q.question)&&Array.isArray(q.choices)&&q.choices.length>=2&&q.choices.every(c=>typeof c==='string'&&c.trim())&&new Set(q.choices.map(choiceKey)).size===q.choices.length&&q.choices.filter(c=>c===q.answer).length===1);}
+ function valid(q){if(q?.kind==='written')return Boolean(q.question&&q.answer&&q.explanation&&(q.answerFormat!=='english-form'||Array.isArray(q.acceptedAnswers)&&q.acceptedAnswers.length&&q.acceptedAnswers.every(a=>typeof a==='string'&&a.trim())&&q.acceptedAnswers.includes(q.answer)));return Boolean(q&&q.question&&!/아직 개발 중|임시 문제/.test(q.question)&&Array.isArray(q.choices)&&q.choices.length>=2&&q.choices.every(c=>typeof c==='string'&&c.trim())&&new Set(q.choices.map(choiceKey)).size===q.choices.length&&q.choices.filter(c=>c===q.answer).length===1);}
  // Typed answers compare values, so 4/9, $rac{4}{9}$km and 0.444… style units do not matter.
  function writtenKey(value){
   const text=normalize(value).replace(/\$/g,'').replace(/^([^가-힣]*?)[가-힣]+$/,'$1'),key=choiceKey(text);
@@ -22,7 +22,10 @@
  function grade(q,response){
   if(q?.kind==='written'){
    if(response===undefined||response===null||String(response).trim()==='')return {correct:false,status:'unanswered',answer:q.answer};
-   const correct=writtenKey(response)===writtenKey(q.answer);return {correct,status:correct?'correct':'wrong',answer:q.answer};
+   const englishKey=value=>String(value??'').normalize('NFKC').trim().toLowerCase().replace(/[’‘]/g,"'").replace(/\s+/g,' ').replace(/\s+([,.;!?])/g,'$1').replace(/[.!?]+$/,'');
+   const correct=q.answerFormat==='english-form'
+    ? (q.acceptedAnswers||[q.answer]).some(answer=>englishKey(response)===englishKey(answer))
+    : writtenKey(response)===writtenKey(q.answer);return {correct,status:correct?'correct':'wrong',answer:q.answer};
   }
   if(!valid(q))return {correct:false,status:'invalid',answer:q?.answer??null};
   if(response===undefined||response===null||response==='')return {correct:false,status:'unanswered',answer:q.answer};
@@ -45,13 +48,24 @@
   if(subject==='hanja'&&m.unitId)return {unitId:m.unitId,title:m.unitTitle||''};
   return null;
  }
+ // Pending writing is retained in the report, while only verified first answers establish learned scope.
+ function firstAttempts(report){
+  const m=report.metadata||{},all=m.initialAttempts||m.attempts||[],total=Number(report.totalQuestions);
+  if(!Number.isInteger(total)||total<1||!Array.isArray(all))return null;
+  if(m.writingPack){
+   const pending=Number(m.pendingWritingCount||0),scored=all.filter(a=>!(a?.correct===null&&a.gradingStatus==='review_pending'));
+   if(!Number.isInteger(pending)||pending<0||all.length!==total+pending||scored.length!==total||scored.some(a=>!a||typeof a.correct!=='boolean'||a.round&&a.round!==1))return null;
+   return scored;
+  }
+  return all.length>=total&&all.slice(0,total).every(a=>a&&typeof a.correct==='boolean')?all.slice(0,total):null;
+ }
  // windowDays(subject) lets hanja look back further: earlier grades studied months ago are still "previously studied".
  function learnedScopes(reports,now,windowDays=()=>21){
   const groups=new Map(),unique=new Map();
   for(const r of reports){
    if(!r||typeof r!=='object')continue;
-   const m=r.metadata||{},subject=m.source==='math-formula'?'math_formula':r.subject,at=Number(m.submittedAt||r.createdAt||r.date),total=Number(r.totalQuestions),attempts=m.initialAttempts||m.attempts||[];
-   if(!quotas[subject]||!r.sessionId||m.assessment||m.assessmentId||m.mockExam||m.examTraining||m.review||m.status==='draft'||m.status==='partial'||!Number.isInteger(total)||total<1||!Array.isArray(attempts)||attempts.length<total||attempts.slice(0,total).some(a=>!a||typeof a.correct!=='boolean')||!Number.isFinite(at)||at>now||at<now-(Number(windowDays(subject))||21)*DAY)continue;
+   const m=r.metadata||{},subject=m.source==='math-formula'?'math_formula':r.subject,at=Number(m.submittedAt||r.createdAt||r.date),total=Number(r.totalQuestions),attempts=firstAttempts(r);
+   if(!quotas[subject]||!r.sessionId||m.assessment||m.assessmentId||m.mockExam||m.examTraining||m.review||m.status==='draft'||m.status==='partial'||!Number.isInteger(total)||total<1||!attempts||!Number.isFinite(at)||at>now||at<now-(Number(windowDays(subject))||21)*DAY)continue;
    const c=contextOf(subject,r);if(!c)continue;
    const sessionKey=`${subject}:${r.sessionId}`;const entry={r,subject,at,context:c,attempts:attempts.slice(0,total)};
    if(!unique.has(sessionKey)||Number(r.updatedAt||r.date)>Number(unique.get(sessionKey).r.updatedAt||unique.get(sessionKey).r.date))unique.set(sessionKey,entry);
@@ -101,7 +115,7 @@
   {id:'mock-moon-picture',sourcePassageId:'er1-p0',title:'Two Moon Pictures',lines:['Jin looks at two pictures of the moon.','The first picture shows a thin curve.','The second picture shows a wider bright part.','Jin draws the two shapes in his notebook.','He learns that the pictures show a change in the moon.'],questions:[q('fact','What does Jin look at?','Two pictures of the moon',['Three pictures of the moon','Two pictures of the sun','The notebook of a friend'],'첫 문장에 달 사진 두 장을 본다고 나온다.'),q('main','What is the passage mainly about?','Jin compares two moon shapes.',['Jin draws a thin curve only.','Jin takes two moon pictures.','The moon stops changing its shape.'],'서로 다른 달 모양을 보고 기록하는 내용이다.'),q('reference','Who does “He” in sentence 5 refer to?','Jin',['the moon','the notebook','the first picture'],'앞 문장에서 그림을 그린 사람 Jin을 가리킨다.'),q('evidence','Which sentence shows that Jin keeps a record?','Sentence 4',['Sentence 1','Sentence 2','Sentence 3'],'4문장의 공책 그림이 기록의 근거이다.')]},
   {id:'mock-moon-observe',sourcePassageId:'er1-p0',title:'A Bright Part',lines:['Sora draws the moon on Monday.','The moon looks like a thin curve.','Three nights later, she looks at the moon again.','The bright part is wider, so she draws a new shape.','Her notebook shows the change over time.'],questions:[q('fact','When does Sora first draw the moon?','On Monday',['On Thursday','On Sunday','Every night'],'첫 문장에 Monday라고 제시한다.'),q('main','What does the notebook show?','A change in the moon over time',['A thin curve drawn on Monday','A moon shape that never changes','The days Sora goes to school'],'마지막 문장이 공책 기록의 의미를 정리한다.'),q('reference','Who does “she” in sentence 3 refer to?','Sora',['Monday','the moon','the bright part'],'앞 두 문장의 주인공 Sora를 가리킨다.'),q('evidence','Which sentence shows a different moon shape?','Sentence 4',['Sentence 1','Sentence 2','Sentence 3'],'4문장에서 밝은 부분이 더 넓어져 새 모양을 그린다.')]}
  ];
- function build(user,now=Date.now(),options={}){
+ function buildLegacy(user,now=Date.now(),options={}){
   const retake=Number(options.attemptNo)>1,strict=options.profile!=='legacy',buildVersion=strict?version:'20261019-mock-bank-v3';
   now=Number(now);if(!Number.isFinite(now))now=Date.now();
   // The parent's device supplies the learner's server reports; the learner's own device reads local ones.
@@ -114,7 +128,7 @@
   // fresh source (then oldest-first re-exposure), so a subject is never blocked while older studied units remain.
   const primaryScope=g=>!strict||!currentSubjects.has(g.subject)||g.lastAt>=weekStart;
   const weeklyCoverage=Object.fromEntries(Object.keys(quotas).map(subject=>{
-   const dates=reports.filter(r=>{const m=r.metadata||{};return (m.source==='math-formula'?'math_formula':r.subject)===subject&&!m.assessment&&!m.assessmentId&&!m.mockExam&&!m.examTraining&&!m.review&&m.status!=='draft'&&m.status!=='partial'&&Number(r.totalQuestions)>0&&Array.isArray(m.initialAttempts||m.attempts)&&(m.initialAttempts||m.attempts).length>=Number(r.totalQuestions)&&(m.initialAttempts||m.attempts).slice(0,Number(r.totalQuestions)).every(a=>a&&typeof a.correct==='boolean');}).map(r=>Number(r.metadata?.submittedAt||r.createdAt||r.date)).filter(at=>Number.isFinite(at)&&at<=now);
+   const dates=reports.filter(r=>{const m=r.metadata||{};return (m.source==='math-formula'?'math_formula':r.subject)===subject&&!m.assessment&&!m.assessmentId&&!m.mockExam&&!m.examTraining&&!m.review&&m.status!=='draft'&&m.status!=='partial'&&Number(r.totalQuestions)>0&&firstAttempts(r)!==null;}).map(r=>Number(r.metadata?.submittedAt||r.createdAt||r.date)).filter(at=>Number.isFinite(at)&&at<=now);
    const days=new Set(dates.filter(at=>at>=weekStart).map(at=>new Date(at+9*3600000).toISOString().slice(0,10))),newThisWeek=dates.length>0&&Math.min(...dates)>=weekStart;
    return [subject,{days:days.size,newThisWeek,weight:quotas[subject]*(newThisWeek?Math.min(5,days.size)/5:1)}];
   }));
@@ -133,7 +147,7 @@
    return times.length?Math.max(...times):null;
   }
   function add(g,item){
-   const candidate={...item,subject:g.subject,context:{...g.context},kind:'choice',choices:(item.choices||[]).map(String),answer:String(item.answer??''),explanation:item.explanation||'',evidenceReportIds:[...g.reportIds],sourceType:item.sourceType||'학습 범위의 검증 문항',repeated:Boolean(item.repeated),difficulty:item.difficulty||'basic',noveltyKind:item.noveltyKind||(item.repeated?'reexposure':'recall'),cognitiveDemand:item.cognitiveDemand||'recall'};
+   const candidate={...item,subject:g.subject,context:{...g.context},kind:item.kind||'choice',choices:(item.choices||[]).map(String),answer:String(item.answer??''),explanation:item.explanation||'',evidenceReportIds:[...g.reportIds],sourceType:item.sourceType||'학습 범위의 검증 문항',repeated:Boolean(item.repeated),difficulty:item.difficulty||'basic',noveltyKind:item.noveltyKind||(item.repeated?'reexposure':'recall'),cognitiveDemand:item.cognitiveDemand||'recall'};
    if(strict&&candidate.repeated)return;
    if(!valid(candidate))return;
    // Not self-contained or not uniquely answerable: never shipped, not even as a fallback.
@@ -167,7 +181,11 @@
    if(strict&&g.subject==='english_reading'){
     const unit=root.EnglishReadingData?.units?.find(u=>u.id===c.unitId&&(u.gradeId||'grade6')===(c.levelId||'grade6'));
     const skills=new Set();for(const p of unit?.passages||[])if(g.passageIds.has(p.id))for(const a of attempts){const q=p.questions.find(q=>q.id===a.questionId||normalize(q.prompt)===normalize(a.question));if(q)skills.add(q.type);}
-    for(const p of passagePool('english'))if(p.gradeId===(c.levelId||'grade6'))for(const item of p.questions)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
+    const learnedForm=attempts.some(a=>a.questionType==='rewrite'&&a.skill==='sentence-form');
+    for(const p of passagePool('english'))if(p.gradeId===(c.levelId||'grade6')){
+     const candidates=[...p.questions,...(learnedForm?root.MockEnglishWriting?.create(p)||[]:[])];
+     for(const item of candidates)if(skills.size)add(g,{...item,passageId:p.id,passageTitle:p.title,passageLines:p.lines,glossary:p.glossary||[],sourceQuestionId:item.id,conceptId:item.skill,templateFamily:`new-reading:${p.id}:${item.skill}`,noveltyKind:item.noveltyKind||'new-passage',cognitiveDemand:item.cognitiveDemand||(item.difficulty==='challenge'?'reasoning':'application'),sourceType:item.answerFormat==='english-form'?'모의고사 전용 새 문장 · 배운 형태 변환':'모의고사 전용 새 영어 지문 · 배운 독해 기능 적용'});
+    }
     continue;
    }
    if(strict&&g.subject==='math'){
@@ -274,7 +292,7 @@
   function select(subject,pool,required){
    if(strict&&['reading','english_reading'].includes(subject)&&required>0){
     const texts=new Map();for(const q of pool){const rows=texts.get(q.passageId)||[];rows.push(q);texts.set(q.passageId,rows);}
-    const full=shuffle([...texts.values()].filter(rows=>rows.length>=required),rng).sort((a,b)=>b.filter(q=>q.cognitiveDemand==='reasoning').length-a.filter(q=>q.cognitiveDemand==='reasoning').length);
+    const full=shuffle([...texts.values()].filter(rows=>rows.length>=required),rng).sort((a,b)=>Number(b.some(q=>q.answerFormat==='english-form'))-Number(a.some(q=>q.answerFormat==='english-form'))||b.filter(q=>q.cognitiveDemand==='reasoning').length-a.filter(q=>q.cognitiveDemand==='reasoning').length);
     if(full.length)pool=full[0];else{const ordered=shuffle([...texts.values()],rng).sort((a,b)=>b.length-a.length);let bundled=[];for(const rows of ordered){bundled.push(...rows);if(bundled.length>=required)break;}if(bundled.length>=required)pool=bundled;}
    }
    const order=list=>shuffle(list,rng).sort((a,b)=>(strict?(Number(['application','reasoning'].includes(b.cognitiveDemand))-Number(['application','reasoning'].includes(a.cognitiveDemand))):0)||(meta.get(b)?.recency||0)-(meta.get(a)?.recency||0));
@@ -286,6 +304,10 @@
    for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&fits(q))take(q);
    for(const q of ranked)if(picked.length<required&&!picked.includes(q)&&(!strict||!cap.concept||(concepts.get(q.conceptId)||0)<cap.concept))take(q);
    for(const q of ranked)if(picked.length<required&&!picked.includes(q))take(q);
+   if(subject==='english_reading'&&required>=2&&!picked.some(q=>q.answerFormat==='english-form')){
+    const written=ranked.find(q=>q.answerFormat==='english-form');
+    if(written)picked.splice(picked.length-1,1,written);
+   }
    return shuffle(picked,rng);
   }
   if(!strict){
@@ -371,5 +393,44 @@
    hanjaSplit:{currentLevel:currentHanja,current:hanjaItems.filter(isCurrentHanja).length,previous:hanjaItems.filter(isOtherHanja).length}};
 
  }
- app.MockExamBank={build,grade,quotas,version,fingerprint,learnedScopes,writtenKey,componentNames};
+ // Science eligibility is restricted to complete, unassisted first submissions in the target week.
+ function scienceEvidence(reports,user,now){
+  const date=new Date(now+9*3600000);date.setUTCDate(date.getUTCDate()-(date.getUTCDay()+6)%7);
+  const start=Date.parse(date.toISOString().slice(0,10)+'T00:00:00+09:00'),unique=new Map();
+  for(const r of reports||[]){const m=r?.metadata||{},at=Number(m.submittedAt||r?.createdAt||r?.date),a=m.initialAttempts||m.attempts;
+   if(root.SciencePolicy&&!root.SciencePolicy.validMasteryEvidence(r,{now}))continue;
+   if(root.ScienceData&&!root.ScienceData.units.some(u=>u.id===m.unitId&&u.levelId===m.levelId))continue;
+   if(r?.subject!=='science'||m.source!=='science'||new Set((a||[]).map(x=>x?.questionId)).size!==10||!r.sessionId||(r.userId&&r.userId!==user)||(r.learnerId&&r.learnerId!==user)||Number(r.totalQuestions)!==10||!Array.isArray(a)||a.length!==10||a.some(x=>typeof x?.correct!=='boolean'||x.round&&x.round!==1||x.assisted||x.hintUsed||x.exposure?.review)||m.review||m.hintUsed||m.assessment||m.assessmentId||m.mockExam||m.examTraining||r.draft||m.draft||['draft','partial','active','in-progress'].includes(r.status||m.status)||!m.unitId||m.levelId!=='level1'||!Number.isFinite(at)||at<start||at>now)continue;
+   if(!unique.has(r.sessionId))unique.set(r.sessionId,{r,at,unitId:m.unitId,levelId:m.levelId,domainId:m.domainId||m.domain,attempts:a});
+  }return [...unique.values()];
+ }
+ function build(user,now=Date.now(),options={}){
+  const base=buildLegacy(user,now,options),reports=(options.reports||app.LocalRepository?.listReports(user)||[]),evidence=scienceEvidence(reports,user,now);
+  base.examVersion=evidence.length?'science75-v1':'legacy55-v1';
+  if(!evidence.length)return base;
+  const weights=new Map();for(const e of evidence)weights.set(e.unitId,(weights.get(e.unitId)||0)+e.attempts.length);
+  const sum=[...weights.values()].reduce((a,b)=>a+b,0),shares=[...weights].map(([unitId,w])=>({unitId,raw:20*w/sum,n:Math.floor(20*w/sum)}));
+  let left=20-shares.reduce((n,x)=>n+x.n,0);for(const row of [...shares].sort((a,b)=>(b.raw-b.n)-(a.raw-a.n)||a.unitId.localeCompare(b.unitId)))if(left-->0)row.n++;
+  const source=root.ScienceMockData,all=Array.isArray(source)?source:source?.items||source?.questions||source?.units?.flatMap(u=>(u.questions||[]).map(q=>({...q,unitId:q.unitId||u.id})))||[];
+  const history=[...reports];for(const slot of app.LocalRepository?.getPreference?.(`SmartStudy_MockExam_Index_${encodeURIComponent(user)}`,[])||[]){const d=app.LocalRepository.getPreference(`SmartStudy_MockExam_${encodeURIComponent(user)}_${slot}`,null);if(d?.userId===user)history.push({date:d.startedAt,metadata:{questions:d.questions}});}
+  for(const row of options.history||[]){const d=row.payload||row.snapshot||row;if(d?.userId===user)history.push({date:d.startedAt||d.submittedAt,metadata:{questions:d.questions}});}
+  const recent=recentQuestions(history,now,true),week=new Date(now+9*3600000);week.setUTCDate(week.getUTCDate()-(week.getUTCDay()+6)%7);const start=Date.parse(week.toISOString().slice(0,10)+'T00:00:00+09:00');
+  const chosen=[],seen=new Set(),rng=random(`${user}:science:${now}:${options.attemptNo||1}`);
+  for(const share of shares){const rows=all.filter(q=>q.unitId===share.unitId&&(!q.levelId||q.levelId==='level1')).map(q=>({...q,subject:'science',kind:'choice',answer:q.answer??q.correctAnswer??q.choices?.[q.answerIndex],context:{levelId:'level1',unitId:q.unitId,domainId:q.domainId,title:evidence.find(e=>e.unitId===q.unitId)?.r.metadata?.unitTitle||q.unitId}})).filter(valid);
+   const unique=rows.filter(q=>{const f=fingerprint(q);if(seen.has(f))return false;seen.add(f);return true;});
+   const eligible=shuffle(unique,rng).map(q=>({...q,fingerprint:fingerprint(q),lastExposedAt:Math.max(recent.seen.get(fingerprint(q))||0,recent.ids.get(q.id)||0)})).filter(q=>q.lastExposedAt<start).sort((a,b)=>a.lastExposedAt-b.lastExposedAt);
+   const selected=[],familyCounts=new Map();
+   // Spread new situations first; a soft two-per-family preference never blocks the third retake.
+   for(const reserve of [false,true]){const candidates=eligible.filter(q=>Boolean(q.lastExposedAt)===reserve);while(selected.length<share.n&&candidates.length){
+    const family=q=>q.familyId||q.id,count=q=>familyCounts.get(family(q))||0;
+    candidates.sort((a,b)=>(reserve?a.lastExposedAt-b.lastExposedAt:0)||Number(count(a)>=2)-Number(count(b)>=2)||count(a)-count(b));
+    const q=candidates.shift();selected.push(q);familyCounts.set(family(q),count(q)+1);
+   }}
+   const picked=selected.map(q=>({...q,repeated:!!q.lastExposedAt,noveltyKind:q.lastExposedAt?'re-exposure':'new',sourceType:'과학 평가 전용',sourceReportIds:evidence.filter(e=>e.unitId===q.unitId).map(e=>e.r.sessionId)}));chosen.push(...picked);
+   if(unique.length<60||picked.length<share.n)base.shortages[`science:${share.unitId}`]={required:share.n,actual:picked.length,missing:Math.max(1,share.n-picked.length),reason:`과학 ${share.unitId}: 단원별 독립 평가60문항과 이번 회차 ${share.n}문항이 필요합니다.`};
+  }
+  base.items.push(...chosen);base.quotas.science=chosen.length;base.complete=base.complete&&chosen.length===20&&!Object.keys(base.shortages).length;
+  base.newQuestionCount=base.items.filter(q=>!q.repeated).length;base.reexposureCount=base.items.filter(q=>q.repeated).length;base.scienceAllocation=shares.map(({unitId,n})=>({unitId,count:n}));return base;
+ }
+ app.MockExamBank={build,grade,quotas,version,fingerprint,learnedScopes,scienceEvidence,writtenKey,componentNames};
 })(window);

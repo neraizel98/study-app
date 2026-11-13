@@ -175,7 +175,12 @@
             ...(Array.isArray(question.choices) ? { choices: [...question.choices] } : {}),
             ...(Array.isArray(question.tokens) ? { tokens: [...question.tokens] } : {}), evidence: [...question.evidence] }));
     }
-    function startQuiz(kind = 'practice', selectedPassage = null) {
+    const writingBank = () => window.EnglishReadingWriting;
+    const writingQuestions = item => writingBank()?.questions(item.id) || [];
+    const isWriting = question => Boolean(question?.acceptedAnswers);
+    const hasInput = question => question?.type === 'arrange' || isWriting(question);
+    function startQuiz(kind = 'practice', selectedPassage = null, reviewIds = null) {
+        if (mode === 'quiz') return;
         if (!quizUnlocked()) {
             const status = StudyTimer.getStatus(SUBJECT, context(), aliases());
             alert(`영어 독해를 ${Math.ceil((status.requiredSeconds - status.accumulatedSeconds) / 60)}분 더 학습해야 합니다.`);
@@ -185,6 +190,12 @@
         if (!item) { alert('풀 수 있는 지문이 없습니다.'); return; }
         const allQuestions = questionSnapshot(item);
         const focusSkill = diagnosticSkillFocus();
+        const writing = writingQuestions(item);
+        const writingCandidates = writing.map(question => ({ ...question, passageId: item.id, passageText: [...item.sentences] }));
+        const writingSelection = kind === 'practice' && !reviewIds && writing.length && window.QuizExposure?.select(userId(), SUBJECT, writingCandidates, writing.length);
+        const writingPack = kind === 'practice' && !reviewIds && writing.length > 0
+            && (!window.QuizExposure || (writingSelection?.items.length === writing.length && !writingSelection.reviewRequired));
+        const reviewCandidates = reviewIds && [...allQuestions, ...writing].filter(question => reviewIds.has(question.id));
         const shuffle = items => {
             const result = [...items];
             for (let index = result.length - 1; index > 0; index--) {
@@ -198,14 +209,19 @@
         const focused = remaining.filter(question => focusSkill && (question.skill || question.type) === focusSkill)
             .map(question => ({ ...question, diagnosticFocus: true }));
         const others = remaining.filter(question => !focusSkill || (question.skill || question.type) !== focusSkill);
-        const orderedCandidates = [...(arrange ? [arrange] : []), ...shuffle(focused), ...shuffle(others)].map(question => ({ ...question, passageId: item.id, passageText: [...item.sentences] }));
+        const ordinary = [...(arrange ? [arrange] : []), ...shuffle(focused), ...shuffle(others)];
+        const orderedCandidates = (reviewCandidates || ordinary.filter(question => !writingPack || question.type !== 'arrange'))
+            .map(question => ({ ...question, passageId: item.id, passageText: [...item.sentences] }));
+        const questionLimit = writingPack ? 7 : reviewIds ? orderedCandidates.length : 10;
+        const writingPool = writingPack ? writingCandidates.map(question =>
+            writingSelection ? writingSelection.items.find(item => item.id === question.id) : question) : [];
         const exposureSelection = window.QuizExposure?.select
-            ? QuizExposure.select(userId(), SUBJECT, orderedCandidates, 10, { review: params.get('mode') === 'review' })
+            ? QuizExposure.select(userId(), SUBJECT, orderedCandidates, questionLimit, { review: Boolean(reviewIds) || params.get('mode') === 'review' })
             : null;
         const fallbackFresh = window.QuizExposure?.fresh ? QuizExposure.fresh(SUBJECT, orderedCandidates) : orderedCandidates;
         const fallbackReview = params.get('mode') === 'review' || fallbackFresh.length < 5;
         const fallbackCandidates = fallbackReview ? [...fallbackFresh, ...orderedCandidates.filter(question => !fallbackFresh.some(fresh => fresh.id === question.id))] : fallbackFresh;
-        const selectedQuestions = [...(exposureSelection?.items || fallbackCandidates.slice(0, 10))];
+        const selectedQuestions = [...(exposureSelection?.items || fallbackCandidates.slice(0, questionLimit))];
         // New lookup drills must not crowd out the comprehension skills that establish reading mastery.
         const required = [
             question => question.type === 'arrange',
@@ -220,22 +236,27 @@
             if (selectedQuestions.some(predicate)) continue;
             const candidate = orderedCandidates.find(question => predicate(question) && !selectedQuestions.some(item => item.id === question.id));
             if (!candidate) continue;
-            const removable = selectedQuestions.findIndex((question, index) => index === selectedQuestions.length - 1 || !required.some(rule => rule(question) && selectedQuestions.filter(rule).length === 1));
+            const removable = selectedQuestions.findIndex(question => !required.some(rule => rule(question) && selectedQuestions.filter(rule).length === 1));
             const row = inspected.get(candidate.id);
             const replacement = row ? { ...candidate, exposure: { fingerprint: row.fingerprint, priorCount: row.count, kind: row.kind, reviewRequired: row.count >= 2 } } : candidate;
             if (removable >= 0) selectedQuestions.splice(removable, 1, replacement); else selectedQuestions.push(replacement);
         }
         const coverageReview = selectedQuestions.some(question => question.exposure?.reviewRequired);
-        const practiceReview = exposureSelection ? exposureSelection.reviewRequired || coverageReview : fallbackReview;
+        const practiceReview = Boolean(reviewIds) || (exposureSelection ? exposureSelection.reviewRequired || coverageReview : fallbackReview);
         if (kind === 'assessment' && practiceReview) { alert('새 문제 5개가 있는 지문으로 평가해야 해요. 다른 지문을 선택해 주세요.'); return; }
-        const questionPool = shuffle(selectedQuestions.slice(0, 10));
+        const questionPool = [...writingPool, ...shuffle(selectedQuestions.slice(0, questionLimit))].map(question =>
+            question.type === 'phrase-arrange' ? { ...question, tokens: shuffle(question.tokens) } : question);
+        if (writingPack) {
+            const phrase = questionPool[0];
+            if (writingBank().grade(phrase, phrase.tokens.join(' '))) phrase.tokens.push(phrase.tokens.shift());
+        }
         if (!questionPool.length) { alert('이 지문에서 최근에 풀지 않은 문제가 부족해요. 다른 지문을 선택하거나 오답 복습을 진행해 주세요.'); return; }
         const isNovel = kind === 'assessment' && !exposedIds().includes(item.id);
-        const practiceAssessment = !practiceReview && !peekedLines(item.id).length && !reports().some(r=>r.subject===SUBJECT&&r.metadata?.passageId===item.id&&r.metadata?.status!=='draft');
+        const practiceAssessment = !writingPack && !practiceReview && !peekedLines(item.id).length && !reports().some(r=>r.subject===SUBJECT&&r.metadata?.passageId===item.id&&r.metadata?.status!=='draft');
         const recommendation = EnglishReadingPolicy.recommendation([item], typeof WrongNote === 'undefined' ? {} : WrongNote.getAll(), reports());
         session = {
             schema: 1, sessionId: `english-reading-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`,
-            levelId, unitId: units().find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
+            writingPack, levelId, unitId: units().find(candidate => candidate.passages.some(p => p.id === item.id))?.id || unitId,
             passageId: item.id, band: Number(item.band), assessment: kind === 'assessment', practiceAssessment, review: practiceReview,
             isNovel, familiarAttempt: !isNovel, recommendationReason: recommendation.reason, diagnosticSkill: focusSkill,
             exposurePolicy: exposureSelection ? { policyVersion: exposureSelection.policyVersion, reason: exposureSelection.reason, freshCount: exposureSelection.freshCount, repeatCount: exposureSelection.repeatCount, reviewCount: exposureSelection.reviewCount } : null,
@@ -262,13 +283,19 @@
         const answer = currentAnswer(); const correctCount = session.answers.filter(entry => entry.correct).length;
         $('quizPassageTitle').textContent = item.title; $('quizPassage').innerHTML = renderPassageLines(item, false);
         $('quizProgress').textContent = `${session.questionIndex + 1} / ${session.roundQuestionIds.length}${session.round > 1 ? ` · 재도전 ${session.round - 1}` : ''}`;
-        $('quizScore').textContent = `${correctCount}개 정답`; $('quizQuestion').textContent = question.promptKo || question.prompt;
-        const arranged = question.type === 'arrange';
+        $('quizScore').textContent = `${correctCount}개 정답`; $('quizQuestion').textContent = question.prompt;
+        const arranged = hasInput(question);
+        if ($('writingTaskType')) {
+            $('writingTaskType').textContent = writingBank()?.labels[question.type] || '';
+            $('writingTaskType').hidden = !isWriting(question);
+        }
         $('quizChoices').hidden = arranged; $('arrangeArea').hidden = !arranged;
         $('quizChoices').innerHTML = arranged ? '' : question.choices.map((choice, index) => `<button class="choice" data-choice="${index}"><b>${index + 1}</b> ${escapeHTML(choice)}</button>`).join('');
         if (arranged) renderArrange(question, answer);
         $('quizFeedback').hidden = !answer; $('nextQuestion').hidden = !answer; $('showHint').disabled = Boolean(answer);
-        if (answer) showAnswer(answer, false); else $('quizFeedback').innerHTML = '';
+        if (answer) showAnswer(answer, false);
+        else if (session.currentHintUsed) showHint();
+        else $('quizFeedback').innerHTML = '';
     }
     const normalizeSentence = value => String(value ?? '').normalize('NFKC').trim().toLocaleLowerCase().replace(/\s+([,.;:!?])/g, '$1').replace(/\s+/g, ' ');
     const draftKey = question => `${session.round}:${question.id}`;
@@ -278,7 +305,11 @@
     }
     function renderArrange(question, answer = null) {
         const draft = arrangeDraft(question);
-        $('arrangeBank').innerHTML = question.tokens.map((token, index) => `<button type="button" class="arrange-token" data-token-index="${index}" ${draft.used.includes(index) || answer ? 'disabled' : ''}>${escapeHTML(token)}</button>`).join('');
+        $('arrangeBank').hidden = !question.tokens?.length;
+        $('arrangeInput').readOnly = question.type === 'phrase-arrange';
+        $('arrangeUndo').hidden = !question.tokens?.length;
+        $('arrangeUndo').textContent = question.type === 'phrase-arrange' ? '구절 하나 취소' : '한 단어 취소';
+        $('arrangeBank').innerHTML = (question.tokens || []).map((token, index) => `<button type="button" class="arrange-token" data-token-index="${index}" ${draft.used.includes(index) || answer ? 'disabled' : ''}>${escapeHTML(token)}</button>`).join('');
         $('arrangeInput').value = answer?.selectedAnswer ?? draft.value;
         $('arrangeInput').disabled = Boolean(answer); $('arrangeUndo').disabled = Boolean(answer); $('arrangeReset').disabled = Boolean(answer); $('arrangeSubmit').disabled = Boolean(answer);
     }
@@ -289,16 +320,21 @@
     function submitAnswer(index) {
         if (currentAnswer()) return;
         const question = currentQuestion();
+        if (!question?.choices || !Number.isInteger(index) || index < 0 || index >= question.choices.length) return;
         completeQuestion(question.choices[index], index === question.answerIndex, index);
     }
     function submitArrange() {
-        if (currentAnswer() || currentQuestion()?.type !== 'arrange') return;
-        const selected = $('arrangeInput').value.trim(); if (!selected) return;
-        completeQuestion(selected, normalizeSentence(selected) === normalizeSentence(currentQuestion().answer), null);
+        const question = currentQuestion();
+        if (currentAnswer() || !hasInput(question)) return;
+        const selected = (question.type === 'phrase-arrange' ? arrangeDraft(question).value : $('arrangeInput').value).trim();
+        if (!selected || (question.type === 'phrase-arrange' && arrangeDraft(question).used.length !== question.tokens.length)) return;
+        const correct = isWriting(question) ? writingBank().grade(question, selected) : normalizeSentence(selected) === normalizeSentence(question.answer);
+        completeQuestion(selected, correct, null);
     }
     function completeQuestion(selectedAnswer, correct, selectedIndex) {
         const question = currentQuestion();
-        const correctAnswer = question.type === 'arrange' ? question.answer : question.choices[question.answerIndex];
+        const correctAnswer = hasInput(question) ? question.answer : question.choices[question.answerIndex];
+        const reviewPending = correct === null;
         const detail = {
             type: `${session.passageId}:${question.id}`, wrongNoteId: `${session.passageId}:${question.id}`, category: SUBJECT,
             levelId: session.levelId, level: level().title, unitId: session.unitId, unitTitle: data().units.find(item => item.id === session.unitId)?.title,
@@ -307,25 +343,32 @@
             conceptId: `reading-skill:${question.skill || question.type}`,
             learningTarget: { kind: 'reading-skill', conceptId: `reading-skill:${question.skill || question.type}`, skill: question.skill || question.type, context: { levelId: session.levelId, unitId: session.unitId } },
             correctAnswer, answer: correctAnswer, explanation: question.explanation,
-            evidence: [...question.evidence], correct, translationUsed: false, hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed), round: session.round
+            evidence: [...question.evidence], correct, ...(isWriting(question) ? {
+                answerLabel: writingBank().labels[question.type], gradingStatus: reviewPending ? 'review_pending' : correct ? 'correct' : 'wrong',
+                ...(question.type === 'phrase-arrange' ? { selectedTokens: [...arrangeDraft(question).used] } : {})
+            } : {}), translationUsed: false, hintUsed: Boolean(session.currentHintUsed), assisted: Boolean(session.currentHintUsed), round: session.round
         };
         if (question.exposure) detail.exposure = { ...question.exposure };
         session.answers.push({ round: session.round, questionId: question.id, selectedIndex, selectedAnswer, correct, hintUsed: detail.hintUsed });
         session.attempts.push(detail); if (session.round === 1) session.initialAttempts.push({ ...detail });
         session.hintUsed = session.hintUsed || detail.hintUsed; session.currentHintUsed = false;
-        if (typeof WrongNote !== 'undefined') WrongNote.save(SUBJECT, detail, correct ? 'correct' : 'wrong', session.sessionId, session.round);
+        if (!reviewPending && typeof WrongNote !== 'undefined') WrongNote.save(SUBJECT, detail, correct ? 'correct' : 'wrong', session.sessionId, session.round);
         showAnswer(session.answers.at(-1), true); saveSession();
     }
     function showAnswer(answer, updateScore) {
         const question = currentQuestion();
-        if (question.type === 'arrange') renderArrange(question, answer);
+        if (hasInput(question)) renderArrange(question, answer);
         else [...$('quizChoices').children].forEach((button, index) => { button.disabled = true; if (index === question.answerIndex) button.classList.add('correct'); else if (index === answer.selectedIndex) button.classList.add('wrong'); });
-        $('quizFeedback').hidden = false; $('quizFeedback').innerHTML = `<strong>${answer.correct ? '정답입니다.' : '다시 확인해 보세요.'}</strong><p class="evidence"><b>본문 근거</b><br>${escapeHTML(evidenceText(question))}</p>`;
+        const feedback = answer.correct === null ? '확인 필요 · 예시 답과 비교해 보세요.' : answer.correct ? '정답입니다.' : '다시 확인해 보세요.';
+        const example = isWriting(question) ? `<p><b>예시 답</b> ${escapeHTML(question.answer)}</p>` : '';
+        $('quizFeedback').hidden = false; $('quizFeedback').innerHTML = `<strong>${feedback}</strong>${example}<p class="evidence"><b>본문 근거</b><br>${escapeHTML(evidenceText(question))}</p>`;
         $('nextQuestion').hidden = false; $('nextQuestion').textContent = session.questionIndex === session.roundQuestionIds.length - 1 ? '결과 보기' : '다음 문제';
+        $('showHint').disabled = true;
         if (updateScore) $('quizScore').textContent = `${session.answers.filter(entry => entry.correct).length}개 정답`;
     }
     function showHint() {
-        const question = currentQuestion(); session.currentHintUsed = true; session.hintUsed = true;
+        const question = currentQuestion(); if (currentAnswer()) return;
+        session.currentHintUsed = true; session.hintUsed = true;
         $('quizFeedback').hidden = false; $('quizFeedback').innerHTML = `<p class="evidence"><b>근거 힌트</b><br>${escapeHTML(evidenceText(question))}</p><p>힌트를 쓴 결과는 난이도 상승 근거에서 제외됩니다.</p>`; saveSession();
     }
     function nextQuestion() {
@@ -345,20 +388,37 @@
         showResults();
         quizTimer?.destroy?.(); quizTimer = null; updateDifficultyAfterSession();
     }
+    const scoredTotal = () => session.questions.length - session.initialAttempts.filter(item => item.correct === null).length;
+    function wrongQuestionIds() {
+        const correctIds = new Set(session.answers.filter(item => item.correct).map(item => item.questionId));
+        return session.initialAttempts.filter(item => item.correct === false && !correctIds.has(item.questionId)).map(item => item.questionId);
+    }
     function showResults() {
-        const total = session.questions.length;
-        $('resultScore').textContent = `현재 ${session.finalScore} / ${total}점`;
-        $('initialScoreNote').textContent = `최초 제출 점수 ${session.initialScore} / ${total}점 · 재도전 점수와 별도로 보존됩니다.`;
+        const total = scoredTotal();
+        const pending = session.questions.length - total;
+        $('resultScore').textContent = pending ? `현재 정답 ${session.finalScore}개` : `현재 ${session.finalScore} / ${total}점`;
+        const pendingNote = $('pendingWritingNote');
+        if (pendingNote) {
+            pendingNote.hidden = !pending;
+            pendingNote.textContent = `확인 필요 ${pending}개 · 전체 ${session.questions.length}문항`;
+        }
+        $('initialScoreNote').textContent = `최초 ${pending ? '채점된 문항' : '제출 점수'} ${session.initialScore} / ${total}점 · 재도전 점수와 별도로 보존됩니다.`;
         $('resultMessage').textContent = session.isNovel ? '미학습 지문 최초 평가로 기록했습니다.' : session.practiceAssessment ? '이 지문의 첫 5문항 이상 풀이로 기록했습니다. 서로 다른 지문의 첫 풀이로 다음 난이도를 판단해요.' : '복습·재도전 결과입니다. 난이도 상승 근거와 구분해요.';
-        $('retryWrong').hidden = session.finalScore >= total; $('resultModal').hidden = false;
+        if (session.writingPack) {
+            const summary = session.initialAttempts.filter(item => item.answerLabel).map(item =>
+                `${item.answerLabel} ${item.correct === null ? '확인 필요' : item.correct ? '정답' : '다시 확인'}`);
+            $('resultMessage').textContent = `첫 답안 · ${summary.join(' / ')}${scoredTotal() < session.questions.length ? ' · 확인 필요 답안은 점수에서 제외했어요.' : ''}`;
+        }
+        $('retryWrong').hidden = !wrongQuestionIds().length; $('resultModal').hidden = false;
     }
     function saveReport() {
         const seconds = quizTimerBase + (quizTimer?.getSeconds?.() || 0); session.activeSeconds = seconds;
-        const total = session.questions.length;
-        if (session.round === 1 && !session.review && typeof StudyTimer !== 'undefined') StudyTimer.recordResult(SUBJECT, context(), session.initialScore, total, session.sessionId);
+        const total = scoredTotal();
+        const verifiedWriting = !session.writingPack || (total === session.questions.length && !session.hintUsed);
+        if (session.round === 1 && verifiedWriting && !session.review && typeof StudyTimer !== 'undefined') StudyTimer.recordResult(SUBJECT, context(), session.initialScore, total, session.sessionId);
         if (typeof saveQuizResult === 'function') saveQuizResult(session.sessionId, SUBJECT, `${learnerLabel()} · ${quizPassage().title}`, total, session.finalScore, session.initialScore, seconds, true, {
             category: SUBJECT, levelId: session.levelId, level: level().title, unitId: session.unitId, passageId: session.passageId, passageTitle: quizPassage().title,
-            band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
+            writingPack: Boolean(session.writingPack), pendingWritingCount: session.questions.length - total, band: session.band, readingAssessment: session.assessment, practiceAssessment: session.practiceAssessment, review: session.review, isNovel: session.isNovel, familiarAttempt: session.familiarAttempt,
             hintUsed: session.hintUsed, attempts: session.attempts, initialAttempts: session.initialAttempts, ...(session.integrity ? { integrity: session.integrity } : {}),
             vocabulary: quizPassage().vocabulary.map(item => item.word), grammarTags: [...quizPassage().grammarTags], recommendationReason: session.recommendationReason, diagnosticSkill: session.diagnosticSkill, exposurePolicy: session.exposurePolicy,
             submittedAt: Date.now()
@@ -375,8 +435,7 @@
         updateBandNotice();
     }
     function retryWrong() {
-        const correctIds = new Set(session.answers.filter(item => item.correct).map(item => item.questionId));
-        const wrongIds = session.questions.map(item => item.id).filter(id => !correctIds.has(id));
+        const wrongIds = wrongQuestionIds();
         if (!wrongIds.length) return;
         session.round++; session.roundQuestionIds = wrongIds; session.questionIndex = 0; session.currentHintUsed = false;
         session.status = 'active';
@@ -388,7 +447,7 @@
         const saved = getPreference('activeSession', null);
         if (!saved?.sessionId || (saved.levelId || 'grade6') !== levelId || !allPassages().some(item => item.id === saved.passageId)) return false;
         if (respectQuery && params.get('mode') === 'study') return false;
-        if (saved.status === 'results' && (!respectQuery || params.get('mode') !== 'quiz')) return false;
+        if (saved.status === 'results' && (!respectQuery || !['quiz', 'review'].includes(params.get('mode')))) return false;
         // Explicit task/review links must not be replaced by an unrelated unfinished quiz.
         if (respectQuery && ((params.get('passage') && params.get('passage') !== saved.passageId) || (params.get('unit') && params.get('unit') !== saved.unitId) || (params.get('mode') === 'review' && !saved.review))) return false;
         session = saved; selectPassageById(saved.passageId); renderSelectors();
@@ -404,12 +463,8 @@
         if (!due.length) { alert('복습할 영어 독해 오답이 없습니다.'); location.href = 'wrong_note.html'; return; }
         const first = due.find(item => item.passageId === params.get('passage')) || due.find(item => allPassages().some(p => p.id === item.passageId)) || due[0]; if (!selectPassageById(first.passageId)) { alert('현재 콘텐츠에서 복습 문항을 찾지 못했습니다.'); return; }
         renderSelectors();
-        startQuiz('practice', passage());
-        session.review = true; session.assessment = false; session.isNovel = false; session.familiarAttempt = true;
         const ids = new Set(due.filter(item => item.passageId === first.passageId).map(item => item.questionId));
-        session.questions = session.questions.filter(item => ids.has(item.id));
-        session.roundQuestionIds = session.questions.map(item => item.id);
-        session.questionIndex = 0; saveSession(); renderQuestion();
+        startQuiz('practice', passage(), ids);
     }
     function selectPassageById(id) {
         for (const candidateUnit of data().units) { const index = candidateUnit.passages.findIndex(item => item.id === id); if (index >= 0) { levelId = gradeOf(candidateUnit); unitId = candidateUnit.id; passageIndex = index; return true; } }
@@ -469,10 +524,10 @@
         $('freshAssessment').addEventListener('click', () => { const item = chooseAssessmentPassage(); if (!item) return alert('현재 난이도에서 아직 읽지 않은 평가 지문이 없습니다. 다른 단원을 학습해 보세요.'); selectPassageById(item.id); renderSelectors(); startQuiz('assessment', item); });
         $('quizChoices').addEventListener('click', event => { const button = event.target.closest('[data-choice]'); if (button) submitAnswer(Number(button.dataset.choice)); });
         $('arrangeBank').addEventListener('click', event => { const button = event.target.closest('[data-token-index]'); if (!button || currentAnswer()) return; const question = currentQuestion(), draft = arrangeDraft(question), index = Number(button.dataset.tokenIndex); if (draft.used.includes(index)) return; draft.used.push(index); draft.value = [...draft.used.map(item => question.tokens[item])].join(' '); saveSession(); renderArrange(question); });
-        $('arrangeInput').addEventListener('input', () => { if (currentAnswer()) return; const draft = arrangeDraft(currentQuestion()); draft.value = $('arrangeInput').value; draft.used = []; saveSession(); renderArrange(currentQuestion()); $('arrangeInput').focus(); $('arrangeInput').setSelectionRange(draft.value.length, draft.value.length); });
+        $('arrangeInput').addEventListener('input', () => { if (currentAnswer() || currentQuestion()?.type === 'phrase-arrange') return; const draft = arrangeDraft(currentQuestion()); draft.value = $('arrangeInput').value; draft.used = []; saveSession(); renderArrange(currentQuestion()); $('arrangeInput').focus(); $('arrangeInput').setSelectionRange(draft.value.length, draft.value.length); });
         $('arrangeUndo').addEventListener('click', () => { const question = currentQuestion(), draft = arrangeDraft(question); if (draft.used.length) { draft.used.pop(); draft.value = draft.used.map(index => question.tokens[index]).join(' '); } else draft.value = draft.value.trim().split(/\s+/).slice(0, -1).join(' '); saveSession(); renderArrange(question); });
         $('arrangeReset').addEventListener('click', () => { const draft = arrangeDraft(currentQuestion()); draft.value = ''; draft.used = []; saveSession(); renderArrange(currentQuestion()); });
-        $('arrangeSubmit').addEventListener('click', submitArrange); $('arrangeInput').addEventListener('keydown', event => { if (event.key === 'Enter') submitArrange(); });
+        $('arrangeSubmit').addEventListener('click', submitArrange); $('arrangeInput').addEventListener('keydown', event => { if (event.key === 'Enter' && !event.isComposing) submitArrange(); });
         $('showHint').addEventListener('click', showHint); $('nextQuestion').addEventListener('click', nextQuestion); $('retryWrong').addEventListener('click', retryWrong);
         $('backToStudy').addEventListener('click', renderStudy); $('closeResult').addEventListener('click', renderStudy);
     }

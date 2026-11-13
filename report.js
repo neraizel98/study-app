@@ -12,7 +12,8 @@ const SubjectRegistry = {
         english_reading: { name: '영어 독해', icon: '📗', path: 'english_reading.html' },
         grammar: { name: '영어 문법', icon: '📘', path: 'english_grammar.html' },
         hanja: { name: '한자', icon: '🏮', path: 'hanja.html' },
-        math: { name: '수학', icon: '📐', path: 'math.html' }
+        math: { name: '수학', icon: '📐', path: 'math.html' },
+        science: { name: '과학', icon: '🔬', path: 'science.html' }
     },
     get(subject) {
         return this.definitions[subject] || {
@@ -343,6 +344,7 @@ const LearningPolicy = {
     version: '20260911-v1',
     day: 86400000,
     context(subject, m = {}) {
+        if(subject==='science')return `science:${m.levelId||'level1'}:${m.unitId||'unknown'}`;
         if (subject === 'grammar') return `grammar:${m.stageId}:${m.unitId}`;
         if (subject === 'math') return `${m.levelId}:${m.semesterId}:${m.unitId}`;
         if (subject === 'reading') return `reading:${m.levelId}:${m.unitId}`;
@@ -353,7 +355,7 @@ const LearningPolicy = {
     evaluate(reports, subject, context) {
         if(window.ConceptMastery)return window.ConceptMastery.evaluate(reports,subject,context);
         const rows = (reports || []).filter(r => r.subject === subject && r.metadata?.contentVersion === this.version
-            && !r.metadata.review && !r.metadata.assessment && r.metadata.context === context).sort((a,b) => a.date-b.date);
+            && !r.metadata.writingPack && !r.metadata.review && !r.metadata.assessment && r.metadata.context === context).sort((a,b) => a.date-b.date);
         const seen = new Map();
         const sessions = rows.map(r => {
             const eligible = (r.metadata.initialAttempts || []).filter(a => {
@@ -463,7 +465,7 @@ const WrongNote = {
         
         const historyEntry = {
             eventId: [sessionId || 'session', round, data.questionId || identifier, data.question || '', status, data.selectedAnswer ?? ''].join(':'),
-            contentVersion: LearningPolicy.version,
+            contentVersion: subject==='science'?(data.contentVersion||window.ScienceData?.version||LearningPolicy.version):LearningPolicy.version,
             assisted: Boolean(data.assisted || data.hintUsed),
             deviceId: LocalRepository.getDeviceId(),
             createdAt: Date.now(),
@@ -607,10 +609,10 @@ function saveQuizResult(sessionId, subject, level, totalQuestions, currentScore,
     const clampScore = value => Math.min(totalQuestions, Math.max(0, Math.floor(Number(value) || 0)));
     currentScore = clampScore(currentScore);
     initialScore = clampScore(initialScore);
-    isCompleted = Boolean(isCompleted) && totalQuestions > 0 && currentScore === totalQuestions;
+    isCompleted = Boolean(isCompleted) && !metadata?.pendingWritingCount && totalQuestions > 0 && currentScore === totalQuestions;
 
-    if (metadata) metadata = {...metadata, contentVersion: LearningPolicy.version,
-        context: LearningPolicy.context(subject, metadata), initialAttempts: (metadata.attempts || []).map(a=>({...a}))};
+    if (metadata) metadata = {...metadata, contentVersion: subject==='science'?(metadata.contentVersion||LearningPolicy.version):LearningPolicy.version,
+        context: LearningPolicy.context(subject, metadata), initialAttempts: (metadata.initialAttempts || metadata.attempts || []).map(a=>({...a}))};
     const data = LocalRepository.listReports(userId);
 
     let timeDelta = timeSpentSeconds; // 신규 세션이면 전체 시간

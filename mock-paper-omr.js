@@ -58,7 +58,7 @@
   const exam=app.MockExam,limits=exam.paperTimeLimits?.(payload)||{},extra=Number(exam.paperExtraMinutes)||30,fields=[];
   const box=el('section','omr-time'),grid=el('div','omr-time-grid'),error=el('p','omr-time-error');error.setAttribute('role','alert');
   box.append(el('h5','omr-time-title','교시별 걸린 시간 (선택)'),el('p','omr-time-sub','시계로 잰 시간을 분 단위로 적어 주세요. 비워 두면 "시간 기록 없음"으로 보여요.'),grid,error);
-  for(const area of root.MockPaper.AREAS){
+  for(const area of root.MockPaper.AREAS.filter(a=>a.id!=='science'||payload.examVersion==='science75-v1')){
    const limit=Number(limits[area.id])||area.minutes,max=limit+extra,label=el('label','omr-time-field'),input=el('input','omr-time-input'),line=el('span','omr-time-line');
    input.type='number';input.min='0';input.max=String(max);input.step='1';input.inputMode='numeric';input.autocomplete='off';input.placeholder=`제한 ${limit}분`;
    input.setAttribute('aria-label',`${area.period}교시 ${area.name} 걸린 시간(분), 제한 ${limit}분`);input.setAttribute('data-section',area.id);

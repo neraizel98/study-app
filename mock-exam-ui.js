@@ -69,8 +69,8 @@
             bank = app.MockExamBank.build(user, Date.now(),retakeOptions||{});
             $('cancelRetake').hidden=!retakeOptions||!draft;
             $('startExam').hidden=false;$('pledgeLabel').hidden=false;
-            $('startExam').textContent=retakeOptions?`${retakeOptions.attemptNo}회차 새 문제로 시작`:'55문항 시험 시작';
-            $('bankStatus').textContent = api.validateBank(bank) ? '학습한 범위의 새 지문·응용 문제로 55문항을 준비했어요. 기존 풀이 기록과 중복을 확인했어요.' : '학습 기록에서 시험 문항을 구성하지 못했어요. 추가 공부가 필요한 것은 아닙니다. 기록 동기화 후 다시 확인해 주세요.';
+            $('startExam').textContent=retakeOptions?`${retakeOptions.attemptNo}회차 새 문제로 시작`:`${api.contract(bank).total}문항 시험 시작`;
+            $('bankStatus').textContent = api.validateBank(bank) ? `학습한 범위의 새 지문·응용 문제로 ${api.contract(bank).total}문항을 준비했어요. 기존 풀이 기록과 중복을 확인했어요.` : '학습 기록에서 시험 문항을 구성하지 못했어요. 추가 공부가 필요한 것은 아닙니다. 기록 동기화 후 다시 확인해 주세요.';
             $('shortages').replaceChildren();
             // Weekly-transfer banks key shortages by area (국어·영어·수학·한자) and carry the reason; older banks key by subject.
             const shortageNames = bank.policyId === 'weekly-transfer-20261024' ? {reading:'국어',english:'영어',math:'수학',hanja:'한자'} : (app.MockExamBank.subjectNames || {reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'});
@@ -88,7 +88,7 @@
             ensureActivity();
             $('saveError').textContent = error; $('saveError').hidden = !error;
             if (!draft||retakeOptions) { showReady(); return; }
-            clear(); $('weekLabel').textContent = `${draft.scheduledWeekId} 주 · ${draft.attemptNo||1}회차 · 55문항`;
+            clear(); $('weekLabel').textContent = `${draft.scheduledWeekId} 주 · ${draft.attemptNo||1}회차 · ${draft.questions.length}문항`;
             $('sectionSteps').replaceChildren(); draft.sections.forEach(section => {
                 const label = text('li', `${section.name} ${section.state === 'ended' ? '제출 완료' : section.state === 'active' ? '진행 중' : '예정'}`);
                 if (section.state === 'active') label.setAttribute('aria-current', 'step'); $('sectionSteps').append(label);
@@ -110,6 +110,8 @@
             $('passage').replaceChildren();
             if (q.passageTitle) $('passage').append(text('h3', q.passageTitle));
             const lines = q.passageLines || q.passageText || []; for (const line of Array.isArray(lines) ? lines : [lines]) $('passage').append(text('p', line));
+            if(q.subject==='science'&&q.givens&&!lines.length)$('passage').append(text('p',q.givens));
+            if(q.subject==='science'&&q.dataTable){const table=text('table',null,'science-data-table'),head=text('tr');for(const value of q.dataTable.headings||[])head.append(text('th',value));table.append(head);for(const row of q.dataTable.rows||[]){const tr=text('tr');for(const value of (Array.isArray(row)?row:row.cells||[]))tr.append(text('td',value));table.append(tr);}$('passage').append(table);}
             if(q.glossary?.length)$('passage').append(text('p','낱말·구문 도움: '+q.glossary.map(item=>`${item.word}: ${item.meaning}`).join(' · ')));
             $('passage').hidden = !$('passage').childNodes.length;
             $('choices').replaceChildren();

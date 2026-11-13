@@ -48,6 +48,6 @@ test('unseen numeric supplementation stays within learned generators and is not 
 });
 test('publication rules accept only the four to eight nonempty component reports',()=>{
  const fs=require('node:fs'),rules=fs.readFileSync('firestore.rules','utf8');
- assert(rules.includes('payload.reports.size() >= 4'));assert(rules.includes('payload.reports.size() <= 8'));
- assert(rules.includes('payload.questions.size() == 55'));assert(rules.includes('payload.initialAttempts.size() == 55'));
+ assert(rules.includes('payload.reports.size() >= (scienceMock(request.resource.data.payload) ? 5 : 4)'));assert(rules.includes('payload.reports.size() <= (scienceMock(request.resource.data.payload) ? 9 : 8)'));
+ assert(rules.includes('legacyMock(p) ? p.questions.size() == 55'));assert(rules.includes('p.initialAttempts.size() == 55'));
 });

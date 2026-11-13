@@ -24,7 +24,7 @@ const server = http.createServer((request, response) => {
         await context.route(/^https?:\/\/(?!127\.0\.0\.1)/, route => route.abort());
         await context.addInitScript(id => localStorage.setItem('SmartStudy_ActiveUser', id), learner);
         const page = await context.newPage();
-        await page.goto(`http://127.0.0.1:${server.address().port}/english_reading.html?level=grade6&unit=er1`, { waitUntil: 'domcontentloaded', timeout: 15000 });
+        await page.goto(`http://127.0.0.1:${server.address().port}/english_reading.html?level=grade6&unit=er2&passage=er2-p0`, { waitUntil: 'domcontentloaded', timeout: 15000 });
         await page.waitForSelector('#passageTitle', { timeout: 15000 });
         assert.equal(await page.locator('#toggleQuizTranslation').count(), 0, 'translation control must not exist in any quiz round');
         await page.evaluate(() => { StudyTimer.isUnlocked = () => true; window.EnglishReadingApp.startQuiz('practice'); });

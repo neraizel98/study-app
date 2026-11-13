@@ -6,7 +6,8 @@
     function wrongNoteData(attempt) {
         const c = attempt.context || {}, base = { questionId: attempt.questionId, question: attempt.question, choices: attempt.choices, answer: attempt.correctAnswer,
             correctAnswer: attempt.correctAnswer, selectedAnswer: attempt.selectedAnswer, explanation: attempt.explanation, passageId: attempt.passageId,
-            passageTitle: attempt.passageTitle, passageText: attempt.passageText, source: 'mock-exam' };
+            passageTitle: attempt.passageTitle, passageText: attempt.passageText,givens:attempt.givens,dataTable:attempt.dataTable, source: 'mock-exam' };
+        if(attempt.subject==='science')return ['science',{...c,...base,unitId:c.unitId,levelId:c.levelId,unitTitle:c.title,wrongNoteId:attempt.questionId}];
         if (attempt.subject === 'math') return c.levelId && c.semesterId && c.unitId && attempt.generator
             ? ['math', { ...base, levelId: c.levelId, semesterId: String(c.semesterId), unitId: c.unitId, unitTitle: c.title, type: attempt.generator }] : null;
         if (attempt.subject === 'math_formula') {

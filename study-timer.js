@@ -13,8 +13,9 @@ const StudyTimer = (() => {
     const TIME_PREFIX = 'SmartStudy_UnitTime_';
     const SCORE_PREFIX = 'SmartStudy_AdaptiveScores_';
     const REPORT_PREFIX = 'SmartVocab_Reports_';
-    const DEFAULTS = { english: 5, english_reading: 5, grammar: 5, hanja: 5, math: 5, reading: 5, korean_vocab: 5 };
+    const DEFAULTS = { science: 5, english: 5, english_reading: 5, grammar: 5, hanja: 5, math: 5, reading: 5, korean_vocab: 5 };
     const LEVELS = {
+        science: [{key:'level1',label:'Level 1 · 초등 과학 핵심'},{key:'level2',label:'Level 2 · 준비 중'},{key:'level3',label:'Level 3 · 준비 중'}],
         reading: [
             { key: 'level1', label: '레벨 1 · 중학 독해' },
             { key: 'level2', label: '레벨 2 · 고교 독해' }
@@ -77,6 +78,7 @@ const StudyTimer = (() => {
 
     function getLevelKey(subject, context = 'default') {
         const value = String(context || 'default');
+        if (subject === 'science') return value.replace(/^science:/, '').split(':')[0];
         if (subject === 'grammar') return value.replace(/^grammar:/, '');
         if (subject === 'reading') return value.replace(/^reading:/, '').split(':')[0];
         if (subject === 'korean_vocab') return value.replace(/^korean_vocab:/, '').split(':')[0];
@@ -157,13 +159,14 @@ const StudyTimer = (() => {
     }
 
     function getReportScores(subject, aliases, context) {
-        if (!aliases?.length && !['grammar','english_reading','reading'].includes(subject)) return [];
+        if (!aliases?.length && !['grammar','english_reading','reading','science'].includes(subject)) return [];
         const reports = repository.listReports(getUserId());
 
         const targets = (aliases || []).map(normalize).filter(Boolean);
         const matches = reports
-            .filter(r => r.subject === subject && r.totalQuestions > 0 && Number.isFinite(Number(r.initialScore)) && Number(r.initialScore)>=0 && Number(r.initialScore)<=Number(r.totalQuestions) && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
+            .filter(r => r.subject === subject && r.totalQuestions > 0 && Number.isFinite(Number(r.initialScore)) && Number(r.initialScore)>=0 && Number(r.initialScore)<=Number(r.totalQuestions) && !(r.metadata?.writingPack && (r.metadata.pendingWritingCount || r.metadata.hintUsed)) && !r.metadata?.review && !r.metadata?.assessment && !r.metadata?.mockExam && r.status !== 'draft' && r.metadata?.status !== 'draft')
             .filter(r => {
+                if(subject==='science')return r.metadata?.context===context&&Number(r.totalQuestions)===10&&!r.metadata?.hintUsed&&r.metadata?.initialAttempts?.length===10&&r.metadata.initialAttempts.every(a=>typeof a.correct==='boolean'&&!a.assisted&&!a.hintUsed&&!a.exposure?.review);
                 if(subject==='reading' && /:grade[0-9]+$/.test(context)) {
                     const expected=Number(context.match(/:grade([0-9]+)$/)[1]);
                     const inferred=Number(r.metadata?.grade)||window.KoreanReadingCurriculum?.gradeOfUnit(r.metadata?.unitId)||7;
@@ -249,6 +252,7 @@ const StudyTimer = (() => {
 
     function recordResult(subject, context, initialScore, totalQuestions, sessionId = '') {
         if (!context || !totalQuestions) return;
+        if(subject==='science'){const r=repository.listReports(getUserId()).find(r=>r.sessionId===sessionId&&r.subject==='science'),m=r?.metadata||{},a=m.initialAttempts;if(Number(r?.totalQuestions)!==10||!Array.isArray(a)||a.length!==10||m.review||m.hintUsed||a.some(a=>typeof a.correct!=='boolean'||a.round&&a.round!==1||a.assisted||a.hintUsed||a.exposure?.review))return;}
         const store = getScoreStore();
         const key = contextKey(subject, context);
         const history = savedScoreHistory(subject, context);
@@ -346,7 +350,7 @@ const StudyTimer = (() => {
                 : `최근 ${status.scoreCount}회 평균 ${status.score}점`;
 
             if (isLockBypassed()) {
-                bar.innerHTML = `<div class="stb-unlocked">♻️ 오답 복습 · 학습 시간 없이 바로 퀴즈 가능</div>`;
+                bar.innerHTML = `<div class="stb-unlocked">${subject==='science'?'🔬 과학 선택 학습 · 탐구 시간은 과학 통계에 기록돼요':'♻️ 오답 복습 · 학습 시간 없이 바로 퀴즈 가능'}</div>`;
                 if (quizBtn) quizBtn.classList.remove('stb-locked');
             } else if (status.unlocked) {
                 bar.innerHTML = `<div class="stb-unlocked">✅ ${getLabel()} 학습 완료 · ${scoreText} · 퀴즈 가능</div>`;

@@ -11,6 +11,7 @@
     const previousContext=plan.contextOf,previousCatalog=plan.catalog,previousTarget=plan.target;
     function contextOf(subject,r){
         const m=r?.metadata||r||{};
+        if(subject==='science')return m.levelId&&m.unitId?{levelId:m.levelId,unitId:m.unitId,domainId:m.domainId||m.domain,title:m.unitTitle||''}:null;
         if(subject==='math_formula')return m.formulaNumber||/^formula-\d+$/.test(m.unitId||'')?{unitId:m.unitId||`formula-${m.formulaNumber}`,title:m.formulaTitle||'',levelId:'formula'}:null;
         if(subject==='grammar')return m.stageId&&m.unitId?{levelId:m.stageId,unitId:m.unitId,title:m.unitTitle||''}:null;
         if(subject==='hanja')return m.unitId?{unitId:m.unitId,title:m.unitTitle||''}:null;
@@ -23,19 +24,25 @@
             if((r.userId&&r.userId!==user)||(r.learnerId&&r.learnerId!==user))continue;
             const m=r.metadata||{}, attempts=m.initialAttempts||m.attempts||[], total=Number(r.totalQuestions);
             if(!r.sessionId||m.assessment||m.status==='draft'||!Number.isInteger(total)||total<1||attempts.length<total)continue;
-            if(attempts.slice(0,total).some(a=>typeof a.correct!=='boolean'))continue;
+            const pending = r.subject==='english_reading' && m.writingPack === true ? Number(m.pendingWritingCount || 0) : 0;
+            const scored = pending ? attempts.filter(a=>!(a.correct===null&&a.gradingStatus==='review_pending')) : attempts;
+            if(m.writingPack && (!Number.isInteger(pending)||pending<0||attempts.length!==total+pending||scored.length!==total))continue;
+            if(scored.slice(0,total).some(a=>typeof a.correct!=='boolean'))continue;
             const at=Number(m.submittedAt||r.createdAt||r.date||0);
             if(!Number.isFinite(at)||at<=0)continue;
             const subject=subjectOf(r),context=contextOf(subject,r);
             if(!context)continue;
             if(subject==='english_reading'&&total<5)continue;
-            const entry={subject,context,at,report:r,attempts:attempts.slice(0,total)};
+            if(subject==='science'&&root.SciencePolicy&&!root.SciencePolicy.validMasteryEvidence(r))continue;
+            if(subject==='science'&&(total!==10||attempts.length!==10||m.review||m.hintUsed||attempts.some(a=>a.round&&a.round!==1||a.assisted||a.hintUsed||a.exposure?.review)))continue;
+            const entry={subject,context,at,report:r,attempts:scored.slice(0,total)};
             const key=`${subject}:${r.sessionId}`;
             if(!unique.has(key)||Number(r.updatedAt||r.date)>Number(unique.get(key).report.updatedAt||unique.get(key).report.date))unique.set(key,entry);
         }
         return [...unique.values()];
     }
     function rawCatalog(subject,profile){
+        if(subject==='science')return (root.ScienceData?.units||[]).filter(u=>u.levelId==='level1').map(u=>({label:`Level 1 · ${u.title}`,context:{levelId:u.levelId,unitId:u.id,domainId:u.domainId,title:u.title}}));
         if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${hanjaGrade(unitId)}`,context:{unitId,title:`한자 ${hanjaGrade(unitId)}`}}));
         if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.allGrades||id===(root.SmartStudy?.SubjectProgression&&profile.userId?root.SmartStudy.SubjectProgression.resolve('grammar',root.SmartStudy.SubjectProgression.profileGroup('grammar',profile.grade),profile.userId):(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary'))).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
@@ -54,6 +61,7 @@
         });
     }
     function target(subject,context){
+        if(subject==='science')return `science.html?level=${encodeURIComponent(context?.levelId||'level1')}&unit=${encodeURIComponent(context?.unitId||'')}`;
         if(subject==='math_formula')return `math_formula.html?formula=${encodeURIComponent((context?.unitId||'formula-1').replace('formula-',''))}&mode=study`;
         if(subject==='grammar')return `english_grammar.html?stage=${encodeURIComponent(context?.levelId||'elementary')}&unit=${encodeURIComponent(context?.unitId||'e1')}`;
         if(subject==='hanja')return `hanja.html?level=${encodeURIComponent(context?.unitId||'level8')}`;
@@ -76,7 +84,7 @@
     function performance(subject,context,entries){
         const since=Date.now()-PROMOTION.windowDays*86400000;
         const sessions=entries.filter(e=>e.subject===subject&&Number(e.report.totalQuestions)>=5&&e.at>=since&&plan.contextKey(subject,e.context)===plan.contextKey(subject,context)
-            &&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)
+            &&!e.report.metadata?.writingPack&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)
             &&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId)))
             .sort((a,b)=>b.at-a.at);
         const scores=sessions.map(e=>e.attempts.filter(a=>a.correct).length/e.attempts.length);
@@ -122,14 +130,14 @@
             if(assessed.has(id))continue;
             const sameAttempts=(report.metadata.initialAttempts||report.metadata.attempts||[]).filter(a=>plan.contextKey(subject,a.context||contextOf(subject,report))===id);
             assessed.add(id);if(!sameAttempts.some(a=>a.correct===false))continue;
-            const corrected=entries.some(e=>e.subject===subject&&e.at>Number(report.metadata.submittedAt||report.date)&&same(e.context,c)&&!e.report.metadata?.review&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8);
+            const corrected=entries.some(e=>e.subject===subject&&e.at>Number(report.metadata.submittedAt||report.date)&&same(e.context,c)&&!e.report.metadata?.writingPack&&!e.report.metadata?.review&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8);
             const choice=choices.find(x=>same(x.context,c));
             if(choice&&!corrected)return {...choice,reason:'주간 평가에서 확인된 약점을 먼저 보충해요.'};
         }
         const scheduled=choices.find(c=>!isOutgrown(c)&&mastery(user,subject,c.context)?.concepts.some(x=>x.reviewDue));
         if(scheduled)return {...scheduled,reason:'시간을 두고 기억을 확인할 차례예요. 새 문제 실력과 복습 결과를 따로 기록해요.'};
         // Submission confirms today's activity; passing is only a provisional recommendation signal.
-        const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)&&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId))).sort((a,b)=>b.at-a.at)[0];
+        const passed=c=>entries.filter(e=>e.subject===subject&&same(e.context,c.context)&&!e.report.metadata?.writingPack&&(subject!=='reading'||!root.KoreanReadingCurriculum||root.KoreanReadingCurriculum.isCurrentPassageId(e.report.metadata?.passageId))).sort((a,b)=>b.at-a.at)[0];
         const secure=c=>{const state=mastery(user,subject,c.context);if(state)return state.concepts.length>0&&state.concepts.every(x=>x.name!=='foundation');const e=passed(c);return e&&!e.report.metadata?.review&&!e.report.metadata?.hintUsed&&e.attempts.every(a=>!a.assisted&&!a.hintUsed)&&e.attempts.filter(a=>a.correct).length/e.attempts.length>=.8;};
         const weak=choices.find(c=>{
             const latest=passed(c);

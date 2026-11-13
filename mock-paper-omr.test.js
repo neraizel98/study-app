@@ -308,12 +308,10 @@ test('firestore.rules: one admin-only transition from a printed round to an unpu
  const rules=fs.readFileSync('firestore.rules','utf8');
  const fn=rules.match(/function validPaperResult\(p, old\) \{([\s\S]*?)\n    \}/)[1];
  for(const part of ["p.status == 'submitted' && p.mode == 'paper' && p.kind == 'mock'","p.assessmentId == old.assessmentId && p.userId == old.userId","p.scheduledWeekId == old.scheduledWeekId && p.attemptNo == old.attemptNo",
-  'p.questions == old.questions',"p.integrity is map && p.integrity.source == 'paper-omr'",'p.submittedAt is int','p.sections is list && p.sections.size() == 4',
-  "p.sections[0].id == 'reading' && p.sections[0].state == 'ended'","p.sections[1].id == 'english' && p.sections[1].state == 'ended'","p.sections[2].id == 'math' && p.sections[2].state == 'ended'","p.sections[3].id == 'hanja' && p.sections[3].state == 'ended'",
-  'p.initialAttempts is list && p.initialAttempts.size() == 55','p.reports is list && p.reports.size() >= 4 && p.reports.size() <= 8'])assert(fn.includes(part),part);
+  'p.questions == old.questions',"p.integrity is map && p.integrity.source == 'paper-omr'",'p.submittedAt is int','validMockSections(p)', 'p.reports is list && p.reports.size() >= (scienceMock(p) ? 5 : 4) && p.reports.size() <= (scienceMock(p) ? 9 : 8)'])assert(fn.includes(part),part);
  const updates=[...rules.matchAll(/allow update: if ([\s\S]*?);/g)].map(m=>m[1]).filter(r=>r.includes('resource.data.learnerId'));
  const scoring=updates.find(r=>r.includes('validPaperResult'));assert(scoring);
- for(const part of ['isAdmin() && canUse(resource.data.learnerId)','validPaperMock(resource.data.payload) && resource.data.published == false',"request.resource.data.diff(resource.data).affectedKeys().hasOnly(['payload'])",'validPaperResult(request.resource.data.payload, resource.data.payload)'])assert(scoring.includes(part),part);
+ for(const part of ['isAdmin() && canUse(resource.data.learnerId)',"resource.data.payload.status == 'paper' && resource.data.payload.mode == 'paper'","request.resource.data.diff(resource.data).affectedKeys().hasOnly(['payload'])",'validPaperResult(request.resource.data.payload, resource.data.payload)'])assert(scoring.includes(part),part);
  // Publication is unchanged: submitted results only, and a paper copy (status 'paper') never matches it.
  assert(updates.some(r=>r.includes("resource.data.payload.status == 'submitted'")&&r.includes("affectedKeys().hasOnly(['published','publishedAt','publishedBy'])")));
  // Learner reports are written by the learner's own device under users/{userId}, which canUse already covers.

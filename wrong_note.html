@@ -276,7 +276,10 @@
                         subText = `내 답: ${item.selectedAnswer || '-'} · 정답: ${item.correctAnswer || item.answer || '-'}`;
                         metaText = `${item.stageTitle || ''} · ${item.unitTitle || ''}`;
                         explanation = item.explanation || '문법 해설이 없습니다.';
-                    } else if (currentSubject === 'hanja') {
+                    } else if (currentSubject === 'science') {
+                    mainText=item.question||'과학 문제';subText=`내 답: ${item.selectedAnswer||item.answer||'-'} · 정답: ${item.correctAnswer||'-'}`;metaText=item.unitTitle||'과학';explanation=item.explanation||'단원에서 원리를 다시 살펴보세요.';
+                }
+                else if (currentSubject === 'hanja') {
                         mainText = `${item.hanja} (${item.eum})`;
                         subText = item.meaning;
                         metaText = item.level;
@@ -343,6 +346,7 @@
                         </div>
                     `;
                     container.appendChild(card);
+                    if(currentSubject==='science'){const retry=document.createElement('button');retry.type='button';retry.className='solution-btn';retry.textContent='단원에서 다시 풀기';retry.onclick=()=>window.retryQuestion('science',item.wrongNoteId||item.questionId);card.appendChild(retry);}
                     if (currentSubject === 'math' && item.levelId === 'formula' && item.question && item.choices?.length) {
                         const retry = document.createElement('button');
                         retry.type = 'button';
@@ -369,6 +373,10 @@
                     const all = WrongNote.getAll();
                     const target = all.grammar.find(g => g.type === identifier);
                     if (target) targetUrl = `english_grammar.html?stage=${target.stageId}&unit=${target.unitId}&mode=review`;
+                }
+                else if (subject === 'science') {
+                    const target=(WrongNote.getAll().science||[]).find(item=>item.wrongNoteId===identifier||item.questionId===identifier);
+                    if(target) targetUrl=`science.html?level=${encodeURIComponent(target.levelId||'level1')}&unit=${encodeURIComponent(target.unitId||target.context?.unitId||'')}&mode=review&question=${encodeURIComponent(target.questionId||target.wrongNoteId)}`;
                 }
                 else if (subject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (subject === 'math') {
@@ -409,6 +417,7 @@
                     const first = (all.grammar || []).find(g => !g.isMastered) || (all.grammar || [])[0];
                     if (first) targetUrl = `english_grammar.html?stage=${first.stageId}&unit=${first.unitId}&mode=review`;
                 }
+                else if(currentSubject==='science') {const items=WrongNote.getAll().science||[],first=items.find(item=>!item.isMastered)||items[0];if(first)targetUrl=`science.html?level=${encodeURIComponent(first.levelId||'level1')}&unit=${encodeURIComponent(first.unitId||first.context?.unitId||'')}&mode=review`;}
                 else if (currentSubject === 'hanja') targetUrl = 'hanja.html?mode=review';
                 else if (currentSubject === 'math') {
                     const all = WrongNote.getAll();

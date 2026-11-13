@@ -1,7 +1,7 @@
 (function (root) {
     'use strict';
     const app = root.SmartStudy = root.SmartStudy || {};
-    const names = { reading: '국어', korean_vocab: '국어 어휘', english: '영어 단어', grammar: '영어 문법', english_reading: '영어 독해', math: '수학', math_formula: '수학 공식', hanja: '한자' };
+    const names = { science:'과학', reading: '국어', korean_vocab: '국어 어휘', english: '영어 단어', grammar: '영어 문법', english_reading: '영어 독해', math: '수학', math_formula: '수학 공식', hanja: '한자' };
     const node = (tag, text, className) => { const el = document.createElement(tag); if (text != null) el.textContent = text; if (className) el.className = className; return el; };
     function setMathText(element, value) {
         element.replaceChildren(); const parts = String(value || '').split(/(\$[^$]+\$)/g);
@@ -29,7 +29,7 @@
         try {
             const result = await app.MockPublication.get(user, assessmentId);
             if (app.LocalRepository.getActiveUser() !== user || result?.published !== true) return { published: false, reason: 'withheld' };
-            const local = app.MockExam.getById(user, assessmentId), snapshot = result.snapshot || result.payload || local;
+            const local = app.MockExam.getById(user, assessmentId), raw = result.snapshot || result.payload || local, snapshot=raw&&(app.MockExam.hydrateSnapshot?.(raw)||raw);
             if (!snapshot || snapshot.userId !== user || snapshot.assessmentId !== assessmentId || !snapshot.submittedAt
                 || !snapshot.sections?.every(s => s.state === 'ended')) return { published: false, reason: 'incomplete' };
             try { app.MockWrongNote?.note(user, snapshot.assessmentId, snapshot.initialAttempts || (snapshot.sections || []).flatMap(section => section.initialAttempts || []),snapshot.attemptNo||1); } catch (error) { console.warn('[Mock wrong note]', error); }
@@ -41,7 +41,7 @@
         if (!result?.published) {
             const waiting=node('div',null,'released-waiting');waiting.append(node('span','🔒','assessment-icon'),node('h2','결과를 확인하고 있어요'),node('p',result?.reason==='offline'?'인터넷 연결 후 공개 상태를 다시 확인해 주세요.':'선생님·보호자가 공개하면 점수와 해설을 볼 수 있어요.'));container.append(waiting);return;
         }
-        const draft = result.snapshot;
+        const draft = app.MockExam?.hydrateSnapshot?.(result.snapshot)||result.snapshot;
         const heading=node('div',null,'released-heading'),titles=node('div');titles.append(node('span','MY LEARNING REPORT','assessment-eyebrow'),node('h2',`나의 모의고사 · ${draft.attemptNo||1}회차`));heading.append(titles,node('span','결과 공개 완료','assessment-tag'));container.append(heading);
         const all=draft.sections.flatMap(s=>s.initialAttempts||[]),correctAll=all.filter(a=>a.correct).length;
         const overview=node('div',null,'released-overview'),description=node('div');description.append(node('span','전체 정답'),node('p',`${all.length}문항 중 ${correctAll}문항을 맞혔어요`));
@@ -74,6 +74,7 @@
                     setMathText(card.children[3], `정답: ${attempt.correctAnswer}`);
                     setMathText(card.children[4], attempt.explanation || '별도 해설이 없습니다.');
                 }
+                if(attempt.subject==='science'){for(const line of attempt.passageText?.length?attempt.passageText:attempt.givens?[attempt.givens]:[])card.append(node('p',line,'released-source'));}
                 detail.append(card);
             });
             container.append(detail);

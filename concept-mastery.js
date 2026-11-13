@@ -12,7 +12,7 @@
  function fingerprint(a,m){
   // IDs may change on retry; rendered content plus passage identity is stable.
   const prompt=normalize(a.question||a.prompt);
-  return prompt?`${m.passageId||a.passageId||''}|${prompt}|${normalize(a.correctAnswer??a.answer)}`:null;
+  return prompt?`${m.passageId||a.passageId||''}|${prompt}|${normalize(a.correctAnswer??a.answer)}|${normalize(a.givens)}`:null;
  }
  function evaluate(reports,subject,context,now=Date.now()){
   const sessions=new Map();
@@ -20,7 +20,8 @@
    const m=r.metadata||{},total=Number(r.totalQuestions),attempts=m.initialAttempts;
    const at=Number(r.createdAt||r.date||m.submittedAt);
    if(subject==='reading'&&root.KoreanReadingCurriculum&&!root.KoreanReadingCurriculum.isCurrentPassageId(m.passageId))continue;
-   if(r.subject!==subject||m.context!==context||m.review||m.assessment||m.status==='draft'||!r.sessionId||!Number.isFinite(at)||at>now||at<=0||!Number.isInteger(total)||total<1||!Array.isArray(attempts)||attempts.length<total)continue;
+   if(r.subject!==subject||m.context!==context||m.writingPack||m.review||m.assessment||m.status==='draft'||!r.sessionId||!Number.isFinite(at)||at>now||at<=0||!Number.isInteger(total)||total<1||!Array.isArray(attempts)||attempts.length<total)continue;
+   if(subject==='science'&&(total!==10||attempts?.length!==10||m.hintUsed||attempts.some(a=>a.round&&a.round!==1||a.assisted||a.hintUsed||a.exposure?.review)))continue;
    if(attempts.slice(0,total).some(a=>typeof a.correct!=='boolean'))continue;
    if(!sessions.has(r.sessionId)||at<sessions.get(r.sessionId).at)sessions.set(r.sessionId,{r,m,at,attempts:attempts.slice(0,total)});
   }

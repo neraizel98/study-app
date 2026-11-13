@@ -210,3 +210,5 @@ body.paper-page { background: #e8e3d9; color: var(--paper-ink); font-family: var
     .pp-toolbar { padding: 10px 14px; }
     .paper-root { padding: 12px 0 32px; }
 }
+
+.science-data-table{width:100%;border-collapse:collapse;margin:.5em 0;font-size:.9em}.science-data-table th,.science-data-table td{border:1px solid #b8cecf;padding:.35em;text-align:left;overflow-wrap:anywhere}.science-data-table th{background:#e0f2f5}
