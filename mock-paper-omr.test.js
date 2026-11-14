@@ -379,5 +379,3 @@ test('failed photo can be transcribed only after its printed code matches; every
  assert(all(o.panel).some(n=>n.attributes['aria-label']==='업로드한 답안지 원본'));
  c.readerResult={ok:false,error:'wrong-card'};await o.take();assert.equal(buttons(o.panel,'사진 보며 답안 입력').length,0);
 });
-
-

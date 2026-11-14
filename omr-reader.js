@@ -168,7 +168,7 @@
     // { ticks, paper }: share of timing ticks dark against the paper between them, and how white the paper around the
     // weakest fiducial is (ring / paper). A clutter square standing in for a corner has no paper around it, so it loses
     // to the real corner even when the ticks still line up. 0 when a fiducial is off-image or not a dark core.
-    function verify(img, H, layout) {
+    function verify(img, H, layout, minimumTicks = 0.6) {
         const marks = layout.timingMarks, whites = []; let hits = 0;
         marks.forEach((m, i) => {
             const cx = m.xMm + m.wMm / 2, cy = m.yMm + m.hMm / 2, next = marks[i + 1] || marks[i - 1], gap = (next.yMm - m.yMm) / 2;
@@ -178,7 +178,7 @@
             if (tick < white * 0.7) hits++;
         });
         const ticks = hits / marks.length;
-        if (ticks < 0.6) return { ticks, paper: 0 };
+        if (ticks < minimumTicks) return { ticks, paper: 0 };
         const paper = whites.sort((a, b) => a - b)[whites.length >> 1];
         let worst = Infinity;
         for (const f of layout.fiducials) {
@@ -190,6 +190,26 @@
             worst = Math.min(worst, ring / paper);
         }
         return { ticks, paper: Math.min(1, worst) };
+    }
+    // Curled paper can displace the edge ticks while the bubbles and bottom code remain readable.
+    // Only recover a bounded displacement: under half a tick pitch, dark against BOTH adjacent gaps,
+    // at least 90% of ticks, four verified fiducials, and an intact checksum-protected printed code.
+    // This is not a general lowering of the card-detection threshold.
+    function nearbyTicks(img, H, layout) {
+        let hits = 0;
+        for (let i = 0; i < layout.timingMarks.length; i++) {
+            const m = layout.timingMarks[i], next = layout.timingMarks[i + 1] || layout.timingMarks[i - 1];
+            const gap = Math.abs(next.yMm - m.yMm) / 2;
+            let found = false;
+            for (let dy = -2.5; dy <= 2.5 && !found; dy += 0.5) for (let dx = -1.5; dx <= 1.5; dx += 0.5) {
+                const x = m.xMm + m.wMm / 2 + dx, y = m.yMm + m.hMm / 2 + dy;
+                const tick = mean(img, H, x, y, m.wMm * 0.2, m.hMm * 0.2);
+                const before = mean(img, H, x, y - gap, m.wMm * 0.2, 0.2), after = mean(img, H, x, y + gap, m.wMm * 0.2, 0.2);
+                if (tick < Math.min(before, after) * 0.55) { found = true; break; }
+            }
+            if (found) hits++;
+        }
+        return hits / layout.timingMarks.length;
     }
     function locate(img, layout) {
         const list = candidates(img), F = layout.fiducials, fsize = F[0].sizeMm;
@@ -212,17 +232,27 @@
             combos.push({ quad, pts, area: polyArea(pts) });
         }
         combos.sort((p, q) => q.area - p.area);
-        let best = null;
+        let best = null; const recovery = [];
         for (const combo of combos.slice(0, 300)) {
             for (let k = 0; k < 4; k++) {
                 const dst = F.map((_, i) => combo.pts[(i + k) % 4]), H = homography(F.map(f => [f.xMm, f.yMm]), dst);
                 if (!H) continue;
                 const v = verify(img, H, layout), rank = v.ticks + v.paper;
                 if (v.ticks >= 0.6 && v.paper >= 0.35 && (!best || rank > best.rank + 1e-9)) best = { H, score: v.ticks, rank, pts: dst };
+                else if (v.ticks >= 0.3 && v.ticks < 0.6) {
+                    const edge = verify(img, H, layout, 0.3);
+                    if (edge.paper >= 0.35) recovery.push({ H, score: v.ticks, rank: v.ticks + edge.paper, pts: dst });
+                }
             }
             if (best && best.score >= 0.95 && best.rank >= 1.8) break;
         }
-        return best;
+        if (best) return best;
+        for (const candidate of recovery.sort((a, b) => b.rank - a.rank).slice(0, 8)) {
+            if (!root.OmrLayout.decode(readCode(img, candidate.H, layout)).valid) continue;
+            const score = nearbyTicks(img, candidate.H, layout);
+            if (score >= 0.9) return { ...candidate, recovered: true, nearbyScore: score };
+        }
+        return null;
     }
 
     // ---------- quality ----------
@@ -321,6 +351,7 @@
             blurScore: Math.round(blur * 100) / 100, skewDeg: Math.round(Math.atan2(top[1] - origin[1], top[0] - origin[0]) * 1800 / Math.PI) / 10,
             pxPerMm: Math.round(pxPerMm * img.k * 100) / 100, timingScore: Math.round(found.score * 100) / 100
         };
+        if (found.recovered) { quality.geometryRecovered = true; quality.nearbyTimingScore = Math.round(found.nearbyScore * 100) / 100; }
         const Hfull = mul([img.k, 0, 0, 0, img.k, 0, 0, 0, 1], H);
         const fiducials = F.map(f => { const p = applyH(Hfull, f.xMm, f.yMm); return { id: f.id, x: Math.round(p[0] * 10) / 10, y: Math.round(p[1] * 10) / 10 }; });
         const base = { quality, fiducials, homography: Hfull };
@@ -342,7 +373,10 @@
             for (const { row, raw } of rows) {
                 const tint = s => Math.round(Math.max(0, s.reduce((sum, d, j) => sum + d - template[j], 0) / s.length / TINT) * 1000) / 1000;
                 const fills = raw.map(s => share(s, INK)), tints = raw.map(tint);
-                answers.push({ area: area.key, number: row.number, itemIndex: row.itemIndex, ...classify(fills, tints), fills, tints });
+                const mark = classify(fills, tints);
+                // Near the displaced edge, require a parent to confirm weaker marks rather than silently accept them.
+                if (found.recovered && mark.status === 'ok' && mark.confidence < 0.85) mark.status = 'faint';
+                answers.push({ area: area.key, number: row.number, itemIndex: row.itemIndex, ...mark, fills, tints });
             }
             for (const row of area.rows.filter(r => r.writtenBox)) writtenCrops.push({ area: area.key, number: row.number, itemIndex: row.itemIndex, ...crop(image, Hfull, row.writtenBox, opt.cropPxPerMm) });
         }

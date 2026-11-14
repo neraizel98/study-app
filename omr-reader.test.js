@@ -180,3 +180,19 @@ test('full-resolution 3000×4000 photo is downscaled and read quickly', () => {
 test('summary', () => { console.log(summary.map(line => `  ${line}`).join('\n')); });
 
 console.log('OMR layout and reader: fiducials, round code, homography, bubble classification verified.');
+
+test('curled timing edge: intact code recovers the card, weaker marks remain unconfirmed',()=>{
+ const displaced=clone(layout);displaced.timingMarks.forEach(m=>{const y=m.yMm;m.yMm+=1.3+1.2*Math.sin(2*Math.PI*y/262);m.xMm-=0.6*Math.sin(Math.PI*y/262);});
+ const plan=markPlan(73),page=synth.paperTexture(displaced,{marks:plan.marks});
+ const image=synth.photo(page,{w:1200,h:1600,corners:synth.corners({w:1200,h:1600,fill:.9})},OmrReader.homography,OmrReader.applyH);
+ const result=OmrReader.read(image,fixture);assert(result.ok,JSON.stringify(result));assert(result.quality.geometryRecovered);assert(result.quality.nearbyTimingScore>=.9);
+ for(const answer of result.answers){const want=plan.expected[answer.itemIndex];if(answer.status==='ok'){assert.equal(want.status,'ok');assert.equal(answer.choice,want.choice);}else if(want.choice!=null&&answer.status==='faint')assert.equal(answer.choice,want.choice);}
+ const other=clone(fixture);other.attemptNo=2;assert.equal(OmrReader.read(image,other).error,'wrong-card');
+ // A damaged code or missing timing edge must not use the recovery route.
+ const broken=clone(displaced);for(const cell of broken.codeCells)cell.bit=0;
+ const bad=synth.photo(synth.paperTexture(broken,{marks:plan.marks}),{w:1200,h:1600,corners:synth.corners({w:1200,h:1600,fill:.9})},OmrReader.homography,OmrReader.applyH);
+ assert.equal(OmrReader.read(bad,fixture).ok,false);
+ const noTicks=clone(displaced);noTicks.timingMarks=[];
+ const noEdge=synth.photo(synth.paperTexture(noTicks,{marks:plan.marks}),{w:1200,h:1600,corners:synth.corners({w:1200,h:1600,fill:.9})},OmrReader.homography,OmrReader.applyH);
+ assert.equal(OmrReader.read(noEdge,fixture).ok,false);
+});

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261114-science-level1-complete';
+const CACHE_NAME = 'smart-study-20261114-omr-photo-recovery';
 
 try {
     importScripts('./firebase-config.js');
