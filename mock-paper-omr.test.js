@@ -368,3 +368,14 @@ test('camera capture and saved-photo upload have separate inputs and both open c
  buttons(o.panel,'사진 다시 선택')[0].onclick();assert.equal(o.input.clicks,2);
  await o.take({width:1500,height:2000});assert.match(textOf(o.panel),/1회차 답안 확인/);
 });
+
+test('failed photo can be transcribed only after its printed code matches; every answer still requires confirmation',async()=>{
+ const w=world(),paper=await printed(w),host=new El('div'),{c}=w.parent,o=await openOmr(w,host);
+ c.OmrLayout={code:()=>({hashHex:'1E1C'})};c.readerResult={ok:false,error:'no-card'};await o.take({width:960,height:1280});
+ const manual=buttons(o.panel,'사진 보며 답안 입력')[0],field=all(o.panel).find(n=>n.attributes['aria-label']==='답안지 하단 판독 코드');
+ assert(manual.disabled);field.value='FFFF';field.oninput();assert(manual.disabled);manual.onclick();assert.equal(items(o.panel).length,0);
+ field.value='1e1c';field.oninput();assert(manual.disabled);const round=all(o.panel).find(n=>n.attributes['aria-label']==='답안지에 인쇄된 회차');round.value='2';round.oninput();assert(manual.disabled);round.value='1';round.oninput();assert.equal(manual.disabled,false);manual.onclick();assert.equal(items(o.panel).length,55);
+ assert(buttons(o.panel,'채점하고 저장')[0].disabled);assert.equal(items(o.panel).filter(n=>n.className.includes('is-uncertain')).length,55);
+ assert(all(o.panel).some(n=>n.attributes['aria-label']==='업로드한 답안지 원본'));
+ c.readerResult={ok:false,error:'wrong-card'};await o.take();assert.equal(buttons(o.panel,'사진 보며 답안 입력').length,0);
+});

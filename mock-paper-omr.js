@@ -82,19 +82,37 @@
   const say=(text,error)=>{const p=el('p',`omr-message${error?' mock-admin-error':''}`,text);return p;};
   function retake(){if(busy)return;input.value='';input.click?.();}
   function photograph(){if(busy)return;cameraInput.value='';cameraInput.click?.();}
-  function fail(code){const retry=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload');retry.onclick=photograph;upload.onclick=retake;panel.replaceChildren(say(message(code,n),true),retry,upload);}
+  function fail(code,image){
+   const retry=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload');retry.onclick=photograph;upload.onclick=retake;
+   panel.replaceChildren(say(message(code,n),true),retry,upload);
+   // A failed geometric fit is not proof that the photo is unusable. Keep the photo and allow
+   // explicit transcription, but require the printed round code before choosing any answers.
+   if(image&&['no-card','blurry','unreadable'].includes(code)){
+    const expected=root.OmrLayout?.code?.(set);if(!expected)return;
+    const field=el('input','omr-text'),round=el('input','omr-text'),manual=button('사진 보며 답안 입력','mock-publish omr-manual');
+    field.type='text';field.maxLength=4;field.autocomplete='off';field.placeholder='하단의 네 자리 코드';field.setAttribute('aria-label','답안지 하단 판독 코드');
+    round.type='number';round.min='1';round.max='7';round.placeholder='인쇄된 회차 번호';round.setAttribute('aria-label','답안지에 인쇄된 회차');
+    manual.disabled=true;field.oninput=round.oninput=()=>{manual.disabled=String(field.value).trim().toUpperCase()!==expected.hashHex||String(round.value).trim()!==String(n);};
+    manual.onclick=()=>{if(manual.disabled)return;review(rowsFor(set,null),image);};
+    panel.append(say('자동 위치 보정에 실패했어요. 재촬영 대신 사진을 보며 입력할 수 있어요. 답안지 하단의 회차 번호와 네 자리 영문·숫자 판독 코드를 입력해 주세요.'),round,field,manual);
+   }
+  }
   async function choose(input){
    const file=input.files?.[0];if(!file||busy)return;busy=true;trigger.disabled=true;camera.disabled=true;panel.replaceChildren(say('답안지를 읽는 중이에요...'));
-   let result;try{result=await read(await loadImage(file),set);}catch(_){result={ok:false,error:'image'};}
+   let result,image;try{image=await loadImage(file);result=await read(image,set);}catch(_){result={ok:false,error:'image'};}
    busy=false;trigger.disabled=false;camera.disabled=false;
-   if(result.ok)review(rowsFor(set,result));else fail(result.error);
+   if(result.ok)review(rowsFor(set,result));else fail(result.error,image);
   }
   input.onchange=()=>choose(input);cameraInput.onchange=()=>choose(cameraInput);
-  function review(rows){
+  function review(rows,photo){
    const pending=el('p','omr-pending'),save=button('채점하고 저장','mock-publish omr-save'),again=button('다시 찍기','omr-retake'),upload=button('사진 다시 선택','omr-upload'),note=el('p','omr-message');
    let times=null;
    const refresh=()=>{const left=rows.filter(r=>!r.resolved).length;pending.textContent=left?`노란 칸 ${left}문항을 확인해 주세요.`:'모든 문항을 확인했어요.';save.disabled=busy||left>0||!!times&&!times.valid();};
    panel.replaceChildren(el('h4','omr-title',`${n}회차 답안 확인`),el('p','omr-sub','사진에서 읽은 답이에요. 노란 칸은 직접 골라 주세요. 단답형은 아이가 쓴 그대로 적어 주세요.'),pending);
+   if(photo){
+    panel.append(say('수동 확인 모드 · 자동으로 선택한 답은 없어요. 사진과 비교해 모든 답을 직접 입력해 주세요.'));
+    const picture=cropCanvas(photo);picture.setAttribute('aria-label','업로드한 답안지 원본');picture.style.width='100%';picture.style.maxWidth='700px';picture.style.height='auto';picture.style.maxHeight='none';panel.append(picture);
+   }
    for(const area of root.MockPaper.AREAS){const own=rows.filter(r=>r.area===area.id);if(!own.length)continue;
     const box=el('section','omr-area'),grid=el('div','omr-grid');box.append(el('h5',null,`${area.period}교시 ${area.name} · ${own.length}문항`),grid);
     for(const row of own){
