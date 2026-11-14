@@ -28,3 +28,12 @@ Local preview http://127.0.0.1:8766. Playwright runtime NODE_PATH=C:/Users/NX3GA
 - All new renderer kinds are connected; browser checks cover32 units/lesson bindings. Body anatomy and Moon observer labels are being improved after visual review.
 - Both expansion assessment banks are still being authored; full mock inventory/SDK validation pending. Temporary authoring chunk files must not be published.
 
+
+## Completion verification
+-32 units /655 practice /1920 assessment registered. All32 units support three disjoint science20 mocks; maximum submitted JSON543645bytes.
+- Root corrected prediction mismatches,720 missing lesson links and unrelated distractors; new regression tests pass.
+- Full pre-final suite297/297 plus expanded32-unit mock test1/1 and life/earth review2/2 pass.
+- Production core UI and offline32-unit/lazyThree/quiz browser tests pass. Push SDK was stubbed unavailable in offline harness; real Push and live-account synchronization are not verified.
+- No deployment. Existing raw unpublished-result access limitation remains documented separately; UI publication gate preserved.
+
+- Expanded-unit Firestore emulator34/34 passed, including real SDK75 snapshot write; production unchanged.

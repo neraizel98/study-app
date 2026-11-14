@@ -1,6 +1,6 @@
 (function(root){
 'use strict';
-const labels=['전체 보기','속 보기','과정 따라가기','조건 바꾸기'];
+const labels=['전체 관찰','확대·단면'];
 const text=(x,y,s,c='')=>`<text x="${x}" y="${y}" class="${c}">${s}</text>`;
 const path=(d,c='flow')=>`<path d="${d}" class="${c}"/>`;
 const circle=(x,y,r,c)=>`<circle cx="${x}" cy="${y}" r="${r}" class="${c}"/>`;
@@ -9,7 +9,7 @@ function render(kind,state){
 const extension=root.ScienceExtensionModels?.render(kind,state);if(extension)return extension;
 if(!['plant','ecosystem','force','heat','states','mixtures','orbit','water-cycle','cosmos-local','cosmos'].includes(kind))return {sceneTitle:'관찰 모형 연결 확인 필요',controls:['연결 확인'],steps:['안내'],caption:'이 장면의 모형이 아직 연결되지 않았어요.',legends:[],svg:'<svg viewBox="0 0 640 430" role="img" aria-label="모형 연결 필요"><text x="320" y="210" text-anchor="middle">이 모형은 연결을 확인해야 해요.</text></svg>'};
 if(kind==='cosmos-local'||kind==='cosmos'){
-const c=Number(state.condition)||0;return {steps:['전체 흐름','태양계 관찰','과거 자취','시야 비교'],controls:['움직이는 태양계','이동 흔적 전체'],sceneTitle:'태양의 이동과 행성의 공전·자전',legends:['태양과 함께 움직이지 않는 국소 기준','색 선은 천체의 과거 위치 / 실제 나선관이 아니에요','크기·거리·시간 비율과 공전면 방향을 조정한 모형'],caption:'태양이 이동하는 동안에도 행성은 태양 주위를 돌고 자신의 축을 중심으로 자전해요. 실제 은하 궤도의 짧은 구간을 직선으로 단순화한 설명용 모형이에요.',svg:`<svg viewBox="0 0 640 430" role="img" aria-label="태양이 이동하며 행성이 공전하는 과거 자취의 기본 도식"><rect width="640" height="430" rx="16" fill="#102033"/><g fill="none" stroke-width="2"><path d="M20 140Q160 20 250 170T510 220" stroke="#9bbed1"/><path d="M20 300Q170 390 280 230T550 280" stroke="#d3bb85"/><path d="M20 220Q160 100 300 220T520 170" stroke="#85b7d9"/><path d="M20 220H500" stroke="#c6ac72" stroke-dasharray="5 7"/></g><circle cx="480" cy="220" r="20" fill="#f5dfab"/><circle cx="520" cy="170" r="8" fill="#7fb2d7"/><text x="480" y="180" fill="#f0d59a" text-anchor="middle" font-size="22">태양</text><text x="325" y="395" fill="#bdd3df" text-anchor="middle" font-size="18">기본 도식 · 국소 이동과 공전의 합성 자취</text></svg>`};}
+const c=Number(state.condition)||0;return {steps:['이동과 과거 자취'],controls:['움직이는 태양계','이동 흔적 전체'],sceneTitle:'태양의 이동과 행성의 공전·자전',legends:['태양과 함께 움직이지 않는 국소 기준','색 선은 천체의 과거 위치 / 실제 나선관이 아니에요','크기·거리·시간 비율과 공전면 방향을 조정한 모형'],caption:'태양이 이동하는 동안에도 행성은 태양 주위를 돌고 자신의 축을 중심으로 자전해요. 실제 은하 궤도의 짧은 구간을 직선으로 단순화한 설명용 모형이에요.',svg:`<svg viewBox="0 0 640 430" role="img" aria-label="태양이 이동하며 행성이 공전하는 과거 자취의 기본 도식"><rect width="640" height="430" rx="16" fill="#102033"/><g fill="none" stroke-width="2"><path d="M20 140Q160 20 250 170T510 220" stroke="#9bbed1"/><path d="M20 300Q170 390 280 230T550 280" stroke="#d3bb85"/><path d="M20 220Q160 100 300 220T520 170" stroke="#85b7d9"/><path d="M20 220H500" stroke="#c6ac72" stroke-dasharray="5 7"/></g><circle cx="480" cy="220" r="20" fill="#f5dfab"/><circle cx="520" cy="170" r="8" fill="#7fb2d7"/><text x="480" y="180" fill="#f0d59a" text-anchor="middle" font-size="22">태양</text><text x="325" y="395" fill="#bdd3df" text-anchor="middle" font-size="18">기본 도식 · 국소 이동과 공전의 합성 자취</text></svg>`};}
 
 const t=state.time||0, step=state.step||0, c=Number(state.condition||0), phase=t%1;
 let body='',caption='',controls=[];

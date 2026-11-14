@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261114-science-completion';
+const CACHE_NAME = 'smart-study-20261114-science-level1-complete';
 
 try {
     importScripts('./firebase-config.js');
@@ -52,9 +52,9 @@ self.addEventListener('activate', event => {
 
 // 캐시할 파일 목록 (앱 핵심 파일)
 const STATIC_ASSETS = [
-    './science-extension-models.js?v=20261114-l1-completion', './science-cosmos-model.js?v=20261114-l1-completion', './ScienceLifeEarthExpansion.js?v=20261114-l1-completion', './SciencePhysicalExpansion.js?v=20261114-l1-completion', './ScienceMockLifeEarthExpansion.js?v=20261113-science-complete', './ScienceMockPhysicalExpansion.js?v=20261113-science-complete',
-    './science-orbit-three.js?v=20261113-three-r187', './vendor/three/three.module.js', './vendor/three/three.core.js',
-    './science.html', './science.css?v=20261112-science-level1', './science-app.js?v=20261112-science-level1', './science-models.js?v=20261112-science-level1', './ScienceData.js?v=20261112-science-level1', './ScienceMockPhysical.js?v=20261112-science-level1', './ScienceMockData.js?v=20261112-science-level1', './science-policy.js',
+    './science-extension-models.js?v=20261114-science-level1-complete', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete',
+    './science-orbit-three.js?v=20261114-science-level1-complete', './vendor/three/three.module.js', './vendor/three/three.core.js',
+    './science.html', './science.css?v=20261114-science-level1-complete', './science-app.js?v=20261114-science-level1-complete', './science-models.js?v=20261114-science-level1-complete', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
     './',
     './index.html',
     './theme.css',
@@ -333,7 +333,13 @@ self.addEventListener('fetch', event => {
                     return response;
                 })
                 .catch(() => {
-                    return caches.match(event.request);
+                    return caches.match(event.request).then(cached => {
+                        if (cached) return cached;
+                        const sciencePage = new URL('./science.html', self.location.href);
+                        if (url.origin === sciencePage.origin && url.pathname === sciencePage.pathname) {
+                            return caches.match(sciencePage.href);
+                        }
+                    });
                 })
         );
     } else {
