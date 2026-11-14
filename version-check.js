@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261106-free-chain';
+    const APP_VERSION = '20261114-science-level1-complete';
 
     (async function () {
         try {
