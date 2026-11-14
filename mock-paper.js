@@ -9,7 +9,8 @@
         { id: 'reading', name: '국어', subjects: ['reading', 'korean_vocab'], period: 1, minutes: 20 },
         { id: 'math', name: '수학', subjects: ['math', 'math_formula'], period: 2, minutes: 20 },
         { id: 'english', name: '영어', subjects: ['english', 'grammar', 'english_reading'], period: 3, minutes: 20 },
-        { id: 'hanja', name: '한자', subjects: ['hanja'], period: 4, minutes: 10 }
+        { id: 'hanja', name: '한자', subjects: ['hanja'], period: 4, minutes: 10 },
+        { id: 'science', name: '과학', subjects: ['science'], period: 5, minutes: 25 }
     ]);
     const PARTS = Object.freeze({ paper: '문제지', answers: '정답표·해설', omr: 'OMR 답안지', all: '전체' });
     const MARKS = ['①', '②', '③', '④', '⑤', '⑥', '⑦', '⑧'];
@@ -43,7 +44,7 @@
                 const lines = passageLines(item);
                 if (item.passageId && lines.length) {
                     const key = String(item.passageId);
-                    if (!shared.has(key)) { const block = { passage: { id: key, title: item.passageTitle || '', lines, glossary: Array.isArray(item.glossary) ? item.glossary : [] }, items: [] }; shared.set(key, block); blocks.push(block); }
+                    if (!shared.has(key)) { const block = { passage: { id: key, title: item.passageTitle || '', lines, glossary: Array.isArray(item.glossary) ? item.glossary : [], dataTable:item.dataTable }, items: [] }; shared.set(key, block); blocks.push(block); }
                     shared.get(key).items.push(item);
                 } else blocks.push({ passage: null, items: [item] });
             }
@@ -55,7 +56,7 @@
     }
 
     function passageLines(q) {
-        const lines = q.passageLines || q.passageText || [];
+        const lines = q.passageLines || q.passageText || (q.subject==='science'&&q.givens?[q.givens]:[]);
         return (Array.isArray(lines) ? lines : [lines]).map(line => String(line ?? '')).filter(line => line.trim());
     }
 
@@ -129,6 +130,7 @@
         const box = el(doc, 'div', compact ? 'passage passage--inline' : 'passage');
         if (passage.title) box.append(el(doc, 'p', 'passage-title', passage.title));
         for (const line of passage.lines) box.append(el(doc, 'p', 'passage-line', line));
+        if(passage.dataTable){const table=el(doc,'table','science-data-table'),head=el(doc,'tr');for(const value of passage.dataTable.headings||[])head.append(el(doc,'th','',value));table.append(head);for(const row of passage.dataTable.rows||[]){const tr=el(doc,'tr');for(const value of (Array.isArray(row)?row:row.cells||[]))tr.append(el(doc,'td','',value));table.append(tr);}box.append(table);}
         if (passage.glossary?.length) {
             const notes = el(doc, 'p', 'glossary');
             for (const entry of passage.glossary) notes.append(el(doc, 'span', '', `* ${entry?.word ?? ''}: ${entry?.meaning ?? ''}`));
@@ -150,7 +152,7 @@
         head.append(el(doc, 'span', 'q-pts', `[${question.points}점]`));
         node.append(head);
         const lines = passageLines(q);
-        if (!q.passageId && lines.length) node.append(passageBox(doc, { title: q.passageTitle || '', lines, glossary: q.glossary || [] }, true));
+        if (!q.passageId && lines.length) node.append(passageBox(doc, { title: q.passageTitle || '', lines, glossary: q.glossary || [],dataTable:q.dataTable }, true));
         if (bogi) { const box = el(doc, 'div', 'bogi'); box.append(el(doc, 'span', 'bogi-label', '〈보 기〉'), rich(doc, el(doc, 'p', ''), bogi, isMath)); node.append(box); }
         if (q.kind === 'written') {
             const answer = el(doc, 'div', 'written-box');

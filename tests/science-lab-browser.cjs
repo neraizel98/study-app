@@ -1,0 +1,93 @@
+const { chromium } = require('playwright');
+const fs = require('node:fs');
+const path = require('node:path');
+const http = require('node:http');
+const assert = require('node:assert/strict');
+const root = process.cwd();
+(async () => {
+    const server = http.createServer((request, response) => {
+        const target = path.resolve(root, '.' + new URL(request.url, 'http://localhost').pathname);
+        if (!target.startsWith(root + path.sep) || !fs.existsSync(target) || fs.statSync(target).isDirectory()) return response.writeHead(404).end();
+        response.setHeader('Content-Type', target.endsWith('.js') ? 'application/javascript; charset=utf-8' : target.endsWith('.css') ? 'text/css; charset=utf-8' : 'text/html; charset=utf-8');
+        response.end(fs.readFileSync(target));
+    });
+    await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+    let browser;
+    try {
+        browser = await chromium.launch({ channel: 'chrome', headless: true });
+        const context = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true });
+        const page = await context.newPage(), errors = [], requests = [];
+        page.on('pageerror', error => errors.push(error.message));
+        page.on('request', request => requests.push(request.url()));
+        const base = `http://127.0.0.1:${server.address().port}`;
+        await page.goto(base + '/science_lab.html');
+        assert(await page.locator('#play').isDisabled());
+        assert(await page.locator('#timeSlider').isDisabled());
+        assert.equal(await page.locator('#reasonBody').isVisible(), false);
+        await page.getByRole('button', { name: 'A가 더 높다', exact: true }).click();
+        await page.locator('#play').click();
+        await page.waitForFunction(() => Number(document.getElementById('timeSlider').value) > 1);
+        await page.locator('#pause').click();
+        const paused = await page.locator('#timeLabel').innerText();
+        await page.waitForTimeout(180);
+        assert.equal(await page.locator('#timeLabel').innerText(), paused);
+        await page.locator('#timeSlider').evaluate(element => {
+            element.value = '60';
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        assert.match(await page.locator('#temperatureA').innerText(), /34.3/);
+        assert.match(await page.locator('#temperatureB').innerText(), /27.1/);
+        assert.equal(await page.locator('#energyLabel').innerText(), '60.0 kJ');
+        await page.locator('#openReason').click();
+        assert.match(await page.locator('#conclusion').innerText(), /A의 물이 더 적어서/);
+        const checkAnswers = [0, 0, 1, 2];
+        for (const [index, answer] of checkAnswers.entries()) await page.locator(`input[name="q${index}"][value="${answer}"]`).check();
+        await page.getByRole('button', { name: '4문항 확인하기' }).click();
+        assert.match(await page.locator('#checkResult').innerText(), /4문항 중 4문항/);
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        const out = path.resolve('..', 'outputs', 'science-heat-prototype');
+        fs.mkdirSync(out, { recursive: true });
+        await page.locator('.experiment').screenshot({ path: path.join(out, 'science-390-experiment.png') });
+        await page.locator('.reason').screenshot({ path: path.join(out, 'science-390-explanation.png') });
+        await page.getByRole('button', { name: '직접 실험', exact: true }).click();
+        await page.locator('#massA').selectOption('2');
+        assert(await page.locator('#play').isDisabled());
+        assert.equal(await page.locator('#reasonBody').isVisible(), false);
+        await page.getByRole('button', { name: '온도가 같다', exact: true }).click();
+        await page.locator('#stillMode').check();
+        await page.locator('#timeSlider').evaluate(element => {
+            element.value = '60';
+            element.dispatchEvent(new Event('input', { bubbles: true }));
+        });
+        assert.equal(await page.locator('#temperatureA').innerText(), await page.locator('#temperatureB').innerText());
+        assert.match(await page.locator('#predictionStatus').innerText(), /예측과 결과가 같아요/);
+        await page.locator('#reset').click();
+        await page.getByRole('button', { name: '온도가 같다', exact: true }).focus();
+        await page.keyboard.press('Space');
+        assert.equal(await page.getByRole('button', { name: '온도가 같다', exact: true }).getAttribute('aria-pressed'), 'true');
+        await page.locator('#play').click();
+        await page.waitForTimeout(150);
+        await page.evaluate(() => {
+            Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+            document.dispatchEvent(new Event('visibilitychange'));
+        });
+        assert(await page.locator('#pause').isDisabled());
+        assert.match(await page.locator('#playStatus').innerText(), /다른 화면을 보는 동안/);
+        assert.deepEqual(errors, []);
+        assert(requests.every(url => url.startsWith(base)), 'standalone prototype cannot contact live services');
+        const reduced = await browser.newPage({ viewport: { width: 390, height: 844 }, reducedMotion: 'reduce' });
+        await reduced.goto(base + '/science_lab.html');
+        assert(await reduced.locator('#stillMode').isChecked());
+        assert.equal(await reduced.locator('.molecule').first().evaluate(element => getComputedStyle(element).animationName), 'none');
+        await reduced.close();
+        await page.setViewportSize({ width: 1280, height: 900 });
+        await page.getByRole('button', { name: '단면', exact: true }).click();
+        assert(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth + 1));
+        await page.locator('.experiment').screenshot({ path: path.join(out, 'science-desktop-cutaway.png') });
+        console.log('PASS: prediction gate, heat calculation, play/pause/scrub/reset, condition comparison, four application questions, keyboard, reduced motion, hidden-page pause, zero live service requests, 390px and desktop fit.');
+        console.log(out);
+    } finally {
+        await browser?.close();
+        await new Promise(resolve => server.close(resolve));
+    }
+})().catch(error => { console.error(error); process.exitCode = 1; });

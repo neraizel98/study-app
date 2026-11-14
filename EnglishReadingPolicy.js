@@ -15,7 +15,7 @@
 
     function assessmentEvidence(reports, currentBand = 1, levelId = null) {
         const eligible = (reports || [])
-            .filter(report => report?.subject === 'english_reading' && (!levelId || (report.metadata?.levelId||'grade6')===levelId) && !report.metadata?.assessment && !report.metadata?.mockExam && report.status!=='draft' && report.metadata?.status!=='draft' && ((report.metadata?.isNovel === true && report.metadata?.readingAssessment === true && !report.metadata?.familiarAttempt)
+            .filter(report => report?.subject === 'english_reading' && (!levelId || (report.metadata?.levelId||'grade6')===levelId) && !report.metadata?.writingPack && !report.metadata?.assessment && !report.metadata?.mockExam && report.status!=='draft' && report.metadata?.status!=='draft' && ((report.metadata?.isNovel === true && report.metadata?.readingAssessment === true && !report.metadata?.familiarAttempt)
                     || (report.metadata?.practiceAssessment === true && Number(report.totalQuestions)>=5 && (report.metadata?.initialAttempts||[]).length>=Number(report.totalQuestions)))
                 && !report.metadata?.review && !report.metadata?.hintUsed
                 && (report.metadata?.band == null || Number(report.metadata.band) === clampBand(currentBand)))

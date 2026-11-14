@@ -4,7 +4,7 @@
  // mockExamResults beside the online rounds, with its questions but no answers or scores, so the
  // learner's next online round skips that number and every later build excludes its questions.
  const app=root.SmartStudy=root.SmartStudy||{},DAY=86400000,PRINT_KEY='SmartStudy_MockPaperPrint',HISTORY_DAYS=35;
- const areaNames={reading:'국어',english:'영어',math:'수학',hanja:'한자',korean_vocab:'국어 어휘',grammar:'영어 문법',english_reading:'영어 독해',math_formula:'수학 공식'};
+ const areaNames={science:'과학',reading:'국어',english:'영어',math:'수학',hanja:'한자',korean_vocab:'국어 어휘',grammar:'영어 문법',english_reading:'영어 독해',math_formula:'수학 공식'};
  const el=(tag,className,text)=>{const node=root.document.createElement(tag);if(className)node.className=className;if(text!=null)node.textContent=text;return node;};
  const clone=value=>JSON.parse(JSON.stringify(value));
  const limit=()=>app.MockExam?.maxAttempts||3,payloadOf=r=>r?.payload||r,isPaper=p=>p?.status==='paper'&&p.mode==='paper';
@@ -14,7 +14,7 @@
  function rounds(records,week){const rows=(records||[]).map(payloadOf).filter(p=>p?.scheduledWeekId===week);
   return Array.from({length:limit()},(_,i)=>{const n=i+1,own=rows.filter(p=>(Number(p.attemptNo)||1)===n),paper=own.find(isPaper)||null;return {attemptNo:n,state:own.some(p=>!isPaper(p))?(own.some(p=>!isPaper(p)&&p.mode!=='paper')?'online':'scored'):paper?'paper':'empty',paper};});}
  function nextRound(records,week){const used=(records||[]).map(payloadOf).filter(p=>p?.scheduledWeekId===week).map(p=>Number(p.attemptNo)||1);return used.length?Math.max(...used)+1:1;}
- function paperSet(p){return {schema:1,learnerId:p.userId,learnerName:p.paper?.learnerName||p.userId,weekKey:p.scheduledWeekId,weekLabel:p.paper?.weekLabel||weekLabel(p.scheduledWeekId),attemptNo:Number(p.attemptNo)||1,generatedAt:p.generatedAt,timeLimits:clone(p.paper?.timeLimits||{}),items:clone(p.questions||[])};}
+ function paperSet(p){return {schema:1,learnerId:p.userId,learnerName:p.paper?.learnerName||p.userId,weekKey:p.scheduledWeekId,weekLabel:p.paper?.weekLabel||weekLabel(p.scheduledWeekId),examVersion:p.examVersion||'legacy55-v1',attemptNo:Number(p.attemptNo)||1,generatedAt:p.generatedAt,timeLimits:clone(p.paper?.timeLimits||{}),items:clone(p.questions||[])};}
  // mock-print.html reads this key once; the durable copy stays in mockExamResults for reprints.
  function print(set){app.LocalRepository.rawSet(PRINT_KEY,JSON.stringify(set));return root.open?.('mock-print.html','_blank')||null;}
  const reprint=payload=>print(paperSet(payload));
@@ -28,9 +28,9 @@
   return Promise.all(rows.map(async row=>{const merged={...row,...await R.getReportDetail(user,row)};delete merged._body;return merged;}));
  }
  // Same per-area limits as the online exam: parent settings, else the exam defaults.
- async function timeLimits(user){
+ async function timeLimits(user,bank){
   let weekly=null;try{weekly=(await app.FirestoreRepository.getLearnerPlanSettings(user))?.weekly;}catch(_){/* The online exam also falls back to defaults. */}
-  const minutes=weekly?.mockSectionMinutes||{};return Object.fromEntries(app.MockExam.definitions.map(s=>{const n=Number(minutes[s.id]);return [s.id,Number.isInteger(n)&&n>=5&&n<=60?n:s.minutes];}));
+  const minutes=weekly?.mockSectionMinutes||{};return Object.fromEntries((app.MockExam.contract(bank)?.definitions||app.MockExam.definitions).map(s=>{const n=bank?.examVersion==='science75-v1'?s.minutes:Number(minutes[s.id]);return [s.id,Number.isInteger(n)&&n>=5&&n<=60?n:s.minutes];}));
  }
  async function generate(user,options={}){
   const now=Number(options.now)||Date.now(),week=app.MockExam.weekId(now),records=await app.MockPublication.list(user,{weeks:12}),attemptNo=nextRound(records,week);
@@ -44,10 +44,10 @@
   // Printing is allowed exactly when the online exam could start with this bank.
   if(!app.MockExam.validateBank(bank)||repeated)return {ok:false,attemptNo,bank,repeated};
   const last=records.map(payloadOf).filter(p=>p.scheduledWeekId===week).sort((a,b)=>(Number(b.attemptNo)||1)-(Number(a.attemptNo)||1))[0];
-  const payload={schemaVersion:1,assessmentId:`mock:${user}:${week}:attempt-${attemptNo}-paper-${root.crypto?.randomUUID?.()||now.toString(36)}`,userId:user,scheduledWeekId:week,scheduledDate:kstDate(now),
+  const payload={schemaVersion:1,examVersion:bank.examVersion,assessmentId:`mock:${user}:${week}:attempt-${attemptNo}-paper-${root.crypto?.randomUUID?.()||now.toString(36)}`,userId:user,scheduledWeekId:week,scheduledDate:kstDate(now),
    scopeCutoffAt:bank.scopeCutoffAt||now,kind:'mock',mode:'paper',status:'paper',attemptNo,parentAttemptId:last?.assessmentId||null,bankVersion:bank.version||'unknown',policyId:bank.policyId||null,repeatPolicy:bank.repeatPolicy||null,
-   quotas:Object.fromEntries(Object.keys(app.MockExam.areas).map(s=>[s,bank.items.filter(q=>q.subject===s).length])),newQuestionCount:bank.items.filter(q=>!q.repeated).length,reexposureCount:bank.items.filter(q=>q.repeated).length,
-   questions:clone(bank.items),sections:[],generatedAt:now,startedAt:now,resultVisibility:'withheld',paper:{learnerName:String(options.learnerName||user),weekLabel:weekLabel(week),timeLimits:await timeLimits(user)}};
+   quotas:Object.fromEntries([...Object.keys(app.MockExam.areas),...(bank.examVersion==='science75-v1'?['science']:[])].map(s=>[s,bank.items.filter(q=>q.subject===s).length])),newQuestionCount:bank.items.filter(q=>!q.repeated).length,reexposureCount:bank.items.filter(q=>q.repeated).length,
+   questions:clone(bank.items),sections:bank.examVersion==='science75-v1'?app.MockExam.contract(bank).definitions.map(s=>({...s,durationSeconds:s.minutes*60,state:'pending'})):[],generatedAt:now,startedAt:now,resultVisibility:'withheld',paper:{learnerName:String(options.learnerName||user),weekLabel:weekLabel(week),timeLimits:await timeLimits(user,bank)}};
   await app.MockPublication.savePaper(user,payload);
   return {ok:true,attemptNo,bank,payload,set:paperSet(payload)};
  }

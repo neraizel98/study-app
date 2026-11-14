@@ -10,6 +10,14 @@
         { id: 'math', name: '수학', subjects: ['math', 'math_formula'], minutes: 20 },
         { id: 'hanja', name: '한자', subjects: ['hanja'], minutes: 10 }
     ]);
+    const SCIENCE = {id:'science',name:'과학',subjects:['science'],minutes:25};
+    function contract(value){const version=value?.examVersion||'legacy55-v1';return version==='science75-v1'?{version,total:75,definitions:[...definitions,SCIENCE]}:version==='legacy55-v1'?{version,total:55,definitions}:null;}
+    function validSnapshot(d){
+        const c=contract(d);if(!c||!Array.isArray(d.questions)||d.questions.length!==c.total)return false;
+        if(c.total===55)return !d.sections?.length||d.sections.length===4&&d.sections.every((s,i)=>s.id===definitions[i].id);
+        if(!Array.isArray(d.sections)||d.sections.length!==5||!d.sections.every((s,i)=>s.id===c.definitions[i].id&&JSON.stringify(s.subjects)===JSON.stringify(c.definitions[i].subjects)&&s.durationSeconds===c.definitions[i].minutes*60))return false;
+        let offset=0;return c.definitions.every(section=>{const count=section.id==='science'?20:section.id==='hanja'?10:15,rows=d.questions.slice(offset,offset+count);offset+=count;return rows.length===count&&rows.every(q=>section.subjects.includes(q.subject));});
+    }
     const clone = value => JSON.parse(JSON.stringify(value));
     const repo = () => app.LocalRepository;
     const key = (user, week) => `SmartStudy_MockExam_${encodeURIComponent(user)}_${week}`;
@@ -55,14 +63,14 @@
     function restore(user, records) {
         assertUser(user);
         for(const row of records||[]){
-            const d=row.payload||row.snapshot;if(!d||row.learnerId&&row.learnerId!==user||d.userId!==user||d.kind!=='mock'||!/^\d{4}-\d{2}-\d{2}$/.test(d.scheduledWeekId)||!String(d.assessmentId).startsWith(`mock:${user}:${d.scheduledWeekId}:`)||!Array.isArray(d.questions)||d.questions.length!==55
+            const d=row.payload||row.snapshot;if(!d||row.learnerId&&row.learnerId!==user||d.userId!==user||d.kind!=='mock'||!/^\d{4}-\d{2}-\d{2}$/.test(d.scheduledWeekId)||!String(d.assessmentId).startsWith(`mock:${user}:${d.scheduledWeekId}:`)||!validSnapshot(d)
                 ||(isPaper(d)?d.mode!=='paper'||!(Number(d.attemptNo)>=1&&Number(d.attemptNo)<=MAX_ATTEMPTS)
-                    :d.status!=='submitted'||!d.submittedAt||!Array.isArray(d.sections)||d.sections.length!==4||!d.sections.every(s=>s.state==='ended'&&Array.isArray(s.initialAttempts))||d.sections.reduce((n,s)=>n+s.initialAttempts.length,0)!==55))continue;
+                    :d.status!=='submitted'||!d.submittedAt||!Array.isArray(d.sections)||d.sections.length!==contract(d).definitions.length||!d.sections.every(s=>s.state==='ended'&&Array.isArray(s.initialAttempts))||d.sections.reduce((n,s)=>n+s.initialAttempts.length,0)!==contract(d).total))continue;
             // Never replace this device's in-progress/submitted answers. The only replacement is the
             // parent's OMR-scored result over this device's copy of the same printed paper round.
             const existing=getById(user,d.assessmentId),scored=isPaperResult(d);
             if(existing&&!(scored&&isPaper(existing))){if(scored&&!isPaper(existing))savePaperReports(existing,row.published===true);continue;}
-            const restored=clone(d),n=Number(restored.attemptNo)||1;
+            const restored=hydrateSnapshot(d),n=Number(restored.attemptNo)||1;
             // A paper round never takes the week slot, which belongs to this device's online first exam.
             restored.storageSlot=existing?.storageSlot||(n===1&&d.mode!=='paper'?restored.scheduledWeekId:`${restored.scheduledWeekId}~${n}~${encodeURIComponent(restored.assessmentId)}`);
             restored.syncStatus='synced';restored.resultVisibility=row.published===true?'published':'withheld';write(restored);
@@ -87,8 +95,9 @@
         return clone(draft);
     }
     function validateBank(bank) {
-        const items = bank?.items || [], counts = Object.fromEntries(Object.keys(areas).map(subject => [subject, items.filter(q => q.subject === subject).length]));
-        return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === 55 && new Set(items.map(q => q.id)).size === 55
+        const c=contract(bank);if(!c)return false;
+        const items = bank?.items || [], science=items.filter(q=>q.subject==='science'), counts = Object.fromEntries(Object.keys(areas).map(subject => [subject, items.filter(q => q.subject === subject).length]));
+        return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === c.total && new Set(items.map(q => q.id)).size === c.total && science.length===(c.total===75?20:0) && (c.total!==75||bank.quotas?.science===20&&science.every(q=>q.kind==='choice'&&q.choices?.length===4&&q.levelId==='level1'&&q.unitId&&q.context?.levelId===q.levelId&&q.context?.unitId===q.unitId))
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
             && (bank.policyId==='weekly-transfer-20261024'
@@ -110,23 +119,23 @@
             const oldContent=new Set(previous.flatMap(d=>d.questions||[]).map(q=>app.MockExamBank.fingerprint?.(q)||[q.subject,q.question,q.answer].join('|')));
             if((bank.items||[]).some(q=>oldIds.has(q.id)||oldContent.has(app.MockExamBank.fingerprint?.(q)||[q.subject,q.question,q.answer].join('|'))))throw new Error('이전 회차와 겹치는 문제를 다시 구성해 주세요.');
         }
-        if (!validateBank(bank)) throw new Error('정규 55문항 시험 준비 중입니다. 부족한 학습 범위와 문항을 확인해 주세요.');
+        if (!validateBank(bank)) throw new Error(`정규 ${contract(bank)?.total||55}문항 시험 준비 중입니다. 부족한 학습 범위와 문항을 확인해 주세요.`);
         const sectionMinutes = options.sectionMinutes || app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};
-        const sections = definitions.map((section, index) => {
-            const proposed = Number(sectionMinutes[section.id]);
+        const sections = contract(bank).definitions.map((section, index) => {
+            const proposed = contract(bank).total===75?section.minutes:Number(sectionMinutes[section.id]);
             return { ...section, durationSeconds: Number.isFinite(proposed) && proposed >= 5 && proposed <= 60 ? proposed * 60 : section.minutes * 60,
                 state: index === 0 ? 'active' : 'pending', startedAt: index === 0 ? now : null, deadline: null, endedAt: null, timedOut: false,
                 activeSeconds: 0, elapsedSeconds: 0, initialAttempts: null };
         });
         sections[0].deadline = now + sections[0].durationSeconds * 1000;
         const assessmentId=attemptNo===1?`mock:${user}:${scheduledWeekId}:first`:`mock:${user}:${scheduledWeekId}:attempt-${attemptNo}-${root.crypto?.randomUUID?.()||now.toString(36)}`;
-        return write({ schemaVersion: 1, assessmentId, storageSlot:attemptNo===1?scheduledWeekId:`${scheduledWeekId}~${attemptNo}~${encodeURIComponent(assessmentId)}`, userId: user, scheduledWeekId,
+        return write({ schemaVersion: 1, examVersion:contract(bank).version, assessmentId, storageSlot:attemptNo===1?scheduledWeekId:`${scheduledWeekId}~${attemptNo}~${encodeURIComponent(assessmentId)}`, userId: user, scheduledWeekId,
             scheduledDate: options.scheduledDate || new Date(now + 9 * 3600000).toISOString().slice(0, 10), scopeCutoffAt: bank.scopeCutoffAt || now,
-            kind: 'mock', attemptNo, parentAttemptId: old?.assessmentId||options.parentAttemptId||null, bankVersion: bank.version || 'unknown', quotas: Object.fromEntries(Object.keys(areas).map(subject=>[subject,bank.items.filter(q=>q.subject===subject).length])),
+            kind: 'mock', attemptNo, parentAttemptId: old?.assessmentId||options.parentAttemptId||null, bankVersion: bank.version || 'unknown', quotas: Object.fromEntries([...Object.keys(areas),...(contract(bank).total===75?['science']:[])].map(subject=>[subject,bank.items.filter(q=>q.subject===subject).length])),
             evidenceWindowDays: bank.evidenceWindowDays || null, repeatAvoidanceDays: bank.repeatAvoidanceDays || null,
             repeatPolicy:bank.repeatPolicy||null,quality:bank.quality?clone(bank.quality):null,policyId:bank.policyId||null,weeklyCoverage:bank.weeklyCoverage?clone(bank.weeklyCoverage):null,
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
-            scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false,
+            scopeCompleteness: { required: contract(bank).total, actual: contract(bank).total, complete: true }, restricted: false,
             questions: clone(bank.items), sections, cursor: 0, responses: {}, startedAt: now, submittedAt: null,
             resultVisibility: 'withheld', status: 'in-progress', syncStatus: 'not-submitted', break: null,
             integrity: { ...blankIntegrity(), pledgedAt: options.pledged ? now : null } });
@@ -172,8 +181,10 @@
                 correct: typeof grade === 'boolean' ? grade : grade.correct === true, correctAnswer: q.answer ?? grade.answer,
                 unanswered: selectedAnswer === '', status: selectedAnswer === '' ? 'unanswered' : ((typeof grade === 'boolean' ? grade : grade.correct) ? 'correct' : 'wrong'),
                 context: clone(q.context || {}), choices: q.choices || [], explanation: q.explanation || '', answerKind: q.kind || 'choice',
+                ...(q.answerFormat ? { answerFormat: q.answerFormat, acceptedAnswers: clone(q.acceptedAnswers || []) } : {}),
                 passageId: q.passageId || null, passageTitle: q.passageTitle || '', passageText: q.passageLines || q.passageText || [],
                 sourceType: q.sourceType || '', sourceReportIds: q.sourceReportIds || q.evidenceReportIds || [],
+                givens:q.givens||'', dataTable:q.dataTable?clone(q.dataTable):null, familyId:q.familyId||null, sourceRefs:clone(q.sourceRefs||[]),
                 conceptId: q.conceptId || null, sourceQuestionId: q.sourceQuestionId || null,
                 repeated: !!q.repeated, assisted: false, generator: q.generator || null,
                 fingerprint:q.fingerprint||null,templateFamily:q.templateFamily||null,noveltyKind:q.noveltyKind||null,cognitiveDemand:q.cognitiveDemand||null,difficulty:q.difficulty||null };
@@ -261,7 +272,7 @@
                 isCompleted: score === attempts.length, metadata: { ...context, assessment: true, examTraining: true, mockExam: true, kind: 'mock', assessmentId: draft.assessmentId,
                     assessmentSubject: subject, ...(formula ? { source: 'math-formula' } : {}), ...(draft.mode === 'paper' ? { mode: 'paper' } : {}), resultVisibility: 'withheld',
                     scheduledWeekId: draft.scheduledWeekId, scheduledDate: draft.scheduledDate, scopeCutoffAt: draft.scopeCutoffAt,
-                    bankVersion: draft.bankVersion, examVersion: draft.bankVersion, attemptNo: draft.attemptNo||1, parentAttemptId: draft.parentAttemptId||null, submittedAt: section.endedAt,
+                    bankVersion: draft.bankVersion, examVersion: draft.examVersion||'legacy55-v1', attemptNo: draft.attemptNo||1, parentAttemptId: draft.parentAttemptId||null, submittedAt: section.endedAt,
                     examComplete: !!draft.submittedAt, status: 'submitted', sectionId: section.id, sectionDeadline: section.deadline,
                     timedOut: section.timedOut, activeSeconds: Math.max(0, Number(section.activeSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
                     elapsedSeconds: Math.max(0, Number(section.elapsedSeconds) || 0) * attempts.length / questionsFor(draft, section).length,
@@ -288,22 +299,39 @@
         if (!generated.every(r => saved.has(r.sessionId))) throw new Error('일부 과목 기록 저장을 확인하지 못했습니다.');
         return generated;
     }
+    function hydrateSnapshot(value) {
+        const draft=clone(value);if(draft?.examVersion!=='science75-v1')return draft;
+        const hydrate=a=>{const q=draft.questions?.find(q=>q.id===a.questionId);if(!q)return a;return {...a,passageText:a.passageText||clone(q.passageLines||q.passageText||[]),givens:a.givens||q.givens||'',dataTable:a.dataTable||q.dataTable||null,sourceRefs:a.sourceRefs||q.sourceRefs||[],fingerprint:a.fingerprint||q.fingerprint||null};};
+        if(Array.isArray(draft.initialAttempts))draft.initialAttempts=draft.initialAttempts.map(hydrate);
+        for(const s of draft.sections||[])if(Array.isArray(s.initialAttempts))s.initialAttempts=s.initialAttempts.map(hydrate);
+        return draft;
+    }
     function submissionSnapshot(draft) {
-        if (!draft?.submittedAt || draft.sections.some(s => s.state !== 'ended')) throw new Error('네 과목 제출을 먼저 완료해 주세요.');
-        return { ...clone(draft), initialAttempts: draft.sections.flatMap(s => clone(s.initialAttempts)), reports: reportsFor(draft) };
+        if (!draft?.submittedAt || draft.sections.some(s => s.state !== 'ended')) throw new Error('모든 과목 제출을 먼저 완료해 주세요.');
+        const result={ ...clone(draft), initialAttempts: draft.sections.flatMap(s => clone(s.initialAttempts)), reports: reportsFor(draft) };
+        if(result.examVersion==='science75-v1'){
+            // Source documents live immutably in questions. Keep every first answer/choice/score,
+            // but do not copy the same passage into sections, top-level answers and both report arrays.
+            const compact=a=>{const out={...a};for(const key of ['passageText','givens','dataTable','sourceRefs','fingerprint'])delete out[key];return out;};
+            result.initialAttempts=result.initialAttempts.map(compact);
+            result.sections=result.sections.map(s=>({...s,initialAttempts:s.initialAttempts.map(compact)}));
+            result.reports=result.reports.map(r=>{const m={...r.metadata};delete m.attempts;m.initialAttempts=m.initialAttempts.map(a=>{const out={...a};delete out.fingerprint;if(Array.isArray(out.passageText)&&out.givens===out.passageText.join('\n'))delete out.givens;return out;});return {...r,metadata:m};});
+            result.sourceSnapshotVersion='questions-v1';
+        }
+        return result;
     }
     // Minutes per section of a printed round (the limits printed on its pages; the defaults otherwise).
-    const PAPER_ORDER = Object.freeze(['reading', 'math', 'english', 'hanja']), PAPER_EXTRA_MINUTES = 30;
+    const PAPER_ORDER = Object.freeze(['reading', 'math', 'english', 'hanja', 'science']), PAPER_EXTRA_MINUTES = 30;
     function paperTimeLimits(paper) {
         const minutes = paper?.paper?.timeLimits || {};
-        return Object.fromEntries(definitions.map(section => { const proposed = Number(minutes[section.id]);
+        return Object.fromEntries((contract(paper)?.definitions||definitions).map(section => { const proposed = paper?.examVersion==='science75-v1'?section.minutes:Number(minutes[section.id]);
             return [section.id, Number.isInteger(proposed) && proposed >= 5 && proposed <= 60 ? proposed : section.minutes]; }));
     }
     // The parent's optional per-교시 times. Empty means "not recorded" (null); otherwise a whole
     // number of minutes from 0 to the section's limit + 30.
     function paperMinutes(paper, entered) {
         const limits = paperTimeLimits(paper), result = {};
-        for (const section of definitions) {
+        for (const section of contract(paper)?.definitions||definitions) {
             const raw = entered?.[section.id], text = raw == null ? '' : String(raw).trim();
             if (text === '') { result[section.id] = null; continue; }
             const value = Number(text), max = limits[section.id] + PAPER_EXTRA_MINUTES;
@@ -327,7 +355,7 @@
     // options.minutes ({reading, english, math, hanja}) are the optional per-교시 times; an entered
     // time is stored like an online one (elapsedSeconds), and timeEntered tells the two cases apart.
     function paperResult(paper, responses, now = Date.now(), options = {}) {
-        if (!isPaper(paper) || paper.mode !== 'paper' || paper.kind !== 'mock' || !Array.isArray(paper.questions) || paper.questions.length !== 55) throw new Error('채점할 종이 시험지가 아닙니다.');
+        if (!isPaper(paper) || paper.mode !== 'paper' || paper.kind !== 'mock' || !validSnapshot(paper)) throw new Error('채점할 종이 시험지가 아닙니다.');
         const entered = paperMinutes(paper, options?.minutes);
         const answers = {};
         for (const q of paper.questions) {
@@ -337,8 +365,8 @@
         }
         const minutes = paperTimeLimits(paper), startedAt = Number(paper.startedAt || paper.generatedAt) || now;
         const draft = { ...clone(paper), status: 'submitted', mode: 'paper', responses: answers, cursor: 0, break: null, startedAt, submittedAt: now, resultVisibility: 'withheld', syncStatus: 'synced',
-            scopeCompleteness: { required: 55, actual: 55, complete: true }, restricted: false, integrity: { source: 'paper-omr' } };
-        draft.sections = definitions.map(section => {
+            scopeCompleteness: { required: contract(paper).total, actual: contract(paper).total, complete: true }, restricted: false, integrity: { source: 'paper-omr' } };
+        draft.sections = contract(paper).definitions.map(section => {
             const time = entered[section.id], ended = { ...section, durationSeconds: minutes[section.id] * 60,
                 state: 'ended', startedAt, deadline: null, endedAt: now, timedOut: false, activeSeconds: 0, elapsedSeconds: time == null ? 0 : time * 60, timeEntered: time != null };
             ended.initialAttempts = questionsFor(draft, ended).map(q => attemptFor(q, answers[q.id]));
@@ -362,7 +390,7 @@
             return { synced: false, reason: String(error.message || error) };
         }
     }
-    app.MockExam = { areas, definitions, maxAttempts: MAX_ATTEMPTS, isPaper, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
-        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, paperResult, paperTimeLimits, paperMinutes, sectionTime, paperExtraMinutes: PAPER_EXTRA_MINUTES, isPaperResult, sync };
+    app.MockExam = { areas, definitions, contract, validSnapshot, maxAttempts: MAX_ATTEMPTS, isPaper, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
+        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, hydrateSnapshot, paperResult, paperTimeLimits, paperMinutes, sectionTime, paperExtraMinutes: PAPER_EXTRA_MINUTES, isPaperResult, sync };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExam;
 })(typeof window !== 'undefined' ? window : globalThis);

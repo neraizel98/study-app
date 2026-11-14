@@ -23,7 +23,7 @@ assert.match(reading, /function diagnosticSkillFocus\(\)/);
 assert.match(reading, /function selectDiagnosticPassage\(\)/);
 assert.match(reading, /const focused = remaining\.filter\(question => focusSkill && \(question\.skill \|\| question\.type\) === focusSkill\)[\s\S]*?diagnosticFocus: true/, 'mapped skill questions are identified and marked from the selected passage');
 assert.match(reading, /\.\.\.shuffle\(focused\), \.\.\.shuffle\(others\)/, 'mapped skill questions enter the exposure selector before general questions');
-assert.match(reading, /QuizExposure\.select\(userId\(\), SUBJECT, orderedCandidates, 10/, 'the final reading set uses the shared fresh-question exposure policy');
+assert.match(reading, /QuizExposure\.select\(userId\(\), SUBJECT, orderedCandidates, questionLimit/, 'the final reading set uses the shared fresh-question exposure policy');
 assert.match(reading, /passageText: \[\.\.\.item\.sentences\]/, 'reading exposure fingerprints include the actual passage text');
 assert.match(reading, /if \(question\.exposure\) detail\.exposure = \{ \.\.\.question\.exposure \}/, 'the selected exposure classification is retained in the answer record');
 assert.match(reading, /diagnosticSkill: focusSkill/);

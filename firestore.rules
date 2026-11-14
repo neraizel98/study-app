@@ -68,12 +68,61 @@ service cloud.firestore {
               || (subject == 'english_reading' && scope.keys().hasAll(['mode', 'levelId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'unitId']) && validEnglishReadingScope(scope))
               || (subject == 'math' && scope.keys().hasAll(['mode', 'levelId', 'semesterId', 'unitId']) && scope.keys().hasOnly(['mode', 'levelId', 'semesterId', 'unitId']) && validId(scope.levelId) && scope.semesterId in ['1', '2']))));
     }
+    function scienceMock(p) { return p.keys().hasAny(['examVersion']) && p.examVersion == 'science75-v1'; }
+    function legacyMock(p) { return !p.keys().hasAny(['examVersion']) || p.examVersion == 'legacy55-v1'; }
+    function validScienceQuotas(p) {
+      let q = p.quotas;
+      return q is map
+        && q.reading is int && q.reading >= 0
+        && q.korean_vocab is int && q.korean_vocab >= 0
+        && q.english is int && q.english >= 0
+        && q.grammar is int && q.grammar >= 0
+        && q.english_reading is int && q.english_reading >= 0
+        && q.math is int && q.math >= 0
+        && q.math_formula is int && q.math_formula >= 0
+        && q.hanja is int && q.hanja >= 0
+        && q.science is int && q.science >= 0
+        && q.reading + q.korean_vocab == 15
+        && q.english + q.grammar + q.english_reading == 15
+        && q.math + q.math_formula == 15 && q.hanja == 10 && q.science == 20;
+    }
+    // Per-question authored content is checked by the client integrity suite, as in legacy55.
+    // Rules enforce the versioned envelope; enumerating75 maps exceeds the evaluator budget.
+    function validMockQuestions(p) {
+      return p.questions is list && (legacyMock(p) ? p.questions.size() == 55
+        : scienceMock(p) && p.questions.size() == 75 && validScienceQuotas(p));
+    }
+    function validScienceSectionSnapshot(p) {
+      let sections = p.sections;
+      return sections is list && sections.size() == 5
+        && sections[0].id == 'reading' && sections[0].subjects == ['reading', 'korean_vocab'] && sections[0].durationSeconds == 1200
+        && sections[1].id == 'english' && sections[1].subjects == ['english', 'grammar', 'english_reading'] && sections[1].durationSeconds == 1200
+        && sections[2].id == 'math' && sections[2].subjects == ['math', 'math_formula'] && sections[2].durationSeconds == 1200
+        && sections[3].id == 'hanja' && sections[3].subjects == ['hanja'] && sections[3].durationSeconds == 600
+        && sections[4].id == 'science' && sections[4].subjects == ['science'] && sections[4].durationSeconds == 1500;
+    }
+    function validMockSections(p) {
+      let sections = p.sections;
+      return sections is list && p.initialAttempts is list && validMockQuestions(p)
+        && sections[0].id == 'reading' && sections[0].state == 'ended'
+        && sections[1].id == 'english' && sections[1].state == 'ended'
+        && sections[2].id == 'math' && sections[2].state == 'ended'
+        && sections[3].id == 'hanja' && sections[3].state == 'ended'
+        && (legacyMock(p) ? sections.size() == 4 && p.initialAttempts.size() == 55
+          : scienceMock(p) && validScienceSectionSnapshot(p) && p.initialAttempts.size() == 75
+            && sections[0].initialAttempts is list && sections[0].initialAttempts.size() == 15 && sections[1].initialAttempts is list && sections[1].initialAttempts.size() == 15
+            && sections[2].initialAttempts is list && sections[2].initialAttempts.size() == 15 && sections[3].initialAttempts is list && sections[3].initialAttempts.size() == 10
+            && sections[4].state == 'ended'
+            && sections[4].initialAttempts is list && sections[4].initialAttempts.size() == 20
+            );
+    }
     // A parent-printed exam occupies one weekly round (1-3) with its 55 questions; it has no answers or scores.
     function validPaperMock(p) {
       return p.status == 'paper' && p.mode == 'paper'
         && p.attemptNo is int && p.attemptNo >= 1 && p.attemptNo <= 3
         && p.assessmentId.matches('^mock:.+:[0-9]{4}-[0-9]{2}-[0-9]{2}:attempt-[1-3]-paper-[A-Za-z0-9-]+$')
-        && p.questions is list && p.questions.size() == 55
+        && validMockQuestions(p)
+        && (legacyMock(p) || validScienceSectionSnapshot(p))
         && !p.keys().hasAny(['submittedAt', 'initialAttempts', 'reports', 'responses']);
     }
     // The parent's OMR scoring of that printed round: a submitted result checked like an online
@@ -85,13 +134,9 @@ service cloud.firestore {
         && p.questions == old.questions
         && p.integrity is map && p.integrity.source == 'paper-omr'
         && p.submittedAt is int
-        && p.sections is list && p.sections.size() == 4
-        && p.sections[0].id == 'reading' && p.sections[0].state == 'ended'
-        && p.sections[1].id == 'english' && p.sections[1].state == 'ended'
-        && p.sections[2].id == 'math' && p.sections[2].state == 'ended'
-        && p.sections[3].id == 'hanja' && p.sections[3].state == 'ended'
-        && p.initialAttempts is list && p.initialAttempts.size() == 55
-        && p.reports is list && p.reports.size() >= 4 && p.reports.size() <= 8;
+        && validMockSections(p)
+        && (legacyMock(p) && legacyMock(old) || scienceMock(p) && scienceMock(old))
+        && p.reports is list && p.reports.size() >= (scienceMock(p) ? 5 : 4) && p.reports.size() <= (scienceMock(p) ? 9 : 8);
     }
     function validStudyRequest(userId) {
       return request.resource.data.keys().hasAll(['learnerId', 'requestId', 'requestedAt', 'requestedBy', 'status'])
@@ -184,30 +229,25 @@ service cloud.firestore {
         && request.resource.data.payload.scheduledWeekId is string
         && request.resource.data.payload.scheduledWeekId.matches('^[0-9]{4}-[0-9]{2}-[0-9]{2}$')
         // A parent-printed paper round (admin only) instead of a submitted online exam.
-        && ((isAdmin() && validPaperMock(request.resource.data.payload))
-        || (request.resource.data.payload.status == 'submitted'
-        && request.resource.data.payload.sections is list && request.resource.data.payload.sections.size() == 4
-        && request.resource.data.payload.sections[0].id == 'reading' && request.resource.data.payload.sections[0].state == 'ended'
-        && request.resource.data.payload.sections[1].id == 'english' && request.resource.data.payload.sections[1].state == 'ended'
-        && request.resource.data.payload.sections[2].id == 'math' && request.resource.data.payload.sections[2].state == 'ended'
-        && request.resource.data.payload.sections[3].id == 'hanja' && request.resource.data.payload.sections[3].state == 'ended'
-        && request.resource.data.payload.questions is list && request.resource.data.payload.initialAttempts is list && request.resource.data.payload.reports is list
-        && request.resource.data.payload.questions.size() == 55
-        && request.resource.data.payload.initialAttempts.size() == 55
+        && (request.resource.data.payload.status == 'paper' ? isAdmin() && validPaperMock(request.resource.data.payload)
+        : request.resource.data.payload.status == 'submitted'
+        && validMockSections(request.resource.data.payload)
         // Four areas, with only the studied component subjects represented (up to eight).
-        && request.resource.data.payload.reports.size() >= 4
-        && request.resource.data.payload.reports.size() <= 8));
+        && request.resource.data.payload.reports is list
+        && request.resource.data.payload.reports.size() >= (scienceMock(request.resource.data.payload) ? 5 : 4)
+        && request.resource.data.payload.reports.size() <= (scienceMock(request.resource.data.payload) ? 9 : 8));
       // Paper rounds have no score to publish.
-      allow update: if isAdmin() && canUse(resource.data.learnerId)
-        && resource.data.payload.status == 'submitted'
+      allow update: if resource != null && resource.data.payload.status == 'submitted'
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['published','publishedAt','publishedBy'])
+        && isAdmin() && canUse(resource.data.learnerId)
         && resource.data.published == false && request.resource.data.published == true
         && request.resource.data.publishedBy == request.auth.uid && request.resource.data.publishedAt == request.time;
       // OMR scoring (admin only): one transition from a printed round to its submitted result.
       // Only the payload changes, publication stays false, and a scored round is not paper any more.
-      allow update: if isAdmin() && canUse(resource.data.learnerId)
-        && validPaperMock(resource.data.payload) && resource.data.published == false
+      allow update: if resource != null && resource.data.payload.status == 'paper' && resource.data.payload.mode == 'paper'
+        && resource.data.payload.kind == 'mock' && resource.data.published == false
         && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['payload'])
+        && isAdmin() && canUse(resource.data.learnerId)
         && validPaperResult(request.resource.data.payload, resource.data.payload);
       allow delete: if false;
     }
@@ -217,13 +257,7 @@ service cloud.firestore {
         && exam.payload.userId == userId && exam.payload.assessmentId == assessmentId
         && exam.payload.kind == 'mock' && exam.payload.status == 'submitted'
         && exam.payload.submittedAt is int && exam.payload.submittedAt > 0
-        && exam.payload.sections is list && exam.payload.sections.size() == 4
-        && exam.payload.sections[0].id == 'reading' && exam.payload.sections[0].state == 'ended'
-        && exam.payload.sections[1].id == 'english' && exam.payload.sections[1].state == 'ended'
-        && exam.payload.sections[2].id == 'math' && exam.payload.sections[2].state == 'ended'
-        && exam.payload.sections[3].id == 'hanja' && exam.payload.sections[3].state == 'ended'
-        && exam.payload.questions is list && exam.payload.questions.size() == 55
-        && exam.payload.initialAttempts is list && exam.payload.initialAttempts.size() == 55
+        && validMockSections(exam.payload)
         && (!exam.payload.keys().hasAny(['integrity']) || !exam.payload.integrity.keys().hasAny(['translationDetected']) || exam.payload.integrity.translationDetected != true);
     }
     function validDiagnosticSettings(userId) {

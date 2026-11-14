@@ -110,3 +110,28 @@ console.log('Promotion: aced levels step up (3×90%+ or 8×80%+, recent and stea
  reports.push({userId:partial,subject:'english_reading',sessionId:'one',date:Date.now(),totalQuestions:1,metadata:{...reading.context,initialAttempts:[{correct:true}]}});
  assert.equal(p.refreshEvidence(partial).tasks.find(t=>t.subject==='english_reading').status,'ready','single review answer cannot complete a full daily reading activity');
 }
+
+{
+ const user='writing-today', submittedAt=Date.now();
+ p.applyParentSettings(user,{budgetMinutes:45,grade:6,semester:2});
+ const plan=p.createPlan(user), task=plan.tasks.find(t=>t.subject==='english_reading');
+ p.startTask(user,task.id);
+ const writing={userId:user,subject:'english_reading',sessionId:'writing-today',date:submittedAt,totalQuestions:9,
+  metadata:{...task.context,writingPack:true,pendingWritingCount:1,submittedAt}};
+ const taskState=()=>p.refreshEvidence(user).tasks.find(t=>t.id===task.id).status;
+ const scored=Array.from({length:9},(_,i)=>({correct:i>0,round:1}));
+ const pending={correct:null,gradingStatus:'review_pending',round:1};
+ const first=[...scored.slice(0,2),pending,...scored.slice(2)];
+ reports.push(writing);
+ writing.metadata.initialAttempts=first.slice(0,-1);
+ assert.equal(taskState(),'in_progress','partial writing session cannot complete the activity');
+ writing.metadata.initialAttempts=[...scored,{correct:false,gradingStatus:'review_pending'}];
+ assert.equal(taskState(),'in_progress','an incorrect attempt cannot stand in for a pending answer');
+ writing.metadata.initialAttempts=first;
+ writing.metadata.attempts=[...first,{correct:true,round:2}];
+ assert.equal(taskState(),'completed');
+ const evidence=progress.evidence(user).find(e=>e.report.sessionId===writing.sessionId);
+ assert.equal(evidence.attempts.length,9);
+ assert.equal(evidence.attempts.filter(a=>a.correct).length,8,'later attempts do not replace first answers');
+ assert.equal(progress.performance('english_reading',task.context,[evidence]).sessions,0,'writing completion is excluded from unit promotion');
+}

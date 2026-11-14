@@ -330,8 +330,8 @@
     </div><!-- .stats-wrap -->
 
     <script src="storage-keys.js"></script><script src="storage-events.js"></script><script src="schema-migrations.js"></script><script src="durable-store.js?v=20261021-stabilization"></script><script src="local-repository.js?v=20261021-stabilization"></script><script src="app-bootstrap.js"></script>
-    <script src="concept-mastery.js?v=20261023-korean-reading"></script><script src="icons.js?v=20261014-scratchpad"></script><script src="achievements.js?v=20261014-redesign"></script>
-    <script src="report.js?v=20261020-korean-vocab"></script><script src="missions.js?v=20261020-korean-vocab"></script>
+    <script src="concept-mastery.js?v=20261110-reading-writing"></script><script src="icons.js?v=20261014-scratchpad"></script><script src="achievements.js?v=20261014-redesign"></script>
+    <script src="report.js?v=20261110-reading-writing"></script><script src="missions.js?v=20261020-korean-vocab"></script>
     <script src="firebase-config.js"></script><script src="firebase-client.js"></script><script src="firestore-repository.js?v=20261104-mock-learning"></script><script src="partition-repository.js?v=20261014-sync-reads"></script><script src="firebase-sync.js?v=20261106-free-chain"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
     <script>
@@ -347,6 +347,7 @@
         english_reading: { bg: 'rgba(24,162,134,0.18)', bd: '#13836d' },
         korean_vocab: { bg: 'rgba(194,103,47,0.18)', bd: '#c2672f' },
         grammar: { bg: 'rgba(112,65,251,0.18)', bd: '#7041fb' },
+        science: { bg:'rgba(14,116,144,0.18)', bd:'#0e7490' },
         hanja:   { bg: 'rgba(252,85,54,0.18)', bd: '#e22604' },
         math:    { bg: 'rgba(38,162,52,0.18)',  bd: '#20852b' },
         reading: { bg: 'rgba(254,62,90,0.18)', bd: '#ea0123' }
@@ -439,15 +440,14 @@
         const user   = UserSession.getUserData();
         const sec    = weekReports.reduce((a, r) => a + (r.timeSpentSeconds || 0), 0);
         const count  = weekReports.length;
-        const avgPct = count > 0
-            ? Math.round(weekReports.reduce((a, r) => a + pct(r), 0) / count)
-            : 0;
+        const scored = weekReports.filter(r => !r.metadata?.pendingWritingCount);
+        const avgPct = scored.length ? Math.round(scored.reduce((a, r) => a + pct(r), 0) / scored.length) : null;
         const streak = window.Achievements ? Achievements.summary(user).current : (user?.attendance?.currentStreak || 0);
 
         const items = [
             { icon:'clock', val: Math.round(sec / 60) + '분',  lbl:'이번 주 학습 시간' },
             { icon:'file-pencil', val: count + '회',         lbl:'이번 주 퀴즈 횟수' },
-            { icon:'target-arrow', val: avgPct + '%',        lbl:'이번 주 평균 정답률' },
+            { icon:'target-arrow', val: avgPct == null ? '-' : avgPct + '%',        lbl:'이번 주 평균 정답률' },
             { icon:'flame', val: streak + '일',              lbl:'연속 학습' }
         ];
         document.getElementById('summaryGrid').innerHTML = items.map(i => `
@@ -512,7 +512,7 @@
             labels.push(`${mn}/${dn}`);
             const wr = filterWeek(allReports, ws);
             SUBJECT_IDS.forEach(s => {
-                const sub = wr.filter(r => r.subject === s);
+                const sub = wr.filter(r => r.subject === s && !r.metadata?.pendingWritingCount);
                 if (sub.length > 0) {
                     series[s].push(Math.round(sub.reduce((a, r) => a + pct(r), 0) / sub.length));
                     anyData = true;
@@ -559,7 +559,7 @@
     //  Chart 3 — level / unit performance (bar)
     // ─────────────────────────────────────────────
     function buildLevelChart(allReports, subject) {
-        const sub = allReports.filter(r => r.subject === subject && r.totalQuestions > 0);
+        const sub = allReports.filter(r => r.subject === subject && r.totalQuestions > 0 && !r.metadata?.pendingWritingCount);
 
         // group by level key
         const map = {};
@@ -654,7 +654,8 @@
             const levelShort = r.level ? (r.level.length > 18 ? r.level.slice(0,18) + '…' : r.level) : '-';
             const sec = Number.isFinite(Number(r.timeSpentSeconds)) ? Math.max(0, Math.round(Number(r.timeSpentSeconds))) : 0;
             const timeStr = sec > 0 ? `${Math.floor(sec / 60)}분 ${sec % 60 ? `${sec % 60}초` : ''}`.trim() : '시간 기록 없음';
-            const quizStatus = r.isCompleted ? '완료' : '진행 중';
+            const pending = Number(r.metadata?.pendingWritingCount) || 0;
+            const quizStatus = pending ? '제출' : r.isCompleted ? '완료' : '진행 중';
             return `
                 <div class="session-row">
                     <div class="session-badge" style="background:${c.bd}22; color:${c.bd}">${SUBJ_ICONS[r.subject] || '📚'}</div>
@@ -663,7 +664,7 @@
                         <div class="session-level">학습 내용 · ${levelShort}</div>
                         <div class="session-meta">⏱ ${timeStr} · 📝 퀴즈 ${quizStatus}</div>
                     </div>
-                    <div class="session-score" style="color:${scoreColor}" title="퀴즈 점수">${p}%</div>
+                    <div class="session-score" style="color:${scoreColor}" title="퀴즈 점수">${pending ? `확인 필요 ${pending}개` : `${p}%`}</div>
                     <div class="session-date">${ds}</div>
                 </div>`;
         }).join('');
@@ -773,14 +774,15 @@
                 : '';
             const level = unitName(r);
             const attempts = sessionAttempts(r);
+            const pendingCount = Number(r.metadata?.pendingWritingCount) || 0;
             const correctCount = attempts.filter(attempt => attempt.correct).length;
-            const wrongCount = attempts.filter(attempt => !attempt.correct).length;
+            const wrongCount = attempts.filter(attempt => attempt.gradingStatus !== 'review_pending' && !attempt.correct).length;
             const attemptHTML = attempts.length ? attempts.map((attempt, index) => `
-                <div class="answer-row ${attempt.correct ? '' : 'wrong'}">
-                    <div class="answer-question">${attempt.correct ? '✅' : '❌'} Q${index + 1}. ${escapeHTML(attempt.question || '문제')}</div>
+                <div class="answer-row ${attempt.correct || attempt.gradingStatus === 'review_pending' ? '' : 'wrong'}">
+                    <div class="answer-question">${attempt.gradingStatus === 'review_pending' ? '확인 필요' : attempt.correct ? '✅' : '❌'} Q${index + 1}. ${escapeHTML(attempt.answerLabel ? attempt.answerLabel + ' · ' : '')}${escapeHTML(attempt.question || '문제')}</div>
                     <div class="answer-values">
                         선택한 답: <strong>${escapeHTML(attempt.selectedAnswer ?? '-')}</strong><br>
-                        정답: <strong>${escapeHTML(attempt.correctAnswer ?? '-')}</strong>
+                        ${attempt.answerLabel ? '예시 답' : '정답'}: <strong>${escapeHTML(attempt.correctAnswer ?? '-')}</strong>
                     </div>
                     ${attempt.explanation ? `<div class="answer-explanation">💡 ${escapeHTML(attempt.explanation)}</div>` : ''}
                 </div>`).join('') : `
@@ -797,15 +799,15 @@
                             <span class="session-level">${escapeHTML(level)}</span>
                         </span>
                         <span class="session-result" style="text-align:right;flex-shrink:0;">
-                            <span class="session-score" style="color:${scoreColor}">${r.finalScore}/${r.totalQuestions} <small>${p}%</small></span>
+                            <span class="session-score" style="color:${scoreColor}">${pendingCount ? `정답 ${r.finalScore} · 확인 필요 ${pendingCount} / 전체 ${r.totalQuestions + pendingCount}` : `${r.finalScore}/${r.totalQuestions} <small>${p}%</small>`}</span>
                             ${timeStr ? `<span class="session-date" style="display:block">${timeStr}</span>` : ''}
                         </span>
                         <span class="session-date">${ds}</span>
                     </button>
                     <div class="quiz-session-detail">
                         <div class="quiz-score-summary">
-                            <span class="quiz-summary-chip">첫 점수 ${r.initialScore}/${r.totalQuestions}</span>
-                            <span class="quiz-summary-chip">최종 ${r.finalScore}/${r.totalQuestions}</span>
+                            <span class="quiz-summary-chip">${pendingCount ? '최초 채점 문항' : '첫 점수'} ${r.initialScore}/${r.totalQuestions}</span>
+                            <span class="quiz-summary-chip">${pendingCount ? '최종 채점 문항' : '최종'} ${r.finalScore}/${r.totalQuestions}</span>
                             ${attempts.length ? `<span class="quiz-summary-chip">✅ ${correctCount} · ❌ ${wrongCount}</span>` : ''}
                         </div>
                         ${attemptHTML}

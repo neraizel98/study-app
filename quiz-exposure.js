@@ -22,7 +22,7 @@
    if(sessions.has(session))continue;sessions.add(session);
    const first=Array.isArray(m.initialAttempts)?m.initialAttempts:(Array.isArray(m.attempts)?m.attempts:[]),seen=new Set();
    for(const a of first){
-    if(!a||typeof a.correct!=='boolean'||(a.round!=null&&Number(a.round)!==1))continue;
+    if(!a||(typeof a.correct!=='boolean'&&a.gradingStatus!=='review_pending')||(a.round!=null&&Number(a.round)!==1))continue;
     const q={...a,passageText:a.passageText||a.passageLines||m.passageText||m.passageLines||[],passageId:a.passageId||m.passageId};
     const fp=a.exposure?.fingerprint||fingerprint(q);if(!fp||seen.has(fp))continue;seen.add(fp);
     const entry=result.get(fp)||{count:0,lastAt:0,sessions:new Set()};entry.sessions.add(session);entry.count=entry.sessions.size;entry.lastAt=Math.max(entry.lastAt,at);result.set(fp,entry);

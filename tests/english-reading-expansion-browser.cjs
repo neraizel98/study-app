@@ -18,8 +18,16 @@ for(const stage of ['middle','high'])for(const grade of [1,2,3]){
  }
 }
 await page.goto(`${base}/english_reading.html?level=middle1&unit=mr1-unit1&passage=mr1-unit1-p4&mode=study`);await page.waitForSelector('.sentence-guide-item',{state:'attached'});await page.evaluate(()=>{StudyTimer.isUnlocked=()=>true;EnglishReadingApp.startQuiz('practice');});await page.waitForSelector('#quizPanel:visible');assert.equal(await page.locator('#sentenceGuide:visible').count(),0);const total=await page.evaluate(()=>EnglishReadingApp.getSession().questions.length);assert(total>=6&&total<=10,'authored questions plus existing context variants');
-const chooseCorrect=async()=>{const index=await page.evaluate(()=>{const s=EnglishReadingApp.getSession();return s.questions.find(q=>q.id===s.roundQuestionIds[s.questionIndex]).answerIndex;});await page.locator(`#quizChoices [data-choice="${index}"]`).click();};
-await chooseCorrect();await page.reload();await page.waitForSelector('#quizPanel:visible');assert.equal(await page.evaluate(()=>EnglishReadingApp.getSession().initialAttempts.length),1,'new reading answer restored');await page.locator('#nextQuestion').click();
+const chooseCorrect=async()=>{
+ const q=await page.evaluate(()=>{const s=EnglishReadingApp.getSession();return s.questions.find(q=>q.id===s.roundQuestionIds[s.questionIndex]);});
+ if(q.type==='arrange'){
+  await page.locator('#arrangeInput').fill(q.answer);
+  await page.locator('#arrangeSubmit').click();
+ }else await page.locator(`#quizChoices [data-choice="${q.answerIndex}"]`).click();
+};
+await chooseCorrect();await page.reload();await page.waitForSelector('#quizPanel:visible');assert.equal(await page.evaluate(()=>EnglishReadingApp.getSession().initialAttempts.length),1,'new reading answer restored');
+const integrityContinue=page.locator('.quiz-integrity-notice button');if(await integrityContinue.isVisible())await integrityContinue.click();
+await page.locator('#nextQuestion').click();
 for(let i=1;i<total;i++){await chooseCorrect();await page.locator('#nextQuestion').click();}await page.waitForSelector('#resultModal:visible');
 await page.waitForFunction(()=>SmartStudy.LocalRepository.listReports(SmartStudy.LocalRepository.getActiveUser()).some(r=>r.metadata?.passageId==='mr1-unit1-p4'&&r.totalQuestions>=6));
 let saved=await page.evaluate(()=>SmartStudy.LocalRepository.listReports(SmartStudy.LocalRepository.getActiveUser()).filter(r=>r.metadata?.passageId==='mr1-unit1-p4'));assert.equal(saved.length,1);assert.equal(saved[0].initialScore,total);assert.equal(saved[0].metadata.initialAttempts.length,total);

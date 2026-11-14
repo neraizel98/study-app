@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#f6f2e8">
+<title>열과 온도 실험실 · Smart Study</title>
+<link rel="stylesheet" href="science_lab.css">
+<script src="science_lab.js" defer></script>
+</head>
+<body>
+<main class="lab">
+<nav class="top"><a href="index.html">← Smart Study</a><span>과학 실험 시제품</span></nav>
+<header class="intro"><p class="eyebrow">열과 온도</p><h1>같은 열을 받으면,<br>온도도 같아질까?</h1><p>20℃의 물 두 비커에 같은 히터로 열을 가해 보자.<br class="desktop"> 물의 양만 다르면 어떤 일이 생길까?</p></header>
+<section class="prediction card" aria-labelledby="predictionTitle">
+<div class="section-head"><h2 id="predictionTitle">먼저 예상해 보자</h2><span id="conditionSummary">A 1kg · B 2kg</span></div>
+<p>같은 시간 동안 가열한 뒤, 어느 쪽의 온도가 더 높을까?</p>
+<div class="prediction-options" id="predictions" role="group" aria-label="실험 결과 예측"><button data-predict="a" aria-pressed="false">A가 더 높다</button><button data-predict="same" aria-pressed="false">온도가 같다</button><button data-predict="b" aria-pressed="false">B가 더 높다</button></div>
+<p id="predictionStatus" class="help" aria-live="polite">예상을 고르면 실험을 시작할 수 있어요.</p>
+</section>
+<section class="experiment card" aria-labelledby="experimentTitle">
+<div class="section-head"><h2 id="experimentTitle">두 비커에 같은 에너지를</h2><label class="still"><input id="stillMode" type="checkbox"> 정지 그림으로 보기</label></div>
+<div class="stages" role="group" aria-label="모형 관찰 단계"><button data-stage="0" aria-pressed="true">전체</button><button data-stage="1" aria-pressed="false">확대</button><button data-stage="2" aria-pressed="false">단면</button><button data-stage="3" aria-pressed="false">열 흐름</button><button data-stage="4" aria-pressed="false">직접 실험</button></div>
+<p class="stage-caption" id="stageCaption"></p>
+<div class="notebook" id="scene" data-stage="0">
+<div class="vessel"><h3>A <span id="massLabelA">1kg의 물</span></h3><div id="cupA" class="cup"></div><p class="temperature" id="temperatureA">20.0<span>℃</span></p><p class="delta" id="deltaA">처음 온도</p></div>
+<div class="vessel"><h3>B <span id="massLabelB">2kg의 물</span></h3><div id="cupB" class="cup"></div><p class="temperature" id="temperatureB">20.0<span>℃</span></p><p class="delta" id="deltaB">처음 온도</p></div>
+<div class="paper-note"><span class="orange-line"></span> 주황색 화살표는 히터에서 물로 들어가는 에너지</div>
+</div>
+<div class="timeline"><label for="timeSlider">가열 시간 <output id="timeLabel">0 / 60초</output></label><input id="timeSlider" type="range" min="0" max="60" step="1" value="0" disabled aria-label="가열 시간 이동"><div class="energy"><span>각 비커에 전달한 에너지</span><strong id="energyLabel">0 kJ</strong></div></div>
+<div class="controls"><button id="play" class="primary" disabled>실험 재생</button><button id="pause" disabled>일시정지</button><button id="reset">처음부터</button></div>
+<p id="playStatus" class="help" aria-live="polite">실제 60초의 가열을 약 8초에 보여 줘요.</p>
+<fieldset id="conditions" hidden><legend>물의 양을 바꿔 다시 비교하기</legend><p class="help">같은 히터와 가열 시간은 그대로 두고 물의 양만 바꿔요. 바꾸면 새로 예상해 주세요.</p><div class="condition-grid"><label>A의 물<select id="massA"><option value="0.5">0.5kg</option><option value="1" selected>1kg</option><option value="2">2kg</option></select></label><label>B의 물<select id="massB"><option value="0.5">0.5kg</option><option value="1">1kg</option><option value="2" selected>2kg</option></select></label></div></fieldset>
+<p id="textEquivalent" class="text-equivalent">두 비커의 물은 모두 20℃에서 시작합니다.</p>
+</section>
+<section class="reason card" aria-labelledby="reasonTitle"><h2 id="reasonTitle">왜 이런 결과가 나왔을까?</h2><button id="openReason" class="reveal" disabled aria-expanded="false" aria-controls="reasonBody">실험을 마치면 설명 열기</button><div id="reasonBody" hidden><p id="conclusion"></p><div class="formula">같은 에너지를 더 많은 물에 나누면,<br><strong>온도는 더 조금 올라가요.</strong></div><p>히터가 전달한 에너지는 <b>전력 × 시간</b>이에요. 1000W로 60초 가열하면 각 비커에 60,000J가 전달돼요.</p><div class="equations"><span>Q = P × t</span><span>온도 변화 ΔT = Q ÷ (m × c)</span></div><p>m은 물의 질량, c는 물 1kg의 온도를 1℃ 올리는 데 필요한 에너지예요. 이 실험에서는 c를 4,200J/(kg·℃)로 어림했어요.</p><p class="help">온도가 높을수록 물 입자의 평균 운동이 더 활발해져요. 그림의 점은 실제 물 분자가 아니에요. 점의 수와 움직임은 물의 양과 온도 차이를 보여 주는 정성 모형이며, 입자 크기는 커지지 않아요.</p></div></section>
+<section class="check card" aria-labelledby="checkTitle"><h2 id="checkTitle">다른 상황에서도 설명할 수 있을까?</h2><p id="checkLock" class="help">실험을 마친 뒤 4문제를 풀어 보세요.</p><form id="checkForm" hidden></form><p id="checkResult" class="check-result" aria-live="polite"></p></section>
+<footer><p>이 실험은 손실 없는 물만 계산해요. 비커과 히터를 데우는 에너지, 주변으로 새는 열, 증발·끓음은 계산하지 않아요. 그림의 물높이는 질량의 비교 표시예요.</p><p>독립 시제품 · 답안은 이 화면에서만 확인합니다. 오늘 학습과 서버 성적에는 저장하지 않습니다.</p><p>물리 관계와 물의 비열 참고 <a href="https://openstax.org/books/physics/pages/11-2-heat-specific-heat-and-heat-transfer" target="_blank" rel="noopener">OpenStax Physics</a></p></footer>
+</main>
+</body></html>

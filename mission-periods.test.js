@@ -124,3 +124,6 @@ assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3
 second.metadata.submittedAt=new Date(2026,8,2,12).getTime();repo.saveReports('period-test',[first,second]);
 assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3]),1);
 console.log('Goal periods, evidence, parent budget, formula coverage, legacy rewards and repeat grants verified.');
+
+assert.equal(MissionManager.registeredSubjects().includes('science'), false, 'optional science must not enlarge required mission coverage');
+assert.equal(MissionManager.areas.length, 8, 'preserve the eight existing coverage areas');

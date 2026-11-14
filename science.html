@@ -1,0 +1,95 @@
+<!doctype html>
+<html lang="ko" translate="no" class="notranslate">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="theme-color" content="#fbf7ef">
+    <title>과학 · Smart Study</title>
+    <link rel="stylesheet" href="styles.css?v=20261014-redesign">
+    <link rel="stylesheet" href="theme.css?v=20261104-mock-integrity">
+    <link rel="stylesheet" href="science.css?v=20261114-science-level1-complete">
+</head>
+<body class="science-page" data-app-tabs data-subject="science">
+<main class="science-shell">
+    <nav class="science-nav"><a href="subjects.html">← 과목</a><a href="today.html">오늘 학습으로</a><a href="stats.html">나의 기록</a></nav>
+    <section id="scienceMenu" aria-label="과학 학습 선택">
+    <header class="science-heading">
+        <p class="science-eyebrow">SCIENCE · 관찰하고 설명하기</p>
+        <h1>과학</h1>
+        <p>그림에서 변화를 찾아보고, 조건을 바꿔 원리를 확인해요.</p>
+    </header>
+    <div class="science-levels" id="scienceLevels" role="group" aria-label="과학 학습 레벨"></div>
+    <h2 class="science-menu-title">어떤 분야가 궁금한가요?</h2><p id="scienceMenuState" class="science-note"></p>
+    <div class="science-domains" id="scienceDomains" role="group" aria-label="과학 분야"></div>
+    <section id="scienceCatalog" class="science-catalog" aria-label="학습할 단원"></section>
+
+    </section>
+    <section id="scienceStudy" hidden>
+        <div class="science-unit-head">
+            <button id="backToCatalog" type="button">← 단원 바꾸기</button>
+            <span id="unitContext"></span>
+        </div>
+        <h2 id="unitTitle"></h2>
+        <p id="unitGoal" class="science-unit-goal"></p>
+        <div id="scienceLessons" class="science-lessons" role="group" aria-label="학습 장면"></div>
+        <article class="science-lesson">
+            <div class="science-visual-panel">
+                <div class="science-visual-head"><strong id="sceneTitle"></strong><label><input id="scienceStill" type="checkbox"> 동작 줄이기</label></div>
+                <div id="scienceScene" class="science-scene"></div>
+                <ul id="sceneLegend" class="science-scene-legend" aria-label="모형 레이블"></ul><div id="sceneControls" class="science-scene-controls"></div>
+                <p id="sceneCaption" class="science-scene-caption"></p>
+                <p id="sceneModelNote" class="science-model-note"></p>
+            </div>
+            <div class="science-lesson-copy">
+                <p id="lessonQuestion" class="science-lesson-question"></p>
+                <div id="lessonBody"></div>
+                <details id="lessonReason"><summary>원리를 한 번 더 살펴보기</summary><div id="lessonReasonBody"></div></details>
+            </div>
+        </article>
+        <div class="science-study-actions"><button id="previousLesson" type="button">이전 장면</button><button id="nextLesson" type="button">다음 장면</button><button id="scienceStartQuiz" class="science-primary" type="button">10문항으로 확인하기</button></div>
+        <p class="science-note" id="studyStatus" aria-live="polite"></p>
+    </section>
+
+    <section id="scienceQuiz" class="science-quiz" hidden>
+        <div class="science-quiz-head"><span id="scienceQuizProgress"></span><span id="scienceQuizType"></span></div>
+        <div id="scienceQuizMedia" class="science-quiz-media" hidden></div>
+        <h2 id="scienceQuizQuestion"></h2>
+        <div id="scienceQuizChoices" class="science-quiz-choices"></div>
+        <div id="scienceQuizFeedback" class="science-quiz-feedback" aria-live="polite" hidden></div>
+        <div class="science-quiz-actions"><button id="scienceNextQuestion" class="science-primary" type="button" hidden>다음 문제</button><button id="scienceLeaveQuiz" type="button">학습으로 돌아가기</button></div>
+        <p class="science-note">답안을 고르면 이 기기에 저장돼요. 새로고침해도 이어서 풀 수 있어요.</p>
+    </section>
+
+    <section id="scienceResults" class="science-results" aria-labelledby="scienceResultTitle" hidden>
+        <p class="science-eyebrow">학습 결과</p>
+        <h2 id="scienceResultTitle"></h2>
+        <p id="scienceFirstScore"></p>
+        <p id="scienceResultMessage"></p>
+        <div class="science-result-actions"><button id="scienceRetryWrong" class="science-primary" type="button">틀린 문제 다시 풀기</button><button id="scienceReturnStudy" type="button">학습으로 돌아가기</button><a href="report.html">통합 성적표</a></div>
+        <button id="scienceRetrySave" type="button" hidden>저장 다시 시도</button><p id="scienceSaveStatus" class="science-note" aria-live="polite"></p>
+    </section>
+    <footer class="science-footer"><p>그림과 움직임은 원리를 설명하는 모형이에요. 장면마다 모형의 조건과 한계를 확인해요.</p><a href="science_lab.html">열과 온도 실험실 열기</a></footer>
+</main>
+<script src="storage-keys.js"></script>
+<script src="storage-events.js"></script>
+<script src="schema-migrations.js"></script>
+<script src="durable-store.js?v=20261021-stabilization"></script>
+<script src="local-repository.js?v=20261021-stabilization"></script>
+<script src="app-bootstrap.js"></script>
+<script src="concept-mastery.js?v=20261110-reading-writing"></script>
+<script src="icons.js?v=20261014-scratchpad"></script>
+<script src="report.js?v=20261110-reading-writing"></script>
+<script src="study-timer.js?v=20261110-reading-writing"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-client.js"></script>
+<script src="firestore-repository.js?v=20261111-writing-ready"></script>
+<script src="partition-repository.js?v=20261014-sync-reads"></script>
+<script src="firebase-sync.js?v=20261106-free-chain"></script>
+<script src="quiz-exposure.js?v=20261110-reading-writing"></script>
+<script src="ScienceData.js?v=20261114-science-level1-complete"></script>
+<script src="ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete"></script><script src="SciencePhysicalExpansion.js?v=20261114-science-level1-complete"></script><script src="science-extension-models.js?v=20261114-science-level1-complete"></script><script src="science-models.js?v=20261114-science-level1-complete"></script>
+<script src="science-cosmos-model.js?v=20261114-science-level1-complete"></script><script src="science-orbit-three.js?v=20261114-science-level1-complete"></script><script src="science-policy.js"></script><script src="science-app.js?v=20261114-science-level1-complete"></script>
+<script src="app-shell.js?v=20261014-redesign"></script>
+</body>
+</html>
+

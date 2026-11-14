@@ -27,7 +27,7 @@ const MissionManager = {
         weekly:[{icon:'🎲',title:'가족 활동 선택 제안권',note:'활동·시간·비용은 보호자와 상의해요'}],
         monthly:[{icon:'🎡',title:'체험·나들이 선택 제안권',note:'장소·일정·비용은 보호자가 최종 결정해요'}]
     },
-    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().map(s=>s.id):['reading','korean_vocab','english','english_reading','grammar','hanja','math']; },
+    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().filter(s=>s.id!=='science').map(s=>s.id):['reading','korean_vocab','english','english_reading','grammar','hanja','math']; },
     get areas() { return [...new Set([...this.registeredSubjects(),'math_formula'])]; },
     budget(user) {
         const id=user?.id||UserSession.getActiveUser();

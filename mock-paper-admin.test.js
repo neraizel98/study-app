@@ -53,7 +53,7 @@ test('paper rounds are generated in order on the parent device and never repeat 
  assert.equal(two.payload.status,'paper');assert.equal(two.payload.mode,'paper');assert.equal(two.payload.attemptNo,2);assert.equal(two.payload.submittedAt,undefined);
  assert.match(two.payload.assessmentId,/^mock:learner:2026-10-19:attempt-2-paper-[A-Za-z0-9-]+$/);assert.equal(two.payload.parentAttemptId,one.assessmentId);
  // Print contract for mock-print.html.
- const set=two.set;assert.deepEqual(Object.keys(set).sort(),['attemptNo','generatedAt','items','learnerId','learnerName','schema','timeLimits','weekKey','weekLabel']);
+ const set=two.set;assert.deepEqual(Object.keys(set).sort(),['attemptNo','examVersion','generatedAt','items','learnerId','learnerName','schema','timeLimits','weekKey','weekLabel']);
  assert.deepEqual([set.schema,set.learnerId,set.learnerName,set.weekKey,set.weekLabel,set.attemptNo],[1,'learner','하늘',WEEK,'2026년 10월 3주차',2]);
  assert.deepEqual({...set.timeLimits},{reading:25,english:20,math:30,hanja:10});assert.equal(set.items.length,55);assert.deepEqual(set.items.map(q=>q.id),two.bank.items.map(q=>q.id));
  const three=await paper(w,3);assert(three.ok);
@@ -159,9 +159,10 @@ test('learner screen: all three rounds used (paper included) shows the week as u
 });
 test('firestore.rules: admin-only paper rounds without answers; paper rounds cannot be published',()=>{
  const rules=fs.readFileSync('firestore.rules','utf8');
- assert(rules.includes('function validPaperMock(p)'));assert(rules.includes("(isAdmin() && validPaperMock(request.resource.data.payload))"));
+ assert(rules.includes('function validPaperMock(p)'));assert(rules.includes("request.resource.data.payload.status == 'paper' ? isAdmin() && validPaperMock(request.resource.data.payload)"));
  assert(rules.includes("p.status == 'paper' && p.mode == 'paper'"));assert(rules.includes("!p.keys().hasAny(['submittedAt', 'initialAttempts', 'reports', 'responses'])"));
- assert(/allow update: if isAdmin\(\) && canUse\(resource\.data\.learnerId\)\s+&& resource\.data\.payload\.status == 'submitted'/.test(rules));
+ const publication=[...rules.matchAll(/allow update: if ([\s\S]*?);/g)].map(m=>m[1]).find(body=>body.includes("hasOnly(['published','publishedAt','publishedBy'])"));
+ assert(publication?.includes("resource.data.payload.status == 'submitted'"));assert(publication.includes('isAdmin() && canUse(resource.data.learnerId)'));
  const admin=fs.readFileSync('admin.html','utf8'),scripts=[...admin.matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
  const exam=[...fs.readFileSync('mock-exam.html','utf8').matchAll(/<script[^>]+src="([^"]+)"/g)].map(m=>m[1]);
  // Every exam-bank dependency is on the admin page with the same cache tag; ReadingPassages.js precedes the passages it is extended by.

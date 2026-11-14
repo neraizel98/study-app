@@ -207,7 +207,7 @@
   const rows=local.listReports(data.learnerId);if(!rows.some(r=>r.metadata?.assessmentId===data.assessmentId&&r.metadata.resultVisibility!=='published'))return;
   local.saveReports(data.learnerId,rows.map(r=>r.metadata?.assessmentId===data.assessmentId?{...r,updatedAt:Date.now(),metadata:{...r.metadata,resultVisibility:'published',publicationConfirmedAt:Date.now()}}:r));
  }
- async function get(user,assessment){const doc=await timed((await ref(user,assessment)).get({source:'server'}));if(!doc.exists)return {published:false};const data=doc.data();if(data.learnerId!==user||data.assessmentId!==assessment)throw new Error('시험 정보가 일치하지 않습니다.');markPublished(data);return {published:data.published===true,publishedAt:data.publishedAt?.toMillis?.()||null,snapshot:data.payload};}
+ async function get(user,assessment){const doc=await timed((await ref(user,assessment)).get({source:'server'}));if(!doc.exists)return {published:false};const data=doc.data();if(data.learnerId!==user||data.assessmentId!==assessment)throw new Error('시험 정보가 일치하지 않습니다.');markPublished(data);return {published:data.published===true,publishedAt:data.publishedAt?.toMillis?.()||null,snapshot:app.MockExam?.hydrateSnapshot?.(data.payload)||data.payload};}
  async function submit(user,snapshot){const auth=await client.getCurrentUser();if(!auth)throw new Error('계정 연결 후 다시 저장해 주세요.');const r=await ref(user,snapshot.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists){if(old.data().payload.submittedAt!==snapshot.submittedAt||!sameSnapshot(old.data().payload.questions,snapshot.questions)||!sameSnapshot(old.data().payload.initialAttempts,snapshot.initialAttempts))throw new Error('다른 기기의 제출 기록이 있습니다. 관리자 확인이 필요합니다.');return;}tx.set(r,{learnerId:user,assessmentId:snapshot.assessmentId,payload:JSON.parse(JSON.stringify(snapshot)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};}
  async function list(user,options={}){
   const count=Math.max(1,Math.min(12,Number(options.weeks)||1)),dates=[];
@@ -215,14 +215,15 @@
   if(options.week&&/^\d{4}-\d{2}-\d{2}$/.test(options.week))dates.splice(0,dates.length,options.week);
   const db=await client.getDB();
   const pages=await timed(Promise.all(dates.map(week=>db.collection('mockExamResults').where('learnerId','==',user).where('payload.scheduledWeekId','==',week).get({source:'server'}))));
-  const rows=[];for(const page of pages)for(const doc of page.docs){const data=doc.data();if(data.learnerId!==user||data.payload?.userId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);rows.push({...data,documentId:doc.id});}
+  const rows=[];for(const page of pages)for(const doc of page.docs){const data=doc.data();if(data.learnerId!==user||data.payload?.userId!==user)throw new Error('시험 계정이 일치하지 않습니다.');markPublished(data);rows.push({...data,payload:app.MockExam?.hydrateSnapshot?.(data.payload)||data.payload,documentId:doc.id});}
   return rows.sort((a,b)=>Number(b.payload.submittedAt||b.payload.generatedAt)-Number(a.payload.submittedAt||a.payload.generatedAt));
  }
  // A parent's printed exam takes the week's next round like an online attempt, without answers or
  // scores. It is stored beside the online rounds so every device skips that round and its questions.
+ function mockContract(p){const version=p?.examVersion||'legacy55-v1';return version==='science75-v1'?{total:75,order:['reading','english','math','hanja','science'],reports:9}:version==='legacy55-v1'?{total:55,order:['reading','english','math','hanja'],reports:8}:null;}
  async function savePaper(user,payload){
   const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');
-  const n=Number(payload?.attemptNo);if(payload?.status!=='paper'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||!Number.isInteger(n)||n<1||n>3||!Array.isArray(payload.questions)||payload.questions.length!==55||payload.submittedAt!==undefined||payload.initialAttempts!==undefined)throw new Error('종이 시험 정보가 올바르지 않습니다.');
+  const c=mockContract(payload),n=Number(payload?.attemptNo);if(payload?.status!=='paper'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||!Number.isInteger(n)||n<1||n>3||!Array.isArray(payload.questions)||payload.questions.length!==c?.total||payload.submittedAt!==undefined||payload.initialAttempts!==undefined)throw new Error('종이 시험 정보가 올바르지 않습니다.');
   const taken=(await list(user,{week:payload.scheduledWeekId})).map(r=>Number(r.payload.attemptNo)||1);
   if(taken.includes(n)||Math.max(0,...taken)+1!==n)throw new Error(`${n}회차는 이미 기록이 있거나 아직 만들 차례가 아닙니다. 기존 기록을 덮어쓰지 않았습니다.`);
   const r=await ref(user,payload.assessmentId);await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(old.exists)throw new Error('같은 시험 기록이 이미 있습니다. 덮어쓰지 않았습니다.');tx.set(r,{learnerId:user,assessmentId:payload.assessmentId,payload:JSON.parse(JSON.stringify(payload)),published:false,publishedAt:null,publishedBy:null,createdBy:auth.uid,createdAt:root.firebase.firestore.FieldValue.serverTimestamp()});}));return {saved:true};
@@ -231,14 +232,14 @@
  // The round, assessmentId and questions stay; a scored or published round is never re-scored.
  async function savePaperResult(user,payload){
   const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');
-  const sections=payload?.sections||[],order=['reading','english','math','hanja'];
+  const sections=payload?.sections||[],c=mockContract(payload),order=c?.order||[];
   if(payload?.status!=='submitted'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||payload.integrity?.source!=='paper-omr'||!Number.isInteger(payload.submittedAt)
-   ||sections.length!==4||!sections.every((s,i)=>s.id===order[i]&&s.state==='ended')||payload.questions?.length!==55||payload.initialAttempts?.length!==55||!(payload.reports?.length>=4&&payload.reports.length<=8))throw new Error('채점 결과가 올바르지 않습니다.');
+   ||sections.length!==order.length||!sections.every((s,i)=>s.id===order[i]&&s.state==='ended')||payload.questions?.length!==c?.total||payload.initialAttempts?.length!==c?.total||!(payload.reports?.length>=4&&payload.reports.length<=c?.reports))throw new Error('채점 결과가 올바르지 않습니다.');
   const r=await ref(user,payload.assessmentId);
   await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(!old.exists)throw new Error('종이 시험지 기록이 없습니다.');const data=old.data(),p=data.payload||{};
    if(data.published)throw new Error('이미 공개한 결과는 다시 채점할 수 없습니다.');
    if(p.status!=='paper')throw new Error('이미 채점한 회차입니다. 기존 결과를 덮어쓰지 않았습니다.');
-   if(data.learnerId!==user||p.userId!==user||p.assessmentId!==payload.assessmentId||Number(p.attemptNo)!==payload.attemptNo||p.scheduledWeekId!==payload.scheduledWeekId||!sameSnapshot(p.questions,payload.questions))throw new Error('시험지와 채점 정보가 일치하지 않습니다.');
+   if(data.learnerId!==user||p.userId!==user||p.assessmentId!==payload.assessmentId||Number(p.attemptNo)!==payload.attemptNo||p.scheduledWeekId!==payload.scheduledWeekId||(p.examVersion||'legacy55-v1')!==(payload.examVersion||'legacy55-v1')||!sameSnapshot(p.questions,payload.questions))throw new Error('시험지와 채점 정보가 일치하지 않습니다.');
    tx.update(r,{payload:JSON.parse(JSON.stringify(payload))});}));
   return {saved:true};
  }
@@ -264,8 +265,8 @@
   const r=await settingsRef(user),db=await client.getDB();
   await timed(db.runTransaction(async tx=>{
    if(assessmentId!==null){const exam=await tx.get(await ref(user,assessmentId)),d=exam.exists?exam.data():null,p=d?.payload;
-    const order=['reading','english','math','hanja'];
-    if(!d||d.learnerId!==user||d.assessmentId!==assessmentId||p?.userId!==user||p.assessmentId!==assessmentId||p.kind!=='mock'||p.status!=='submitted'||!Number.isInteger(p.submittedAt)||p.submittedAt<=0||!Array.isArray(p.sections)||p.sections.length!==4||!p.sections.every((s,i)=>s?.id===order[i]&&s.state==='ended')||!Array.isArray(p.questions)||p.questions.length!==55||!p.questions.every(q=>typeof q?.id==='string'&&q.id&&typeof q.subject==='string')||!Array.isArray(p.initialAttempts)||p.initialAttempts.length!==55||new Set(p.questions.map(q=>q?.id)).size!==55||new Set(p.initialAttempts.map(a=>a?.questionId)).size!==55||!p.initialAttempts.every(a=>a&&typeof a.correct==='boolean'&&p.questions.some(q=>q?.id===a.questionId&&q.subject===a.subject)))throw new Error('채점과 제출이 완료된 시험만 진단 기준으로 지정할 수 있습니다.');
+    const c=mockContract(p),order=c?.order||[];
+    if(!d||d.learnerId!==user||d.assessmentId!==assessmentId||p?.userId!==user||p.assessmentId!==assessmentId||p.kind!=='mock'||p.status!=='submitted'||!Number.isInteger(p.submittedAt)||p.submittedAt<=0||!Array.isArray(p.sections)||p.sections.length!==order.length||!p.sections.every((s,i)=>s?.id===order[i]&&s.state==='ended')||!Array.isArray(p.questions)||p.questions.length!==c?.total||!p.questions.every(q=>typeof q?.id==='string'&&q.id&&typeof q.subject==='string')||!Array.isArray(p.initialAttempts)||p.initialAttempts.length!==c?.total||new Set(p.questions.map(q=>q?.id)).size!==c?.total||new Set(p.initialAttempts.map(a=>a?.questionId)).size!==c?.total||!p.initialAttempts.every(a=>a&&typeof a.correct==='boolean'&&p.questions.some(q=>q?.id===a.questionId&&q.subject===a.subject)))throw new Error('채점과 제출이 완료된 시험만 진단 기준으로 지정할 수 있습니다.');
     if(p.integrity?.translationDetected===true)throw new Error('번역이 감지된 시험은 진단 기준에서 제외해 주세요.');
    }
    tx.set(r,{schemaVersion:1,learnerId:user,scope:'english',assessmentId,confirmedUnassisted:assessmentId!==null,updatedBy:auth.uid,updatedAt:root.firebase.firestore.FieldValue.serverTimestamp()});

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261106-free-chain';
+const CACHE_NAME = 'smart-study-20261114-science-level1-complete';
 
 try {
     importScripts('./firebase-config.js');
@@ -52,6 +52,9 @@ self.addEventListener('activate', event => {
 
 // 캐시할 파일 목록 (앱 핵심 파일)
 const STATIC_ASSETS = [
+    './science-extension-models.js?v=20261114-science-level1-complete', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete',
+    './science-orbit-three.js?v=20261114-science-level1-complete', './vendor/three/three.module.js', './vendor/three/three.core.js',
+    './science.html', './science.css?v=20261114-science-level1-complete', './science-app.js?v=20261114-science-level1-complete', './science-models.js?v=20261114-science-level1-complete', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
     './',
     './index.html',
     './theme.css',
@@ -100,7 +103,10 @@ const STATIC_ASSETS = [
     './EnglishGrammarExpanded.js',
     './EnglishGrammarAdvancedQuiz.js',
     './EnglishReadingPolicy.js',
+    './EnglishReadingPolicy.js?v=20261110-reading-writing',
     './EnglishReadingApp.js',
+    './EnglishReadingApp.js?v=20261110-reading-writing',
+    './EnglishReadingWriting.js?v=20261110-reading-writing',
     './reading-question-expansion.js',
     './hanja-quiz.js',
     './hanja.html',
@@ -134,6 +140,7 @@ const STATIC_ASSETS = [
     './learning-budget-policy.js',
     './answer-validation.js',
     './quiz-exposure.js',
+    './quiz-exposure.js?v=20261110-reading-writing',
     './learning-games.html',
     './game-menu.html',
     './game-menu.css',
@@ -162,6 +169,7 @@ const STATIC_ASSETS = [
     './reading-question-variants.js',
     './mock-exam.html',
     './mock-exam.js',
+    './mock-exam.js?v=20261111-writing-ready',
     './mock-exam-ui.js',
     './mock-exam-results.js',
     './mock-wrong-note.js',
@@ -192,7 +200,9 @@ const STATIC_ASSETS = [
     './mock-math-transfer.js',
     './mock-hanja-transfer.js',
     './mock-exam-quality.js',
+    './MockEnglishWriting.js?v=20261111-writing-ready',
     './mock-exam-bank.js',
+    './mock-exam-bank.js?v=20261111-writing-ready',
     './mock-reading-content.js',
     './english-speech.js',
     './english-vocabulary-progress.js',
@@ -210,12 +220,15 @@ const STATIC_ASSETS = [
     './firestore-repository.js',
     './quiz-registry.js',
     './report.js',
+    './report.js?v=20261110-reading-writing',
     './concept-mastery.js',
+    './concept-mastery.js?v=20261110-reading-writing',
     './firebase-sync.js',
     './notification-client.js',
     './parent-scope-guard.js',
     './in-app-study-request.js',
     './study-timer.js',
+    './study-timer.js?v=20261110-reading-writing',
     './kakao-share.js',
     './VocabEng.js',
     './VocabEngM1.js',
@@ -247,6 +260,7 @@ const STATIC_ASSETS = [
     './answer-math-renderer.js',
     './math-session-questions.js',
     './subject-progression.js',
+    './subject-progression.js?v=20261110-reading-writing',
     './ReadingPassages.js',
     './ReadingPassagesMore1.js',
     './ReadingPassagesMore2.js',
@@ -271,6 +285,7 @@ const STATIC_ASSETS = [
     './MathFormulaTime.js',
     './learning-plan.js',
     './unified-learning.js',
+    './unified-learning.js?v=20261110-reading-writing',
     './today-flow.js',
     './today-journey.js',
     './today-flow.css',
@@ -318,7 +333,13 @@ self.addEventListener('fetch', event => {
                     return response;
                 })
                 .catch(() => {
-                    return caches.match(event.request);
+                    return caches.match(event.request).then(cached => {
+                        if (cached) return cached;
+                        const sciencePage = new URL('./science.html', self.location.href);
+                        if (url.origin === sciencePage.origin && url.pathname === sciencePage.pathname) {
+                            return caches.match(sciencePage.href);
+                        }
+                    });
                 })
         );
     } else {
