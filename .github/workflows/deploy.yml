@@ -50,7 +50,25 @@ jobs:
         uses: actions/upload-pages-artifact@v3
         with:
           path: '_site'
+          name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Wait for uploaded Pages artifact
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPOSITORY: ${{ github.repository }}
+          RUN_ID: ${{ github.run_id }}
+          ARTIFACT_NAME: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
+        run: |
+          for attempt in $(seq 1 30); do
+            count=$(gh api "repos/$REPOSITORY/actions/runs/$RUN_ID/artifacts?name=$ARTIFACT_NAME" --jq '.total_count')
+            if [ "$count" = "1" ]; then exit 0; fi
+            sleep 2
+          done
+          echo "Expected exactly one uploaded Pages artifact"
+          exit 1
 
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+        with:
+          artifact_name: github-pages-${{ github.run_id }}-${{ github.run_attempt }}
