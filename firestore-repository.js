@@ -220,7 +220,7 @@
  }
  // A parent's printed exam takes the week's next round like an online attempt, without answers or
  // scores. It is stored beside the online rounds so every device skips that round and its questions.
- function mockContract(p){const version=p?.examVersion||'legacy55-v1';return version==='science75-v1'?{total:75,order:['reading','english','math','hanja','science'],reports:9}:version==='legacy55-v1'?{total:55,order:['reading','english','math','hanja'],reports:8}:null;}
+ function mockContract(p){const version=p?.examVersion||'legacy55-v1';return version==='classic100-v1'?{total:100,order:['reading','english','math','hanja'],reports:8}:version==='science125-v1'?{total:125,order:['reading','english','math','hanja','science'],reports:9}:version==='science75-v1'?{total:75,order:['reading','english','math','hanja','science'],reports:9}:version==='legacy55-v1'?{total:55,order:['reading','english','math','hanja'],reports:8}:null;}
  async function savePaper(user,payload){
   const auth=await client.getCurrentUser(),access=auth&&await app.FirestoreRepository.getAccess(auth.uid);if(access?.role!=='admin')throw new Error('관리자 권한이 필요합니다.');
   const c=mockContract(payload),n=Number(payload?.attemptNo);if(payload?.status!=='paper'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||!Number.isInteger(n)||n<1||n>3||!Array.isArray(payload.questions)||payload.questions.length!==c?.total||payload.submittedAt!==undefined||payload.initialAttempts!==undefined)throw new Error('종이 시험 정보가 올바르지 않습니다.');

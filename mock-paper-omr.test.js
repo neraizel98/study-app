@@ -32,6 +32,8 @@ function device(role,cloud,clock,evidence){
   FirebaseClient:{getDB:async()=>cloud.db,getCurrentUser:async()=>({uid:role})}};
  c.firebase={firestore:{FieldValue:{serverTimestamp:()=>clock.now}}};vm.createContext(c);
  for(const file of [...files,...extra])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+ // Preserve this fixture's historical55-question paper/OMR contract.
+ const legacyBuild=c.SmartStudy.MockExamBank.build;c.SmartStudy.MockExamBank.build=(user,at,opts={})=>legacyBuild(user,at,{examVersion:'legacy55-v1',...opts});
  const R=c.SmartStudy.FirestoreRepository;R.getAccess=async uid=>({role:uid==='parent'?'admin':'learner'});R.getReportStorageMode=async()=>'legacy';R.getUserBundle=async()=>({reports:structuredClone(evidence)});
  R.getLearnerPlanSettings=async()=>({weekly:{learningDays:5,miniCheck:false,mockSectionMinutes:{reading:25,english:20,math:30,hanja:10}}});
  c._adminData={userId:'learner',ud:{id:'하늘'}};
@@ -308,7 +310,7 @@ test('firestore.rules: one admin-only transition from a printed round to an unpu
  const rules=fs.readFileSync('firestore.rules','utf8');
  const fn=rules.match(/function validPaperResult\(p, old\) \{([\s\S]*?)\n    \}/)[1];
  for(const part of ["p.status == 'submitted' && p.mode == 'paper' && p.kind == 'mock'","p.assessmentId == old.assessmentId && p.userId == old.userId","p.scheduledWeekId == old.scheduledWeekId && p.attemptNo == old.attemptNo",
-  'p.questions == old.questions',"p.integrity is map && p.integrity.source == 'paper-omr'",'p.submittedAt is int','validMockSections(p)', 'p.reports is list && p.reports.size() >= (scienceMock(p) ? 5 : 4) && p.reports.size() <= (scienceMock(p) ? 9 : 8)'])assert(fn.includes(part),part);
+  'p.questions == old.questions',"p.integrity is map && p.integrity.source == 'paper-omr'",'p.submittedAt is int','validMockSections(p)', 'p.reports is list && p.reports.size() >= (hasScienceMock(p) ? 5 : 4) && p.reports.size() <= (hasScienceMock(p) ? 9 : 8)'])assert(fn.includes(part),part);
  const updates=[...rules.matchAll(/allow update: if ([\s\S]*?);/g)].map(m=>m[1]).filter(r=>r.includes('resource.data.learnerId'));
  const scoring=updates.find(r=>r.includes('validPaperResult'));assert(scoring);
  for(const part of ['isAdmin() && canUse(resource.data.learnerId)',"resource.data.payload.status == 'paper' && resource.data.payload.mode == 'paper'","request.resource.data.diff(resource.data).affectedKeys().hasOnly(['payload'])",'validPaperResult(request.resource.data.payload, resource.data.payload)'])assert(scoring.includes(part),part);

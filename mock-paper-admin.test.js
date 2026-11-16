@@ -27,6 +27,8 @@ function device(role,cloud,clock,evidence){
   FirebaseClient:{getDB:async()=>cloud.db,getCurrentUser:async()=>({uid:role})}};
  c.firebase={firestore:{FieldValue:{serverTimestamp:()=>clock.now}}};vm.createContext(c);
  for(const file of [...files,'weekly-schedule.js','firestore-repository.js','mock-paper-admin.js','mock-admin.js'])vm.runInContext(fs.readFileSync(file,'utf8'),c,{filename:file});
+ // Preserve this fixture's historical55-question paper/OMR contract.
+ const legacyBuild=c.SmartStudy.MockExamBank.build;c.SmartStudy.MockExamBank.build=(user,at,opts={})=>legacyBuild(user,at,{examVersion:'legacy55-v1',...opts});
  const R=c.SmartStudy.FirestoreRepository;R.getAccess=async uid=>({role:uid==='parent'?'admin':'learner'});R.getReportStorageMode=async()=>'legacy';R.getUserBundle=async()=>({reports:structuredClone(evidence)});
  R.getLearnerPlanSettings=async()=>({weekly:{learningDays:5,miniCheck:false,mockSectionMinutes:{reading:25,english:20,math:30,hanja:10}}});
  c._adminData={userId:'learner',ud:{id:'하늘'}};

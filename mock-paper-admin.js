@@ -30,7 +30,7 @@
  // Same per-area limits as the online exam: parent settings, else the exam defaults.
  async function timeLimits(user,bank){
   let weekly=null;try{weekly=(await app.FirestoreRepository.getLearnerPlanSettings(user))?.weekly;}catch(_){/* The online exam also falls back to defaults. */}
-  const minutes=weekly?.mockSectionMinutes||{};return Object.fromEntries((app.MockExam.contract(bank)?.definitions||app.MockExam.definitions).map(s=>{const n=bank?.examVersion==='science75-v1'?s.minutes:Number(minutes[s.id]);return [s.id,Number.isInteger(n)&&n>=5&&n<=60?n:s.minutes];}));
+  const minutes=weekly?.mockSectionMinutes||{};return Object.fromEntries((app.MockExam.contract(bank)?.definitions||app.MockExam.definitions).map(s=>{const n=app.MockExam.contract(bank)?.total!==55?s.minutes:Number(minutes[s.id]);return [s.id,Number.isInteger(n)&&n>=5&&n<=60?n:s.minutes];}));
  }
  async function generate(user,options={}){
   const now=Number(options.now)||Date.now(),week=app.MockExam.weekId(now),records=await app.MockPublication.list(user,{weeks:12}),attemptNo=nextRound(records,week);
@@ -46,8 +46,8 @@
   const last=records.map(payloadOf).filter(p=>p.scheduledWeekId===week).sort((a,b)=>(Number(b.attemptNo)||1)-(Number(a.attemptNo)||1))[0];
   const payload={schemaVersion:1,examVersion:bank.examVersion,assessmentId:`mock:${user}:${week}:attempt-${attemptNo}-paper-${root.crypto?.randomUUID?.()||now.toString(36)}`,userId:user,scheduledWeekId:week,scheduledDate:kstDate(now),
    scopeCutoffAt:bank.scopeCutoffAt||now,kind:'mock',mode:'paper',status:'paper',attemptNo,parentAttemptId:last?.assessmentId||null,bankVersion:bank.version||'unknown',policyId:bank.policyId||null,repeatPolicy:bank.repeatPolicy||null,
-   quotas:Object.fromEntries([...Object.keys(app.MockExam.areas),...(bank.examVersion==='science75-v1'?['science']:[])].map(s=>[s,bank.items.filter(q=>q.subject===s).length])),newQuestionCount:bank.items.filter(q=>!q.repeated).length,reexposureCount:bank.items.filter(q=>q.repeated).length,
-   questions:clone(bank.items),sections:bank.examVersion==='science75-v1'?app.MockExam.contract(bank).definitions.map(s=>({...s,durationSeconds:s.minutes*60,state:'pending'})):[],generatedAt:now,startedAt:now,resultVisibility:'withheld',paper:{learnerName:String(options.learnerName||user),weekLabel:weekLabel(week),timeLimits:await timeLimits(user,bank)}};
+   quotas:Object.fromEntries([...Object.keys(app.MockExam.areas),...(app.MockExam.contract(bank)?.definitions.some(s=>s.id==='science')?['science']:[])].map(s=>[s,bank.items.filter(q=>q.subject===s).length])),newQuestionCount:bank.items.filter(q=>!q.repeated).length,reexposureCount:bank.items.filter(q=>q.repeated).length,
+   questions:clone(bank.items),sections:app.MockExam.contract(bank)?.total!==55?app.MockExam.contract(bank).definitions.map(s=>({...s,durationSeconds:s.minutes*60,state:'pending'})):[],generatedAt:now,startedAt:now,resultVisibility:'withheld',paper:{learnerName:String(options.learnerName||user),weekLabel:weekLabel(week),timeLimits:await timeLimits(user,bank)}};
   await app.MockPublication.savePaper(user,payload);
   return {ok:true,attemptNo,bank,payload,set:paperSet(payload)};
  }
