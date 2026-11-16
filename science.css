@@ -22,3 +22,7 @@ body.science-page{display:block;min-width:0;width:100%}.science-page .science-sh
 @media(max-width:700px){.science-domains{grid-template-columns:repeat(2,1fr);gap:12px}.science-domain-art{height:122px}.science-domain-copy{padding:13px}.science-domain-copy strong{font-size:18px}.science-domain-copy>span,.science-domain-copy em{font-size:12px}.science-levels{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}.science-levels button{min-width:0;font-size:12px;padding:12px 8px}.science-menu-title{font-size:21px}.science-unit-head{align-items:flex-start}.science-unit-head span{font-size:12px}}
 
 .science-cosmos-stage{position:relative;width:100%;aspect-ratio:1.65;margin:12px 0;background:#080f20;border-radius:14px;overflow:hidden}.science-cosmos-stage>canvas{display:block;width:100%;height:100%}.science-cosmos-labels{position:absolute;inset:0;pointer-events:none}.science-cosmos-label{position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:calc(100% - 20px);white-space:nowrap;font-size:12px;font-weight:700;color:#f2dba0;background:#11243bd9;border:1px solid #798b8f66;border-radius:5px;padding:3px 6px}.science-cosmos-label.selected{color:#beddf0}@media(max-width:700px){.science-cosmos-stage{aspect-ratio:1.36}.science-cosmos-label{font-size:11px}}
+
+.science-timeline-wrap{display:flex;align-items:center;flex:1 1 180px;min-width:140px;margin:0 4px}
+.science-timeline-slider{width:100%;height:8px;border-radius:4px;accent-color:#0e7490;cursor:pointer}
+.science-three-label.moon-label{color:#2a5061;border-color:#84a6b5}
