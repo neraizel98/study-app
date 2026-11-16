@@ -231,13 +231,58 @@ ${text(320, 375, '깃털 사이에 갇힌 공기층이 열전도를 차단하여
  caption=magnet?'코일에 전류가 흐르는 조건과 끊는 조건을 비교해요. 전자석의 작용은 회로 연결 상태에 따라 달라져요.':'전구가 켜지려면 전지와 전구 등이 끊기지 않은 회로로 연결돼야 해요. 전류가 전구에서 전부 없어지는 모형은 아니에요.';
 }else if(kind==='energy-transfer'){
  controls=['손 발전기 → 전구','전지 → 모터','태양 전지 → 모터'];
- body=`<g filter="url(#ex-shadow)">`+rect(240,155,170,130,'#b4cdc9')+`<circle cx="325" cy="220" r="40" fill="#6f9098"/>`+p(`M325 220L${325+35*Math.cos(t*10)} ${220+35*Math.sin(t*10)}`,'#d4bd7a',8);
- if(c===0)body+=`${p('M240 210H185V160H140','#728785',8)}${circle(140,160,12,'#a48b5d')}${arrow('M90 255H215')}`;
- else if(c===1)body+=`${rect(70,170,110,70,'#8ca6a2')}${text(95,213,'+')}${text(145,213,'−')}${arrow('M180 205H230')}`;
- else body+=`${rect(65,155,120,110,'#60869d')}${p('M105 155V265M145 155V265M65 192H185M65 229H185','#bad0dc',2)}${circle(115,70,22,'#f8cc66')}${arrow('M115 100V145','#c4983a')}${arrow('M185 212H230')}`;
- body+=arrow('M420 210H480')+`${circle(535,210,35,c===0?'#f5d377':'#7a9da6')}${c===0?text(535,285,'빛','center'):p(`M535 210L${535+45*Math.cos(t*13)} ${210+45*Math.sin(t*13)}`,'#567781',9)}${arrow('M330 300V360','#b88151')}<rect x="220" y="380" width="220" height="24" rx="6" fill="#ffffffdf" stroke="#b88151"/>${text(330,396,'주변으로 전달되는 열도 살펴봐요','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(115,140,165,115,'#c9d7c0')}${rect(360,140,165,115,'#bfd7dd')}${arrow('M285 195H350')}${text(195,205,'에너지 입력','center')}${text(440,205,'형태와 전달','center')}<rect x="170" y="350" width="300" height="24" rx="6" fill="#ffffffdf" stroke="#8fa9b0"/>${text(320,366,'장치에서 에너지가 새로 무한히 생기지 않아요','center')}</g>`;
- caption='에너지가 장치를 거치며 빛·운동·열 등으로 전달되거나 전환되는 관계를 관찰해요. 화살표는 에너지 흐름을 설명하는 표시예요.';
+ const sourceTitle=c===0?'손 발전기 (운동 에너지)':c===1?'화학 전지 (화학 에너지)':'태양 전지판 (빛 에너지)';
+ const targetTitle=c===0?'전구 (빛 + 열 에너지)':'모터 (운동 + 열 에너지)';
+ const flowX=195+(phase*245);
+ body=`<g filter="url(#ex-shadow)">
+<rect x="25" y="20" width="245" height="34" rx="8" fill="#1b2a38cc" stroke="#377363" stroke-width="1.5"/>
+${text(38,42,'Every Joule 에너지 전환 시뮬레이션','white')}
+<g transform="translate(45, 100)">
+  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
+  <rect x="15" y="15" width="120" height="26" rx="6" fill="#00b4d822" stroke="#00b4d8"/>
+  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#0b6375">에너지 공급원</text>
+  ${c===0?`<g transform="translate(75, 105)"><circle r="36" fill="#d2dedd" stroke="#6f8f94" stroke-width="2"/><circle r="12" fill="#9dbbbe"/><path d="M0 0L${30*Math.cos(t*8)} ${30*Math.sin(t*8)}" stroke="#e09d3b" stroke-width="5" stroke-linecap="round"/><circle cx="${30*Math.cos(t*8)}" cy="${30*Math.sin(t*8)}" r="7" fill="#b96a20"/></g>`:c===1?`<g transform="translate(75, 105)"><rect x="-40" y="-30" width="80" height="60" rx="8" fill="#8ca6a2" stroke="#5f7e7a" stroke-width="2"/><text x="-20" y="7" font-size="18" font-weight="700" fill="#fff">+</text><text x="15" y="7" font-size="18" font-weight="700" fill="#fff">−</text></g>`:`<g transform="translate(75, 105)"><rect x="-45" y="-35" width="90" height="70" rx="6" fill="#4a6e87" stroke="#314e63" stroke-width="2"/><path d="M-45 -12H45M-45 12H45M-15 -35V35M15 -35V35" stroke="#7aa4c0" stroke-width="1.5"/><circle cx="0" cy="-60" r="14" fill="#f8cc66" filter="url(#ex-glow-amber)"/><path d="M0 -42V-35" stroke="#e29b28" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/></g>`}
+  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${sourceTitle.split(' ')[0]}</text>
+</g>
+<g filter="url(#ex-glow-cyan)">
+  <path d="M195 195H445" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="${flowX}" cy="195" r="7" fill="#ffffff" filter="url(#ex-glow-cyan)"/>
+  <path d="M425 195L445 195" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<text x="320" y="180" class="center" font-size="12" font-weight="700" fill="#008fa3">전기 에너지 전달 (흐름)</text>
+<g transform="translate(445, 100)">
+  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
+  <rect x="15" y="15" width="120" height="26" rx="6" fill="#f5ab3522" stroke="#f5ab35"/>
+  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#996213">에너지 변환 장치</text>
+  ${c===0?`<g transform="translate(75, 100)" filter="url(#ex-glow-amber)"><ellipse cx="0" cy="-5" rx="30" ry="34" fill="#fff7d6" stroke="#d4ab48" stroke-width="2"/><path d="M-8 10L-12 25H12L8 10Z" fill="#a4a49c"/><path d="M-10 0Q0 -22 10 0" fill="none" stroke="#f5ab35" stroke-width="3"/></g>`:`<g transform="translate(75, 100)"><circle r="36" fill="#6f9098" stroke="#486870" stroke-width="2"/><path d="M0 0L${32*Math.cos(t*14)} ${32*Math.sin(t*14)}" stroke="#00d0ea" stroke-width="5" stroke-linecap="round" filter="url(#ex-glow-cyan)"/><circle r="8" fill="#dce6e7"/></g>`}
+  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${targetTitle.split(' ')[0]}</text>
+</g>
+<g filter="url(#ex-glow-amber)" transform="translate(320, 235)">
+  <path d="M0 0V55" fill="none" stroke="#f5ab35" stroke-width="3.5" stroke-dasharray="5 3" marker-end="url(#ex-arrow-amber)"/>
+  <rect x="-85" y="65" width="170" height="26" rx="6" fill="#f5ab3525" stroke="#f5ab35"/>
+  <text x="0" y="82" class="center" font-size="11" font-weight="700" fill="#996213">방출되는 열에너지 (손실)</text>
+</g>
+<rect x="140" y="386" width="360" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
+${text(320, 406, `${sourceTitle} → 전기 전달 → ${targetTitle}`, 'center')}
+</g>`;
+detail=`<g filter="url(#ex-shadow)">
+<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#203d47">에너지 보존 법칙 (Every Joule 에너지 흐름도)</text>
+<g transform="translate(50, 90)">
+  <rect x="0" y="35" width="130" height="155" rx="10" fill="#e2edf0" stroke="#7ba5ad" stroke-width="2"/>
+  <text x="65" y="105" class="center" font-size="14" font-weight="700" fill="#1b4d57">입력 에너지</text>
+  <text x="65" y="130" class="center" font-size="12" fill="#3b656e">100 Joule</text>
+  <path d="M130 65H320Q360 65 360 40H490" fill="none" stroke="#00b4d8" stroke-width="22" filter="url(#ex-glow-cyan)" stroke-linecap="round"/>
+  <text x="420" y="28" class="center" font-size="12" font-weight="700" fill="#008fa3">유용한 에너지 변환 (빛/운동)</text>
+  <path d="M130 160H260Q320 160 320 200H490" fill="none" stroke="#f5ab35" stroke-width="14" filter="url(#ex-glow-amber)" stroke-linecap="round"/>
+  <text x="420" y="190" class="center" font-size="12" font-weight="700" fill="#a46d1e">주변으로 흩어지는 열에너지</text>
+  <rect x="100" y="240" width="340" height="32" rx="8" fill="#183642" stroke="#2c5b6e"/>
+  <text x="270" y="261" class="center white" font-size="13" font-weight="700">총 에너지 보존: E(입력) = E(유용) + E(열손실)</text>
+</g>
+<rect x="130" y="375" width="380" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
+${text(320, 395, '장치에서 에너지가 새로 생기거나 사라지지 않고 형태만 바뀌어요', 'center')}
+</g>`;
+caption='에너지가 장치를 거치며 빛·운동·열 등으로 전환돼요. 전체 에너지의 총합은 항상 보존돼요.';
 }else if(kind==='force-graph'){
  controls=['추 1개','추 2개','추 3개'];
  const n=Math.min(3,c+1),len=90+n*27;let spring='M165 80';
