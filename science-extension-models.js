@@ -12,16 +12,126 @@ let body='',detail='',caption='',controls=[],title='';
 if(kind==='animal-adaptation'){
  controls=['연못의 오리','사막의 낙타','극지의 펭귄'];
  if(c===0){
-  body=`<g filter="url(#ex-shadow)"><path d="M20 310Q170 285 320 310T620 305V420H20" fill="url(#ex-water)"/><ellipse cx="320" cy="236" rx="100" ry="60" fill="#b9a37d"/><ellipse cx="305" cy="225" rx="56" ry="34" fill="#8d866c"/><circle cx="395" cy="172" r="41" fill="#588560" stroke="#3e6345" stroke-width="2"/><path d="M427 174L476 186L430 199Z" fill="#e5a74d" stroke="#bd7d2a" stroke-width="1.5"/><circle cx="409" cy="163" r="4.5" fill="#1c2d30"/><circle cx="410" cy="162" r="1.5" fill="#fff"/>${p('M280 282L275 321M344 283L350 321','#b18b5c',8)}<path d="M275 318L248 337L283 336L301 328ZM350 318L325 336L362 336L379 328Z" fill="#e5a74d" stroke="#bd7d2a" stroke-width="2"/>${arrow('M265 370L368 370')}<rect x="225" y="385" width="190" height="26" rx="6" fill="#ffffffdf" stroke="#b5d1db"/>${text(320,403,'물갈퀴가 물을 밀며 헤엄쳐요','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M320 80V200L220 325L310 292L400 325L355 200" fill="#e5a74d" stroke="#9b7d54" stroke-width="4"/><path d="M220 325Q265 310 310 292Q355 310 400 325" fill="#f8d68d" stroke="#b38743" stroke-width="2"/>${p('M320 200L310 292M320 200L220 325M320 200L400 325','#9b7d54',3)}<rect x="235" y="355" width="170" height="26" rx="6" fill="#ffffffdf" stroke="#b5d1db"/>${text(320,373,'발가락 사이 물갈퀴 (단면)','center')}</g>`;
+  body=`<g>
+<image href="assets/science/duck-pond.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
+<path d="M30 338Q170 326 310 338T610 332" fill="none" stroke="#2298c4" stroke-width="3" stroke-dasharray="8 6" opacity="0.8"/>
+<g filter="url(#ex-glow-cyan)">
+<path d="M290 325L240 348M345 328L295 352" fill="none" stroke="#00d0ea" stroke-width="4.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+<path d="M255 355Q235 345 220 360M310 358Q290 348 275 363" fill="none" stroke="#68e5ff" stroke-width="2.5" opacity="0.85"/>
+<path d="M430 195H490" fill="none" stroke="#00d0ea" stroke-width="4" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<rect x="25" y="25" width="225" height="34" rx="8" fill="#132a38cc" stroke="#337894" stroke-width="1.5"/>
+<circle cx="42" cy="42" r="5" fill="#00d0ea" filter="url(#ex-glow-cyan)"/>
+${text(54, 47, '물갈퀴 추진력: 후방으로 물 밀어냄', 'white')}
+<rect x="180" y="386" width="280" height="30" rx="8" fill="#ffffffea" stroke="#b2d4de" stroke-width="1.5"/>
+${text(320, 406, '발가락 사이 물갈퀴가 물을 밀며 전진해요', 'center')}
+</g>`;
+  detail=`<g filter="url(#ex-shadow)">
+<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#203d47">오리 발가락 사이 물갈퀴 구조 및 수압 단면</text>
+<path d="M320 85L270 200L170 305L305 282L440 305L360 200Z" fill="#f4af45" stroke="#a66e1e" stroke-width="3"/>
+<path d="M170 305Q245 285 305 282Q370 285 440 305" fill="#ffd57a" stroke="#d1952f" stroke-width="2.5"/>
+<path d="M270 200L170 305M320 85L305 282M360 200L440 305" stroke="#945f14" stroke-width="3.5" stroke-linecap="round"/>
+<g filter="url(#ex-glow-cyan)">
+<path d="M225 315V355M305 295V355M385 315V355" stroke="#00b4d8" stroke-width="3" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<rect x="150" y="370" width="340" height="30" rx="8" fill="#ffffffea" stroke="#b5d2dd" stroke-width="1.5"/>
+${text(320, 390, '넓은 피막(물갈퀴)으로 표면적을 넓혀 큰 반작용 추력 형성', 'center')}
+</g>`;
   caption='오리의 발가락 사이 물갈퀴는 물을 미는 데 도움이 돼요. 몸의 특징을 서식 환경과 연결해 관찰해요.';
  }else if(c===1){
-  body=`<g filter="url(#ex-shadow)"><path d="M0 320Q150 280 330 315T640 305V430H0" fill="url(#ex-sand)"/><path d="M175 253Q185 204 234 221Q265 141 300 213Q348 142 383 218L425 231L447 156L477 149L489 176L466 195L449 266Z" fill="#b9905c" stroke="#8c6d47" stroke-width="3"/><circle cx="478" cy="162" r="3" fill="#362514"/>${p('M211 254L205 340M267 260L276 340M372 257L364 340M421 256L430 340','#9c784b',14)}${p('M188 343H222M258 343H295M346 343H382M413 343H449','#a98a61',12)}<rect x="225" y="375" width="190" height="26" rx="6" fill="#ffffffdf" stroke="#d5bfa1"/>${text(320,393,'넓은 발바닥 · 모래 위의 생활','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)"><ellipse cx="320" cy="245" rx="130" ry="58" fill="#bf9a6b" stroke="#8d6c44" stroke-width="3"/><ellipse cx="320" cy="230" rx="110" ry="45" fill="#e5d0a8"/>${arrow('M250 135V195')}${arrow('M390 135V195')}<rect x="220" y="340" width="200" height="26" rx="6" fill="#ffffffdf" stroke="#cbb493"/>${text(320,358,'몸무게를 넓게 분산하는 발바닥','center')}</g>`;
+  body=`<g>
+<image href="assets/science/camel-desert.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
+<g filter="url(#ex-glow-cyan)">
+<ellipse cx="230" cy="370" rx="28" ry="10" fill="#00d0ea33" stroke="#00d0ea" stroke-width="2"/>
+<path d="M212 374L195 396M230 376L230 402M248 374L265 396" stroke="#00d0ea" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+<ellipse cx="438" cy="373" rx="28" ry="10" fill="#00d0ea33" stroke="#00d0ea" stroke-width="2"/>
+<path d="M420 377L403 399M438 379L438 405M456 377L473 399" stroke="#00d0ea" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<g filter="url(#ex-glow-amber)">
+<circle cx="330" cy="220" r="7" fill="#f5ab35"/>
+<path d="M330 220V265" stroke="#f5ab35" stroke-width="3.5" stroke-linecap="round" marker-end="url(#ex-arrow-amber)"/>
+</g>
+<rect x="25" y="25" width="250" height="34" rx="8" fill="#1b2a26cc" stroke="#377363" stroke-width="1.5"/>
+<circle cx="42" cy="42" r="5" fill="#00d0ea" filter="url(#ex-glow-cyan)"/>
+${text(54, 47, '압력 P = F / A : 넓은 면적으로 분산', 'white')}
+<rect x="150" y="386" width="340" height="30" rx="8" fill="#ffffffea" stroke="#d5c4a8" stroke-width="1.5"/>
+${text(320, 406, '넓은 발바닥 면적(A ↑) → 지면 압력 분산(P ↓) → 모래 위 지지', 'center')}
+</g>`;
+  detail=`<g filter="url(#ex-shadow)">
+<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#2b2318">접촉 면적에 따른 모래 침하(압력 P = F/A) 비교</text>
+<g transform="translate(40, 75)">
+<rect x="0" y="0" width="250" height="260" rx="12" fill="#fff9f5" stroke="#e09d8d" stroke-width="1.5"/>
+<text x="125" y="30" class="center" font-weight="700" fill="#a83824">좁은 발 (말굽 / 뾰족한 막대)</text>
+<path d="M20 180Q125 180 230 180" stroke="#d9b682" stroke-width="2"/>
+<path d="M20 180H80L90 230H160L170 180H230V245H20Z" fill="#ebd6a9"/>
+<rect x="110" y="80" width="30" height="150" rx="4" fill="#7d6752" stroke="#524334" stroke-width="2"/>
+<g filter="url(#ex-glow-amber)">
+<path d="M125 60V100" stroke="#e04e38" stroke-width="4" marker-end="url(#ex-arrow-red)"/>
+<path d="M125 230V250" stroke="#e04e38" stroke-width="4" marker-end="url(#ex-arrow-red)"/>
+</g>
+<rect x="25" y="215" width="200" height="24" rx="6" fill="#e04e38e0"/>
+<text x="125" y="232" class="center white" font-size="12" font-weight="700">면적 A 작음 → 압력 P 매우 큼 (침하)</text>
+</g>
+<g transform="translate(310, 75)">
+<rect x="0" y="0" width="250" height="260" rx="12" fill="#f5fbfc" stroke="#90c8d4" stroke-width="1.5"/>
+<text x="125" y="30" class="center" font-weight="700" fill="#1b6577">낙타의 넓은 쿠션 발바닥</text>
+<path d="M20 180Q125 180 230 180" stroke="#d9b682" stroke-width="2"/>
+<path d="M20 180H230V245H20Z" fill="#ebd6a9"/>
+<rect x="110" y="80" width="30" height="95" rx="4" fill="#a4815b" stroke="#78593a" stroke-width="2"/>
+<ellipse cx="125" cy="178" rx="70" ry="16" fill="#c99c6b" stroke="#876036" stroke-width="2.5"/>
+<ellipse cx="125" cy="174" rx="55" ry="10" fill="#f0dbb7"/>
+<g filter="url(#ex-glow-cyan)">
+<path d="M125 60V95" stroke="#f5ab35" stroke-width="3.5" marker-end="url(#ex-arrow-amber)"/>
+<path d="M85 182L70 205M105 184L97 210M125 185L125 212M145 184L153 210M165 182L180 205" stroke="#00b4d8" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<rect x="25" y="215" width="200" height="24" rx="6" fill="#0b7a94e0"/>
+<text x="125" y="232" class="center white" font-size="12" font-weight="700">면적 A 큼 → 압력 P 분산 (모래 위 지지)</text>
+</g>
+<rect x="140" y="365" width="360" height="30" rx="8" fill="#ffffffea" stroke="#c0b59f" stroke-width="1.5"/>
+${text(320, 385, '면적이 넓을수록 같은 무게라도 바닥에 가해지는 압력이 작아져요', 'center')}
+</g>`;
   caption='낙타의 넓은 발바닥은 모래 위에서 몸을 받치는 데 도움이 돼요. 혹의 저장 물질을 물주머니로 설명하지 않아요.';
  }else{
-  body=`<g filter="url(#ex-shadow)"><path d="M0 330L185 300L340 332L480 305L640 335V430H0" fill="#dce8e7"/><ellipse cx="320" cy="233" rx="70" ry="115" fill="#304450" stroke="#1d2e38" stroke-width="2"/><ellipse cx="320" cy="252" rx="47" ry="87" fill="#eef3ea"/><circle cx="320" cy="125" r="46" fill="#304450" stroke="#1d2e38" stroke-width="2"/><circle cx="334" cy="117" r="4" fill="#f4f4ec"/><circle cx="335" cy="117" r="2" fill="#1c2c34"/><path d="M358 128L392 138L356 149Z" fill="#dca954" stroke="#ab7b2b" stroke-width="1.5"/>${p('M255 198Q202 230 221 282M384 198Q429 234 414 282','#304450',20)}<rect x="205" y="375" width="230" height="26" rx="6" fill="#ffffffdf" stroke="#b2cad2"/>${text(320,393,'깃털과 몸의 형태를 환경과 연결해요','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M150 290Q320 120 490 290" stroke="#a8bdc4" fill="none" stroke-width="20"/><path d="M155 320Q320 150 485 320" stroke="#48606c" fill="none" stroke-width="40"/><rect x="220" y="350" width="200" height="26" rx="6" fill="#ffffffdf" stroke="#b2cad2"/>${text(320,368,'촘촘한 깃털층과 피부 경계 단면','center')}</g>`;
+  body=`<g>
+<image href="assets/science/penguin-polar.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
+<g filter="url(#ex-glow-cyan)">
+<path d="M120 180Q240 140 360 160T560 170M110 230Q250 200 370 220T570 235M130 280Q250 260 380 270T580 290" fill="none" stroke="#7be1ff" stroke-width="2" stroke-dasharray="8 6" opacity="0.85"/>
+</g>
+<g filter="url(#ex-glow-amber)">
+<path d="M305 155Q280 200 280 260Q280 320 335 345" fill="none" stroke="#ffbe3d" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
+</g>
+<rect x="25" y="25" width="260" height="34" rx="8" fill="#132433cc" stroke="#335f7e" stroke-width="1.5"/>
+<circle cx="42" cy="42" r="5" fill="#7be1ff" filter="url(#ex-glow-cyan)"/>
+${text(54, 47, '유선형 체형 저항 감소 · 촘촘한 깃털 단열', 'white')}
+<rect x="160" y="386" width="320" height="30" rx="8" fill="#ffffffea" stroke="#b2cad2" stroke-width="1.5"/>
+${text(320, 406, '유선형 체형과 두꺼운 깃털층이 차가운 극지 생활을 도와줘요', 'center')}
+</g>`;
+  detail=`<g filter="url(#ex-shadow)">
+<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#1b2c36">펭귄 깃털층 단열 구조와 체온 유지 단면</text>
+<rect x="60" y="90" width="520" height="230" rx="12" fill="#f0f6f8" stroke="#a9c9d4" stroke-width="1.5"/>
+<path d="M120 120H200V290H120Z" fill="#304450"/>
+<path d="M200 120H320V290H200Z" fill="#d2e3eb"/>
+<path d="M320 120H400V290H320Z" fill="#ecd3b6"/>
+<path d="M400 120H520V290H400Z" fill="#d77567"/>
+<text x="160" y="150" class="center white" font-size="13" font-weight="700">방수 외피</text>
+<text x="160" y="175" class="center white" font-size="11">촘촘한 깃털</text>
+<text x="260" y="150" class="center" font-size="13" font-weight="700" fill="#204052">공기 단열층</text>
+<text x="260" y="175" class="center" font-size="11" fill="#406072">체온 손실 방지</text>
+<text x="360" y="150" class="center" font-size="13" font-weight="700" fill="#6d4826">피하지방층</text>
+<text x="360" y="175" class="center" font-size="11" fill="#6d4826">에너지 저장</text>
+<text x="460" y="150" class="center white" font-size="13" font-weight="700">체온 (+38℃)</text>
+<text x="460" y="175" class="center white" font-size="11">내부 장기/근육</text>
+<g filter="url(#ex-glow-cyan)">
+<path d="M70 190L115 190" stroke="#00b4d8" stroke-width="3" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<text x="92" y="175" class="center" font-size="11" font-weight="700" fill="#007794">극지 강풍</text>
+<text x="92" y="215" class="center" font-size="11" font-weight="700" fill="#007794">(-30℃)</text>
+<rect x="140" y="355" width="360" height="30" rx="8" fill="#ffffffea" stroke="#b2cad2" stroke-width="1.5"/>
+${text(320, 375, '깃털 사이에 갇힌 공기층이 열전도를 차단하여 체온을 지켜요', 'center')}
+</g>`;
   caption='펭귄의 몸과 깃털은 차가운 환경에서 생활하는 데 도움이 돼요. 한 가지 특징만으로 모든 생활 방식을 단정하지 않아요.';
  }
 }else if(kind==='animal-lifecycle'){
@@ -121,13 +231,58 @@ if(kind==='animal-adaptation'){
  caption=magnet?'코일에 전류가 흐르는 조건과 끊는 조건을 비교해요. 전자석의 작용은 회로 연결 상태에 따라 달라져요.':'전구가 켜지려면 전지와 전구 등이 끊기지 않은 회로로 연결돼야 해요. 전류가 전구에서 전부 없어지는 모형은 아니에요.';
 }else if(kind==='energy-transfer'){
  controls=['손 발전기 → 전구','전지 → 모터','태양 전지 → 모터'];
- body=`<g filter="url(#ex-shadow)">`+rect(240,155,170,130,'#b4cdc9')+`<circle cx="325" cy="220" r="40" fill="#6f9098"/>`+p(`M325 220L${325+35*Math.cos(t*10)} ${220+35*Math.sin(t*10)}`,'#d4bd7a',8);
- if(c===0)body+=`${p('M240 210H185V160H140','#728785',8)}${circle(140,160,12,'#a48b5d')}${arrow('M90 255H215')}`;
- else if(c===1)body+=`${rect(70,170,110,70,'#8ca6a2')}${text(95,213,'+')}${text(145,213,'−')}${arrow('M180 205H230')}`;
- else body+=`${rect(65,155,120,110,'#60869d')}${p('M105 155V265M145 155V265M65 192H185M65 229H185','#bad0dc',2)}${circle(115,70,22,'#f8cc66')}${arrow('M115 100V145','#c4983a')}${arrow('M185 212H230')}`;
- body+=arrow('M420 210H480')+`${circle(535,210,35,c===0?'#f5d377':'#7a9da6')}${c===0?text(535,285,'빛','center'):p(`M535 210L${535+45*Math.cos(t*13)} ${210+45*Math.sin(t*13)}`,'#567781',9)}${arrow('M330 300V360','#b88151')}<rect x="220" y="380" width="220" height="24" rx="6" fill="#ffffffdf" stroke="#b88151"/>${text(330,396,'주변으로 전달되는 열도 살펴봐요','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(115,140,165,115,'#c9d7c0')}${rect(360,140,165,115,'#bfd7dd')}${arrow('M285 195H350')}${text(195,205,'에너지 입력','center')}${text(440,205,'형태와 전달','center')}<rect x="170" y="350" width="300" height="24" rx="6" fill="#ffffffdf" stroke="#8fa9b0"/>${text(320,366,'장치에서 에너지가 새로 무한히 생기지 않아요','center')}</g>`;
- caption='에너지가 장치를 거치며 빛·운동·열 등으로 전달되거나 전환되는 관계를 관찰해요. 화살표는 에너지 흐름을 설명하는 표시예요.';
+ const sourceTitle=c===0?'손 발전기 (운동 에너지)':c===1?'화학 전지 (화학 에너지)':'태양 전지판 (빛 에너지)';
+ const targetTitle=c===0?'전구 (빛 + 열 에너지)':'모터 (운동 + 열 에너지)';
+ const flowX=195+(phase*245);
+ body=`<g filter="url(#ex-shadow)">
+<rect x="25" y="20" width="245" height="34" rx="8" fill="#1b2a38cc" stroke="#377363" stroke-width="1.5"/>
+${text(38,42,'Every Joule 에너지 전환 시뮬레이션','white')}
+<g transform="translate(45, 100)">
+  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
+  <rect x="15" y="15" width="120" height="26" rx="6" fill="#00b4d822" stroke="#00b4d8"/>
+  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#0b6375">에너지 공급원</text>
+  ${c===0?`<g transform="translate(75, 105)"><circle r="36" fill="#d2dedd" stroke="#6f8f94" stroke-width="2"/><circle r="12" fill="#9dbbbe"/><path d="M0 0L${30*Math.cos(t*8)} ${30*Math.sin(t*8)}" stroke="#e09d3b" stroke-width="5" stroke-linecap="round"/><circle cx="${30*Math.cos(t*8)}" cy="${30*Math.sin(t*8)}" r="7" fill="#b96a20"/></g>`:c===1?`<g transform="translate(75, 105)"><rect x="-40" y="-30" width="80" height="60" rx="8" fill="#8ca6a2" stroke="#5f7e7a" stroke-width="2"/><text x="-20" y="7" font-size="18" font-weight="700" fill="#fff">+</text><text x="15" y="7" font-size="18" font-weight="700" fill="#fff">−</text></g>`:`<g transform="translate(75, 105)"><rect x="-45" y="-35" width="90" height="70" rx="6" fill="#4a6e87" stroke="#314e63" stroke-width="2"/><path d="M-45 -12H45M-45 12H45M-15 -35V35M15 -35V35" stroke="#7aa4c0" stroke-width="1.5"/><circle cx="0" cy="-60" r="14" fill="#f8cc66" filter="url(#ex-glow-amber)"/><path d="M0 -42V-35" stroke="#e29b28" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/></g>`}
+  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${sourceTitle.split(' ')[0]}</text>
+</g>
+<g filter="url(#ex-glow-cyan)">
+  <path d="M195 195H445" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round"/>
+  <circle cx="${flowX}" cy="195" r="7" fill="#ffffff" filter="url(#ex-glow-cyan)"/>
+  <path d="M425 195L445 195" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+</g>
+<text x="320" y="180" class="center" font-size="12" font-weight="700" fill="#008fa3">전기 에너지 전달 (흐름)</text>
+<g transform="translate(445, 100)">
+  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
+  <rect x="15" y="15" width="120" height="26" rx="6" fill="#f5ab3522" stroke="#f5ab35"/>
+  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#996213">에너지 변환 장치</text>
+  ${c===0?`<g transform="translate(75, 100)" filter="url(#ex-glow-amber)"><ellipse cx="0" cy="-5" rx="30" ry="34" fill="#fff7d6" stroke="#d4ab48" stroke-width="2"/><path d="M-8 10L-12 25H12L8 10Z" fill="#a4a49c"/><path d="M-10 0Q0 -22 10 0" fill="none" stroke="#f5ab35" stroke-width="3"/></g>`:`<g transform="translate(75, 100)"><circle r="36" fill="#6f9098" stroke="#486870" stroke-width="2"/><path d="M0 0L${32*Math.cos(t*14)} ${32*Math.sin(t*14)}" stroke="#00d0ea" stroke-width="5" stroke-linecap="round" filter="url(#ex-glow-cyan)"/><circle r="8" fill="#dce6e7"/></g>`}
+  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${targetTitle.split(' ')[0]}</text>
+</g>
+<g filter="url(#ex-glow-amber)" transform="translate(320, 235)">
+  <path d="M0 0V55" fill="none" stroke="#f5ab35" stroke-width="3.5" stroke-dasharray="5 3" marker-end="url(#ex-arrow-amber)"/>
+  <rect x="-85" y="65" width="170" height="26" rx="6" fill="#f5ab3525" stroke="#f5ab35"/>
+  <text x="0" y="82" class="center" font-size="11" font-weight="700" fill="#996213">방출되는 열에너지 (손실)</text>
+</g>
+<rect x="140" y="386" width="360" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
+${text(320, 406, `${sourceTitle} → 전기 전달 → ${targetTitle}`, 'center')}
+</g>`;
+detail=`<g filter="url(#ex-shadow)">
+<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#203d47">에너지 보존 법칙 (Every Joule 에너지 흐름도)</text>
+<g transform="translate(50, 90)">
+  <rect x="0" y="35" width="130" height="155" rx="10" fill="#e2edf0" stroke="#7ba5ad" stroke-width="2"/>
+  <text x="65" y="105" class="center" font-size="14" font-weight="700" fill="#1b4d57">입력 에너지</text>
+  <text x="65" y="130" class="center" font-size="12" fill="#3b656e">100 Joule</text>
+  <path d="M130 65H320Q360 65 360 40H490" fill="none" stroke="#00b4d8" stroke-width="22" filter="url(#ex-glow-cyan)" stroke-linecap="round"/>
+  <text x="420" y="28" class="center" font-size="12" font-weight="700" fill="#008fa3">유용한 에너지 변환 (빛/운동)</text>
+  <path d="M130 160H260Q320 160 320 200H490" fill="none" stroke="#f5ab35" stroke-width="14" filter="url(#ex-glow-amber)" stroke-linecap="round"/>
+  <text x="420" y="190" class="center" font-size="12" font-weight="700" fill="#a46d1e">주변으로 흩어지는 열에너지</text>
+  <rect x="100" y="240" width="340" height="32" rx="8" fill="#183642" stroke="#2c5b6e"/>
+  <text x="270" y="261" class="center white" font-size="13" font-weight="700">총 에너지 보존: E(입력) = E(유용) + E(열손실)</text>
+</g>
+<rect x="130" y="375" width="380" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
+${text(320, 395, '장치에서 에너지가 새로 생기거나 사라지지 않고 형태만 바뀌어요', 'center')}
+</g>`;
+caption='에너지가 장치를 거치며 빛·운동·열 등으로 전환돼요. 전체 에너지의 총합은 항상 보존돼요.';
 }else if(kind==='force-graph'){
  controls=['추 1개','추 2개','추 3개'];
  const n=Math.min(3,c+1),len=90+n*27;let spring='M165 80';
@@ -294,6 +449,9 @@ const legends=[...new Set([controls[c],...[...displayed.matchAll(/<text[^>]*>([^
 
 const defsEx=`<defs>
 <marker id="ex-arrow" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#0e7490"/></marker>
+<marker id="ex-arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#00b4d8"/></marker>
+<marker id="ex-arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f5ab35"/></marker>
+<marker id="ex-arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#e04e38"/></marker>
 <linearGradient id="ex-paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fdfcf8"/><stop offset="100%" stop-color="#f1ede3"/></linearGradient>
 <linearGradient id="ex-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a4dbec"/><stop offset="100%" stop-color="#69b5cb"/></linearGradient>
 <linearGradient id="ex-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ebdcb5"/><stop offset="100%" stop-color="#cfb989"/></linearGradient>
@@ -302,6 +460,8 @@ const defsEx=`<defs>
 <linearGradient id="ex-mag-n" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#d95e4e"/><stop offset="100%" stop-color="#af382a"/></linearGradient>
 <linearGradient id="ex-mag-s" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#4e9ab4"/><stop offset="100%" stop-color="#2a667d"/></linearGradient>
 <filter id="ex-shadow" x="-8%" y="-8%" width="116%" height="116%"><feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="#1b363d" flood-opacity=".12"/></filter>
+<filter id="ex-glow-cyan" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3.5" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+<filter id="ex-glow-amber" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="3" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
 </defs>`;
 
 return {
