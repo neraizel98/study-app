@@ -73,15 +73,15 @@
             $('bankStatus').textContent = api.validateBank(bank) ? `학습한 범위의 새 지문·응용 문제로 ${api.contract(bank).total}문항을 준비했어요. 기존 풀이 기록과 중복을 확인했어요.` : '학습 기록에서 시험 문항을 구성하지 못했어요. 추가 공부가 필요한 것은 아닙니다. 기록 동기화 후 다시 확인해 주세요.';
             $('shortages').replaceChildren();
             // Weekly-transfer banks key shortages by area (국어·영어·수학·한자) and carry the reason; older banks key by subject.
-            const shortageNames = bank.policyId === 'weekly-transfer-20261024' ? {reading:'국어',english:'영어',math:'수학',hanja:'한자'} : (app.MockExamBank.subjectNames || {reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'});
+            const shortageNames = bank.policyId === 'weekly-transfer-20261024' ? {reading:'국어',english:'영어',math:'수학',hanja:'한자',science:'과학'} : (app.MockExamBank.subjectNames || {reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'});
             for (const [subject, shortage] of Object.entries(bank.shortages || {})) if (shortage.missing > 0) $('shortages').append(text('li', `${shortageNames[subject] || subject}: ${shortage.actual}/${shortage.required}문항 · ${shortage.missing}문항 부족${shortage.reason ? ` — ${shortage.reason}` : ''}`));
             for (const note of bank.componentNotes || []) $('shortages').append(text('li', note.reason));
             if (bank.reexposureCount > 0 && api.validateBank(bank)) $('shortages').append(text('li', `새 문항이 모자란 과목은 예전에 풀었던 문항 ${bank.reexposureCount}개를 가장 오래전에 본 것부터 다시 넣었어요. 이번 주 회차와는 겹치지 않아요.`));
-            for(const row of bank.coverageNotes||[])if(row.questions)$('shortages').append(text('li',`${({reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'})[row.subject]}: 이번 주 ${row.days}일 학습 · ${row.questions}문항 반영`));
+            for(const row of bank.coverageNotes||[])if(row.questions)$('shortages').append(text('li',`${({reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자',science:'과학'})[row.subject]}: 이번 주 ${row.days}일 학습 · ${row.questions}문항 반영`));
             if (!api.validateBank(bank) && !$('shortages').children.length) $('shortages').append(text('li', '문항 구성과 영역 배분 확인이 필요합니다.'));
             $('startExam').disabled = !api.validateBank(bank) || !$('examPledge').checked;
             const minutes = app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};
-            $('timePlan').textContent = api.definitions.map(s => `${s.name} ${minutes[s.id] || s.minutes}분`).join(' → ') + ' · 영어 뒤 최대 5분 휴식';
+            $('timePlan').textContent = api.contract(bank).definitions.map(s => `${s.name} ${api.contract(bank).total===55?(minutes[s.id] || s.minutes):s.minutes}분`).join(' → ') + ' · 영어 뒤 최대 5분 휴식';
         }
         function render() {
             if (!guard()) return;

@@ -103,7 +103,7 @@
         const label = String(set.weekLabel || set.weekKey || '').replace(/^(\d{4})년\s*/, '$1학년도 ');
         return `${label} Smart Study 모의고사 · 제${Number(set.attemptNo) || 1}회`.trim();
     }
-    const minutesOf = (set, area) => { const value = Number(set.timeLimits?.[area.id]); return Number.isFinite(value) && value > 0 ? value : area.minutes; };
+    const minutesOf = (set, area) => { const value = Number(set.timeLimits?.[area.id]); const fallback=['classic100-v1','science125-v1'].includes(set.examVersion)?area.id==='hanja'?25:35:area.minutes; return Number.isFinite(value) && value > 0 ? value : fallback; };
     const range = qs => qs.length > 1 ? `[${qs[0].no}~${qs[qs.length - 1].no}]` : `[${qs[0].no}]`;
 
     function examHeader(doc, set, area) {

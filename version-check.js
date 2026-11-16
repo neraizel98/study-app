@@ -9,7 +9,7 @@
     if (window._versionCheckDone) return;
     window._versionCheckDone = true;
 
-    const APP_VERSION = '20261114-omr-photo-recovery';
+    const APP_VERSION = '20261116-mock25';
 
     (async function () {
         try {

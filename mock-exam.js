@@ -11,12 +11,18 @@
         { id: 'hanja', name: '한자', subjects: ['hanja'], minutes: 10 }
     ]);
     const SCIENCE = {id:'science',name:'과학',subjects:['science'],minutes:25};
-    function contract(value){const version=value?.examVersion||'legacy55-v1';return version==='science75-v1'?{version,total:75,definitions:[...definitions,SCIENCE]}:version==='legacy55-v1'?{version,total:55,definitions}:null;}
+    const definitions25 = Object.freeze(definitions.map(s => ({ ...s, minutes: s.id === 'hanja' ? 25 : 35 })));
+    function contract(value){
+        const version=value?.examVersion||'legacy55-v1';
+        if(version==='classic100-v1'||version==='science125-v1')return {version,total:version==='science125-v1'?125:100,sectionCount:25,definitions:version==='science125-v1'?[...definitions25,{...SCIENCE,minutes:35}]:definitions25};
+        return version==='science75-v1'?{version,total:75,definitions:[...definitions,SCIENCE]}:version==='legacy55-v1'?{version,total:55,definitions}:null;
+    }
+    const hasScience = value => contract(value)?.definitions.some(s=>s.id==='science') === true;
     function validSnapshot(d){
         const c=contract(d);if(!c||!Array.isArray(d.questions)||d.questions.length!==c.total)return false;
         if(c.total===55)return !d.sections?.length||d.sections.length===4&&d.sections.every((s,i)=>s.id===definitions[i].id);
-        if(!Array.isArray(d.sections)||d.sections.length!==5||!d.sections.every((s,i)=>s.id===c.definitions[i].id&&JSON.stringify(s.subjects)===JSON.stringify(c.definitions[i].subjects)&&s.durationSeconds===c.definitions[i].minutes*60))return false;
-        let offset=0;return c.definitions.every(section=>{const count=section.id==='science'?20:section.id==='hanja'?10:15,rows=d.questions.slice(offset,offset+count);offset+=count;return rows.length===count&&rows.every(q=>section.subjects.includes(q.subject));});
+        if(!Array.isArray(d.sections)||d.sections.length!==c.definitions.length||!d.sections.every((s,i)=>s.id===c.definitions[i].id&&JSON.stringify(s.subjects)===JSON.stringify(c.definitions[i].subjects)&&s.durationSeconds===c.definitions[i].minutes*60))return false;
+        let offset=0;return c.definitions.every(section=>{const count=c.sectionCount||(section.id==='science'?20:section.id==='hanja'?10:15),rows=d.questions.slice(offset,offset+count);offset+=count;return rows.length===count&&rows.every(q=>section.subjects.includes(q.subject));});
     }
     const clone = value => JSON.parse(JSON.stringify(value));
     const repo = () => app.LocalRepository;
@@ -97,14 +103,14 @@
     function validateBank(bank) {
         const c=contract(bank);if(!c)return false;
         const items = bank?.items || [], science=items.filter(q=>q.subject==='science'), counts = Object.fromEntries(Object.keys(areas).map(subject => [subject, items.filter(q => q.subject === subject).length]));
-        return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === c.total && new Set(items.map(q => q.id)).size === c.total && science.length===(c.total===75?20:0) && (c.total!==75||bank.quotas?.science===20&&science.every(q=>q.kind==='choice'&&q.choices?.length===4&&q.levelId==='level1'&&q.unitId&&q.context?.levelId===q.levelId&&q.context?.unitId===q.unitId))
+        return bank?.complete === true && (bank.policyId!=='transfer-20261024'||root.MockExamQuality?.evaluate(items).complete===true&&items.every(q=>!q.repeated)) && items.length === c.total && new Set(items.map(q => q.id)).size === c.total && science.length===(hasScience(bank)?(c.sectionCount||20):0) && (!hasScience(bank)||bank.quotas?.science===(c.sectionCount||20)&&science.every(q=>q.kind==='choice'&&q.choices?.length===4&&q.levelId==='level1'&&q.unitId&&q.context?.levelId===q.levelId&&q.context?.unitId===q.unitId))
             && items.every(q => q.id && q.question && (q.kind === 'written' ? typeof q.answer === 'string'
                 : Array.isArray(q.choices) && q.choices.length >= 2 && q.choices.includes(q.answer) && new Set(q.choices).size === q.choices.length))
             && (bank.policyId==='weekly-transfer-20261024'
                 // Only the bank's labelled oldest-first fallback may repeat earlier-week content, and every item must pass the integrity check.
-                ? items.every(q=>!q.repeated||q.noveltyKind==='re-exposure'&&Number.isFinite(q.lastExposedAt))&&(!root.MockExamQuality?.validateItem||items.every(q=>root.MockExamQuality.validateItem(q).ok))&&Object.entries(areas).every(([subject])=>Number.isInteger(bank.quotas?.[subject])&&bank.quotas[subject]>=0&&counts[subject]===bank.quotas[subject])&&counts.english+counts.grammar+counts.english_reading===15&&counts.math+counts.math_formula===15&&counts.hanja===10
+                ? items.every(q=>!q.repeated||q.noveltyKind==='re-exposure'&&Number.isFinite(q.lastExposedAt))&&(!root.MockExamQuality?.validateItem||items.every(q=>root.MockExamQuality.validateItem(q).ok))&&Object.entries(areas).every(([subject])=>Number.isInteger(bank.quotas?.[subject])&&bank.quotas[subject]>=0&&counts[subject]===bank.quotas[subject])&&counts.english+counts.grammar+counts.english_reading===(c.sectionCount||15)&&counts.math+counts.math_formula===(c.sectionCount||15)&&counts.hanja===(c.sectionCount||10)
                 : Object.entries(areas).every(([subject, count]) => ['reading', 'korean_vocab'].includes(subject) || counts[subject] === count))
-            && counts.reading + counts.korean_vocab === KOREAN.total && (bank.policyId==='weekly-transfer-20261024'||counts.korean_vocab <= KOREAN.vocabularyMax);
+            && counts.reading + counts.korean_vocab === (c.sectionCount||KOREAN.total) && (bank.policyId==='weekly-transfer-20261024'||counts.korean_vocab <= KOREAN.vocabularyMax);
     }
     function create(user, bank, now = Date.now(), options = {}) {
         assertUser(user);
@@ -122,7 +128,7 @@
         if (!validateBank(bank)) throw new Error(`정규 ${contract(bank)?.total||55}문항 시험 준비 중입니다. 부족한 학습 범위와 문항을 확인해 주세요.`);
         const sectionMinutes = options.sectionMinutes || app.LearningPlan?.getSettings?.(user)?.weekly?.mockSectionMinutes || {};
         const sections = contract(bank).definitions.map((section, index) => {
-            const proposed = contract(bank).total===75?section.minutes:Number(sectionMinutes[section.id]);
+            const proposed = contract(bank).total!==55?section.minutes:Number(sectionMinutes[section.id]);
             return { ...section, durationSeconds: Number.isFinite(proposed) && proposed >= 5 && proposed <= 60 ? proposed * 60 : section.minutes * 60,
                 state: index === 0 ? 'active' : 'pending', startedAt: index === 0 ? now : null, deadline: null, endedAt: null, timedOut: false,
                 activeSeconds: 0, elapsedSeconds: 0, initialAttempts: null };
@@ -131,7 +137,7 @@
         const assessmentId=attemptNo===1?`mock:${user}:${scheduledWeekId}:first`:`mock:${user}:${scheduledWeekId}:attempt-${attemptNo}-${root.crypto?.randomUUID?.()||now.toString(36)}`;
         return write({ schemaVersion: 1, examVersion:contract(bank).version, assessmentId, storageSlot:attemptNo===1?scheduledWeekId:`${scheduledWeekId}~${attemptNo}~${encodeURIComponent(assessmentId)}`, userId: user, scheduledWeekId,
             scheduledDate: options.scheduledDate || new Date(now + 9 * 3600000).toISOString().slice(0, 10), scopeCutoffAt: bank.scopeCutoffAt || now,
-            kind: 'mock', attemptNo, parentAttemptId: old?.assessmentId||options.parentAttemptId||null, bankVersion: bank.version || 'unknown', quotas: Object.fromEntries([...Object.keys(areas),...(contract(bank).total===75?['science']:[])].map(subject=>[subject,bank.items.filter(q=>q.subject===subject).length])),
+            kind: 'mock', attemptNo, parentAttemptId: old?.assessmentId||options.parentAttemptId||null, bankVersion: bank.version || 'unknown', quotas: Object.fromEntries([...Object.keys(areas),...(hasScience(bank)?['science']:[])].map(subject=>[subject,bank.items.filter(q=>q.subject===subject).length])),
             evidenceWindowDays: bank.evidenceWindowDays || null, repeatAvoidanceDays: bank.repeatAvoidanceDays || null,
             repeatPolicy:bank.repeatPolicy||null,quality:bank.quality?clone(bank.quality):null,policyId:bank.policyId||null,weeklyCoverage:bank.weeklyCoverage?clone(bank.weeklyCoverage):null,
             newQuestionCount: bank.items.filter(q => !q.repeated).length, reexposureCount: bank.items.filter(q => q.repeated).length,
@@ -300,22 +306,23 @@
         return generated;
     }
     function hydrateSnapshot(value) {
-        const draft=clone(value);if(draft?.examVersion!=='science75-v1')return draft;
+        const draft=clone(value);if(!hasScience(draft)&&contract(draft)?.sectionCount!==25)return draft;
         const hydrate=a=>{const q=draft.questions?.find(q=>q.id===a.questionId);if(!q)return a;return {...a,passageText:a.passageText||clone(q.passageLines||q.passageText||[]),givens:a.givens||q.givens||'',dataTable:a.dataTable||q.dataTable||null,sourceRefs:a.sourceRefs||q.sourceRefs||[],fingerprint:a.fingerprint||q.fingerprint||null};};
         if(Array.isArray(draft.initialAttempts))draft.initialAttempts=draft.initialAttempts.map(hydrate);
         for(const s of draft.sections||[])if(Array.isArray(s.initialAttempts))s.initialAttempts=s.initialAttempts.map(hydrate);
+        if(contract(draft)?.sectionCount===25)for(const r of draft.reports||[])for(const key of ['initialAttempts','attempts'])if(Array.isArray(r.metadata?.[key]))r.metadata[key]=r.metadata[key].map(hydrate);
         return draft;
     }
     function submissionSnapshot(draft) {
         if (!draft?.submittedAt || draft.sections.some(s => s.state !== 'ended')) throw new Error('모든 과목 제출을 먼저 완료해 주세요.');
         const result={ ...clone(draft), initialAttempts: draft.sections.flatMap(s => clone(s.initialAttempts)), reports: reportsFor(draft) };
-        if(result.examVersion==='science75-v1'){
+        if(hasScience(result)||contract(result)?.sectionCount===25){
             // Source documents live immutably in questions. Keep every first answer/choice/score,
             // but do not copy the same passage into sections, top-level answers and both report arrays.
             const compact=a=>{const out={...a};for(const key of ['passageText','givens','dataTable','sourceRefs','fingerprint'])delete out[key];return out;};
             result.initialAttempts=result.initialAttempts.map(compact);
             result.sections=result.sections.map(s=>({...s,initialAttempts:s.initialAttempts.map(compact)}));
-            result.reports=result.reports.map(r=>{const m={...r.metadata};delete m.attempts;m.initialAttempts=m.initialAttempts.map(a=>{const out={...a};delete out.fingerprint;if(Array.isArray(out.passageText)&&out.givens===out.passageText.join('\n'))delete out.givens;return out;});return {...r,metadata:m};});
+            result.reports=result.reports.map(r=>{const m={...r.metadata};delete m.attempts;m.initialAttempts=m.initialAttempts.map(a=>{if(contract(result)?.sectionCount===25)return compact(a);const out={...a};delete out.fingerprint;if(Array.isArray(out.passageText)&&out.givens===out.passageText.join('\n'))delete out.givens;return out;});return {...r,metadata:m};});
             result.sourceSnapshotVersion='questions-v1';
         }
         return result;
@@ -324,7 +331,7 @@
     const PAPER_ORDER = Object.freeze(['reading', 'math', 'english', 'hanja', 'science']), PAPER_EXTRA_MINUTES = 30;
     function paperTimeLimits(paper) {
         const minutes = paper?.paper?.timeLimits || {};
-        return Object.fromEntries((contract(paper)?.definitions||definitions).map(section => { const proposed = paper?.examVersion==='science75-v1'?section.minutes:Number(minutes[section.id]);
+        return Object.fromEntries((contract(paper)?.definitions||definitions).map(section => { const proposed = contract(paper)?.total!==55?section.minutes:Number(minutes[section.id]);
             return [section.id, Number.isInteger(proposed) && proposed >= 5 && proposed <= 60 ? proposed : section.minutes]; }));
     }
     // The parent's optional per-교시 times. Empty means "not recorded" (null); otherwise a whole
