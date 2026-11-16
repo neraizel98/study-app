@@ -56,6 +56,7 @@ const STATIC_ASSETS = [
     './science-extension-models.js?v=20261114-science-level1-complete', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMock25Expansion.js?v=20261116-mock25',
     './science-orbit-three.js?v=20261114-science-level1-complete', './science-moon-three.js?v=20261116-visual-stage2', './vendor/three/three.module.js', './vendor/three/three.core.js',
     './science.html', './science.css?v=20261114-science-level1-complete', './science-app.js?v=20261116-visual-stage3', './science-models.js?v=20261114-science-level1-complete', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
+    './assets/science/camel-desert.webp', './assets/science/duck-pond.webp', './assets/science/penguin-polar.webp',
     './',
     './index.html',
     './theme.css',
