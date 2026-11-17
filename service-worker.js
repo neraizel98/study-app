@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261117-high-contrast';
+const CACHE_NAME = 'smart-study-20261117-layout-refresh';
 
 try {
     importScripts('./firebase-config.js');
@@ -55,7 +55,7 @@ const STATIC_ASSETS = [
     './mock-exam-bank.js?v=20261116-mock25', './mock-exam.js?v=20261116-mock25', './mock-exam-ui.js?v=20261116-mock25', './mock-paper.js?v=20261116-mock25', './mock-paper-admin.js?v=20261116-mock25', './mock-paper-omr.js?v=20261116-mock25', './mock-admin.js?v=20261116-mock25', './firestore-repository.js?v=20261116-mock25',
     './science-extension-models.js?v=20261117-high-contrast', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMock25Expansion.js?v=20261116-mock25',
     './science-orbit-three.js?v=20261114-science-level1-complete', './science-moon-three.js?v=20261116-visual-stage2', './vendor/three/three.module.js', './vendor/three/three.core.js',
-    './science.html', './science.css?v=20261117-high-contrast', './science-app.js?v=20261117-high-contrast', './science-models.js?v=20261114-science-level1-complete', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
+    './science.html', './science.css?v=20261117-layout-refresh', './science-app.js?v=20261117-layout-refresh', './science-models.js?v=20261114-science-level1-complete', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
     './assets/science/camel-desert.webp', './assets/science/duck-pond.webp', './assets/science/penguin-polar.webp',
     './',
     './index.html',
