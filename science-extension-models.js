@@ -12,124 +12,147 @@ let body='',detail='',caption='',controls=[],title='',customLegends=null,customS
 if(kind==='animal-adaptation'){
  controls=['연못의 오리','사막의 낙타','극지의 펭귄'];
  customSteps = ['동작 주기 관찰', '원리 비교 단면'];
- customLegends = c === 0 ? ['연못의 오리', '추진 스트로크 (물 젓기)', '회수 스트로크 (발 모으기)', '물갈퀴 전진 추력', '유체 저항 최소화'] : c === 1 ? ['사막의 낙타', '접지 단계', '패드 팽창 및 압력 분산', '모래 반작용 안정 지지', '압력 P = F / A', '모래 침하 방지'] : ['극지의 펭귄', '유선형 항력 감소', '방수 깃털 외피', '정체 공기 단열층', '열전도 85% 차단', '심부 체온 (+38℃)'];
+ customLegends = c === 0 ? ['연못의 오리', '추진 스트로크 (물 젓기)', '회수 스트로크 (발 모으기)', '물갈퀴 전진 추력 (+18.5 N)', '유체 저항 최소화 (1.1 N)'] : c === 1 ? ['사막의 낙타', '접지 단계 (하중 전달)', '패드 팽창 및 압력 분산', '모래 반작용 안정 지지', '압력 P = F / A (2.4 N/cm²)', '모래 전단 침하 방지'] : ['극지의 펭귄', '유선형 항력 최소화 (Cd ≈ 0.03)', '방수 깃털 외피', '정체 공기 단열층 (k = 0.024)', '열전도 88% 차단', '심부 체온 (+38.5℃)'];
 
  if(c===0){
   const isPower = phase < 0.55;
   const kickP = isPower ? (phase / 0.55) : ((phase - 0.55) / 0.45);
-  const kickAngle = isPower ? (kickP * 30) : (30 - kickP * 30);
-  const thrustW = isPower ? (40 + kickP * 35) : 30;
+  const thrustW = isPower ? (30 + kickP * 35) : 18;
 
   body = `<g>
 <image href="assets/science/duck-pond.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
-<path d="M30 338Q170 326 310 338T610 332" fill="none" stroke="#2298c4" stroke-width="3" stroke-dasharray="8 6" opacity="0.8"/>
 
-<!-- Water propulsion & Forward thrust vectors -->
-<g filter="url(#ex-glow-cyan)">
+<!-- Waterline interface & dynamic wake ripples -->
+<path d="M25 338Q170 ${336 + (isPower ? Math.sin(kickP * Math.PI) * 2.5 : 0)} 310 338T615 334" fill="none" stroke="#2a92b0" stroke-width="2" stroke-dasharray="10 6" opacity="0.75"/>
+<path d="M220 348Q280 344 350 350" fill="none" stroke="#7acde2" stroke-width="1.2" opacity="0.6"/>
+
+<!-- Fluid dynamics: Water acceleration & Forward reaction vectors -->
+<g>
 ${isPower ? `
-<path d="M290 325L${240 - kickP * 35} ${348 + kickP * 18}M345 328L${295 - kickP * 35} ${352 + kickP * 18}" fill="none" stroke="#00d0ea" stroke-width="4.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
-<path d="M255 355Q235 345 210 365M310 358Q290 348 265 368" fill="none" stroke="#68e5ff" stroke-width="2.5" opacity="0.85"/>
-<path d="M430 195H${430 + thrustW}" fill="none" stroke="#00d0ea" stroke-width="4.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+<!-- Power stroke: Expelling water backward in vortex stream -->
+<path d="M295 338Q${255 - kickP * 30} ${352 + kickP * 12} ${205 - kickP * 35} ${362 + kickP * 18}" fill="none" stroke="#1b9cb8" stroke-width="2.2" stroke-dasharray="6 4" stroke-linecap="round" opacity="0.9"/>
+<path d="M330 342Q${285 - kickP * 28} ${358 + kickP * 10} ${235 - kickP * 30} ${368 + kickP * 15}" fill="none" stroke="#3db6d1" stroke-width="1.6" stroke-dasharray="5 4" opacity="0.75"/>
+<!-- Karman vortex wake rings -->
+<path d="M${240 - kickP * 25} ${350 + kickP * 8}A8 8 0 0 1 ${226 - kickP * 25} ${360 + kickP * 8}" fill="none" stroke="#1b9cb8" stroke-width="1.5" stroke-linecap="round" opacity="0.85"/>
+<path d="M${270 - kickP * 20} ${355 + kickP * 6}A9 9 0 0 1 ${254 - kickP * 20} ${366 + kickP * 6}" fill="none" stroke="#48c3dd" stroke-width="1.3" opacity="0.7"/>
+
+<!-- Backward action vector marker -->
+<path d="M280 345L${220 - kickP * 30} ${360 + kickP * 12}" fill="none" stroke="#1b9cb8" stroke-width="1.8" stroke-linecap="round" marker-end="url(#ex-arrow-aqua)"/>
+<text x="${220 - kickP * 25}" y="${380 + kickP * 10}" style="font-size:10px;font-weight:700;fill:#156b7d">후방 배수 (작용)</text>
+
+<!-- Chest forward thrust vector & dimension bracket -->
+<path d="M435 205H${435 + thrustW}" fill="none" stroke="#0e7490" stroke-width="2.6" stroke-linecap="round" marker-end="url(#ex-arrow)"/>
+<line x1="435" y1="198" x2="435" y2="212" stroke="#0e7490" stroke-width="1.2"/>
 ` : `
-<path d="M290 330L265 338M330 332L305 340" fill="none" stroke="#7be1ff" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4"/>
-<path d="M430 195H460" fill="none" stroke="#7be1ff" stroke-width="3" stroke-linecap="round" opacity="0.7"/>
+<!-- Recovery stroke: Laminar boundary streamlines with minimal drag -->
+<path d="M280 338Q295 344 315 342" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.8"/>
+<path d="M435 205H455" fill="none" stroke="#7acde2" stroke-width="1.8" stroke-linecap="round" opacity="0.8"/>
+<text x="462" y="209" style="font-size:10px;font-weight:600;fill:#356673">유체 저항 1.1 N (최소)</text>
 `}
 </g>
 
-<!-- Animated Webbed Foot -->
-<g transform="translate(310, 320) rotate(${kickAngle}) translate(-310, -320)">
-  <path d="M310 300L${isPower ? 278 : 292} 335" stroke="#e67e22" stroke-width="5" stroke-linecap="round"/>
-  ${isPower ? `
-  <polygon points="278,335 248,355 268,368 293,360" fill="#f39c12dd" stroke="#d35400" stroke-width="2"/>
-  <path d="M278 335L248 355M278 335L268 368M278 335L293 360" stroke="#b03a2e" stroke-width="2"/>
-  ` : `
-  <polygon points="292,335 280,358 290,360 297,352" fill="#f39c12dd" stroke="#d35400" stroke-width="2"/>
-  <path d="M292 335L287 360" stroke="#b03a2e" stroke-width="2"/>
-  `}
-</g>
+<!-- Top-Left Compact Frosted Badge -->
+<rect x="25" y="24" width="320" height="34" rx="8" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
+<circle cx="42" cy="41" r="5" fill="#0e7490"/>
+<text x="56" y="46" style="font-size:13px;font-weight:700;fill:#1a4d5c">${isPower ? '1단계: 추진 스트로크 (물갈퀴 전개 · 후방 배수)' : '2단계: 회수 스트로크 (물갈퀴 접힘 · 유체 저항 최소화)'}</text>
 
-<!-- Top-Left Compact Stage Pill -->
-<rect x="25" y="24" width="280" height="34" rx="8" fill="#132a38cc" stroke="#337894" stroke-width="1.5"/>
-<circle cx="42" cy="41" r="5" fill="#00d0ea" filter="url(#ex-glow-cyan)"/>
-${text(54, 46, isPower ? '1단계: 추진 스트로크 (물 젓기)' : '2단계: 회수 스트로크 (발 모으기)', 'white')}
+<!-- Forward Thrust / Drag Telemetry Badge -->
+<rect x="440" y="152" width="160" height="28" rx="6" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
+<text x="520" y="171" style="font-size:11px;font-weight:700;fill:#0e7490;text-anchor:middle">${isPower ? '추진력 +18.5 N (가속 전진)' : '유체 저항 1.1 N (93% 감소)'}</text>
 
-<!-- Thrust callout badge at chest -->
-<rect x="440" y="155" width="145" height="26" rx="6" fill="#132a38d9" stroke="#337894"/>
-${text(512, 172, isPower ? '추진력 +18.5 N (가속)' : '항력 1.2 N (저항 최소)', 'white center')}
-
-<!-- Bottom Explanation Banner -->
-<rect x="150" y="386" width="340" height="30" rx="8" fill="#ffffffea" stroke="#b2d4de" stroke-width="1.5"/>
-${text(320, 406, '물갈퀴를 펼쳐 물을 밀어 전진하고, 접어서 저항을 줄여요', 'center')}
+<!-- Bottom Technical Principle Ribbon -->
+<rect x="90" y="388" width="460" height="28" rx="7" fill="#ffffffeb" stroke="#b2d4de" stroke-width="1.2"/>
+<text x="320" y="406" style="font-size:12px;font-weight:600;fill:#244b56;text-anchor:middle">뉴턴 제3법칙(작용·반작용): 물갈퀴로 물을 밀어내며 그 반작용(+18.5 N)으로 전진해요</text>
 </g>`;
 
   detail = `<g filter="url(#ex-shadow)">
 <rect x="14" y="14" width="612" height="412" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
-${text(320, 48, '물갈퀴 개폐에 따른 유체역학 원리 비교', 'center')}
+<text x="320" y="48" style="font-size:15px;font-weight:700;fill:#23424b;text-anchor:middle">물갈퀴 개폐 메커니즘과 유체역학(작용·반작용) 단면 분석</text>
 
+<!-- Left Card: Power Stroke -->
 <g transform="translate(25, 68)">
-  <rect x="0" y="0" width="285" height="275" rx="12" fill="#f5fbff" stroke="#90c8d4" stroke-width="1.5"/>
-  <rect x="15" y="15" width="140" height="24" rx="6" fill="#00b4d8"/>
-  ${text(85, 32, '1. 물갈퀴 펼침 (추진)', 'white center')}
-  
-  <path d="M142 55L100 130L40 195L142 180L245 195L185 130Z" fill="#f4af45" stroke="#a66e1e" stroke-width="2.5"/>
-  <path d="M40 195Q95 180 142 180Q190 180 245 195" fill="#ffd57a" stroke="#d1952f" stroke-width="2"/>
-  <path d="M100 130L40 195M142 55L142 180M185 130L245 195" stroke="#945f14" stroke-width="3" stroke-linecap="round"/>
-  
-  <g filter="url(#ex-glow-cyan)">
-    <path d="M80 205V235M142 190V235M205 205V235" stroke="#00b4d8" stroke-width="3" marker-end="url(#ex-arrow-cyan)"/>
-  </g>
-  <rect x="15" y="238" width="255" height="26" rx="6" fill="#00b4d8"/>
-  ${text(142, 255, '면적 65cm² → 반작용 추력 +18.5 N', 'white center')}
+  <rect x="0" y="0" width="285" height="275" rx="12" fill="#f5fafe" stroke="#9bc7d6" stroke-width="1.2"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#0e7490"/>
+  <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">1. 물갈퀴 펼침 (추진 단계)</text>
+
+  <!-- Extended Webbed Foot Technical Diagram -->
+  <!-- Phalanges bones -->
+  <path d="M142 55L142 175M142 100L85 165M142 100L200 165" stroke="#8a6138" stroke-width="3" stroke-linecap="round"/>
+  <!-- Stretched Elastic Webbing with delicate shading -->
+  <path d="M85 165Q113 155 142 175Q171 155 200 165L200 120Q142 90 85 120Z" fill="rgba(244, 185, 85, 0.45)" stroke="#c28830" stroke-width="1.5"/>
+  <path d="M85 165Q113 155 142 175Q171 155 200 165" stroke="#9e661b" stroke-width="2.5" stroke-linecap="round"/>
+
+  <!-- Stagnation dynamic pressure isobars -->
+  <path d="M70 180Q142 165 215 180" fill="none" stroke="#e07a38" stroke-width="1.2" stroke-dasharray="3 2"/>
+  <path d="M60 195Q142 178 225 195" fill="none" stroke="#e89458" stroke-width="1.0" stroke-dasharray="4 3" opacity="0.8"/>
+  <text x="142" y="192" style="font-size:10px;font-weight:700;fill:#b85516;text-anchor:middle">동압 정체면 (고압 형성)</text>
+
+  <!-- Backward water momentum vectors -->
+  <path d="M95 195V225M142 200V232M190 195V225" stroke="#1b9cb8" stroke-width="2" marker-end="url(#ex-arrow-aqua)"/>
+  <text x="142" y="244" style="font-size:10px;font-weight:700;fill:#126374;text-anchor:middle">후방 배수 운동량: -Δp</text>
+
+  <!-- Forward reaction arrow -->
+  <path d="M142 85V48" stroke="#0e7490" stroke-width="2.5" marker-end="url(#ex-arrow)"/>
+  <text x="180" y="65" style="font-size:11px;font-weight:700;fill:#0e7490">반작용 추력</text>
+
+  <rect x="15" y="248" width="255" height="22" rx="5" fill="#0e7490"/>
+  <text x="142" y="263" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 65cm² → 추진력 +18.5 N (최대 추력)</text>
 </g>
 
+<!-- Right Card: Recovery Stroke -->
 <g transform="translate(330, 68)">
-  <rect x="0" y="0" width="285" height="275" rx="12" fill="#fffcf5" stroke="#dec9a5" stroke-width="1.5"/>
-  <rect x="15" y="15" width="140" height="24" rx="6" fill="#7d6752"/>
-  ${text(85, 32, '2. 물갈퀴 접힘 (회수)', 'white center')}
-  
-  <path d="M142 55L135 130L125 195L142 187L160 195L150 130Z" fill="#e8a840" stroke="#8c5812" stroke-width="2.5"/>
-  <path d="M135 130L125 195M142 55L142 187M150 130L160 195" stroke="#75470d" stroke-width="2.5" stroke-linecap="round"/>
-  
-  <g stroke="#9abec7" stroke-width="2" stroke-linecap="round" stroke-dasharray="4 4">
-    <path d="M90 95Q110 140 95 185"/>
-    <path d="M195 95Q175 140 190 185"/>
-  </g>
-  <rect x="15" y="238" width="255" height="26" rx="6" fill="#7d6752"/>
-  ${text(142, 255, '면적 14cm² (78%↓) → 저항 1.2 N 최소화', 'white center')}
+  <rect x="0" y="0" width="285" height="275" rx="12" fill="#fffcf6" stroke="#dcd0b8" stroke-width="1.2"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#6c5744"/>
+  <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">2. 물갈퀴 접힘 (회수 단계)</text>
+
+  <!-- Folded Webbed Foot Technical Diagram -->
+  <path d="M142 55L142 175M142 100L134 165M142 100L150 165" stroke="#8a6138" stroke-width="3" stroke-linecap="round"/>
+  <path d="M134 165L142 175L150 165L146 115L138 115Z" fill="rgba(244, 185, 85, 0.45)" stroke="#c28830" stroke-width="1.5"/>
+
+  <!-- Laminar streamlines wrapping around folded profile -->
+  <path d="M105 85Q125 125 105 165" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <path d="M180 85Q160 125 180 165" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="4 3"/>
+  <path d="M90 100Q115 130 90 185" fill="none" stroke="#9fd9e6" stroke-width="1.0" stroke-dasharray="5 4"/>
+  <path d="M195 100Q170 130 195 185" fill="none" stroke="#9fd9e6" stroke-width="1.0" stroke-dasharray="5 4"/>
+
+  <text x="142" y="205" style="font-size:10px;font-weight:700;fill:#4a6c78;text-anchor:middle">유선형 층류 통과 (와류 박리 없음)</text>
+  <text x="142" y="222" style="font-size:10px;font-weight:600;fill:#6b5847;text-anchor:middle">전면 투영 면적 78% 감소</text>
+
+  <rect x="15" y="248" width="255" height="22" rx="5" fill="#6c5744"/>
+  <text x="142" y="263" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 14cm² → 저항 1.1 N (93% 저항 감쇄)</text>
 </g>
 
-<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffea" stroke="#b2d4de" stroke-width="1.5"/>
-${text(320, 382, '물갈퀴 비대칭 추진: 물을 밀 때는 펼쳐 추력을 얻고, 당길 때는 접어 저항을 줄여요', 'center')}
-${text(320, 400, '구조의 개폐 메커니즘을 유체 저항 및 작용-반작용 법칙과 연결해요', 'center')}
+<!-- Bottom Principle Card -->
+<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffeb" stroke="#cddadc" stroke-width="1.2"/>
+<text x="320" y="380" style="font-size:12px;font-weight:700;fill:#203e48;text-anchor:middle">비대칭 유체 저항: 물을 밀 때는 펼쳐 최대 추력을 얻고, 당길 때는 접어 저항을 93% 줄여요</text>
+<text x="320" y="398" style="font-size:11px;font-weight:600;fill:#48636c;text-anchor:middle">물갈퀴의 개폐 구조는 물의 점성 저항을 능동적으로 제어하는 고효율 생체 적응이에요</text>
 </g>`;
-  caption = step === 1 ? '물갈퀴를 펼치면 물을 미는 면적이 넓어져 추진력이 극대화되고, 접으면 저항을 줄여요.' : (isPower ? '1단계 [추진 스트로크]: 물갈퀴를 펴 물을 후방으로 밀어내며 반작용으로 전진 추력을 얻어요.' : '2단계 [회수 스트로크]: 발가락을 모아 저항을 줄이며 다음 추진을 준비해요.');
+
+  caption = step === 1 ? '물갈퀴를 펼치면 전면 면적이 65cm²로 넓어져 추진력이 극대화되고, 접으면 14cm²로 줄어 저항을 93% 차단해요.' : (isPower ? '1단계 [추진 스트로크]: 물갈퀴를 펼쳐 대량의 물을 후방으로 밀어내며 반작용(+18.5 N)으로 전진해요.' : '2단계 [회수 스트로크]: 발가락을 오므려 유선형으로 저항(1.1 N)을 최소화하며 다음 젓기를 준비해요.');
 
  }else if(c===1){
   let stageText = '', areaVal = 280, pVal = '3.9';
-  let padRx = 28, padRy = 10, footY = 370, s = 0;
+  let padRx = 26, padRy = 8, s = 0;
 
   if(phase < 0.35){
    const p = phase / 0.35;
-   stageText = '1단계: 발바닥 접지 (하중 전달 시작)';
-   footY = 366 + p * 4;
-   padRx = 28;
-   padRy = 10;
-   areaVal = 280;
-   pVal = '3.9';
+   stageText = '1단계: 발바닥 접지 · 하중 전달 시작';
+   padRx = 26 + p * 3;
+   padRy = 8;
+   areaVal = 280 + Math.round(p * 40);
+   pVal = (1100 / areaVal).toFixed(1);
   }else if(phase < 0.75){
    const p = (phase - 0.35) / 0.40;
    s = Math.sin(p * Math.PI);
-   stageText = '2단계: 완충 패드 팽창 (면적↑ 압력↓)';
-   footY = 370 + s * 2;
-   padRx = Math.round(28 + s * 11);
-   padRy = Math.round(10 - s * 2.5);
-   areaVal = Math.round(280 + s * 140);
+   stageText = '2단계: 탄성 패드 팽창 · 압력 분산 (P = F / A)';
+   padRx = Math.round(29 + s * 9);
+   padRy = Math.round(8 - s * 1.5);
+   areaVal = Math.round(320 + s * 100);
    pVal = (1100 / areaVal).toFixed(1);
   }else{
-   stageText = '3단계: 모래 반작용 안정 지지';
-   footY = 370;
-   padRx = 33;
-   padRy = 9;
+   stageText = '3단계: 모래 전단 지지 · 침하 0.8 cm 안정 보행';
+   padRx = 30;
+   padRy = 8;
    areaVal = 350;
    pVal = '3.1';
   }
@@ -137,170 +160,224 @@ ${text(320, 400, '구조의 개폐 메커니즘을 유체 저항 및 작용-반�
   body = `<g>
 <image href="assets/science/camel-desert.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
 
-<!-- Glowing Cyan Foot Cushion Pads & Distributed Pressure Arrows -->
-<g filter="url(#ex-glow-cyan)">
-<ellipse cx="230" cy="${footY}" rx="${padRx}" ry="${padRy}" fill="#00d0ea33" stroke="#00d0ea" stroke-width="2.5"/>
-<path d="M${230 - padRx * 0.7} ${footY + 4}L${230 - padRx * 1.3} ${footY + 22 + s * 6}M230 ${footY + 6}L230 ${footY + 28 + s * 6}M${230 + padRx * 0.7} ${footY + 4}L${230 + padRx * 1.3} ${footY + 22 + s * 6}" stroke="#00d0ea" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
-<ellipse cx="438" cy="${footY + 3}" rx="${padRx}" ry="${padRy}" fill="#00d0ea33" stroke="#00d0ea" stroke-width="2.5"/>
-<path d="M${438 - padRx * 0.7} ${footY + 7}L${438 - padRx * 1.3} ${footY + 25 + s * 6}M438 ${footY + 9}L438 ${footY + 31 + s * 6}M${438 + padRx * 0.7} ${footY + 7}L${438 + padRx * 1.3} ${footY + 25 + s * 6}" stroke="#00d0ea" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
+<!-- Architectural Center of Gravity symbol ⊕ & Slender Downward Vector -->
+<g transform="translate(325, 230)">
+  <circle cx="0" cy="0" r="7" fill="none" stroke="#7c5532" stroke-width="1.2" stroke-dasharray="2 2"/>
+  <line x1="-9" y1="0" x2="9" y2="0" stroke="#7c5532" stroke-width="1"/>
+  <line x1="0" y1="-9" x2="0" y2="9" stroke="#7c5532" stroke-width="1"/>
+  <path d="M0 7V${32 + s * 8}" stroke="#6e4624" stroke-width="1.6" stroke-linecap="round" marker-end="url(#ex-arrow-draft)"/>
+  <text x="12" y="22" style="font-size:11px;font-weight:700;fill:#5c3818">W = mg (640 N)</text>
 </g>
 
-<!-- Belly Weight Force Arrow -->
-<g filter="url(#ex-glow-amber)">
-<circle cx="330" cy="220" r="7" fill="#f5ab35"/>
-<path d="M330 220V${255 + s * 15}" stroke="#f5ab35" stroke-width="3.5" stroke-linecap="round" marker-end="url(#ex-arrow-amber)"/>
+<!-- Front Foot (x=232, y=370): Anatomical Cushion & Boussinesq Pressure Bulbs -->
+<g>
+  <!-- Elastic pad contour -->
+  <ellipse cx="232" cy="370" rx="${padRx}" ry="${padRy}" fill="rgba(215, 175, 120, 0.28)" stroke="#8e643c" stroke-width="1.3"/>
+  <!-- 3-tier Boussinesq Isobar Bulbs radiating into sand -->
+  <path d="M${232 - padRx * 0.8} 373Q232 ${384 + s * 5} ${232 + padRx * 0.8} 373" fill="none" stroke="#b08250" stroke-width="1.3" stroke-dasharray="3 2"/>
+  <path d="M${232 - padRx * 1.3} 372Q232 ${395 + s * 7} ${232 + padRx * 1.3} 372" fill="none" stroke="#ba9264" stroke-width="1.0" stroke-dasharray="4 3" opacity="0.85"/>
+  <path d="M${232 - padRx * 1.8} 371Q232 ${406 + s * 9} ${232 + padRx * 1.8} 371" fill="none" stroke="#c4a57d" stroke-width="0.8" stroke-dasharray="5 4" opacity="0.6"/>
+  <!-- Lateral stress dispersion ticks -->
+  <path d="M${232 - padRx * 0.7} 374L${232 - padRx * 1.1} 385M232 375L232 388M${232 + padRx * 0.7} 374L${232 + padRx * 1.1} 385" stroke="#9c7042" stroke-width="1" stroke-linecap="round"/>
 </g>
 
-<!-- Top-Left Compact Stage Pill (In empty desert sky, NOT on camel) -->
-<rect x="25" y="24" width="280" height="34" rx="8" fill="#132a38cc" stroke="#337894" stroke-width="1.5"/>
-<circle cx="42" cy="41" r="5" fill="#00d0ea" filter="url(#ex-glow-cyan)"/>
-${text(54, 46, stageText, 'white')}
+<!-- Hind Foot (x=438, y=372): Anatomical Cushion & Boussinesq Pressure Bulbs -->
+<g>
+  <ellipse cx="438" cy="372" rx="${padRx}" ry="${padRy}" fill="rgba(215, 175, 120, 0.28)" stroke="#8e643c" stroke-width="1.3"/>
+  <path d="M${438 - padRx * 0.8} 375Q438 ${386 + s * 5} ${438 + padRx * 0.8} 375" fill="none" stroke="#b08250" stroke-width="1.3" stroke-dasharray="3 2"/>
+  <path d="M${438 - padRx * 1.3} 374Q438 ${397 + s * 7} ${438 + padRx * 1.3} 374" fill="none" stroke="#ba9264" stroke-width="1.0" stroke-dasharray="4 3" opacity="0.85"/>
+  <path d="M${438 - padRx * 1.8} 373Q438 ${408 + s * 9} ${438 + padRx * 1.8} 373" fill="none" stroke="#c4a57d" stroke-width="0.8" stroke-dasharray="5 4" opacity="0.6"/>
+  <path d="M${438 - padRx * 0.7} 376L${438 - padRx * 1.1} 387M438 377L438 390M${438 + padRx * 0.7} 376L${438 + padRx * 1.1} 387" stroke="#9c7042" stroke-width="1" stroke-linecap="round"/>
+</g>
 
-<!-- Pointer callout to Front Foot -->
-<path d="M230 ${footY + 8}L175 402H95" stroke="#00d0ea" stroke-width="1.5" stroke-dasharray="3 3"/>
-<rect x="15" y="388" width="165" height="26" rx="6" fill="#132a38d9" stroke="#337894"/>
-${text(97, 405, '접촉면적 ' + areaVal + 'cm² (분산)', 'white center')}
+<!-- Architectural Dimension Line for Front Foot -->
+<line x1="202" y1="395" x2="262" y2="395" stroke="#8c643e" stroke-width="1"/>
+<line x1="202" y1="391" x2="202" y2="399" stroke="#8c643e" stroke-width="1"/>
+<line x1="262" y1="391" x2="262" y2="399" stroke="#8c643e" stroke-width="1"/>
+<text x="232" y="407" style="font-size:10px;font-weight:700;fill:#654323;text-anchor:middle">접촉 폭 22cm (420 cm²)</text>
 
-<!-- Bottom Right Principle Pill -->
-<rect x="360" y="388" width="250" height="26" rx="6" fill="#ffffffea" stroke="#d5c4a8" stroke-width="1.5"/>
-${text(485, 405, '압력 ' + pVal + ' N/cm² (모래 위 지탱)', 'center')}
+<!-- Top-Left Compact Frosted Badge -->
+<rect x="25" y="24" width="315" height="34" rx="8" fill="#ffffffd9" stroke="#cbba9d" stroke-width="1.2"/>
+<circle cx="42" cy="41" r="5" fill="#8e643c"/>
+<text x="56" y="46" style="font-size:13px;font-weight:700;fill:#4e341c">${stageText}</text>
+
+<!-- Real-time Pressure Telemetry Badge -->
+<rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffd9" stroke="#cbba9d" stroke-width="1.2"/>
+<text x="517" y="46" style="font-size:12px;font-weight:700;fill:#734924;text-anchor:middle">지면 압력: ${pVal} N/cm² (안전)</text>
+
+<!-- Bottom Technical Principle Ribbon -->
+<rect x="90" y="388" width="460" height="28" rx="7" fill="#ffffffeb" stroke="#cfc0a5" stroke-width="1.2"/>
+<text x="320" y="406" style="font-size:12px;font-weight:600;fill:#48321e;text-anchor:middle">압력 P = F / A : 넓은 발바닥 면적(420 cm²)으로 지면 압력을 낮춰 모래 위를 걸어요</text>
 </g>`;
 
   const s1 = Math.sin(phase * Math.PI);
   const sinkL = (s1 * 15.0).toFixed(1);
   const sinkR = (s1 * 1.2).toFixed(1);
-  const hoofY = 155 + s1 * 40;
-  const camelY = 175 + s1 * 4.5;
+  const hoofY = 155 + s1 * 38;
+  const camelY = 175 + s1 * 4;
   const padW = Math.round(100 + s1 * 34);
 
   detail = `<g filter="url(#ex-shadow)">
 <rect x="14" y="14" width="612" height="412" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
-${text(320, 48, '접촉 면적에 따른 모래 침하(압력 P = F/A) 비교', 'center')}
+<text x="320" y="48" style="font-size:15px;font-weight:700;fill:#2b3a42;text-anchor:middle">접촉 면적(A)과 지면 압력(P = F/A)에 따른 토양 침하역학 비교</text>
 
+<!-- Left Card: Narrow Hoof -->
 <g transform="translate(25, 68)">
-  <rect x="0" y="0" width="285" height="275" rx="12" fill="#fff9f5" stroke="#e09d8d" stroke-width="1.5"/>
-  <rect x="15" y="15" width="140" height="24" rx="6" fill="#e04e38"/>
-  ${text(85, 32, '1. 좁은 발 (말굽)', 'white center')}
-  
-  <path d="M15 175H110L120 ${175 + s1 * 38}H165L175 175H270V230H15Z" fill="#ebd6a9"/>
-  <path d="M15 175Q142 175 270 175" stroke="#d9b682" stroke-width="2"/>
-  <rect x="127" y="${hoofY - 70}" width="30" height="70" rx="3" fill="#7d6752" stroke="#524334" stroke-width="2"/>
-  
-  <g filter="url(#ex-glow-amber)">
-    <path d="M142 ${hoofY - 90}V${hoofY - 60}" stroke="#e04e38" stroke-width="4" marker-end="url(#ex-arrow-red)"/>
-    <path d="M142 ${hoofY}V${hoofY + 25}" stroke="#e04e38" stroke-width="4.5" marker-end="url(#ex-arrow-red)"/>
-  </g>
-  
-  <rect x="15" y="238" width="255" height="26" rx="6" fill="#e04e38"/>
-  ${text(142, 255, '면적 60cm² → 침하 ' + sinkL + 'cm (과부하)', 'white center')}
+  <rect x="0" y="0" width="285" height="275" rx="12" fill="#fdf9f7" stroke="#e2b8b0" stroke-width="1.2"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#b83828"/>
+  <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">1. 좁은 발 (말굽 구조)</text>
+
+  <!-- Sand Bed Profile with Depth Scale -->
+  <path d="M15 175H105L120 ${175 + s1 * 38}H165L180 175H270V232H15Z" fill="#ebd6a9"/>
+  <line x1="15" y1="175" x2="270" y2="175" stroke="#cbb082" stroke-width="1.5"/>
+
+  <!-- Depth ruler on left -->
+  <line x1="28" y1="175" x2="28" y2="225" stroke="#8a7052" stroke-width="1"/>
+  <line x1="24" y1="175" x2="28" y2="175" stroke="#8a7052" stroke-width="1"/>
+  <text x="32" y="178" style="font-size:8px;font-weight:600;fill:#735c42">0</text>
+  <line x1="24" y1="200" x2="28" y2="200" stroke="#8a7052" stroke-width="1"/>
+  <text x="32" y="203" style="font-size:8px;font-weight:600;fill:#735c42">-10cm</text>
+  <line x1="24" y1="220" x2="28" y2="220" stroke="#8a7052" stroke-width="1"/>
+  <text x="32" y="223" style="font-size:8px;font-weight:600;fill:#735c42">-15cm</text>
+
+  <!-- Narrow Leg & Hoof -->
+  <rect x="127" y="${hoofY - 65}" width="30" height="65" rx="2" fill="#6d5543" stroke="#483628" stroke-width="1.5"/>
+  <path d="M127 ${hoofY}L130 ${hoofY - 10}H154L157 ${hoofY}Z" fill="#382a20"/>
+
+  <!-- Coulomb shear failure slip lines in sand -->
+  <path d="M120 ${175 + s1 * 38}Q95 190 80 175M165 ${175 + s1 * 38}Q190 190 205 175" fill="none" stroke="#c94a38" stroke-width="1.2" stroke-dasharray="3 3"/>
+  <text x="142" y="${hoofY + 20}" style="font-size:9px;font-weight:700;fill:#b83828;text-anchor:middle">모래 전단 파열 (Slip)</text>
+
+  <!-- Downward concentrated force arrow -->
+  <path d="M142 ${hoofY - 82}V${hoofY - 55}" stroke="#b83828" stroke-width="2.5" marker-end="url(#ex-arrow-crimson)"/>
+
+  <rect x="15" y="248" width="255" height="22" rx="5" fill="#b83828"/>
+  <text x="142" y="263" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 60cm² → 침하 ${sinkL}cm (과부하 파괴)</text>
 </g>
 
+<!-- Right Card: Camel Cushion Foot -->
 <g transform="translate(330, 68)">
-  <rect x="0" y="0" width="285" height="275" rx="12" fill="#f5fbfc" stroke="#90c8d4" stroke-width="1.5"/>
-  <rect x="15" y="15" width="140" height="24" rx="6" fill="#00b4d8"/>
-  ${text(85, 32, '2. 낙타의 쿠션 발', 'white center')}
-  
-  <path d="M15 175H270V230H15Z" fill="#ebd6a9"/>
-  <path d="M15 175Q142 175 270 175" stroke="#d9b682" stroke-width="2"/>
-  <rect x="127" y="${camelY - 68}" width="30" height="68" rx="3" fill="#a4815b" stroke="#78593a" stroke-width="2"/>
-  <ellipse cx="142" cy="${camelY}" rx="${padW / 2}" ry="12" fill="#c99c6b" stroke="#876036" stroke-width="2.5"/>
-  <ellipse cx="142" cy="${camelY - 2}" rx="${padW / 2 - 10}" ry="7" fill="#f0dbb7"/>
-  
-  <g filter="url(#ex-glow-cyan)">
-    <path d="M142 ${camelY - 88}V${camelY - 58}" stroke="#f5ab35" stroke-width="3.5" marker-end="url(#ex-arrow-amber)"/>
-    <path d="M${142 - padW * 0.35} ${camelY + 4}L${142 - padW * 0.45} ${camelY + 22}M142 ${camelY + 6}L142 ${camelY + 24}M${142 + padW * 0.35} ${camelY + 4}L${142 + padW * 0.45} ${camelY + 22}" stroke="#00b4d8" stroke-width="2.5" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
-  </g>
-  
-  <rect x="15" y="238" width="255" height="26" rx="6" fill="#0b7a94"/>
-  ${text(142, 255, '면적 420cm² → 침하 ' + sinkR + 'cm (안전 지탱)', 'white center')}
+  <rect x="0" y="0" width="285" height="275" rx="12" fill="#f8fcf9" stroke="#b0d4c0" stroke-width="1.2"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#2d6e4e"/>
+  <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">2. 낙타의 탄성 쿠션 발</text>
+
+  <!-- Sand Bed Profile -->
+  <path d="M15 175H270V232H15Z" fill="#ebd6a9"/>
+  <line x1="15" y1="175" x2="270" y2="175" stroke="#cbb082" stroke-width="1.5"/>
+
+  <!-- Anatomical Leg Bones & Digital Cushion -->
+  <rect x="129" y="${camelY - 65}" width="26" height="65" rx="2" fill="#a4815b" stroke="#6b5034" stroke-width="1.5"/>
+  <!-- Elastic adipose pad expanding laterally under load -->
+  <ellipse cx="142" cy="${camelY}" rx="${padW / 2}" ry="11" fill="rgba(215, 175, 120, 0.65)" stroke="#78502d" stroke-width="1.8"/>
+  <ellipse cx="142" cy="${camelY - 2}" rx="${padW / 2 - 8}" ry="6" fill="#f5e4cc"/>
+
+  <!-- Broad Boussinesq isobar curves radiating into sand -->
+  <path d="M${142 - padW * 0.45} ${camelY + 8}Q142 ${camelY + 24} ${142 + padW * 0.45} ${camelY + 8}" fill="none" stroke="#78502d" stroke-width="1.2" stroke-dasharray="3 2"/>
+  <path d="M${142 - padW * 0.7} ${camelY + 6}Q142 ${camelY + 38} ${142 + padW * 0.7} ${camelY + 6}" fill="none" stroke="#a47a4f" stroke-width="1.0" stroke-dasharray="4 3" opacity="0.8"/>
+  <text x="142" y="${camelY + 32}" style="font-size:9px;font-weight:700;fill:#5c3d1f;text-anchor:middle">넓은 압력구 분산 (등응력선)</text>
+
+  <!-- Dimension line for contact width -->
+  <line x1="${142 - padW / 2}" y1="${camelY + 44}" x2="${142 + padW / 2}" y2="${camelY + 44}" stroke="#6b5034" stroke-width="1"/>
+  <line x1="${142 - padW / 2}" y1="${camelY + 41}" x2="${142 - padW / 2}" y2="${camelY + 47}" stroke="#6b5034" stroke-width="1"/>
+  <line x1="${142 + padW / 2}" y1="${camelY + 41}" x2="${142 + padW / 2}" y2="${camelY + 47}" stroke="#6b5034" stroke-width="1"/>
+
+  <rect x="15" y="248" width="255" height="22" rx="5" fill="#2d6e4e"/>
+  <text x="142" y="263" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 420cm² → 침하 ${sinkR}cm (표면 안정 지탱)</text>
 </g>
 
-<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffea" stroke="#d5cebc" stroke-width="1.5"/>
-${text(320, 382, '압력 공식 P = F / A : 면적이 넓을수록 바닥에 가해지는 압력이 작아져요', 'center')}
-${text(320, 400, '낙타 발은 말굽 대비 면적이 7배 넓어 압력을 85% 분산하여 모래 위를 지탱해요', 'center')}
+<!-- Bottom Principle Card -->
+<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffeb" stroke="#cddadc" stroke-width="1.2"/>
+<text x="320" y="380" style="font-size:12px;font-weight:700;fill:#203e48;text-anchor:middle">압력 공식 P = F / A : 동일 하중(1,100 N) 기준, 면적이 7배 넓어 압력이 86% 감소해요</text>
+<text x="320" y="398" style="font-size:11px;font-weight:600;fill:#48636c;text-anchor:middle">낙타 발바닥의 탄성 완충 쿠션은 모래의 한계 지지력 이하로 응력을 고르게 분산시켜요</text>
 </g>`;
-  caption = step === 1 ? '좁은 발은 압력이 집중되어 15cm 침하하지만, 낙타의 넓은 쿠션 발은 압력을 85% 분산시켜 모래 위를 안정적으로 지탱해요.' : (phase < 0.35 ? '1단계 [접지]: 발이 모래 표면에 닿으며 체중이 전달되기 시작해요.' : (phase < 0.75 ? '2단계 [패드 팽창]: 체중이 실리자 탄성 패드가 옆으로 펴지며 단위면적당 압력을 낮춰요.' : '3단계 [지지]: 압력이 모래 붕괴 한계를 넘지 않아 푹 빠지지 않고 모래를 박차고 전진해요.'));
+
+  caption = step === 1 ? '좁은 발은 압력이 집중되어 15cm 침하하지만, 낙타의 넓은 쿠션 발은 압력을 86% 분산시켜 모래 위를 1.2cm 미세 침하로 안정 지탱해요.' : (phase < 0.35 ? '1단계 [접지]: 발이 모래 표면에 닿으며 체중이 전달되기 시작해요.' : (phase < 0.75 ? '2단계 [패드 팽창]: 체중이 실리자 탄성 패드가 옆으로 펴지며 단위면적당 압력(P=F/A)을 대폭 낮춰요.' : '3단계 [지지]: 압력이 모래 한계 지지력을 넘지 않아 푹 빠지지 않고 전진해요.'));
 
  }else{
-  const flowOffset = Math.round(phase * 60);
+  const flowOffset = Math.round(phase * 80);
   const pulse = 0.7 + 0.3 * Math.sin(phase * Math.PI * 2);
 
   body = `<g>
 <image href="assets/science/penguin-polar.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
 
-<!-- Streamlined fluid flow lines -->
-<g filter="url(#ex-glow-cyan)">
-<path d="M60 180Q220 130 360 155T580 165M50 230Q230 190 370 215T590 230M70 280Q230 250 380 265T600 285" fill="none" stroke="#7be1ff" stroke-width="2.5" stroke-dasharray="12 8" stroke-dashoffset="${flowOffset}" opacity="0.9"/>
+<!-- Hydrodynamic Streamlines along fusiform body -->
+<g>
+<path d="M50 175Q220 125 360 150T590 162" fill="none" stroke="#68c4db" stroke-width="1.6" stroke-dasharray="14 10" stroke-dashoffset="${flowOffset}" opacity="0.85"/>
+<path d="M40 225Q230 185 370 210T600 225" fill="none" stroke="#82d3e5" stroke-width="1.4" stroke-dasharray="12 8" stroke-dashoffset="${flowOffset}" opacity="0.9"/>
+<path d="M60 275Q230 245 380 260T610 280" fill="none" stroke="#5cb8cf" stroke-width="1.5" stroke-dasharray="15 10" stroke-dashoffset="${flowOffset}" opacity="0.85"/>
 </g>
 
-<!-- Thermal Core Pulse -->
-<g filter="url(#ex-glow-amber)">
-<ellipse cx="330" cy="235" rx="${45 + pulse * 5}" ry="${65 + pulse * 6}" fill="#f5ab3525" stroke="#ffbe3d" stroke-width="2.5" opacity="${0.7 + pulse * 0.3}"/>
-<path d="M305 155Q280 200 280 260Q280 320 335 345" fill="none" stroke="#ffbe3d" stroke-width="3" stroke-linecap="round" opacity="0.9"/>
-</g>
+<!-- Thermal Insulation Boundary Envelope (trapped micro-air down layer) -->
+<path d="M295 155Q270 200 272 260Q275 320 330 345" fill="none" stroke="#e09d38" stroke-width="2.2" stroke-linecap="round" opacity="${0.75 + pulse * 0.25}"/>
+<path d="M305 162Q282 205 284 258Q286 312 334 338" fill="none" stroke="#f5be58" stroke-width="1.2" stroke-linecap="round" opacity="${0.6 + pulse * 0.3}"/>
 
-<!-- Top-Left Compact Stage Pill -->
-<rect x="25" y="24" width="280" height="34" rx="8" fill="#132433cc" stroke="#335f7e" stroke-width="1.5"/>
-<circle cx="42" cy="41" r="5" fill="#7be1ff" filter="url(#ex-glow-cyan)"/>
-${text(54, 46, '유선형 항력 감소 & 깃털 단열층', 'white')}
+<!-- Top-Left Compact Frosted Badge -->
+<rect x="25" y="24" width="310" height="34" rx="8" fill="#ffffffd9" stroke="#9bbdc8" stroke-width="1.2"/>
+<circle cx="42" cy="41" r="5" fill="#1b6e82"/>
+<text x="56" y="46" style="font-size:13px;font-weight:700;fill:#164654">유선형 항력 최소화 (Cd ≈ 0.03) &amp; 4중 단열층</text>
 
 <!-- Telemetry Pill at right -->
-<rect x="420" y="24" width="190" height="34" rx="8" fill="#132433cc" stroke="#335f7e" stroke-width="1.5"/>
-${text(515, 46, '외기 -30℃ | 심부 +38℃', 'white center')}
+<rect x="390" y="24" width="225" height="34" rx="8" fill="#ffffffd9" stroke="#9bbdc8" stroke-width="1.2"/>
+<text x="502" y="46" style="font-size:11px;font-weight:700;fill:#1a5262;text-anchor:middle">외기 -30℃ ~ -1.8℃ ──> 심부 +38.5℃ (88% 보존)</text>
 
-<!-- Bottom Banner -->
-<rect x="150" y="386" width="340" height="30" rx="8" fill="#ffffffea" stroke="#b2cad2" stroke-width="1.5"/>
-${text(320, 406, '깃털 속 공기층이 대류를 막아 혹한 속에서도 체온을 지켜요', 'center')}
+<!-- Bottom Principle Ribbon -->
+<rect x="90" y="388" width="460" height="28" rx="7" fill="#ffffffeb" stroke="#b2cad2" stroke-width="1.2"/>
+<text x="320" y="406" style="font-size:12px;font-weight:600;fill:#203c46;text-anchor:middle">깃털 속 빽빽한 공기층이 대류를 막고, 지방층이 열전도를 차단해 체온을 지켜요</text>
 </g>`;
 
   detail = `<g filter="url(#ex-shadow)">
 <rect x="14" y="14" width="612" height="412" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
-${text(320, 48, '펭귄 4중 단열 구조와 온도 구배(열역학) 단면', 'center')}
+<text x="320" y="48" style="font-size:15px;font-weight:700;fill:#203e48;text-anchor:middle">펭귄 4중 단열 구조와 열역학적 온도 구배(Temperature Gradient) 단면</text>
 
-<rect x="35" y="68" width="570" height="275" rx="12" fill="#f0f6f8" stroke="#a9c9d4" stroke-width="1.5"/>
+<rect x="35" y="68" width="570" height="275" rx="12" fill="#f4f8fa" stroke="#a9c9d4" stroke-width="1.2"/>
 
-<path d="M100 95H170V270H100Z" fill="#304450"/>
-<path d="M170 95H310V270H170Z" fill="#d2e3eb"/>
-<path d="M310 95H410V270H310Z" fill="#ecd3b6"/>
-<path d="M410 95H540V270H410Z" fill="#d77567"/>
+<!-- 4 Layer Architecture -->
+<path d="M100 95H170V270H100Z" fill="#2d3f4b"/>
+<path d="M170 95H310V270H170Z" fill="#d8e8f0"/>
+<path d="M310 95H415V270H310Z" fill="#f3dfca"/>
+<path d="M415 95H540V270H415Z" fill="#de7d70"/>
 
-${text(135, 125, '1. 방수 외피', 'white center')}
-${text(135, 145, '미세 깃털', 'white center')}
-${text(135, 160, '바람·물 차단', 'white center')}
+<text x="135" y="125" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">1. 방수 외피</text>
+<text x="135" y="145" style="font-size:10px;font-weight:600;fill:#d8e8f0;text-anchor:middle">미세 깃털</text>
+<text x="135" y="160" style="font-size:9px;font-weight:500;fill:#b0c8d4;text-anchor:middle">100개/cm² 방수</text>
 
-${text(240, 125, '2. 정체 공기층', 'center')}
-${text(240, 145, '솜털 공기 포켓', 'center')}
-${text(240, 160, 'k = 0.024 W/mK', 'center')}
-${text(240, 175, '(열전도 85% 차단)', 'center')}
+<text x="240" y="125" style="font-size:11px;font-weight:700;fill:#1b4f60;text-anchor:middle">2. 정체 공기층</text>
+<text x="240" y="145" style="font-size:10px;font-weight:600;fill:#265e70;text-anchor:middle">솜털 공기 포켓</text>
+<text x="240" y="160" style="font-size:9px;font-weight:600;fill:#1b4f60;text-anchor:middle">k = 0.024 W/mK</text>
+<text x="240" y="175" style="font-size:9px;font-weight:700;fill:#0d6980;text-anchor:middle">(열전도 85% 차단)</text>
 
-${text(360, 125, '3. 피하지방층', 'center')}
-${text(360, 145, '블러버 (두께 2cm)', 'center')}
-${text(360, 160, '에너지 저장', 'center')}
+<text x="362" y="125" style="font-size:11px;font-weight:700;fill:#5c3e24;text-anchor:middle">3. 피하지방층</text>
+<text x="362" y="145" style="font-size:10px;font-weight:600;fill:#6e4b2d;text-anchor:middle">블러버 (두께 2.5cm)</text>
+<text x="362" y="160" style="font-size:9px;font-weight:500;fill:#7a583a;text-anchor:middle">열전도 지연재</text>
 
-${text(475, 125, '4. 심부 체온', 'white center')}
-${text(475, 145, '+38 ℃', 'white center')}
-${text(475, 160, '근육·내장 기관', 'white center')}
+<text x="477" y="125" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">4. 심부 체온</text>
+<text x="477" y="145" style="font-size:13px;font-weight:800;fill:#ffffff;text-anchor:middle">+38.5 ℃</text>
+<text x="477" y="162" style="font-size:9px;font-weight:500;fill:#ffe5e2;text-anchor:middle">근육·내장 항온</text>
 
-<!-- Temperature Gradient Curve -->
-<path d="M55 240L100 240L170 230L310 135L410 105L540 98" fill="none" stroke="#e04e38" stroke-width="3.5"/>
-<circle cx="100" cy="240" r="4" fill="#00b4d8"/>
-${text(75, 255, '-30℃', 'center')}
-<circle cx="310" cy="135" r="4" fill="#f5ab35"/>
-${text(310, 155, '+10℃', 'center')}
-<circle cx="540" cy="98" r="4" fill="#e04e38"/>
-${text(540, 90, '+38℃', 'center')}
+<!-- Temperature Gradient Curve Overlay -->
+<line x1="60" y1="240" x2="540" y2="240" stroke="#b2cad2" stroke-width="0.8" stroke-dasharray="3 3"/>
+<line x1="60" y1="180" x2="540" y2="180" stroke="#b2cad2" stroke-width="0.8" stroke-dasharray="3 3"/>
+<line x1="60" y1="102" x2="540" y2="102" stroke="#b2cad2" stroke-width="0.8" stroke-dasharray="3 3"/>
 
-<g filter="url(#ex-glow-cyan)">
-<path d="M50 180H90" stroke="#00b4d8" stroke-width="3" marker-end="url(#ex-arrow-cyan)"/>
-</g>
-${text(68, 168, '극지 혹한', 'center')}
-${text(68, 198, '(-30℃)', 'center')}
+<path d="M55 240L100 240L170 230L310 135L415 106L540 102" fill="none" stroke="#d43828" stroke-width="2.8" stroke-linecap="round"/>
+<circle cx="100" cy="240" r="4.5" fill="#1b9cb8"/>
+<text x="75" y="244" style="font-size:10px;font-weight:700;fill:#106b80">-30℃</text>
+<circle cx="310" cy="135" r="4.5" fill="#e89838"/>
+<text x="310" y="122" style="font-size:10px;font-weight:700;fill:#a85a12;text-anchor:middle">+18℃</text>
+<circle cx="540" cy="102" r="4.5" fill="#d43828"/>
+<text x="565" y="106" style="font-size:10px;font-weight:700;fill:#b82818">+38.5℃</text>
 
-<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffea" stroke="#a9c9d4" stroke-width="1.5"/>
-${text(320, 382, '정체 공기층의 열전도 차단: 공기는 열전도율(k=0.024)이 가장 낮아 체온을 지켜요', 'center')}
-${text(320, 400, '빽빽한 깃털이 대류를 막고, 갇힌 공기층이 전도 열 손실을 85% 이상 차단해요', 'center')}
+<path d="M50 180H90" stroke="#1b9cb8" stroke-width="2" marker-end="url(#ex-arrow-aqua)"/>
+<text x="70" y="172" style="font-size:10px;font-weight:700;fill:#14697d;text-anchor:middle">극지 혹한</text>
+<text x="70" y="196" style="font-size:9px;font-weight:600;fill:#14697d;text-anchor:middle">(-30℃ 침투)</text>
+
+<!-- Bottom Principle Card -->
+<rect x="22" y="358" width="596" height="52" rx="8" fill="#ffffffeb" stroke="#cddadc" stroke-width="1.2"/>
+<text x="320" y="380" style="font-size:12px;font-weight:700;fill:#203e48;text-anchor:middle">정체 공기층의 열전도 차단: 공기는 열전도율(k=0.024)이 가장 낮아 체온을 효과적으로 지켜요</text>
+<text x="320" y="398" style="font-size:11px;font-weight:600;fill:#48636c;text-anchor:middle">빽빽한 방수 깃털이 대류를 막고, 갇힌 공기층과 피하지방층이 전도 열 손실의 88%를 보존해요</text>
 </g>`;
-  caption = step === 1 ? '공기는 최적의 단열재예요. 빽빽한 방수 깃털로 대류를 차단하고 갇힌 공기층으로 전도 열 손실을 85% 이상 막아요.' : '유선형 체형으로 저항을 줄이고 깃털 속 공기층으로 혹한(-30℃) 속에서도 체온(+38℃)을 유지해요.';
+
+  caption = step === 1 ? '공기는 최고의 단열재예요. 빽빽한 방수 깃털로 대류를 차단하고 갇힌 공기층과 피하지방으로 전도 열 손실을 88% 이상 막아요.' : '유선형 체형으로 유체 저항을 최소화(Cd≈0.03)하고 깃털 속 공기층으로 혹한(-30℃) 속에서도 심부 체온(+38.5℃)을 유지해요.';
  }
 }else if(kind==='animal-lifecycle'){
  controls=['나비의 한살이','메뚜기의 한살이','개구리의 한살이'];
@@ -620,6 +697,10 @@ const defsEx=`<defs>
 <marker id="ex-arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#00b4d8"/></marker>
 <marker id="ex-arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f5ab35"/></marker>
 <marker id="ex-arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#e04e38"/></marker>
+<marker id="ex-arrow-draft" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#78502d"/></marker>
+<marker id="ex-arrow-sand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#a88054"/></marker>
+<marker id="ex-arrow-aqua" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#199bbd"/></marker>
+<marker id="ex-arrow-crimson" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#b83828"/></marker>
 <linearGradient id="ex-paper" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#fdfcf8"/><stop offset="100%" stop-color="#f1ede3"/></linearGradient>
 <linearGradient id="ex-water" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#a4dbec"/><stop offset="100%" stop-color="#69b5cb"/></linearGradient>
 <linearGradient id="ex-sand" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ebdcb5"/><stop offset="100%" stop-color="#cfb989"/></linearGradient>
