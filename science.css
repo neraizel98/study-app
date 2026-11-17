@@ -23,6 +23,11 @@ body.science-page{display:block;min-width:0;width:100%}.science-page .science-sh
 
 .science-cosmos-stage{position:relative;width:100%;aspect-ratio:1.65;margin:12px 0;background:#080f20;border-radius:14px;overflow:hidden}.science-cosmos-stage>canvas{display:block;width:100%;height:100%}.science-cosmos-labels{position:absolute;inset:0;pointer-events:none}.science-cosmos-label{position:absolute;transform:translate(-50%,-50%);width:max-content;max-width:calc(100% - 20px);white-space:nowrap;font-size:12px;font-weight:700;color:#f2dba0;background:#11243bd9;border:1px solid #798b8f66;border-radius:5px;padding:3px 6px}.science-cosmos-label.selected{color:#beddf0}@media(max-width:700px){.science-cosmos-stage{aspect-ratio:1.36}.science-cosmos-label{font-size:11px}}
 
+.science-speed-group{display:inline-flex;align-items:center;background:#eef5f4;border:1px solid #b5cbd0;border-radius:10px;padding:2px;gap:2px}
+.science-speed-btn{min-height:38px!important;padding:6px 11px!important;font-size:13px!important;font-weight:700;border:none!important;border-radius:8px!important;background:transparent!important;color:#43626c!important;cursor:pointer;transition:all .15s ease}
+.science-speed-btn:hover{background:#e0eff1!important;color:#0e7490!important}
+.science-speed-btn[aria-pressed=true],.science-speed-btn.is-active{background:#0e7490!important;color:#ffffff!important;box-shadow:0 1px 3px rgba(14,116,144,0.3)}
+
 .science-timeline-wrap{display:flex;align-items:center;flex:1 1 180px;min-width:140px;margin:0 4px}
 .science-timeline-slider{width:100%;height:8px;border-radius:4px;accent-color:#0e7490;cursor:pointer}
 .science-three-label.moon-label{color:#2a5061;border-color:#84a6b5}
