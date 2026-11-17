@@ -17,61 +17,61 @@ if(kind==='animal-adaptation'){
  if(c===0){
   const isPower = phase < 0.55;
   const kickP = isPower ? (phase / 0.55) : ((phase - 0.55) / 0.45);
-  const thrustW = isPower ? (30 + kickP * 35) : 18;
+  const thrustW = isPower ? (35 + kickP * 35) : 18;
 
   body = `<g>
 <image href="assets/science/duck-pond.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
 
-<!-- Natural Waterline Ripples at duck waterline (y ≈ 215) -->
-<path d="M 35 215 Q 140 210 220 215 T 440 213 T 605 215" fill="none" stroke="#2a92b0" stroke-width="1.6" stroke-dasharray="10 5" opacity="0.65"/>
-<path d="M 120 222 Q 180 218 240 222" fill="none" stroke="#7acde2" stroke-width="1.2" opacity="0.55"/>
+<!-- Luminous White Waterline Ripples at duck waterline (y ≈ 215) contrasting with pond water -->
+<path d="M 35 215 Q 140 210 220 215 T 440 213 T 605 215" fill="none" stroke="#ffffff" stroke-width="2.2" stroke-dasharray="10 5" opacity="0.85"/>
+<path d="M 120 222 Q 180 218 240 222" fill="none" stroke="#e0f2fe" stroke-width="1.4" opacity="0.75"/>
 
-<!-- Fluid dynamics: Forward Reaction Thrust (at duck breast x≈200, y≈205, pointing LEFT) -->
+<!-- High-Contrast Fluid Dynamics: Thrust (Coral Red) & Water Expulsion (Solar Amber) -->
 <g>
 ${isPower ? `
-<!-- Power Stroke: Thrust Vector pointing forward (LEFT) -->
-<path d="M 200 205 L ${200 - thrustW} 205" fill="none" stroke="#0e7490" stroke-width="2.6" stroke-linecap="round" marker-end="url(#ex-arrow)"/>
-<line x1="200" y1="198" x2="200" y2="212" stroke="#0e7490" stroke-width="1.2"/>
-<text x="${200 - thrustW / 2}" y="193" style="font-size:11px;font-weight:700;fill:#0e7490;text-anchor:middle">추진력 +18.5 N (전진)</text>
+<!-- Power Stroke: Forward Thrust Vector (Coral Red #dc2626) pointing LEFT (opposite to water) -->
+<path d="M 200 205 L ${200 - thrustW} 205" fill="none" stroke="#dc2626" stroke-width="3.2" stroke-linecap="round" marker-end="url(#ex-arrow-coral)"/>
+<line x1="200" y1="195" x2="200" y2="215" stroke="#dc2626" stroke-width="1.6"/>
+<text x="${200 - thrustW / 2}" y="192" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">추진력 +18.5 N (전진)</text>
 
-<!-- Power Stroke: Water expelled backward to the RIGHT behind paddling foot (x≈315, y≈280) -->
-<path d="M 325 285 L ${370 + kickP * 35} ${288 + kickP * 12}" fill="none" stroke="#0284c7" stroke-width="2.2" stroke-linecap="round" marker-end="url(#ex-arrow-aqua)"/>
-<text x="${365 + kickP * 25}" y="${312 + kickP * 8}" style="font-size:10px;font-weight:700;fill:#0284c7">후방 배수: -Δp (작용)</text>
+<!-- Power Stroke: Water Expelled Backward (Solar Amber #f59e0b) to the RIGHT (x≈315, y≈280) -->
+<path d="M 325 285 L ${370 + kickP * 35} ${288 + kickP * 12}" fill="none" stroke="#f59e0b" stroke-width="2.8" stroke-linecap="round" marker-end="url(#ex-arrow-amber)"/>
+<text x="${365 + kickP * 25}" y="${312 + kickP * 8}" style="font-size:11px;font-weight:800;fill:#b45309">후방 배수: -Δp (작용)</text>
 
-<!-- Swirling Karman vortex wake rings rolling to the right -->
-<path d="M ${345 + kickP * 25} 275 A 10 10 0 0 1 ${355 + kickP * 25} 295" fill="none" stroke="#38bdf8" stroke-width="1.6" opacity="0.85"/>
-<path d="M ${375 + kickP * 20} 270 A 12 12 0 0 1 ${388 + kickP * 20} 298" fill="none" stroke="#0ea5e9" stroke-width="1.3" opacity="0.7"/>
+<!-- Swirling Solar Amber Karman Vortex Wake Rings rolling backward to the right -->
+<path d="M ${345 + kickP * 25} 275 A 10 10 0 0 1 ${355 + kickP * 25} 295" fill="none" stroke="#f59e0b" stroke-width="2.2" opacity="1"/>
+<path d="M ${375 + kickP * 20} 270 A 12 12 0 0 1 ${388 + kickP * 20} 298" fill="none" stroke="#fbbf24" stroke-width="1.8" opacity="0.9"/>
 
-<!-- Foot Webbing Status Pill near paddling foot -->
-<rect x="235" y="340" width="160" height="24" rx="6" fill="#ffffffea" stroke="#0e7490" stroke-width="1.2"/>
-<text x="315" y="356" style="font-size:11px;font-weight:700;fill:#0e7490;text-anchor:middle">물갈퀴 전개 (면적 65 cm²)</text>
+<!-- Foot Webbing Status Pill near paddling foot (High-Contrast Coral Red Border) -->
+<rect x="230" y="338" width="170" height="26" rx="6" fill="#ffffff" stroke="#dc2626" stroke-width="1.8"/>
+<text x="315" y="355" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">물갈퀴 전개 (면적 65 cm²)</text>
 ` : `
-<!-- Recovery Stroke: Slight drag vector at breast -->
-<path d="M 200 205 L 225 205" fill="none" stroke="#7acde2" stroke-width="1.6" stroke-linecap="round"/>
-<text x="212" y="193" style="font-size:10px;font-weight:600;fill:#356673;text-anchor:middle">유체 저항 1.1 N (최소)</text>
+<!-- Recovery Stroke: Low drag at breast (Slate #475569) -->
+<path d="M 200 205 L 225 205" fill="none" stroke="#475569" stroke-width="1.8" stroke-linecap="round"/>
+<text x="212" y="192" style="font-size:10px;font-weight:700;fill:#334155;text-anchor:middle">유체 저항 1.1 N (최소)</text>
 
-<!-- Laminar streamlines gliding gently around folded feet -->
-<path d="M 270 278 Q 350 268 440 282" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="5 3"/>
-<path d="M 285 292 Q 360 282 450 296" fill="none" stroke="#9fd9e6" stroke-width="1.2" stroke-dasharray="4 3"/>
+<!-- Luminous White/Silver streamlines gliding smoothly around folded feet -->
+<path d="M 270 278 Q 350 268 440 282" fill="none" stroke="#ffffff" stroke-width="2.0" stroke-dasharray="6 3" opacity="0.9"/>
+<path d="M 285 292 Q 360 282 450 296" fill="none" stroke="#f1f5f9" stroke-width="1.6" stroke-dasharray="5 3" opacity="0.8"/>
 
-<!-- Foot Webbing Status Pill near folded foot -->
-<rect x="220" y="340" width="190" height="24" rx="6" fill="#ffffffea" stroke="#6c5744" stroke-width="1.2"/>
-<text x="315" y="356" style="font-size:11px;font-weight:700;fill:#6c5744;text-anchor:middle">물갈퀴 접힘 (면적 14 cm² · 78%↓)</text>
+<!-- Foot Webbing Status Pill near folded foot (Slate Border) -->
+<rect x="220" y="338" width="190" height="26" rx="6" fill="#ffffff" stroke="#475569" stroke-width="1.6"/>
+<text x="315" y="355" style="font-size:11px;font-weight:800;fill:#334155;text-anchor:middle">물갈퀴 접힘 (면적 14 cm² · 78%↓)</text>
 `}
 </g>
 
 <!-- Top-Left Compact Frosted Badge in Sky -->
-<rect x="25" y="24" width="330" height="34" rx="8" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
-<circle cx="42" cy="41" r="5" fill="#0e7490"/>
-<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#164e63">${isPower ? '1단계: 추진 스트로크 (물갈퀴 전개 · 후방 배수)' : '2단계: 회수 스트로크 (물갈퀴 접힘 · 유체 저항 최소화)'}</text>
+<rect x="25" y="24" width="330" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+<circle cx="42" cy="41" r="5" fill="#dc2626"/>
+<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#0f172a">${isPower ? '1단계: 추진 스트로크 (물갈퀴 전개 · 후방 배수)' : '2단계: 회수 스트로크 (물갈퀴 접힘 · 유체 저항 최소화)'}</text>
 
 <!-- Top-Right Real-time Telemetry Pill in Background Foliage -->
-<rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
-<text x="517" y="46" style="font-size:12px;font-weight:700;fill:#0e7490;text-anchor:middle">${isPower ? '추진력: +18.5 N (가속)' : '유체 저항: 1.1 N (93%↓)'}</text>
+<rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+<text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">${isPower ? '추진력: +18.5 N (가속)' : '유체 저항: 1.1 N (93%↓)'}</text>
 
 <!-- Bottom Technical Principle Ribbon -->
-<rect x="65" y="388" width="510" height="28" rx="7" fill="#ffffffeb" stroke="#b2d4de" stroke-width="1.2"/>
-<text x="320" y="406" style="font-size:12px;font-weight:600;fill:#164e63;text-anchor:middle">${isPower ? '뉴턴 제3법칙(작용·반작용): 물갈퀴로 물을 뒤로 밀고(작용), 그 반작용(+18.5 N)으로 전진해요' : '형상 제어 적응: 발을 당길 때는 물갈퀴를 접어 전면 면적을 78% 줄이고 저항(1.1 N)을 최소화해요'}</text>
+<rect x="65" y="388" width="510" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+<text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">${isPower ? '뉴턴 제3법칙(작용·반작용): 물갈퀴로 물을 뒤로 밀고(작용), 그 반작용(+18.5 N)으로 전진해요' : '형상 제어 적응: 발을 당길 때는 물갈퀴를 접어 전면 면적을 78% 줄이고 저항(1.1 N)을 최소화해요'}</text>
 </g>`;
 
   detail = `<g filter="url(#ex-shadow)">
@@ -80,8 +80,8 @@ ${isPower ? `
 
 <!-- Left Card: Power Stroke -->
 <g transform="translate(25, 64)">
-  <rect x="0" y="0" width="285" height="280" rx="12" fill="#f5fafe" stroke="#9bc7d6" stroke-width="1.2"/>
-  <rect x="15" y="14" width="150" height="24" rx="6" fill="#0e7490"/>
+  <rect x="0" y="0" width="285" height="280" rx="12" fill="#fff5f5" stroke="#fca5a5" stroke-width="1.5"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#dc2626"/>
   <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">1. 물갈퀴 펼침 (추진 단계)</text>
 
   <!-- Extended Webbed Foot Technical Diagram -->
@@ -89,27 +89,27 @@ ${isPower ? `
   <path d="M85 165Q113 155 142 175Q171 155 200 165L200 120Q142 90 85 120Z" fill="rgba(244, 185, 85, 0.45)" stroke="#c28830" stroke-width="1.5"/>
   <path d="M85 165Q113 155 142 175Q171 155 200 165" stroke="#9e661b" stroke-width="2.5" stroke-linecap="round"/>
 
-  <!-- Stagnation dynamic pressure isobars -->
-  <path d="M70 180Q142 165 215 180" fill="none" stroke="#e07a38" stroke-width="1.2" stroke-dasharray="3 2"/>
-  <path d="M60 195Q142 178 225 195" fill="none" stroke="#e89458" stroke-width="1.0" stroke-dasharray="4 3" opacity="0.8"/>
-  <text x="142" y="192" style="font-size:10px;font-weight:700;fill:#b85516;text-anchor:middle">동압 정체면 (고압 형성)</text>
+  <!-- High-Contrast Dynamic pressure isobars -->
+  <path d="M70 180Q142 165 215 180" fill="none" stroke="#ea580c" stroke-width="1.6" stroke-dasharray="3 2"/>
+  <path d="M60 195Q142 178 225 195" fill="none" stroke="#f97316" stroke-width="1.4" stroke-dasharray="4 3" opacity="0.9"/>
+  <text x="142" y="192" style="font-size:10px;font-weight:800;fill:#c2410c;text-anchor:middle">동압 정체면 (고압 형성)</text>
 
-  <!-- Backward water momentum vectors -->
-  <path d="M95 195V225M142 200V232M190 195V225" stroke="#1b9cb8" stroke-width="2" marker-end="url(#ex-arrow-aqua)"/>
-  <text x="142" y="244" style="font-size:10px;font-weight:700;fill:#126374;text-anchor:middle">후방 배수 운동량: -Δp</text>
+  <!-- Backward water momentum vectors (Solar Amber) -->
+  <path d="M95 195V225M142 200V232M190 195V225" stroke="#f59e0b" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/>
+  <text x="142" y="244" style="font-size:10px;font-weight:800;fill:#b45309;text-anchor:middle">후방 배수 운동량: -Δp</text>
 
-  <!-- Forward reaction arrow -->
-  <path d="M142 85V48" stroke="#0e7490" stroke-width="2.5" marker-end="url(#ex-arrow)"/>
-  <text x="180" y="65" style="font-size:11px;font-weight:700;fill:#0e7490">반작용 추력</text>
+  <!-- Forward reaction arrow (Coral Red) -->
+  <path d="M142 85V48" stroke="#dc2626" stroke-width="2.8" marker-end="url(#ex-arrow-coral)"/>
+  <text x="180" y="65" style="font-size:11px;font-weight:800;fill:#dc2626">반작용 추력</text>
 
-  <rect x="15" y="250" width="255" height="22" rx="5" fill="#0e7490"/>
+  <rect x="15" y="250" width="255" height="22" rx="5" fill="#dc2626"/>
   <text x="142" y="265" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 65cm² → 추진력 +18.5 N (최대 추력)</text>
 </g>
 
 <!-- Right Card: Recovery Stroke -->
 <g transform="translate(330, 64)">
-  <rect x="0" y="0" width="285" height="280" rx="12" fill="#fffcf6" stroke="#dcd0b8" stroke-width="1.2"/>
-  <rect x="15" y="14" width="150" height="24" rx="6" fill="#6c5744"/>
+  <rect x="0" y="0" width="285" height="280" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#475569"/>
   <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">2. 물갈퀴 접힘 (회수 단계)</text>
 
   <!-- Folded Webbed Foot Technical Diagram -->
@@ -117,15 +117,15 @@ ${isPower ? `
   <path d="M134 165L142 175L150 165L146 115L138 115Z" fill="rgba(244, 185, 85, 0.45)" stroke="#c28830" stroke-width="1.5"/>
 
   <!-- Laminar streamlines wrapping around folded profile -->
-  <path d="M105 85Q125 125 105 165" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <path d="M180 85Q160 125 180 165" fill="none" stroke="#7acde2" stroke-width="1.4" stroke-dasharray="4 3"/>
-  <path d="M90 100Q115 130 90 185" fill="none" stroke="#9fd9e6" stroke-width="1.0" stroke-dasharray="5 4"/>
-  <path d="M195 100Q170 130 195 185" fill="none" stroke="#9fd9e6" stroke-width="1.0" stroke-dasharray="5 4"/>
+  <path d="M105 85Q125 125 105 165" fill="none" stroke="#64748b" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <path d="M180 85Q160 125 180 165" fill="none" stroke="#64748b" stroke-width="1.6" stroke-dasharray="4 3"/>
+  <path d="M90 100Q115 130 90 185" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
+  <path d="M195 100Q170 130 195 185" fill="none" stroke="#94a3b8" stroke-width="1.2" stroke-dasharray="5 4"/>
 
-  <text x="142" y="205" style="font-size:10px;font-weight:700;fill:#4a6c78;text-anchor:middle">유선형 층류 통과 (와류 박리 없음)</text>
-  <text x="142" y="222" style="font-size:10px;font-weight:600;fill:#6b5847;text-anchor:middle">전면 투영 면적 78% 감소</text>
+  <text x="142" y="205" style="font-size:10px;font-weight:800;fill:#334155;text-anchor:middle">유선형 층류 통과 (와류 박리 없음)</text>
+  <text x="142" y="222" style="font-size:10px;font-weight:600;fill:#475569;text-anchor:middle">전면 투영 면적 78% 감소</text>
 
-  <rect x="15" y="250" width="255" height="22" rx="5" fill="#6c5744"/>
+  <rect x="15" y="250" width="255" height="22" rx="5" fill="#475569"/>
   <text x="142" y="265" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 14cm² → 저항 1.1 N (93% 저항 감쇄)</text>
 </g>
 
@@ -168,81 +168,82 @@ ${isPower ? `
   }
 
   // Exact coordinates matching camel-desert.webp: Front foot sole (272, 354), Hind foot sole (463, 350)
+  // High-contrast Deep Cobalt Blue (#1d4ed8) against warm yellow desert sand
   const footGraphic = (cx, cy, w, gap, h) => {
     const lcx = cx - gap * 0.9;
     const rcx = cx + gap * 0.9;
     const lobeW = w * 0.46;
     const lobeH = h;
     return `
-    <!-- High-Contrast Sand Compression Berms (모래 융기 파동) -->
-    <path d="M ${cx - w - 10} ${cy + 1} Q ${cx - w - 5} ${cy - 2.5} ${cx - w} ${cy + 1}" fill="none" stroke="#d4a359" stroke-width="1.8" stroke-linecap="round"/>
-    <path d="M ${cx + w} ${cy + 1} Q ${cx + w + 5} ${cy - 2.5} ${cx + w + 10} ${cy + 1}" fill="none" stroke="#d4a359" stroke-width="1.8" stroke-linecap="round"/>
+    <!-- Deep Umber Sand Compression Berms (모래 융기 파동) -->
+    <path d="M ${cx - w - 10} ${cy + 1} Q ${cx - w - 5} ${cy - 2.5} ${cx - w} ${cy + 1}" fill="none" stroke="#78350f" stroke-width="2.0" stroke-linecap="round"/>
+    <path d="M ${cx + w} ${cy + 1} Q ${cx + w + 5} ${cy - 2.5} ${cx + w + 10} ${cy + 1}" fill="none" stroke="#78350f" stroke-width="2.0" stroke-linecap="round"/>
 
-    <!-- High-Contrast Luminous Boussinesq Pressure Isobars in Sand -->
+    <!-- High-Contrast Royal Cobalt Boussinesq Pressure Isobars in Sand -->
     <g>
       <!-- Isobar 3: Deep 20% stress boundary -->
-      <path d="M ${cx - w * 1.55} ${cy} Q ${cx} ${cy + 34 + s * 9} ${cx + w * 1.55} ${cy}" fill="none" stroke="#0284c7" stroke-width="1.3" stroke-dasharray="4 3" opacity="0.8"/>
+      <path d="M ${cx - w * 1.55} ${cy} Q ${cx} ${cy + 34 + s * 9} ${cx + w * 1.55} ${cy}" fill="none" stroke="#3b82f6" stroke-width="1.5" stroke-dasharray="5 3" opacity="0.85"/>
       <!-- Isobar 2: Mid 50% stress boundary -->
-      <path d="M ${cx - w * 1.15} ${cy + 1} Q ${cx} ${cy + 22 + s * 6} ${cx + w * 1.15} ${cy + 1}" fill="none" stroke="#0ea5e9" stroke-width="1.5" stroke-dasharray="3 2" opacity="0.9"/>
+      <path d="M ${cx - w * 1.15} ${cy + 1} Q ${cx} ${cy + 22 + s * 6} ${cx + w * 1.15} ${cy + 1}" fill="none" stroke="#2563eb" stroke-width="1.8" stroke-dasharray="4 2" opacity="0.95"/>
       <!-- Isobar 1: Core 80% stress bulb -->
-      <path d="M ${cx - w * 0.75} ${cy + 2} Q ${cx} ${cy + 12 + s * 4} ${cx + w * 0.75} ${cy + 2}" fill="none" stroke="#38bdf8" stroke-width="2.0" opacity="0.95"/>
+      <path d="M ${cx - w * 0.75} ${cy + 2} Q ${cx} ${cy + 12 + s * 4} ${cx + w * 0.75} ${cy + 2}" fill="none" stroke="#1d4ed8" stroke-width="2.2" opacity="1"/>
 
-      <!-- Radial stress dissipation arrows into sand -->
-      <path d="M ${cx - w * 0.65} ${cy + 3} L ${cx - w * 1.05} ${cy + 15 + s * 4} M ${cx - w * 0.3} ${cy + 4} L ${cx - w * 0.45} ${cy + 18 + s * 5} M ${cx} ${cy + 4.5} L ${cx} ${cy + 20 + s * 6} M ${cx + w * 0.3} ${cy + 4} L ${cx + w * 0.45} ${cy + 18 + s * 5} M ${cx + w * 0.65} ${cy + 3} L ${cx + w * 1.05} ${cy + 15 + s * 4}" stroke="#0284c7" stroke-width="1.3" stroke-linecap="round"/>
+      <!-- Radial stress dissipation arrows into sand (Deep Cobalt) -->
+      <path d="M ${cx - w * 0.65} ${cy + 3} L ${cx - w * 1.05} ${cy + 15 + s * 4} M ${cx - w * 0.3} ${cy + 4} L ${cx - w * 0.45} ${cy + 18 + s * 5} M ${cx} ${cy + 4.5} L ${cx} ${cy + 20 + s * 6} M ${cx + w * 0.3} ${cy + 4} L ${cx + w * 0.45} ${cy + 18 + s * 5} M ${cx + w * 0.65} ${cy + 3} L ${cx + w * 1.05} ${cy + 15 + s * 4}" stroke="#1d4ed8" stroke-width="1.5" stroke-linecap="round"/>
     </g>
 
-    <!-- Posterior Fibro-Elastic Cushion Heel Pad (후방 탄성 완충 쿠션) -->
-    <ellipse cx="${cx}" cy="${cy + 2}" rx="${w * 0.75}" ry="${lobeH * 0.95}" fill="rgba(8, 145, 178, 0.35)" stroke="#0284c7" stroke-width="1.6"/>
+    <!-- Posterior Fibro-Elastic Cushion Heel Pad (Deep Cobalt Blue) -->
+    <ellipse cx="${cx}" cy="${cy + 2}" rx="${w * 0.75}" ry="${lobeH * 0.95}" fill="rgba(37, 99, 235, 0.35)" stroke="#1d4ed8" stroke-width="1.8"/>
 
-    <!-- Left Articulated Digital Toe Pad (좌측 발가락 패드) -->
-    <path d="M ${lcx - lobeW} ${cy - 1} Q ${lcx - lobeW * 0.55} ${cy - lobeH - 2} ${lcx} ${cy - lobeH} Q ${lcx + lobeW * 0.25} ${cy - lobeH * 0.4} ${lcx} ${cy + 3} Q ${lcx - lobeW * 0.5} ${cy + lobeH * 0.8} ${lcx - lobeW} ${cy - 1} Z" fill="rgba(6, 182, 212, 0.55)" stroke="#0e7490" stroke-width="1.8" stroke-linejoin="round"/>
-    <path d="M ${lcx - lobeW * 0.6} ${cy - lobeH - 1.5} Q ${lcx - lobeW * 0.4} ${cy - lobeH - 4.5} ${lcx - lobeW * 0.15} ${cy - lobeH - 1}" fill="#1e293b" stroke="#0f172a" stroke-width="0.8"/>
+    <!-- Left Articulated Digital Toe Pad (Deep Cobalt Blue) -->
+    <path d="M ${lcx - lobeW} ${cy - 1} Q ${lcx - lobeW * 0.55} ${cy - lobeH - 2} ${lcx} ${cy - lobeH} Q ${lcx + lobeW * 0.25} ${cy - lobeH * 0.4} ${lcx} ${cy + 3} Q ${lcx - lobeW * 0.5} ${cy + lobeH * 0.8} ${lcx - lobeW} ${cy - 1} Z" fill="rgba(29, 78, 216, 0.45)" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M ${lcx - lobeW * 0.6} ${cy - lobeH - 1.5} Q ${lcx - lobeW * 0.4} ${cy - lobeH - 4.5} ${lcx - lobeW * 0.15} ${cy - lobeH - 1}" fill="#0f172a" stroke="#020617" stroke-width="1"/>
 
-    <!-- Right Articulated Digital Toe Pad (우측 발가락 패드) -->
-    <path d="M ${rcx + lobeW} ${cy - 1} Q ${rcx + lobeW * 0.55} ${cy - lobeH - 2} ${rcx} ${cy - lobeH} Q ${rcx - lobeW * 0.25} ${cy - lobeH * 0.4} ${rcx} ${cy + 3} Q ${rcx + lobeW * 0.5} ${cy + lobeH * 0.8} ${rcx + lobeW} ${cy - 1} Z" fill="rgba(6, 182, 212, 0.55)" stroke="#0e7490" stroke-width="1.8" stroke-linejoin="round"/>
-    <path d="M ${rcx + lobeW * 0.6} ${cy - lobeH - 1.5} Q ${rcx + lobeW * 0.4} ${cy - lobeH - 4.5} ${rcx + lobeW * 0.15} ${cy - lobeH - 1}" fill="#1e293b" stroke="#0f172a" stroke-width="0.8"/>
+    <!-- Right Articulated Digital Toe Pad (Deep Cobalt Blue) -->
+    <path d="M ${rcx + lobeW} ${cy - 1} Q ${rcx + lobeW * 0.55} ${cy - lobeH - 2} ${rcx} ${cy - lobeH} Q ${rcx - lobeW * 0.25} ${cy - lobeH * 0.4} ${rcx} ${cy + 3} Q ${rcx + lobeW * 0.5} ${cy + lobeH * 0.8} ${rcx + lobeW} ${cy - 1} Z" fill="rgba(29, 78, 216, 0.45)" stroke="#1d4ed8" stroke-width="2.2" stroke-linejoin="round"/>
+    <path d="M ${rcx + lobeW * 0.6} ${cy - lobeH - 1.5} Q ${rcx + lobeW * 0.4} ${cy - lobeH - 4.5} ${rcx + lobeW * 0.15} ${cy - lobeH - 1}" fill="#0f172a" stroke="#020617" stroke-width="1"/>
 
-    <!-- Central Fibrous Webbing Strain Line (발가락 사이 인장 결) -->
-    <line x1="${lcx}" y1="${cy}" x2="${rcx}" y2="${cy}" stroke="#0284c7" stroke-width="1.2" stroke-dasharray="2 1.5"/>
+    <!-- Central Fibrous Webbing Strain Line -->
+    <line x1="${lcx}" y1="${cy}" x2="${rcx}" y2="${cy}" stroke="#1d4ed8" stroke-width="1.4" stroke-dasharray="2 1.5"/>
     `;
   };
 
   body = `<g>
 <image href="assets/science/camel-desert.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
 
-<!-- Architectural Center of Gravity symbol ⊕ & Slender Downward Vector at camel torso center (367, 222) -->
+<!-- Gravity Symbol ⊕ & Downward Vector (Crimson #dc2626) at camel torso center (367, 222) -->
 <g transform="translate(367, 222)">
-  <circle cx="0" cy="0" r="7" fill="none" stroke="#7c5532" stroke-width="1.2" stroke-dasharray="2 2"/>
-  <line x1="-9" y1="0" x2="9" y2="0" stroke="#7c5532" stroke-width="1"/>
-  <line x1="0" y1="-9" x2="0" y2="9" stroke="#7c5532" stroke-width="1"/>
-  <path d="M0 7V${32 + s * 8}" stroke="#6e4624" stroke-width="1.6" stroke-linecap="round" marker-end="url(#ex-arrow-draft)"/>
-  <text x="12" y="22" style="font-size:11px;font-weight:700;fill:#5c3818">W = mg (640 N)</text>
+  <circle cx="0" cy="0" r="7" fill="none" stroke="#dc2626" stroke-width="1.4" stroke-dasharray="2 2"/>
+  <line x1="-9" y1="0" x2="9" y2="0" stroke="#dc2626" stroke-width="1.2"/>
+  <line x1="0" y1="-9" x2="0" y2="9" stroke="#dc2626" stroke-width="1.2"/>
+  <path d="M0 7V${32 + s * 8}" stroke="#dc2626" stroke-width="2.0" stroke-linecap="round" marker-end="url(#ex-arrow-coral)"/>
+  <text x="12" y="22" style="font-size:11px;font-weight:800;fill:#dc2626">W = mg (640 N)</text>
 </g>
 
-<!-- Front Foot (x=272, y=354): Dual-Lobe Anatomical Cushion & Luminous Isobars -->
+<!-- Front Foot (x=272, y=354): Dual-Lobe Anatomical Cushion & Cobalt Isobars -->
 ${footGraphic(272, 354, padW, toeGap, padH)}
 
-<!-- Hind Foot (x=463, y=350): Dual-Lobe Anatomical Cushion & Luminous Isobars -->
+<!-- Hind Foot (x=463, y=350): Dual-Lobe Anatomical Cushion & Cobalt Isobars -->
 ${footGraphic(463, 350, padW, toeGap, padH)}
 
-<!-- Architectural Dimension Line for Front Foot -->
-<line x1="${272 - padW}" y1="380" x2="${272 + padW}" y2="380" stroke="#0e7490" stroke-width="1.2"/>
-<line x1="${272 - padW}" y1="376" x2="${272 - padW}" y2="384" stroke="#0e7490" stroke-width="1.2"/>
-<line x1="${272 + padW}" y1="376" x2="${272 + padW}" y2="384" stroke="#0e7490" stroke-width="1.2"/>
-<text x="272" y="394" style="font-size:10px;font-weight:700;fill:#0891b2;text-anchor:middle">접촉 폭 ${(padW * 2 / 3.4).toFixed(0)}cm (면적 ${areaVal} cm²)</text>
+<!-- Architectural Dimension Line for Front Foot (Deep Cobalt) -->
+<line x1="${272 - padW}" y1="380" x2="${272 + padW}" y2="380" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="${272 - padW}" y1="376" x2="${272 - padW}" y2="384" stroke="#1d4ed8" stroke-width="1.5"/>
+<line x1="${272 + padW}" y1="376" x2="${272 + padW}" y2="384" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="272" y="394" style="font-size:11px;font-weight:800;fill:#1e40af;text-anchor:middle">접촉 폭 ${(padW * 2 / 3.4).toFixed(0)}cm (면적 ${areaVal} cm²)</text>
 
 <!-- Top-Left Compact Frosted Badge in Sky -->
-<rect x="25" y="24" width="320" height="34" rx="8" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
-<circle cx="42" cy="41" r="5" fill="#0891b2"/>
-<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#164e63">${stageText}</text>
+<rect x="25" y="24" width="320" height="34" rx="8" fill="#ffffffea" stroke="#1d4ed8" stroke-width="1.5"/>
+<circle cx="42" cy="41" r="5" fill="#1d4ed8"/>
+<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#0f172a">${stageText}</text>
 
 <!-- Real-time Pressure Telemetry Badge in Sky -->
-<rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffd9" stroke="#9bc5d0" stroke-width="1.2"/>
-<text x="517" y="46" style="font-size:12px;font-weight:700;fill:#0891b2;text-anchor:middle">지면 압력: ${pVal} N/cm² (안전)</text>
+<rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="517" y="46" style="font-size:12px;font-weight:800;fill:#1d4ed8;text-anchor:middle">지면 압력: ${pVal} N/cm² (안전)</text>
 
 <!-- Bottom Technical Principle Ribbon -->
-<rect x="75" y="398" width="490" height="28" rx="7" fill="#ffffffeb" stroke="#b2d4de" stroke-width="1.2"/>
-<text x="320" y="416" style="font-size:12px;font-weight:600;fill:#164e63;text-anchor:middle">압력 P = F / A : 넓은 2엽 탄성 발바닥(420 cm²)으로 지면 압력을 낮춰 모래 위를 걸어요</text>
+<rect x="75" y="398" width="490" height="28" rx="7" fill="#fffffffa" stroke="#1d4ed8" stroke-width="1.5"/>
+<text x="320" y="416" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">압력 P = F / A : 넓은 2엽 탄성 발바닥(420 cm²)으로 지면 압력을 낮춰 모래 위를 걸어요</text>
 </g>`;
 
   const s1 = Math.sin(phase * Math.PI);
@@ -290,10 +291,10 @@ ${footGraphic(463, 350, padW, toeGap, padH)}
   <text x="142" y="265" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 60cm² → 침하 ${sinkL}cm (과부하 파괴)</text>
 </g>
 
-<!-- Right Card: Camel Cushion Foot -->
+<!-- Right Card: Camel Cushion Foot (Deep Cobalt Blue) -->
 <g transform="translate(330, 64)">
-  <rect x="0" y="0" width="285" height="280" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.2"/>
-  <rect x="15" y="14" width="150" height="24" rx="6" fill="#15803d"/>
+  <rect x="0" y="0" width="285" height="280" rx="12" fill="#eff6ff" stroke="#93c5fd" stroke-width="1.5"/>
+  <rect x="15" y="14" width="150" height="24" rx="6" fill="#1d4ed8"/>
   <text x="90" y="30" style="font-size:12px;font-weight:700;fill:#ffffff;text-anchor:middle">2. 낙타의 2엽 탄성 쿠션 발</text>
 
   <!-- Sand Bed Profile -->
@@ -303,29 +304,29 @@ ${footGraphic(463, 350, padW, toeGap, padH)}
   <!-- Anatomical Leg Bones & Digital Cushion -->
   <rect x="129" y="${camelY - 65}" width="26" height="65" rx="2" fill="#a4815b" stroke="#6b5034" stroke-width="1.5"/>
 
-  <!-- High-Contrast Dual-Lobe Digital Cushion Pad (대용량 지방 완충 패드) -->
-  <ellipse cx="142" cy="${camelY + 2}" rx="${padW1 / 2}" ry="11" fill="rgba(8, 145, 178, 0.35)" stroke="#0284c7" stroke-width="1.8"/>
+  <!-- High-Contrast Dual-Lobe Digital Cushion Pad (Cobalt Blue) -->
+  <ellipse cx="142" cy="${camelY + 2}" rx="${padW1 / 2}" ry="11" fill="rgba(37, 99, 235, 0.35)" stroke="#1d4ed8" stroke-width="2.2"/>
   <!-- Left Toe Lobe & Right Toe Lobe in Cross-Section -->
-  <ellipse cx="${142 - padW1 * 0.22}" cy="${camelY}" rx="${padW1 * 0.22}" ry="8" fill="rgba(6, 182, 212, 0.55)" stroke="#0e7490" stroke-width="1.5"/>
-  <ellipse cx="${142 + padW1 * 0.22}" cy="${camelY}" rx="${padW1 * 0.22}" ry="8" fill="rgba(6, 182, 212, 0.55)" stroke="#0e7490" stroke-width="1.5"/>
+  <ellipse cx="${142 - padW1 * 0.22}" cy="${camelY}" rx="${padW1 * 0.22}" ry="8" fill="rgba(29, 78, 216, 0.45)" stroke="#1d4ed8" stroke-width="1.8"/>
+  <ellipse cx="${142 + padW1 * 0.22}" cy="${camelY}" rx="${padW1 * 0.22}" ry="8" fill="rgba(29, 78, 216, 0.45)" stroke="#1d4ed8" stroke-width="1.8"/>
 
-  <!-- High-Contrast Luminous Boussinesq stress isobars radiating into sand -->
-  <path d="M${142 - padW1 * 0.45} ${camelY + 8}Q142 ${camelY + 22} ${142 + padW1 * 0.45} ${camelY + 8}" fill="none" stroke="#0284c7" stroke-width="1.4" stroke-dasharray="3 2"/>
-  <path d="M${142 - padW1 * 0.7} ${camelY + 6}Q142 ${camelY + 36} ${142 + padW1 * 0.7} ${camelY + 6}" fill="none" stroke="#0ea5e9" stroke-width="1.2" stroke-dasharray="4 3" opacity="0.85"/>
-  <text x="142" y="${camelY + 30}" style="font-size:9px;font-weight:700;fill:#0369a1;text-anchor:middle">광폭 Boussinesq 등응력선 분산</text>
+  <!-- High-Contrast Cobalt Boussinesq stress isobars radiating into sand -->
+  <path d="M${142 - padW1 * 0.45} ${camelY + 8}Q142 ${camelY + 22} ${142 + padW1 * 0.45} ${camelY + 8}" fill="none" stroke="#1d4ed8" stroke-width="1.8" stroke-dasharray="3 2"/>
+  <path d="M${142 - padW1 * 0.7} ${camelY + 6}Q142 ${camelY + 36} ${142 + padW1 * 0.7} ${camelY + 6}" fill="none" stroke="#2563eb" stroke-width="1.5" stroke-dasharray="4 3" opacity="0.9"/>
+  <text x="142" y="${camelY + 30}" style="font-size:9px;font-weight:800;fill:#1e40af;text-anchor:middle">광폭 Boussinesq 등응력선 분산</text>
 
   <!-- Dimension line for contact width -->
-  <line x1="${142 - padW1 / 2}" y1="${camelY + 44}" x2="${142 + padW1 / 2}" y2="${camelY + 44}" stroke="#0369a1" stroke-width="1.2"/>
-  <line x1="${142 - padW1 / 2}" y1="${camelY + 40}" x2="${142 - padW1 / 2}" y2="${camelY + 48}" stroke="#0369a1" stroke-width="1.2"/>
-  <line x1="${142 + padW1 / 2}" y1="${camelY + 40}" x2="${142 + padW1 / 2}" y2="${camelY + 48}" stroke="#0369a1" stroke-width="1.2"/>
+  <line x1="${142 - padW1 / 2}" y1="${camelY + 44}" x2="${142 + padW1 / 2}" y2="${camelY + 44}" stroke="#1d4ed8" stroke-width="1.5"/>
+  <line x1="${142 - padW1 / 2}" y1="${camelY + 40}" x2="${142 - padW1 / 2}" y2="${camelY + 48}" stroke="#1d4ed8" stroke-width="1.5"/>
+  <line x1="${142 + padW1 / 2}" y1="${camelY + 40}" x2="${142 + padW1 / 2}" y2="${camelY + 48}" stroke="#1d4ed8" stroke-width="1.5"/>
 
-  <rect x="15" y="250" width="255" height="22" rx="5" fill="#15803d"/>
+  <rect x="15" y="250" width="255" height="22" rx="5" fill="#1d4ed8"/>
   <text x="142" y="265" style="font-size:11px;font-weight:700;fill:#ffffff;text-anchor:middle">면적 420cm² → 침하 ${sinkR}cm (표면 안정 지탱)</text>
 </g>
 
 <!-- Bottom Principle Card -->
 <rect x="22" y="356" width="596" height="52" rx="8" fill="#ffffffeb" stroke="#cddadc" stroke-width="1.2"/>
-<text x="320" y="378" style="font-size:12px;font-weight:700;fill:#164e63;text-anchor:middle">압력 공식 P = F / A : 동일 하중(1,100 N) 기준, 면적이 7배 넓어 압력이 86% 감소해요</text>
+<text x="320" y="378" style="font-size:12px;font-weight:700;fill:#1e40af;text-anchor:middle">압력 공식 P = F / A : 동일 하중(1,100 N) 기준, 면적이 7배 넓어 압력이 86% 감소해요</text>
 <text x="320" y="396" style="font-size:11px;font-weight:600;fill:#48636c;text-anchor:middle">낙타 발바닥의 2엽 탄성 완충 쿠션은 모래의 한계 지지력 이하로 응력을 고르게 분산시켜요</text>
 </g>`;
 
@@ -338,29 +339,29 @@ ${footGraphic(463, 350, padW, toeGap, padH)}
   body = `<g>
 <image href="assets/science/penguin-polar.webp" x="14" y="14" width="612" height="412" preserveAspectRatio="xMidYMid slice" rx="14" style="border-radius:14px"/>
 
-<!-- Hydrodynamic Streamlines along fusiform body -->
+<!-- High-Contrast Luminous Solar Gold (#fde047 / #ffffff) Streamlines against deep polar water -->
 <g>
-<path d="M50 175Q220 125 360 150T590 162" fill="none" stroke="#68c4db" stroke-width="1.6" stroke-dasharray="14 10" stroke-dashoffset="${flowOffset}" opacity="0.85"/>
-<path d="M40 225Q230 185 370 210T600 225" fill="none" stroke="#82d3e5" stroke-width="1.4" stroke-dasharray="12 8" stroke-dashoffset="${flowOffset}" opacity="0.9"/>
-<path d="M60 275Q230 245 380 260T610 280" fill="none" stroke="#5cb8cf" stroke-width="1.5" stroke-dasharray="15 10" stroke-dashoffset="${flowOffset}" opacity="0.85"/>
+<path d="M50 175Q220 125 360 150T590 162" fill="none" stroke="#fde047" stroke-width="2.2" stroke-dasharray="14 8" stroke-dashoffset="${flowOffset}" opacity="1"/>
+<path d="M40 225Q230 185 370 210T600 225" fill="none" stroke="#ffffff" stroke-width="1.8" stroke-dasharray="12 8" stroke-dashoffset="${flowOffset}" opacity="0.9"/>
+<path d="M60 275Q230 245 380 260T610 280" fill="none" stroke="#facc15" stroke-width="2.0" stroke-dasharray="15 8" stroke-dashoffset="${flowOffset}" opacity="0.95"/>
 </g>
 
-<!-- Thermal Insulation Boundary Envelope (trapped micro-air down layer) -->
-<path d="M295 155Q270 200 272 260Q275 320 330 345" fill="none" stroke="#e09d38" stroke-width="2.2" stroke-linecap="round" opacity="${0.75 + pulse * 0.25}"/>
-<path d="M305 162Q282 205 284 258Q286 312 334 338" fill="none" stroke="#f5be58" stroke-width="1.2" stroke-linecap="round" opacity="${0.6 + pulse * 0.3}"/>
+<!-- High-Contrast Radiant Solar Amber (#f59e0b) & Crimson (#dc2626) Thermal Envelope -->
+<path d="M295 155Q270 200 272 260Q275 320 330 345" fill="none" stroke="#f59e0b" stroke-width="3.2" stroke-linecap="round" opacity="1"/>
+<path d="M305 162Q282 205 284 258Q286 312 334 338" fill="none" stroke="#dc2626" stroke-width="2.0" stroke-linecap="round" opacity="0.9"/>
 
 <!-- Top-Left Compact Frosted Badge -->
-<rect x="25" y="24" width="310" height="34" rx="8" fill="#ffffffd9" stroke="#9bbdc8" stroke-width="1.2"/>
-<circle cx="42" cy="41" r="5" fill="#1b6e82"/>
-<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#164654">유선형 항력 최소화 (Cd ≈ 0.03) &amp; 4중 단열층</text>
+<rect x="25" y="24" width="310" height="34" rx="8" fill="#ffffffea" stroke="#f59e0b" stroke-width="1.5"/>
+<circle cx="42" cy="41" r="5" fill="#dc2626"/>
+<text x="56" y="46" style="font-size:12px;font-weight:700;fill:#0f172a">유선형 항력 최소화 (Cd ≈ 0.03) &amp; 4중 단열층</text>
 
-<!-- Telemetry Pill at right -->
-<rect x="390" y="24" width="225" height="34" rx="8" fill="#ffffffd9" stroke="#9bbdc8" stroke-width="1.2"/>
-<text x="502" y="46" style="font-size:11px;font-weight:700;fill:#1a5262;text-anchor:middle">외기 -30℃ ~ -1.8℃ ──> 심부 +38.5℃ (88% 보존)</text>
+<!-- Telemetry Pill at right (Vibrant Solar Amber/Crimson) -->
+<rect x="390" y="24" width="225" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+<text x="502" y="46" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">외기 -30℃ ~ -1.8℃ ──> 심부 +38.5℃ (88% 보존)</text>
 
 <!-- Bottom Principle Ribbon -->
-<rect x="75" y="388" width="490" height="28" rx="7" fill="#ffffffeb" stroke="#b2cad2" stroke-width="1.2"/>
-<text x="320" y="406" style="font-size:12px;font-weight:600;fill:#203c46;text-anchor:middle">깃털 속 빽빽한 공기층이 대류를 막고, 지방층이 열전도를 차단해 체온을 지켜요</text>
+<rect x="75" y="388" width="490" height="28" rx="7" fill="#fffffffa" stroke="#f59e0b" stroke-width="1.5"/>
+<text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">깃털 속 빽빽한 공기층이 대류를 막고, 지방층이 열전도를 차단해 체온을 지켜요</text>
 </g>`;
 
   detail = `<g filter="url(#ex-shadow)">
@@ -735,6 +736,8 @@ const defsEx=`<defs>
 <marker id="ex-arrow-cyan" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#00b4d8"/></marker>
 <marker id="ex-arrow-amber" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#f5ab35"/></marker>
 <marker id="ex-arrow-red" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0 0L10 5L0 10Z" fill="#e04e38"/></marker>
+<marker id="ex-arrow-cobalt" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#1d4ed8"/></marker>
+<marker id="ex-arrow-coral" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#dc2626"/></marker>
 <marker id="ex-arrow-draft" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#78502d"/></marker>
 <marker id="ex-arrow-sand" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#a88054"/></marker>
 <marker id="ex-arrow-aqua" viewBox="0 0 10 10" refX="7" refY="5" markerWidth="5" markerHeight="5" orient="auto"><path d="M0 2L7 5L0 8Z" fill="#199bbd"/></marker>
