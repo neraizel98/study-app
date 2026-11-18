@@ -418,58 +418,824 @@ ${footGraphic(463, 350, padW, toeGap, padH)}
 
   caption = step === 1 ? '공기는 최고의 단열재예요. 빽빽한 방수 깃털로 대류를 차단하고 갇힌 공기층과 피하지방으로 전도 열 손실을 88% 이상 막아요.' : '유선형 체형으로 유체 저항을 최소화(Cd≈0.03)하고 깃털 속 공기층으로 혹한(-30℃) 속에서도 심부 체온(+38.5℃)을 유지해요.';
  }
-}else if(kind==='animal-lifecycle'){
- controls=['나비의 한살이','메뚜기의 한살이','개구리의 한살이'];
- const stages=c===0?['알','애벌레','번데기','성충']:c===1?['알','어린 메뚜기','자란 어린 개체','성충']:['알','올챙이','다리 난 올챙이','개구리'];
- const icon=(x,i)=>{
-  if(i===0)return Array.from({length:7},(_,j)=>circle(x-20+j*7,210+(j%2)*12,7,'#dfd9b3')).join('');
-  if(c===0&&i===1)return Array.from({length:5},(_,j)=>circle(x-34+j*16,225+Math.sin(j)*5,13,'#8ca762')).join('');
-  if(c===0&&i===2)return `<path d="M${x-20} 175Q${x+37} 205 ${x} 267Q${x-36} 232 ${x-20} 175Z" fill="#9d8455" stroke="#715d38" stroke-width="2"/>`;
-  if(c===0)return `<ellipse cx="${x-25}" cy="205" rx="30" ry="38" fill="#c49366" stroke="#926842" stroke-width="1.5"/><ellipse cx="${x+25}" cy="205" rx="30" ry="38" fill="#dcb878" stroke="#926842" stroke-width="1.5"/>${p(`M${x} 182V255`,'#3f5145',8)}`;
-  if(c===2&&i<3)return `${circle(x,210,20,'#6d8f7b')}${p(`M${x-12} 222Q${x+60} 245 ${x+38} 270`,'#6d8f7b',7)}${i===2?p(`M${x-5} 220L${x-34} 247M${x+7} 223L${x+22} 247`,'#507060',4):''}`;
-  return `<ellipse cx="${x}" cy="218" rx="${c===1?16+i*7:32}" ry="${c===1?10+i*3:18}" fill="#81995e"/>${c===1&&i===3?`<ellipse cx="${x+4}" cy="205" rx="32" ry="10" fill="#b1bc89"/>`:''}${p(`M${x-15} 230L${x-35} 252L${x-12} 248M${x+15} 230L${x+36} 252L${x+12} 248`,'#527452',5)}`;
- };
- body=stages.map((s,i)=>`<g opacity="${Math.floor(phase*4)===i?1:.7}" filter="url(#ex-shadow)">${circle(90+i*150,218,57,'#e9f1e4')}${icon(90+i*150,i)}<rect x="${55+i*150}" y="302" width="70" height="24" rx="6" fill="#ffffffdf" stroke="#b8d4bb"/>${text(90+i*150,319,s,'center')}${i<3?arrow(`M${151+i*150} 218H${176+i*150}`):''}</g>`).join('');
- detail=`<g filter="url(#ex-shadow)">${icon(205,c===1?1:1)}${icon(435,3)}<rect x="155" y="320" width="100" height="26" rx="6" fill="#ffffffdf" stroke="#a5c4b1"/>${text(205,338,'어린 단계','center')}<rect x="385" y="320" width="100" height="26" rx="6" fill="#ffffffdf" stroke="#a5c4b1"/>${text(435,338,'자란 단계','center')}</g>`;
- caption=c===0?'나비는 알·애벌레·번데기·성충 단계를 거쳐요. 어린 모습과 성충의 모습을 비교해요.':c===1?'메뚜기는 번데기 단계를 거치지 않아요. 어린 개체가 자라는 과정과 나비의 한살이를 구분해요.':'올챙이는 자라면서 다리가 나타나고 꼬리가 줄어들어요. 한살이의 단계와 몸의 변화를 연결해요.';
-}else if(kind==='plant-lifecycle'){
- controls=['물·공기·적절한 온도','물이 부족한 조건','발아 뒤 빛이 부족'];
- const growth=c===1?.05:Math.min(1,.3+phase*.7),h=c===2?175:120;
- body=`<g filter="url(#ex-shadow)"><path d="M30 285Q320 260 610 285V420H30" fill="url(#ex-sand)"/><ellipse cx="320" cy="280" rx="24" ry="16" fill="#aa8657" stroke="#82623a" stroke-width="2"/>${p(`M320 290Q302 ${315+growth*45} 318 ${325+growth*55}`,'#94764b',6)}${p(`M320 277Q315 ${260-growth*h/2} 322 ${275-growth*h}`,c===2?'#b9b466':'#6c9356',9)}${growth>.2?`<path d="M320 ${280-growth*h}Q257 ${260-growth*h} 262 ${225-growth*h}Q313 ${220-growth*h} 320 ${280-growth*h}M322 ${280-growth*h}Q372 ${240-growth*h} 389 ${240-growth*h}Q384 ${284-growth*h} 322 ${280-growth*h}" fill="${c===2?'#c8c480':'#7fa564'}"/>`:''}${c!==1?circle(220,325,8,'#6cb4d5'):''}<rect x="200" y="377" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#c0a57e"/>${text(320,395,c===1?'물이 부족하면 발아가 어려워요':'씨에서 뿌리·줄기·잎이 자라요','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)"><ellipse cx="320" cy="200" rx="130" ry="85" fill="#ba925d" stroke="#8c6a3b" stroke-width="3"/><path d="M315 120Q240 200 320 280Q405 200 325 120" fill="#ede1be"/>${p('M320 190Q340 220 317 265','#77925a',13)}<rect x="180" y="335" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#bca07c"/>${text(320,353,'씨 속의 어린 식물 (배) 단면 모형','center')}</g>`;
- caption=c===1?'발아에는 물과 공기, 적절한 온도 등의 조건이 필요해요. 조건을 하나씩 달리해 비교해요.':c===2?'발아 이후의 생장에는 빛이 중요해요. 발아 조건과 계속 자라는 조건을 구분해요.':'씨가 물을 흡수한 뒤 뿌리와 줄기 등이 자라요. 모형의 성장 속도는 실제 날짜나 키를 예측하지 않아요.';
-}else if(kind==='flower-seed'){
- controls=['꽃가루가 암술머리로','열매와 씨가 생기는 곳','씨가 퍼지는 모습'];
- if(c<2){
-  body=p('M320 390V255','#6b9158',10)+Array.from({length:5},(_,i)=>`<ellipse cx="${320+70*Math.cos(i*1.257)}" cy="${195+65*Math.sin(i*1.257)}" rx="55" ry="35" transform="rotate(${i*72} ${320+70*Math.cos(i*1.257)} ${195+65*Math.sin(i*1.257)})" fill="#ddb1a2" stroke="#b28479" stroke-width="2"/>`).join('')+`<ellipse cx="320" cy="245" rx="38" ry="47" fill="${c===1?'#cfa767':'#96a966'}"/>${p('M320 230V130','#7d8f52',8)}${circle(320,129,15,'#a4b375')}${p('M272 224V170M365 223V169','#b39e5b',5)}${circle(272,165,12,'#dbbe6d')}${circle(365,165,12,'#dbbe6d')}${c===0?circle(272+48*phase,165-36*phase,6.5,'#d9ad4b'):Array.from({length:5},(_,i)=>circle(306+i%2*24,225+Math.floor(i/2)*15,6,'#6e5d3c')).join('')}<rect x="125" y="125" width="50" height="24" rx="6" fill="#ffffffdf" stroke="#c0a96a"/>${text(150,142,'수술')}<rect x="385" y="125" width="50" height="24" rx="6" fill="#ffffffdf" stroke="#8fa463"/>${text(410,142,'암술')}<rect x="210" y="377" width="220" height="26" rx="6" fill="#ffffffdf" stroke="#b59a68"/>${text(320,395,c===0?'꽃가루의 이동: 수분':'꽃의 일부가 열매와 씨로 연결돼요','center')}`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M230 110Q320 65 410 110V290Q320 345 230 290Z" fill="#d8c284" stroke="#ab9556" stroke-width="3"/><ellipse cx="320" cy="220" rx="67" ry="82" fill="#f4e8bd"/>`+Array.from({length:6},(_,i)=>circle(294+i%2*50,170+Math.floor(i/2)*45,10,'#7d6e46')).join('')+`<rect x="220" y="367" width="200" height="26" rx="6" fill="#ffffffdf" stroke="#bfa86b"/>${text(320,385,'열매 속 씨의 위치','center')}</g>`;
- }else{
-  body=Array.from({length:5},(_,i)=>{const x=100+i*105,y=145+(i%2)*85;return `${p(`M${x} ${y}V${y+65}`,'#95926e',2)}${Array.from({length:7},(_,j)=>p(`M${x} ${y}L${x-28+j*9} ${y-35}`,'#b8c2b3',1.8)).join('')}${circle(x,y+68,5.5,'#87724f')}`;}).join('')+arrow('M70 350Q300 300 570 350')+`<rect x="170" y="377" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#9bb1a8"/>${text(320,395,'바람을 이용하는 씨 · 퍼지는 방법은 다양해요','center')}`;
-  detail=body;
- }
- caption=c===0?'꽃가루가 암술머리에 옮겨지는 수분 과정을 살펴봐요. 열매와 씨가 만들어지는 과정과 연결돼요.':c===1?'꽃의 부분 가운데 씨와 열매로 연결되는 위치를 단면으로 관찰해요. 모든 꽃의 모양이 같은 것은 아니에요.':'씨는 바람·물·동물 등 여러 방법으로 퍼질 수 있어요. 이 장면은 바람을 이용하는 한 예예요.';
-}else if(kind==='body-systems'){
- controls=['음식의 이동 · 소화','공기의 이동 · 호흡','혈액의 이동 · 순환'];
- body=bodyOutline;
- if(c===0){
-  const route=[[320,95],[320,165],[352,202],[329,230],[300,260],[342,280],[282,308],[275,250],[370,250],[370,310],[338,355]],v=phase*(route.length-1),j=Math.min(route.length-2,Math.floor(v)),f=v-j,px=route[j][0]+(route[j+1][0]-route[j][0])*f,py=route[j][1]+(route[j+1][1]-route[j][1])*f;
-  body+=`${p('M307 91Q320 98 333 91','#9a6d62',5)}${p('M320 98V170Q320 182 330 190','#ba856e',9)}<path d="M328 178C360 163 390 190 380 218C370 246 339 240 330 224C313 216 317 192 328 178Z" fill="#cf9983" stroke="#93685c" stroke-width="3"/>${p('M330 229Q298 231 295 252Q355 247 355 266Q290 259 290 280Q352 276 349 295Q308 311 281 308','#dbae83',9)}${p('M281 309L275 313V246Q320 231 370 246V306Q371 322 350 331L338 340V365','#a8816c',13)}${circle(px,py,6,'#f2c86b')}${arrow('M301 119V155')}${arrow('M383 263V298')}<rect x="420" y="86" width="40" height="22" rx="5" fill="#fff" stroke="#91a7a5"/>${text(435,98,'입')}${p('M349 92H420','#91a7a5',2)}<rect x="420" y="143" width="40" height="22" rx="5" fill="#fff" stroke="#91a7a5"/>${text(435,155,'식도')}${p('M328 146H420','#91a7a5',2)}<rect x="420" y="202" width="40" height="22" rx="5" fill="#fff" stroke="#91a7a5"/>${text(435,214,'위')}${p('M383 206H420','#91a7a5',2)}<rect x="65" y="271" width="60" height="22" rx="5" fill="#fff" stroke="#91a7a5"/>${text(85,283,'작은창자')}${p('M125 275H279','#91a7a5',2)}<rect x="420" y="278" width="50" height="22" rx="5" fill="#fff" stroke="#91a7a5"/>${text(435,290,'큰창자')}${p('M381 282H420','#91a7a5',2)}`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M70 180V340H570V180Q540 90 515 180Q490 90 465 180Q440 90 415 180Q390 90 365 180Q340 90 315 180Q290 90 265 180Q240 90 215 180Q190 90 165 180Q140 90 115 180Q90 90 70 180Z" fill="#d9ae8e" stroke="#ad8269" stroke-width="3"/>${p('M100 300Q120 145 140 300Q170 145 190 300Q220 145 240 300Q270 145 290 300Q320 145 340 300Q370 145 390 300Q420 145 440 300Q470 145 490 300Q520 145 540 300','#b46f64',5)}${p('M95 322H545','#608ea0',8)}${Array.from({length:8},(_,i)=>circle(120+i*55,65+i%2*27,5.5,'#e2c275')).join('')}${arrow('M237 85V180')}<rect x="235" y="35" width="170" height="24" rx="6" fill="#fff" stroke="#b28c74"/>${text(320,49,'잘게 나뉜 영양 성분','center')}<rect x="180" y="398" width="280" height="24" rx="6" fill="#fff" stroke="#608ea0"/>${text(320,414,'일부 영양 성분이 흡수되어 혈액으로 이동해요','center')}</g>`;
- }else if(c===1){
-  body+=p('M320 85V175M320 166L273 209M320 166L367 209','#9b796e',9)+`<path d="M300 165Q248 160 248 260Q290 287 309 254V185Z" fill="#c9988e"/><path d="M340 165Q393 160 392 260Q351 287 331 254V185Z" fill="#c9988e"/>${p('M270 210L290 242M370 210L350 242','#9c6b63',3)}${circle(320,100+phase*70,5.5,'#76a9be')}<rect x="420" y="86" width="50" height="22" rx="5" fill="#fff" stroke="#96aaa9"/>${text(435,98,'코·입')}${p('M345 93H420','#96aaa9',2)}<rect x="420" y="139" width="40" height="22" rx="5" fill="#fff" stroke="#96aaa9"/>${text(435,151,'기관')}${p('M328 143H420','#96aaa9',2)}<rect x="420" y="187" width="50" height="22" rx="5" fill="#fff" stroke="#96aaa9"/>${text(435,199,'기관지')}${p('M362 187H420','#96aaa9',2)}<rect x="420" y="242" width="30" height="22" rx="5" fill="#fff" stroke="#96aaa9"/>${text(435,254,'폐')}${p('M393 246H420','#96aaa9',2)}`;
-  detail=`<g filter="url(#ex-shadow)"><ellipse cx="320" cy="150" rx="115" ry="80" fill="#dcada2" stroke="#b18276" stroke-width="3"/>${p('M320 35V75','#a3776b',14)}${p('M95 285Q320 350 545 285','#b56c5e',12)}${p('M95 311Q320 375 545 311','#618fa2',9)}${arrow('M240 210V280','#ad7d5e')}${arrow('M400 280V210','#618fa2')}<rect x="230" y="121" width="180" height="24" rx="6" fill="#fff" stroke="#b18276"/>${text(320,135,'폐의 작은 공기주머니 (폐포)','center')}<rect x="110" y="228" width="50" height="22" rx="5" fill="#fff" stroke="#b56c5e"/>${text(135,240,'산소')}<rect x="415" y="228" width="70" height="22" rx="5" fill="#fff" stroke="#618fa2"/>${text(445,240,'이산화탄소')}<rect x="195" y="392" width="250" height="24" rx="6" fill="#fff" stroke="#96aaa9"/>${text(320,406,'혈관 색은 경로를 구분하는 모형 표시','center')}</g>`;
- }else{
-  body+=`<path d="M320 185C280 140 260 185 290 220L320 249L350 220C380 183 359 145 320 185Z" fill="#b15e58"/>${p('M320 238L372 270L367 347L350 365','#b5645b',7)}${p('M350 365H288L272 347L268 270L301 225','#578394',7)}${p('M301 182L268 166V128L300 112','#578394',6)}${p('M300 112H345L370 130V167L339 185','#b5645b',6)}${circle(320,120+phase*60,5.5,'#cd665b')}<rect x="410" y="205" width="40" height="22" rx="5" fill="#fff" stroke="#b15e58"/>${text(425,217,'심장')}`;
-  detail=`<g filter="url(#ex-shadow)">${circle(320,205,85,'#d0aba0')}${arrow('M130 140H235','#578394')}${arrow('M405 265H515','#b5645b')}<rect x="190" y="362" width="260" height="24" rx="6" fill="#fff" stroke="#b15e58"/>${text(320,376,'심장의 펌프 작용과 이어진 혈관 순환','center')}</g>`;
- }
- body+=`<rect x="180" y="407" width="280" height="24" rx="6" fill="#ffffffdf" stroke="#b8a18c"/>${text(320,421,'기관의 위치와 크기를 단순화한 몸속 모형','center')}`;
- caption=c===0?'음식은 소화 기관을 따라 이동하고 잘게 나뉘어 필요한 성분이 흡수돼요. 공기가 이동하는 길과 구분해요.':c===1?'공기는 호흡 기관으로 들어가요. 폐에서 혈액과 산소·이산화탄소를 주고받는 과정과 연결돼요.':'심장과 혈관을 통해 혈액이 순환해요. 소화·호흡·순환 기관은 서로 협력해 몸의 활동을 도와요.';
-}else if(kind==='classification'){
- controls=['현미경으로 세포 관찰','동물·식물 세포 비교','관찰 특징으로 분류'];
- const cell=(x,plant)=>`${plant?rect(x-95,105,190,210,'#c8dcb1',16):`<ellipse cx="${x}" cy="210" rx="95" ry="106" fill="#dfcbba" stroke="#ad8874" stroke-width="4"/>`}${circle(x+15,210,30,plant?'#8aa86f':'#b9888b')}${plant?Array.from({length:7},(_,i)=>`<ellipse cx="${x-63+i*19}" cy="${135+i%2*135}" rx="10" ry="5.5" fill="#6c945e"/>`).join(''):''}<rect x="${x-65}" y="347" width="130" height="24" rx="6" fill="#ffffffdf" stroke="#a0b8a4"/>${text(x,361,plant?'식물 세포 모형':'동물 세포 모형','center')}`;
- body=c===0?`<g filter="url(#ex-shadow)">${p('M150 350H280M210 345V270L165 220M174 170L220 115L252 142L207 198','#5b858f',18)}${rect(152,255,110,12,'#709aa1')}${circle(435,210,105,'#d6e4cb')}${circle(451,205,33,'#869c73')}<rect x="210" y="392" width="220" height="24" rx="6" fill="#ffffffdf" stroke="#8fa9b0"/>${text(320,406,'확대해 보면 세포의 구조가 보여요','center')}</g>`:c===1?cell(175,false)+cell(465,true):`<g filter="url(#ex-shadow)">${rect(70,90,500,235,'#f7f6ec')}${text(110,140,'관찰 기준')}${text(300,140,'표본 A')}${text(455,140,'표본 B')}${p('M80 160H560M80 225H560M80 290H560','#bbd0cc',2)}${text(110,205,'세포벽')}${text(315,205,'있음')}${text(470,205,'없음')}${text(110,270,'엽록체')}${text(315,270,'관찰')}${text(470,270,'미관찰')}<rect x="180" y="367" width="280" height="24" rx="6" fill="#ffffffdf" stroke="#bbd0cc"/>${text(320,381,'한 가지 겉모습보다 여러 관찰 근거','center')}</g>`;
- detail=cell(320,c!==1);
- caption=c===0?'작은 생물의 구조를 확대해 살펴봐요. 현미경 모형은 확대의 관계를 보여 주며 실제 사진은 아니에요.':c===1?'대표적인 동물·식물 세포의 공통점과 차이를 비교해요. 모든 세포가 이 그림과 똑같은 모양이라는 뜻은 아니에요.':'분류 기준을 먼저 정하고 같은 기준으로 표본을 비교해요. 겉모습이 비슷하다는 이유 하나로 같은 무리라고 확정하지 않아요.';
+}else if (kind === 'animal-lifecycle') {
+    controls = ['나비의 한살이', '메뚜기의 한살이', '개구리의 한살이'];
+    customSteps = ['동작 주기 관찰', '원리 비교 단면'];
+    const curStage = Math.floor(phase * 4);
+
+    if (c === 0) {
+      customLegends = ['나비의 한살이 (완전탈바꿈)', '1. 알 (잎 뒷면 단독 산란)', '2. 애벌레 (배추벌레 1~5령)', '3. 번데기 (고치실 고정 변태)', '4. 성충 (배추흰나비 완성)'];
+      const stages = [
+        { name: '알', x: 110, note: '지름 1mm · 옥수수 모양' },
+        { name: '애벌레', x: 250, note: '5령 배추벌레 · 왕성한 섭식' },
+        { name: '번데기', x: 390, note: '움직이지 않고 조직 재편' },
+        { name: '성충', x: 530, note: '날개돋이 · 꿀 섭취·산란' }
+      ];
+
+      body = `<g filter="url(#ex-shadow)">
+      ${stages.map((st, i) => {
+        const active = curStage === i;
+        return `<g transform="translate(${st.x - 60}, 110)">
+          <rect x="0" y="0" width="120" height="190" rx="12" fill="${active ? '#f0fdf4' : '#ffffff'}" stroke="${active ? '#16a34a' : '#cbd5e1'}" stroke-width="${active ? 2.5 : 1.5}"/>
+          <rect x="15" y="10" width="90" height="22" rx="6" fill="${active ? '#16a34a' : '#e2e8f0'}"/>
+          <text x="60" y="25" style="font-size:11px;font-weight:800;fill:${active ? '#ffffff' : '#475569'};text-anchor:middle">${i + 1}. ${st.name}</text>
+          <circle cx="60" cy="85" r="42" fill="${active ? '#dcfce7' : '#f8fafc'}" stroke="${active ? '#86efac' : '#e2e8f0'}" stroke-width="1.5"/>
+          ${i === 0 ? `
+            <path d="M30 100Q60 70 90 100" fill="none" stroke="#22c55e" stroke-width="4"/>
+            <ellipse cx="60" cy="80" rx="10" ry="15" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+            <path d="M56 70V90M60 68V92M64 70V90" stroke="#a16207" stroke-width="0.8"/>
+          ` : i === 1 ? `
+            <path d="M32 92Q50 78 68 90T92 84" fill="none" stroke="#15803d" stroke-width="11" stroke-linecap="round"/>
+            <circle cx="30" cy="92" r="5" fill="#14532d"/>
+            <circle cx="28" cy="91" r="1.5" fill="#ffffff"/>
+            ${[42, 54, 66, 78].map(cx => `<line x1="${cx}" y1="94" x2="${cx}" y2="99" stroke="#166534" stroke-width="2"/>`).join('')}
+          ` : i === 2 ? `
+            <line x1="20" y1="55" x2="100" y2="70" stroke="#78350f" stroke-width="3"/>
+            <line x1="60" y1="63" x2="60" y2="73" stroke="#e2e8f0" stroke-width="1.5"/>
+            <path d="M50 73L70 73L74 95L60 115L46 95Z" fill="#84cc16" stroke="#4d7c0f" stroke-width="2"/>
+            <path d="M52 85L68 85" stroke="#365314" stroke-width="1"/>
+          ` : `
+            <ellipse cx="60" cy="85" rx="5" ry="18" fill="#1e293b"/>
+            <path d="M57 78C35 50 20 65 32 85C20 95 32 108 57 90Z" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+            <path d="M63 78C85 50 100 65 88 85C100 95 88 108 63 90Z" fill="#fef9c3" stroke="#ca8a04" stroke-width="1.5"/>
+            <circle cx="42" cy="78" r="3" fill="#1e293b"/>
+            <circle cx="78" cy="78" r="3" fill="#1e293b"/>
+            <path d="M58 68Q52 58 48 56M62 68Q68 58 72 56" stroke="#1e293b" stroke-width="1.2"/>
+          `}
+          <text x="60" y="152" style="font-size:9.5px;font-weight:700;fill:#334155;text-anchor:middle">${st.note}</text>
+          <rect x="15" y="162" width="90" height="18" rx="4" fill="${active ? '#dcfce7' : '#f1f5f9'}"/>
+          <text x="60" y="174" style="font-size:9px;font-weight:700;fill:${active ? '#15803d' : '#64748b'};text-anchor:middle">${active ? '▶ 현재 관찰' : '대기 단계'}</text>
+        </g>`;
+      }).join('')}
+      ${[0, 1, 2].map(i => `<g transform="translate(${175 + i * 140}, 195)">
+        <line x1="0" y1="0" x2="30" y2="0" stroke="#0284c7" stroke-width="2.5" marker-end="url(#ex-arrow-cyan)"/>
+      </g>`).join('')}
+      <path d="M530 310Q320 370 110 310" fill="none" stroke="#16a34a" stroke-width="2.2" stroke-dasharray="6 3" marker-end="url(#ex-arrow)"/>
+      <rect x="250" y="342" width="140" height="22" rx="6" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="357" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">산란을 통한 생명의 순환</text>
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">완전탈바꿈: 알 → 애벌레 → 번데기 → 성충 (4단계)</text>
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">번데기 단계 존재 (조직 완전 재편)</text>
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">배추흰나비는 번데기 과정을 거쳐 몸 형태와 먹이가 완전히 바뀌는 완전탈바꿈을 해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">번데기 속 변태(Metamorphosis) 메커니즘 단면 분석</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="220" height="240" rx="10" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="110" y="28" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">번데기 외형 (단단한 큐티클)</text>
+        <path d="M70 60L150 60L160 110L110 200L60 110Z" fill="#84cc16" stroke="#4d7c0f" stroke-width="3"/>
+        <line x1="110" y1="40" x2="110" y2="60" stroke="#78350f" stroke-width="3"/>
+        <text x="110" y="222" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">보호막 형성 · 외부 충격 방어</text>
+      </g>
+      <g transform="translate(340, 85)">
+        <rect x="0" y="0" width="240" height="240" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+        <text x="120" y="28" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">내부 조직 재편 (성충판 형성)</text>
+        <path d="M80 60L160 60L170 110L120 200L70 110Z" fill="#dcfce7" stroke="#16a34a" stroke-width="2.5" stroke-dasharray="5 3"/>
+        <ellipse cx="95" cy="100" rx="15" ry="25" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+        <ellipse cx="145" cy="100" rx="15" ry="25" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="120" y="105" style="font-size:10px;font-weight:800;fill:#854d0e;text-anchor:middle">날개 성충판</text>
+        <path d="M100 135L90 170M140 135L150 170" stroke="#0284c7" stroke-width="2"/>
+        <text x="120" y="160" style="font-size:10px;font-weight:800;fill:#0369a1;text-anchor:middle">다리·더듬이 분화</text>
+        <text x="120" y="222" style="font-size:11px;font-weight:700;fill:#15803d;text-anchor:middle">애벌레 조직 분해 → 성충 기관 재조립</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">번데기 속에서는 애벌레의 씹는 입과 기는 다리가 녹아 분해(조직 붕괴)되고,</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">잠재되어 있던 성충판(Imaginal disc)이 활성화되어 날개와 긴 빨대 주둥이가 새로 자라나요</text>
+      </g>`;
+    } else if (c === 1) {
+      customLegends = ['메뚜기의 한살이 (불완전탈바꿈)', '1. 알 (땅속 산란)', '2. 어린 약충 (날개 없음)', '3. 자란 약충 (날개 싹 돋음)', '4. 성충 (뜀다리·날개 완성)'];
+      const stages = [
+        { name: '알', x: 110, note: '땅속 알주머니' },
+        { name: '어린 약충', x: 250, note: '성충 축소형 · 날개 없음' },
+        { name: '자란 약충', x: 390, note: '탈피 반복 · 날개 싹' },
+        { name: '성충', x: 530, note: '완전한 날개 · 번데기 생략' }
+      ];
+
+      body = `<g filter="url(#ex-shadow)">
+      ${stages.map((st, i) => {
+        const active = curStage === i;
+        return `<g transform="translate(${st.x - 60}, 110)">
+          <rect x="0" y="0" width="120" height="190" rx="12" fill="${active ? '#fefce8' : '#ffffff'}" stroke="${active ? '#ca8a04' : '#cbd5e1'}" stroke-width="${active ? 2.5 : 1.5}"/>
+          <rect x="15" y="10" width="90" height="22" rx="6" fill="${active ? '#ca8a04' : '#e2e8f0'}"/>
+          <text x="60" y="25" style="font-size:11px;font-weight:800;fill:${active ? '#ffffff' : '#475569'};text-anchor:middle">${i + 1}. ${st.name}</text>
+          <circle cx="60" cy="85" r="42" fill="${active ? '#fef08a' : '#f8fafc'}" stroke="${active ? '#fde047' : '#e2e8f0'}" stroke-width="1.5"/>
+          ${i === 0 ? `
+            <rect x="25" y="70" width="70" height="30" rx="10" fill="#d97706" opacity="0.4"/>
+            ${[38, 48, 58, 68, 78].map(cx => `<ellipse cx="${cx}" cy="${85}" rx="4" ry="8" fill="#fef08a" stroke="#b45309" stroke-width="1"/>`).join('')}
+          ` : i === 1 ? `
+            <ellipse cx="60" cy="85" rx="16" ry="9" fill="#84cc16"/>
+            <circle cx="48" cy="83" r="6" fill="#65a30d"/>
+            <path d="M68 85L80 72L84 92" stroke="#4d7c0f" stroke-width="2.5" fill="none"/>
+          ` : i === 2 ? `
+            <ellipse cx="60" cy="85" rx="22" ry="11" fill="#65a30d"/>
+            <circle cx="44" cy="82" r="7" fill="#4d7c0f"/>
+            <rect x="52" y="76" width="14" height="6" rx="2" fill="#a3e635" stroke="#365314" stroke-width="1"/>
+            <path d="M72 85L88 68L92 95" stroke="#365314" stroke-width="3" fill="none"/>
+          ` : `
+            <ellipse cx="60" cy="85" rx="28" ry="12" fill="#4d7c0f"/>
+            <circle cx="40" cy="81" r="8" fill="#365314"/>
+            <path d="M48 78L88 84" stroke="#84cc16" stroke-width="4"/>
+            <path d="M74 85L94 62L98 98" stroke="#14532d" stroke-width="3.5" fill="none"/>
+          `}
+          <text x="60" y="152" style="font-size:9.5px;font-weight:700;fill:#334155;text-anchor:middle">${st.note}</text>
+          <rect x="15" y="162" width="90" height="18" rx="4" fill="${active ? '#fef08a' : '#f1f5f9'}"/>
+          <text x="60" y="174" style="font-size:9px;font-weight:700;fill:${active ? '#a16207' : '#64748b'};text-anchor:middle">${active ? '▶ 현재 관찰' : '대기 단계'}</text>
+        </g>`;
+      }).join('')}
+      ${[0, 1, 2].map(i => `<g transform="translate(${175 + i * 140}, 195)">
+        <line x1="0" y1="0" x2="30" y2="0" stroke="#ca8a04" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/>
+      </g>`).join('')}
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#ca8a04"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">불완전탈바꿈: 알 → 약충(어린벌레) → 성충 (3단계)</text>
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">번데기 단계 없음 (X)</text>
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">메뚜기는 번데기를 거치지 않고, 허물을 벗으며(탈피) 점차 성충의 모습으로 자라나요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">탈피(Molting)와 외골격 성장의 원리</text>
+      <rect x="50" y="85" width="240" height="240" rx="10" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+      <text x="170" y="115" style="font-size:13px;font-weight:800;fill:#854d0e;text-anchor:middle">1. 약충 단계 (날개 싹)</text>
+      <ellipse cx="170" cy="180" rx="45" ry="25" fill="#a3e635"/>
+      <text x="170" y="235" style="font-size:11px;font-weight:700;fill:#4d7c0f;text-anchor:middle">키틴질 단단한 껍질</text>
+      <text x="170" y="255" style="font-size:10px;fill:#64748b;text-anchor:middle">몸이 자라려면 허물을 벗어야 함</text>
+      <rect x="350" y="85" width="240" height="240" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+      <text x="470" y="115" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">2. 성충 단계 (완전한 날개)</text>
+      <ellipse cx="470" cy="180" rx="65" ry="30" fill="#4d7c0f"/>
+      <path d="M440 160L525 175" stroke="#84cc16" stroke-width="6"/>
+      <text x="470" y="235" style="font-size:11px;font-weight:700;fill:#15803d;text-anchor:middle">비행 가능한 큰 날개 완성</text>
+      <text x="470" y="255" style="font-size:10px;fill:#64748b;text-anchor:middle">최종 탈피 후 더 이상 허물 벗지 않음</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">불완전탈바꿈은 번데기 없이 탈피를 거치며 날개 싹이 점차 커져 성충이 돼요</text>
+      </g>`;
+    } else {
+      customLegends = ['개구리의 한살이 (양서류)', '1. 알 (우무질 알덩이)', '2. 올챙이 (아가미·꼬리)', '3. 뒷다리 올챙이 (다리 형성)', '4. 개구리 (폐호흡·물갈퀴)'];
+      const stages = [
+        { name: '알', x: 110, note: '물속 우무질 보호막' },
+        { name: '올챙이', x: 250, note: '아가미 호흡 · 지느러미 수영' },
+        { name: '뒷다리 올챙이', x: 390, note: '뒷다리 돌출 · 꼬리 축소' },
+        { name: '개구리', x: 530, note: '폐·피부 호흡 · 양서 생활' }
+      ];
+
+      body = `<g filter="url(#ex-shadow)">
+      ${stages.map((st, i) => {
+        const active = curStage === i;
+        return `<g transform="translate(${st.x - 60}, 110)">
+          <rect x="0" y="0" width="120" height="190" rx="12" fill="${active ? '#ecfeff' : '#ffffff'}" stroke="${active ? '#0891b2' : '#cbd5e1'}" stroke-width="${active ? 2.5 : 1.5}"/>
+          <rect x="15" y="10" width="90" height="22" rx="6" fill="${active ? '#0891b2' : '#e2e8f0'}"/>
+          <text x="60" y="25" style="font-size:11px;font-weight:800;fill:${active ? '#ffffff' : '#475569'};text-anchor:middle">${i + 1}. ${st.name}</text>
+          <circle cx="60" cy="85" r="42" fill="${active ? '#cffafe' : '#f8fafc'}" stroke="${active ? '#a5f3fc' : '#e2e8f0'}" stroke-width="1.5"/>
+          ${i === 0 ? `
+            <circle cx="60" cy="85" r="28" fill="#e0f2fe" opacity="0.6"/>
+            ${[50, 65, 55, 68].map((cx, j) => `<circle cx="${cx}" cy="${75 + j * 6}" r="5" fill="#0f172a"/>`).join('')}
+          ` : i === 1 ? `
+            <ellipse cx="48" cy="85" rx="14" ry="10" fill="#334155"/>
+            <path d="M58 85Q75 75 92 88" fill="none" stroke="#64748b" stroke-width="5" stroke-linecap="round"/>
+            <circle cx="44" cy="82" r="2" fill="#ffffff"/>
+          ` : i === 2 ? `
+            <ellipse cx="48" cy="85" rx="15" ry="11" fill="#334155"/>
+            <path d="M60 85Q75 80 88 86" fill="none" stroke="#64748b" stroke-width="3" stroke-linecap="round"/>
+            <path d="M52 92L58 102L65 102" fill="none" stroke="#0f172a" stroke-width="2"/>
+          ` : `
+            <ellipse cx="60" cy="85" rx="20" ry="16" fill="#15803d"/>
+            <circle cx="50" cy="73" r="6" fill="#166534"/>
+            <circle cx="70" cy="73" r="6" fill="#166534"/>
+            <circle cx="50" cy="73" r="2.5" fill="#fef08a"/>
+            <circle cx="70" cy="73" r="2.5" fill="#fef08a"/>
+            <path d="M42 95L30 102M78 95L90 102" stroke="#14532d" stroke-width="3.5"/>
+          `}
+          <text x="60" y="152" style="font-size:9.5px;font-weight:700;fill:#334155;text-anchor:middle">${st.note}</text>
+          <rect x="15" y="162" width="90" height="18" rx="4" fill="${active ? '#cffafe' : '#f1f5f9'}"/>
+          <text x="60" y="174" style="font-size:9px;font-weight:700;fill:${active ? '#0e7490' : '#64748b'};text-anchor:middle">${active ? '▶ 현재 관찰' : '대기 단계'}</text>
+        </g>`;
+      }).join('')}
+      ${[0, 1, 2].map(i => `<g transform="translate(${175 + i * 140}, 195)">
+        <line x1="0" y1="0" x2="30" y2="0" stroke="#0891b2" stroke-width="2.5" marker-end="url(#ex-arrow-cyan)"/>
+      </g>`).join('')}
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0891b2" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0891b2"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">양서류 변태: 수중 생활(아가미) → 육상 생활(폐·피부 호흡)</text>
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">호흡계·운동계 완전 전환</text>
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0891b2" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">올챙이는 자라면서 뒷다리가 먼저 나오고 앞다리가 나온 뒤 꼬리가 흡수되며 개구리가 돼요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">올챙이에서 개구리로의 호흡계·소화계 변태 단면</text>
+      <rect x="50" y="85" width="240" height="240" rx="10" fill="#ecfeff" stroke="#a5f3fc" stroke-width="1.5"/>
+      <text x="170" y="115" style="font-size:13px;font-weight:800;fill:#0e7490;text-anchor:middle">올챙이: 아가미 호흡 (수중)</text>
+      <circle cx="170" cy="180" r="40" fill="#67e8f9" opacity="0.4"/>
+      <text x="170" y="235" style="font-size:11px;font-weight:700;fill:#0891b2;text-anchor:middle">물속 산소 아가미로 흡수</text>
+      <text x="170" y="255" style="font-size:10px;fill:#64748b;text-anchor:middle">식물성 먹이 (긴 나선형 장)</text>
+      <rect x="350" y="85" width="240" height="240" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+      <text x="470" y="115" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">개구리: 폐와 피부 호흡 (육상)</text>
+      <ellipse cx="470" cy="180" rx="45" ry="30" fill="#86efac" opacity="0.4"/>
+      <text x="470" y="235" style="font-size:11px;font-weight:700;fill:#15803d;text-anchor:middle">공기 중 산소 흡수</text>
+      <text x="470" y="255" style="font-size:10px;fill:#64748b;text-anchor:middle">동물성 먹이 곤충 포식 (짧은 장)</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0891b2" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">개구리는 호흡 기관뿐 아니라 장의 길이도 초식성에서 육식성으로 짧아지는 극적인 변태를 거쳐요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '나비는 알·애벌레·번데기·성충의 4단계를 모두 거치는 완전탈바꿈을 해요.' : c === 1 ? '메뚜기는 번데기 단계를 거치지 않고 자라는 불완전탈바꿈을 해요.' : '개구리는 물속 아가미 호흡에서 육상 폐호흡으로 전환되는 양서류 변태를 해요.';
+  }
+
+  else if (kind === 'plant-lifecycle') {
+    controls = ['물·공기·적절한 온도', '물이 부족한 조건', '발아 뒤 빛이 부족'];
+    customSteps = ['생장 과정 관찰', '씨앗 내부 구조 단면'];
+    const growth = c === 1 ? 0.05 : Math.min(1, 0.35 + phase * 0.65);
+    const stemH = c === 2 ? 180 : 125;
+    const stemColor = c === 2 ? '#ca8a04' : '#16a34a';
+    const leafColor = c === 2 ? '#fef08a' : '#22c55e';
+
+    body = `<g filter="url(#ex-shadow)">
+    <path d="M30 270Q320 255 610 270V410H30Z" fill="#78350f" opacity="0.85"/>
+    <line x1="30" y1="270" x2="610" y2="270" stroke="#451a03" stroke-width="2.5"/>
+    ${[60, 140, 220, 420, 500, 560].map((sx, j) => `<ellipse cx="${sx}" cy="${295 + j % 3 * 25}" rx="${12 + j % 2 * 6}" ry="${6 + j % 2 * 3}" fill="#451a03" opacity="0.6"/>`).join('')}
+    
+    ${c === 1 ? `
+      <path d="M280 270L300 295M340 270L325 305" stroke="#451a03" stroke-width="2"/>
+      <ellipse cx="320" cy="275" rx="26" ry="18" fill="#a16207" stroke="#78350f" stroke-width="2.5"/>
+      <path d="M305 272Q320 282 335 272" stroke="#451a03" stroke-width="1.5" fill="none"/>
+      <rect x="200" y="170" width="240" height="42" rx="8" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="320" y="192" style="font-size:12px;font-weight:800;fill:#e11d48;text-anchor:middle">수분 결핍: 세포 팽압 형성 불가</text>
+      <text x="320" y="205" style="font-size:10.5px;fill:#475569;text-anchor:middle">씨앗 껍질을 뚫지 못하고 발아 정지</text>
+    ` : `
+      <ellipse cx="320" cy="272" rx="26" ry="18" fill="#854d0e" stroke="#583101" stroke-width="2"/>
+      <path d="M320 285Q305 ${310 + growth * 45} 320 ${325 + growth * 60}" fill="none" stroke="#d97706" stroke-width="5" stroke-linecap="round"/>
+      ${growth > 0.4 ? `
+        <line x1="312" y1="${310 + growth * 20}" x2="295" y2="${315 + growth * 20}" stroke="#d97706" stroke-width="1.5"/>
+        <line x1="325" y1="${320 + growth * 25}" x2="340" y2="${324 + growth * 25}" stroke="#d97706" stroke-width="1.5"/>
+      ` : ''}
+      <path d="M320 265Q${c === 2 ? 305 : 315} ${250 - growth * stemH / 2} 320 ${265 - growth * stemH}" fill="none" stroke="${stemColor}" stroke-width="${c === 2 ? 4.5 : 8}" stroke-linecap="round"/>
+      ${growth > 0.25 ? `
+        <path d="M320 ${265 - growth * stemH}Q260 ${245 - growth * stemH} 265 ${215 - growth * stemH}Q315 ${210 - growth * stemH} 320 ${265 - growth * stemH}" fill="${leafColor}" stroke="${c === 2 ? '#a16207' : '#15803d'}" stroke-width="1.5"/>
+        <path d="M320 ${265 - growth * stemH}Q380 ${245 - growth * stemH} 375 ${215 - growth * stemH}Q325 ${210 - growth * stemH} 320 ${265 - growth * stemH}" fill="${leafColor}" stroke="${c === 2 ? '#a16207' : '#15803d'}" stroke-width="1.5"/>
+      ` : ''}
+      ${c === 0 ? `
+        <circle cx="270" cy="${250 + (phase * 60) % 60}" r="4.5" fill="#0284c7"/>
+        <circle cx="370" cy="${245 + ((phase + 0.5) * 60) % 60}" r="4.5" fill="#0284c7"/>
+      ` : ''}
+    `}
+
+    <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="${c === 1 ? '#e11d48' : c === 2 ? '#ca8a04' : '#16a34a'}" stroke-width="1.5"/>
+    <circle cx="42" cy="41" r="5" fill="${c === 1 ? '#e11d48' : c === 2 ? '#ca8a04' : '#16a34a'}"/>
+    <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${c === 0 ? '발아 3요소 충족: 수분 흡수 → 유근·유아 신장' : c === 1 ? '수분 결핍: 씨앗 껍질을 뚫지 못하고 발아 정지' : '빛 결핍 (웃자람): 엽록소 결핍 · 줄기만 비정상 신장'}</text>
+
+    <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+    <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">${c === 0 ? '정상 엽록소 형성 (녹색)' : c === 1 ? '발아율 0% (휴면 지속)' : '웃자람(황화 현상 발생)'}</text>
+
+    <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">${c === 0 ? '씨앗은 물과 산소, 알맞은 온도가 주어지면 영양분을 분해해 싹을 틔워요' : c === 1 ? '물이 없으면 효소가 활성화되지 않아 씨앗 내부 영양분을 분해할 수 없어요' : '빛이 부족하면 식물은 빛을 찾기 위해 줄기만 길게 늘이고 엽록소를 만들지 못해요'}</text>
+    </g>`;
+
+    detail = `<g filter="url(#ex-shadow)">
+    <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+    <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">강낭콩 씨앗의 내부 해부 구조(Embryo Architecture) 단면</text>
+    
+    <g transform="translate(180, 85)">
+      <path d="M140 0C60 0 0 50 0 120C0 190 60 240 140 240C220 240 280 190 280 120C280 50 220 0 140 0Z" fill="#a16207" stroke="#78350f" stroke-width="4"/>
+      <path d="M136 10C65 10 14 55 14 120C14 185 65 230 136 230C207 230 258 185 258 120C258 55 207 10 136 10Z" fill="#fef08a"/>
+      <path d="M60 110Q85 90 100 115Q85 105 60 110" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+      <path d="M65 118Q90 100 105 125Q90 115 65 118" fill="#22c55e" stroke="#15803d" stroke-width="1.5"/>
+      <path d="M95 120Q110 145 105 175" fill="none" stroke="#ca8a04" stroke-width="7" stroke-linecap="round"/>
+    </g>
+
+    <rect x="40" y="115" width="120" height="26" rx="6" fill="#fffffffa" stroke="#15803d" stroke-width="1.5"/>
+    <text x="100" y="132" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">어린잎 (본잎 싹)</text>
+    <line x1="160" y1="128" x2="250" y2="185" stroke="#15803d" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <rect x="40" y="195" width="120" height="26" rx="6" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+    <text x="100" y="212" style="font-size:11px;font-weight:800;fill:#ca8a04;text-anchor:middle">어린뿌리 (유근)</text>
+    <line x1="160" y1="208" x2="275" y2="235" stroke="#ca8a04" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <rect x="480" y="135" width="120" height="26" rx="6" fill="#fffffffa" stroke="#a16207" stroke-width="1.5"/>
+    <text x="540" y="152" style="font-size:11px;font-weight:800;fill:#a16207;text-anchor:middle">떡잎 (양분 저장고)</text>
+    <line x1="480" y1="148" x2="380" y2="175" stroke="#a16207" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <rect x="480" y="215" width="120" height="26" rx="6" fill="#fffffffa" stroke="#78350f" stroke-width="1.5"/>
+    <text x="540" y="232" style="font-size:11px;font-weight:800;fill:#78350f;text-anchor:middle">씨껍질 (보호막)</text>
+    <line x1="480" y1="228" x2="435" y2="215" stroke="#78350f" stroke-width="1.5" stroke-dasharray="3 2"/>
+
+    <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+    <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">씨앗 속의 어린 식물(배)은 떡잎에 저장된 녹말을 양분 삼아 자라며,</text>
+    <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">본잎이 나와 광합성을 시작할 때까지 물과 산소, 적절한 온도를 이용해 스스로 발아해요</text>
+    </g>`;
+
+    caption = c === 1 ? '발아에는 물과 공기, 적절한 온도 등의 조건이 필요해요. 수분이 부족하면 세포가 팽창하지 못해 싹을 틔울 수 없어요.' : c === 2 ? '발아 이후의 생장에는 빛이 필수적이에요. 빛이 없으면 엽록소를 만들지 못하고 키만 웃자라요.' : '씨가 물을 흡수하면 어린뿌리가 먼저 아래로 자라고, 이어서 줄기와 떡잎이 위로 자라요.';
+  }
+
+  else if (kind === 'flower-seed') {
+    controls = ['꽃가루가 암술머리로', '열매와 씨가 생기는 곳', '씨가 퍼지는 모습'];
+    customSteps = ['구조와 과정 관찰', '생식 기관 단면 분석'];
+
+    if (c === 0) {
+      body = `<g filter="url(#ex-shadow)">
+      <path d="M320 390V250" stroke="#15803d" stroke-width="14" stroke-linecap="round"/>
+      <path d="M260 270Q320 300 380 270Q320 250 260 270Z" fill="#16a34a" stroke="#14532d" stroke-width="2"/>
+      
+      ${[0, 1, 2, 3, 4].map(i => {
+        const ang = (i * 72 - 90) * Math.PI / 180;
+        const px = 320 + 95 * Math.cos(ang);
+        const py = 200 + 75 * Math.sin(ang);
+        return `<ellipse cx="${px}" cy="${py}" rx="55" ry="38" transform="rotate(${i * 72 - 90} ${px} ${py})" fill="#fda4af" stroke="#f43f5e" stroke-width="2" opacity="0.9"/>`;
+      }).join('')}
+
+      <ellipse cx="320" cy="245" rx="38" ry="46" fill="#86efac" stroke="#15803d" stroke-width="2.5"/>
+      <ellipse cx="310" cy="245" rx="7" ry="11" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+      <ellipse cx="330" cy="245" rx="7" ry="11" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>
+      <path d="M320 205V125" stroke="#22c55e" stroke-width="10" stroke-linecap="round"/>
+      <circle cx="320" cy="122" r="16" fill="#15803d" stroke="#14532d" stroke-width="2"/>
+      <path d="M312 118Q320 110 328 118" stroke="#86efac" stroke-width="2" fill="none"/>
+
+      <path d="M280 235Q250 190 260 145" fill="none" stroke="#ca8a04" stroke-width="4"/>
+      <ellipse cx="260" cy="140" rx="14" ry="9" fill="#fde047" stroke="#a16207" stroke-width="1.8"/>
+      <path d="M360 235Q390 190 380 145" fill="none" stroke="#ca8a04" stroke-width="4"/>
+      <ellipse cx="380" cy="140" rx="14" ry="9" fill="#fde047" stroke="#a16207" stroke-width="1.8"/>
+
+      <circle cx="${260 + 60 * phase}" cy="${140 - 18 * Math.sin(phase * Math.PI)}" r="5.5" fill="#eab308" stroke="#854d0e" stroke-width="1.2"/>
+      <circle cx="${270 + 50 * phase}" cy="${145 - 12 * Math.sin(phase * Math.PI)}" r="4.5" fill="#facc15"/>
+      <path d="M320 135V${135 + phase * 65}" stroke="#eab308" stroke-width="3.5" stroke-dasharray="4 2"/>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#15803d" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#15803d"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">수분(Pollination): 꽃가루가 암술머리에 붙는 현상</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">화분관 발아 및 밑씨 도달</text>
+
+      <rect x="195" y="130" width="48" height="22" rx="4" fill="#fffffffa" stroke="#a16207"/>
+      <text x="219" y="145" style="font-size:10px;font-weight:800;fill:#a16207;text-anchor:middle">수술</text>
+      <rect x="395" y="112" width="48" height="22" rx="4" fill="#fffffffa" stroke="#15803d"/>
+      <text x="419" y="127" style="font-size:10px;font-weight:800;fill:#15803d;text-anchor:middle">암술</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#15803d" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">수술의 꽃밥에서 나온 꽃가루가 곤충이나 바람을 통해 암술머리에 옮겨붙는 것이 수분이에요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">암술 내부 구조와 수정(Fertilization) 경로 단면</text>
+      <g transform="translate(190, 80)">
+        <ellipse cx="130" cy="180" rx="85" ry="95" fill="#dcfce7" stroke="#16a34a" stroke-width="3"/>
+        <path d="M130 90V0" stroke="#22c55e" stroke-width="22" stroke-linecap="round"/>
+        <circle cx="130" cy="-6" r="24" fill="#15803d"/>
+        <ellipse cx="130" cy="180" rx="42" ry="50" fill="#fef08a" stroke="#ca8a04" stroke-width="2.5"/>
+        <circle cx="130" cy="180" r="12" fill="#fde047" stroke="#854d0e" stroke-width="1.5"/>
+        <path d="M130 -6V170" fill="none" stroke="#dc2626" stroke-width="4" stroke-dasharray="6 3"/>
+        <circle cx="130" cy="170" r="4.5" fill="#dc2626"/>
+      </g>
+      <rect x="50" y="110" width="130" height="26" rx="6" fill="#fffffffa" stroke="#15803d" stroke-width="1.5"/>
+      <text x="115" y="127" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">암술머리 (수분)</text>
+      <rect x="50" y="235" width="130" height="26" rx="6" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="115" y="252" style="font-size:11px;font-weight:800;fill:#16a34a;text-anchor:middle">씨방 (→ 열매 과육)</text>
+      <rect x="460" y="235" width="130" height="26" rx="6" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="525" y="252" style="font-size:11px;font-weight:800;fill:#ca8a04;text-anchor:middle">밑씨 (→ 씨앗)</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">화분관을 통해 정핵이 밑씨의 난세포와 만나면 수정이 완료되고,</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">씨방은 비대해져 과육(열매)이 되고, 밑씨는 단단한 껍질을 가진 씨(종자)가 돼요</text>
+      </g>`;
+    } else if (c === 1) {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="40" y="85" width="260" height="280" rx="14" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+      <text x="170" y="115" style="font-size:14px;font-weight:800;fill:#15803d;text-anchor:middle">1. 꽃 시절 (씨방과 밑씨)</text>
+      <ellipse cx="170" cy="220" rx="55" ry="65" fill="#bbf7d0" stroke="#16a34a" stroke-width="2.5"/>
+      <ellipse cx="170" cy="220" rx="20" ry="25" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+      <text x="170" y="224" style="font-size:11px;font-weight:800;fill:#854d0e;text-anchor:middle">밑씨</text>
+      <text x="170" y="325" style="font-size:11.5px;font-weight:700;fill:#166534;text-anchor:middle">씨방 (Ovary)</text>
+
+      <path d="M315 220H345" stroke="#0284c7" stroke-width="3" marker-end="url(#ex-arrow-cyan)"/>
+
+      <rect x="360" y="85" width="260" height="280" rx="14" fill="#fefce8" stroke="#fde047" stroke-width="1.5"/>
+      <text x="490" y="115" style="font-size:14px;font-weight:800;fill:#854d0e;text-anchor:middle">2. 결실 후 (열매와 씨)</text>
+      <circle cx="490" cy="220" r="75" fill="#fda4af" stroke="#e11d48" stroke-width="3"/>
+      <circle cx="490" cy="220" r="28" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+      <ellipse cx="490" cy="220" rx="12" ry="16" fill="#78350f"/>
+      <text x="490" y="224" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">씨</text>
+      <text x="490" y="325" style="font-size:11.5px;font-weight:700;fill:#be123c;text-anchor:middle">열매 과육 (Fruit)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">수정 후 변화: 씨방 → 열매, 밑씨 → 씨앗</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">형태 및 기관 전환 확인</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">수정이 끝나면 꽃잎은 시들어 떨어지고, 영양분이 집중되어 씨방이 열매로 부풀어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">사과 열매와 씨의 내부 단면(Fruit Pericarp Architecture)</text>
+      <g transform="translate(180, 85)">
+        <ellipse cx="120" cy="120" rx="110" ry="115" fill="#fee2e2" stroke="#ef4444" stroke-width="4"/>
+        <ellipse cx="120" cy="120" rx="45" ry="50" fill="#fef08a" stroke="#ca8a04" stroke-width="2"/>
+        <ellipse cx="105" cy="115" rx="8" ry="14" fill="#78350f"/>
+        <ellipse cx="135" cy="115" rx="8" ry="14" fill="#78350f"/>
+        <path d="M120 5V-25" stroke="#78350f" stroke-width="6" stroke-linecap="round"/>
+      </g>
+      <rect x="50" y="140" width="120" height="26" rx="6" fill="#fffffffa" stroke="#ef4444" stroke-width="1.5"/>
+      <text x="110" y="157" style="font-size:11px;font-weight:800;fill:#ef4444;text-anchor:middle">과육 (씨방 비대)</text>
+      <rect x="470" y="140" width="120" height="26" rx="6" fill="#fffffffa" stroke="#78350f" stroke-width="1.5"/>
+      <text x="530" y="157" style="font-size:11px;font-weight:800;fill:#78350f;text-anchor:middle">씨앗 (밑씨 성숙)</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">꽃의 씨방 벽이 두꺼워져 과육이 되고, 밑씨는 단단한 껍질을 갖춘 종자로 성숙해요</text>
+      </g>`;
+    } else {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(60, 95)">
+        <rect x="0" y="0" width="240" height="260" rx="12" fill="#f0f9ff" stroke="#bae6fd" stroke-width="1.5"/>
+        <text x="120" y="28" style="font-size:13px;font-weight:800;fill:#0369a1;text-anchor:middle">바람에 날리는 씨 (민들레)</text>
+        <path d="M20 70Q120 50 220 75M20 120Q120 100 220 125" stroke="#38bdf8" stroke-width="2" stroke-dasharray="6 3"/>
+        <g transform="translate(${100 + phase * 40}, ${140 - phase * 30})">
+          <ellipse cx="0" cy="40" rx="5" ry="12" fill="#78350f"/>
+          <line x1="0" y1="40" x2="0" y2="0" stroke="#a16207" stroke-width="2"/>
+          ${[-30, -15, 0, 15, 30].map(deg => `<line x1="0" y1="0" x2="${Math.sin(deg * Math.PI / 180) * 35}" y2="${-Math.cos(deg * Math.PI / 180) * 25}" stroke="#cbd5e1" stroke-width="1.5"/>`).join('')}
+        </g>
+        <text x="120" y="240" style="font-size:11px;font-weight:700;fill:#0369a1;text-anchor:middle">가벼운 깃털 갓모양 털 (공기 저항)</text>
+      </g>
+
+      <g transform="translate(340, 95)">
+        <rect x="0" y="0" width="240" height="260" rx="12" fill="#fefce8" stroke="#fef08a" stroke-width="1.5"/>
+        <text x="120" y="28" style="font-size:13px;font-weight:800;fill:#854d0e;text-anchor:middle">튕겨 나가는 씨 (봉선화)</text>
+        <path d="M80 150Q120 100 160 150" fill="none" stroke="#65a30d" stroke-width="5"/>
+        <path d="M90 145Q120 180 150 145" fill="none" stroke="#65a30d" stroke-width="4"/>
+        ${[[-35, -45], [0, -60], [35, -45], [-20, -20], [20, -20]].map(([dx, dy]) => {
+          const sx = 120 + dx * phase * 1.5;
+          const sy = 145 + dy * phase * 1.5 + phase * phase * 35;
+          return `<circle cx="${sx}" cy="${sy}" r="4.5" fill="#78350f" stroke="#451a03" stroke-width="1"/>`;
+        }).join('')}
+        <text x="120" y="240" style="font-size:11px;font-weight:700;fill:#854d0e;text-anchor:middle">열매 껍질 탄성 장력으로 발사</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">씨의 산포 적응: 바람, 껍질 탄성, 동물 등</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#15803d" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">서식지 확장 생존 전략</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">씨는 어미 식물과 경쟁하지 않고 멀리 퍼지기 위해 바람, 튕김, 동물 털 등 다양한 방법을 써요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">민들레 갓털(Pappus)의 공기역학적 와류 형성 단면</text>
+      <g transform="translate(160, 85)">
+        <rect x="0" y="0" width="280" height="240" rx="12" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.5"/>
+        <ellipse cx="140" cy="180" rx="12" ry="30" fill="#78350f"/>
+        <line x1="140" y1="150" x2="140" y2="70" stroke="#a16207" stroke-width="3"/>
+        <path d="M100 45Q140 10 180 45" fill="none" stroke="#0284c7" stroke-width="2.5" stroke-dasharray="5 3"/>
+        <text x="140" y="35" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">분리된 와류 링 (안정적 부력 생성)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">민들레 갓털 사이의 미세 틈은 공기가 통과하며 상부에 안정적인 소용돌이 고리를 만들어</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">일반 낙하산보다 4배 높은 효율로 바람을 타고 수 킬로미터를 날아갈 수 있어요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '꽃가루가 암술머리에 옮겨지는 수분 과정을 살펴봐요. 화분관이 자라 밑씨와 결합해 수정돼요.' : c === 1 ? '수정이 끝나면 씨방은 자라 열매가 되고, 밑씨는 단단한 씨가 돼요.' : '씨는 바람, 탄성 파열, 동물 등 다양한 방법으로 멀리 퍼져 서식지를 넓혀요.';
+  }
+
+  else if (kind === 'body-systems') {
+    controls = ['음식의 이동 · 소화', '공기의 이동 · 호흡', '혈액의 이동 · 순환'];
+    customSteps = ['기관계 전신 경로', '핵심 장기 미세 단면'];
+
+    const torso = `
+    <path d="M260 90Q240 100 230 145L220 220Q230 250 240 230L255 180V310L245 405H285L320 325L355 405H395L385 310V180L400 230Q410 250 420 220L410 145Q400 100 380 90Z" fill="#fdfcf8" stroke="#94a3b8" stroke-width="2.5"/>
+    <circle cx="320" cy="55" r="38" fill="#fdfcf8" stroke="#94a3b8" stroke-width="2.5"/>
+    `;
+
+    if (c === 0) {
+      const route = [
+        [320, 55], [320, 115], [320, 175], [350, 195], [330, 220],
+        [290, 245], [350, 260], [285, 280], [355, 295],
+        [275, 235], [365, 235], [365, 320], [325, 355]
+      ];
+      const rIdx = Math.floor(phase * (route.length - 1));
+      const rNext = Math.min(route.length - 1, rIdx + 1);
+      const rf = (phase * (route.length - 1)) - rIdx;
+      const bx = route[rIdx][0] + (route[rNext][0] - route[rIdx][0]) * rf;
+      const by = route[rIdx][1] + (route[rNext][1] - route[rIdx][1]) * rf;
+
+      body = `<g filter="url(#ex-shadow)">
+      ${torso}
+      <path d="M320 60V165" stroke="#f97316" stroke-width="9" stroke-linecap="round"/>
+      <path d="M320 165C355 155 385 180 375 210C365 240 335 235 325 218C312 210 315 185 320 165Z" fill="#fed7aa" stroke="#ea580c" stroke-width="3"/>
+      <path d="M325 220Q290 225 290 245Q350 240 350 260Q285 255 285 275Q350 270 345 290Q305 305 280 300" fill="none" stroke="#fde047" stroke-width="10" stroke-linecap="round"/>
+      <path d="M280 300L275 305V235Q320 220 365 235V310Q365 325 345 335L325 345V365" fill="none" stroke="#ca8a04" stroke-width="14" stroke-linecap="round"/>
+      <circle cx="${bx}" cy="${by}" r="7.5" fill="#dc2626" stroke="#ffffff" stroke-width="2"/>
+
+      <rect x="420" y="50" width="55" height="24" rx="5" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="447" y="66" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">1. 입</text>
+      <rect x="420" y="115" width="55" height="24" rx="5" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="447" y="131" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">2. 식도</text>
+      <rect x="420" y="180" width="55" height="24" rx="5" fill="#fffffffa" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="447" y="196" style="font-size:11px;font-weight:800;fill:#ea580c;text-anchor:middle">3. 위</text>
+      <rect x="65" y="255" width="85" height="24" rx="5" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="107" y="271" style="font-size:11px;font-weight:800;fill:#ca8a04;text-anchor:middle">4. 작은창자</text>
+      <rect x="420" y="275" width="85" height="24" rx="5" fill="#fffffffa" stroke="#b45309" stroke-width="1.5"/>
+      <text x="462" y="291" style="font-size:11px;font-weight:800;fill:#b45309;text-anchor:middle">5. 큰창자</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#ea580c" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#ea580c"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">소화계: 입 → 식도 → 위 → 작은창자 → 큰창자</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">영양소 분해 및 흡수 이동</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">위에서 단백질을 1차 분해하고, 작은창자에서 대부분의 영양소를 최종 흡수해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">작은창자 융모(Villi)의 영양소 흡수 단면 분석</text>
+      <path d="M60 280C90 100 130 100 160 280C190 100 230 100 260 280C290 100 330 100 360 280C390 100 430 100 460 280C490 100 530 100 560 280" fill="#fef3c7" stroke="#d97706" stroke-width="3"/>
+      <path d="M190 280C205 130 220 130 230 280" fill="none" stroke="#dc2626" stroke-width="5"/>
+      <path d="M220 280C225 150 235 150 240 280" fill="none" stroke="#2563eb" stroke-width="4"/>
+      <line x1="210" y1="280" x2="210" y2="160" stroke="#ca8a04" stroke-width="7" stroke-linecap="round"/>
+
+      <rect x="60" y="80" width="160" height="26" rx="6" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="140" y="97" style="font-size:11px;font-weight:800;fill:#854d0e;text-anchor:middle">암죽관 (지방산 흡수)</text>
+      <rect x="380" y="80" width="180" height="26" rx="6" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="470" y="97" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">모세혈관망 (포도당·아미노산)</text>
+
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">수많은 주름과 융모는 표면적을 테니스 코트 크기로 넓혀</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">음식물 속 수용성·지용성 영양소를 매우 빠르고 완벽하게 흡수할 수 있게 해줘요</text>
+      </g>`;
+    } else if (c === 1) {
+      const lungExpand = 1 + 0.1 * Math.sin(phase * Math.PI * 2);
+
+      body = `<g filter="url(#ex-shadow)">
+      ${torso}
+      <path d="M320 60V160" stroke="#64748b" stroke-width="11" stroke-linecap="round"/>
+      ${[75, 95, 115, 135, 150].map(y => `<line x1="314" y1="${y}" x2="326" y2="${y}" stroke="#38bdf8" stroke-width="2"/>`).join('')}
+      <path d="M320 160L280 195M320 160L360 195" stroke="#64748b" stroke-width="7" stroke-linecap="round"/>
+      <g transform="translate(320, 205) scale(${lungExpand}) translate(-320, -205)">
+        <path d="M300 165Q245 160 245 255Q285 285 305 255V180Z" fill="#fda4af" stroke="#f43f5e" stroke-width="2.5"/>
+        <path d="M340 165Q395 160 395 255Q355 285 335 255V180Z" fill="#fda4af" stroke="#f43f5e" stroke-width="2.5"/>
+      </g>
+      <circle cx="320" cy="${60 + phase * 100}" r="5.5" fill="#0284c7" stroke="#ffffff" stroke-width="1.5"/>
+
+      <path d="M245 ${275 + Math.sin(phase * Math.PI * 2) * 10}Q320 ${290 + Math.sin(phase * Math.PI * 2) * 10} 395 ${275 + Math.sin(phase * Math.PI * 2) * 10}" fill="none" stroke="#be123c" stroke-width="4"/>
+
+      <rect x="420" y="55" width="65" height="24" rx="5" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="452" y="71" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">코·기관</text>
+      <rect x="420" y="160" width="65" height="24" rx="5" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="452" y="176" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">기관지</text>
+      <rect x="420" y="225" width="55" height="24" rx="5" fill="#fffffffa" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="447" y="241" style="font-size:11px;font-weight:800;fill:#f43f5e;text-anchor:middle">폐 (Lungs)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">호흡계: 코 → 기관 → 기관지 → 폐 (폐포 가스 교환)</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#f43f5e;text-anchor:middle">산소(O₂) 흡수 · 이산화탄소(CO₂) 배출</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">가슴 내부의 압력 변화로 공기를 들이마시고 내쉬며, 폐포에서 기체 교환이 일어나요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">폐포(Alveolus)와 모세혈관의 가스 교환 메커니즘 단면</text>
+      <circle cx="240" cy="190" r="85" fill="#fce7f3" stroke="#f43f5e" stroke-width="3"/>
+      <path d="M120 280Q240 320 360 280Q360 100 240 80Q120 100 120 280" fill="none" stroke="#dc2626" stroke-width="16" opacity="0.45"/>
+      <path d="M240 160L290 130" stroke="#0284c7" stroke-width="4" marker-end="url(#ex-arrow-cyan)"/>
+      <text x="275" y="115" style="font-size:12px;font-weight:800;fill:#0284c7">O₂ 산소 확산</text>
+      <path d="M290 230L240 210" stroke="#475569" stroke-width="4" marker-end="url(#ex-arrow)"/>
+      <text x="305" y="250" style="font-size:12px;font-weight:800;fill:#475569">CO₂ 배출</text>
+
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">폐포의 얇은 막을 사이에 두고 농도 차이에 의한 기체 확산이 일어나</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">산소는 모세혈관 속 적혈구로 들어가고, 세포 호흡 찌꺼기인 이산화탄소는 밖으로 나가요</text>
+      </g>`;
+    } else {
+      const heartPulse = 1 + 0.12 * Math.sin(phase * Math.PI * 4);
+
+      body = `<g filter="url(#ex-shadow)">
+      ${torso}
+      <path d="M320 190V100M320 190V340M320 120H250M320 120H390" stroke="#dc2626" stroke-width="6"/>
+      <path d="M305 190V100M305 190V340M305 130H240M305 130H380" stroke="#2563eb" stroke-width="5"/>
+      
+      <g transform="translate(320, 190) scale(${heartPulse}) translate(-320, -190)">
+        <path d="M320 170C300 135 270 170 300 205L320 225L340 205C370 170 340 135 320 170Z" fill="#dc2626" stroke="#991b1b" stroke-width="2.5"/>
+        <circle cx="310" cy="185" r="5" fill="#2563eb"/>
+        <circle cx="330" cy="185" r="5" fill="#ef4444"/>
+      </g>
+
+      <circle cx="320" cy="${190 - phase * 70}" r="4.5" fill="#ffffff" stroke="#dc2626" stroke-width="1.5"/>
+      <circle cx="305" cy="${340 - phase * 140}" r="4.5" fill="#ffffff" stroke="#2563eb" stroke-width="1.5"/>
+
+      <rect x="420" y="175" width="75" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="457" y="191" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">심장 (펌프)</text>
+      <rect x="65" y="115" width="85" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="107" y="131" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">동맥 (산소 풍부)</text>
+      <rect x="65" y="150" width="85" height="24" rx="5" fill="#fffffffa" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="107" y="166" style="font-size:11px;font-weight:800;fill:#2563eb;text-anchor:middle">정맥 (노폐물 수송)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#dc2626"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">순환계: 심장 펌프 작용 → 온몸 혈관 순환</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">온몸 순환 &amp; 폐순환 2중 루프</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">심장은 1분에 약 70회 규칙적으로 수축하여 혈액을 온몸 구석구석으로 보내요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">심장의 4개 방(2심방 2심실)과 판막 구조 단면</text>
+      <g transform="translate(190, 85)">
+        <rect x="0" y="0" width="220" height="230" rx="20" fill="#fee2e2" stroke="#dc2626" stroke-width="3"/>
+        <line x1="110" y1="0" x2="110" y2="230" stroke="#991b1b" stroke-width="4"/>
+        <line x1="0" y1="105" x2="220" y2="105" stroke="#991b1b" stroke-width="3"/>
+        <rect x="5" y="5" width="100" height="95" rx="15" fill="#dbeafe"/>
+        <text x="55" y="55" style="font-size:12px;font-weight:800;fill:#1d4ed8;text-anchor:middle">우심방</text>
+        <rect x="5" y="110" width="100" height="115" rx="15" fill="#bfdbfe"/>
+        <text x="55" y="170" style="font-size:12px;font-weight:800;fill:#1d4ed8;text-anchor:middle">우심실</text>
+        <rect x="115" y="5" width="100" height="95" rx="15" fill="#fecaca"/>
+        <text x="165" y="55" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">좌심방</text>
+        <rect x="115" y="110" width="100" height="115" rx="15" fill="#fca5a5"/>
+        <text x="165" y="170" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">좌심실</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">좌심실은 가장 두꺼운 근육벽으로 온몸에 강한 압력으로 피를 뿜어내며,</text>
+      <text x="320" y="382" style="font-size:11px;font-weight:600;fill:#475569;text-anchor:middle">판막은 피가 거꾸로 흐르지 않고 한쪽 방향으로만 흐르도록 역류를 막아줘요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '음식은 소화 기관을 따라 이동하며 잘게 분해되고 영양소가 흡수돼요.' : c === 1 ? '공기는 호흡 기관으로 들어가 폐포에서 산소와 이산화탄소를 교환해요.' : '심장은 펌프 작용으로 혈액을 순환시켜 온몸에 산소와 영양소를 공급해요.';
+  }
+
+  else if (kind === 'classification') {
+    controls = ['현미경으로 세포 관찰', '동물·식물 세포 비교', '관찰 특징으로 분류'];
+    customSteps = ['분류 모형 관찰', '세포 내부 초미세 단면'];
+
+    if (c === 0) {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(60, 85)">
+        <path d="M120 270H220M170 270V210L140 170" stroke="#334155" stroke-width="16" stroke-linecap="round"/>
+        <path d="M140 170L190 80L215 95L165 185Z" fill="#64748b" stroke="#334155" stroke-width="2"/>
+        <rect x="180" y="60" width="25" height="40" rx="4" fill="#0f172a"/>
+        <rect x="145" y="180" width="22" height="35" rx="3" fill="#0284c7"/>
+        <line x1="90" y1="210" x2="200" y2="210" stroke="#0f172a" stroke-width="6"/>
+      </g>
+
+      <g transform="translate(420, 215)">
+        <circle cx="0" cy="0" r="115" fill="#0f172a"/>
+        <circle cx="0" cy="0" r="105" fill="#f0fdf4" stroke="#86efac" stroke-width="2.5"/>
+        ${[-60, -20, 20, 60].map(y => `<line x1="-90" y1="${y}" x2="90" y2="${y}" stroke="#15803d" stroke-width="1.8"/>`).join('')}
+        ${[-60, -10, 40].map(x => `<line x1="${x}" y1="-90" x2="${x}" y2="90" stroke="#15803d" stroke-width="1.8"/>`).join('')}
+        ${[[-35, -40], [15, -40], [65, -40], [-35, 0], [15, 0], [65, 0], [-35, 40], [15, 40]].map(([nx, ny]) => `<ellipse cx="${nx}" cy="${ny}" rx="6" ry="8" fill="#ca8a04" stroke="#854d0e" stroke-width="1"/>`).join('')}
+        <text x="0" y="80" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">400x 배율 관찰 상</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">광학 현미경: 세포벽과 핵의 미세 구조 확인</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#15803d" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">규칙적 세포벽 격자 배열</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">현미경으로 관찰하면 육안으로 보이지 않는 세포벽과 둥근 핵을 뚜렷이 볼 수 있어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">현미경 관찰 시 아세트산카민 염색 메커니즘</text>
+      <rect x="80" y="90" width="480" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="320" y="125" style="font-size:13px;font-weight:800;fill:#b91c1c;text-anchor:middle">붉은색 아세트산카민 용액 염색</text>
+      <ellipse cx="260" cy="200" rx="85" ry="50" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+      <circle cx="260" cy="200" r="18" fill="#b91c1c"/>
+      <text x="260" y="204" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">핵 (DNA)</text>
+      <text x="420" y="195" style="font-size:11px;font-weight:700;fill:#475569">염기성 염색약이</text>
+      <text x="420" y="215" style="font-size:11px;font-weight:700;fill:#b91c1c">산성인 핵을 붉게 염색</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">무색투명한 세포 소기관을 구별하기 위해 특수 염색약을 사용하여 핵을 명확히 관찰해요</text>
+      </g>`;
+    } else if (c === 1) {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="240" height="270" rx="16" fill="#f0fdf4" stroke="#16a34a" stroke-width="4"/>
+        <rect x="8" y="8" width="224" height="254" rx="10" fill="#dcfce7" stroke="#86efac" stroke-width="2"/>
+        <text x="120" y="32" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">식물 세포 (Plant Cell)</text>
+        ${[[40, 70], [180, 70], [40, 200], [180, 200]].map(([cx, cy]) => `<ellipse cx="${cx}" cy="${cy}" rx="16" ry="10" fill="#15803d" stroke="#14532d" stroke-width="1.5"/>`).join('')}
+        <ellipse cx="140" cy="140" rx="45" ry="35" fill="#e0f2fe" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="140" y="144" style="font-size:10px;font-weight:800;fill:#0369a1;text-anchor:middle">액포</text>
+        <circle cx="65" cy="135" r="18" fill="#ca8a04" stroke="#854d0e" stroke-width="1.5"/>
+        <text x="65" y="139" style="font-size:10px;font-weight:800;fill:#ffffff;text-anchor:middle">핵</text>
+        <text x="120" y="245" style="font-size:10.5px;font-weight:800;fill:#15803d;text-anchor:middle">세포벽 + 엽록체 + 큰 액포</text>
+      </g>
+
+      <g transform="translate(340, 85)">
+        <ellipse cx="120" cy="135" rx="105" ry="115" fill="#fef2f2" stroke="#ef4444" stroke-width="3"/>
+        <text x="120" y="32" style="font-size:13px;font-weight:800;fill:#b91c1c;text-anchor:middle">동물 세포 (Animal Cell)</text>
+        <circle cx="120" cy="135" r="24" fill="#ca8a04" stroke="#854d0e" stroke-width="2"/>
+        <text x="120" y="139" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">핵</text>
+        ${[[60, 80], [175, 85], [70, 195], [170, 190]].map(([mx, my]) => `<ellipse cx="${mx}" cy="${my}" rx="12" ry="7" fill="#fb923c" stroke="#c2410c" stroke-width="1"/>`).join('')}
+        <text x="120" y="245" style="font-size:10.5px;font-weight:800;fill:#b91c1c;text-anchor:middle">세포벽 없음 (유연한 세포막)</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">식물·동물 세포 비교: 세포벽 및 엽록체 유무</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">광합성 및 지지 구조 차이</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">식물 세포는 단단한 세포벽과 엽록체를 갖지만, 동물 세포는 세포벽 없이 형태가 유연해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">세포벽(Cell Wall)과 세포막(Cell Membrane) 미세 초박 단면</text>
+      <g transform="translate(60, 90)">
+        <rect x="0" y="0" width="220" height="230" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+        <text x="110" y="28" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">식물: 3중 세포벽 구조</text>
+        <line x1="30" y1="80" x2="190" y2="80" stroke="#166534" stroke-width="10"/>
+        <line x1="30" y1="100" x2="190" y2="100" stroke="#22c55e" stroke-width="8"/>
+        <line x1="30" y1="120" x2="190" y2="120" stroke="#86efac" stroke-width="6"/>
+        <text x="110" y="165" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">셀룰로스 섬유 격자망</text>
+        <text x="110" y="185" style="font-size:10px;fill:#334155;text-anchor:middle">높은 팽압(삼투압) 견딤</text>
+      </g>
+      <g transform="translate(360, 90)">
+        <rect x="0" y="0" width="220" height="230" rx="10" fill="#fef2f2" stroke="#ef4444" stroke-width="2"/>
+        <text x="110" y="28" style="font-size:12px;font-weight:800;fill:#b91c1c;text-anchor:middle">동물: 유동 모자이크 인지질 2중층</text>
+        <line x1="30" y1="100" x2="190" y2="100" stroke="#ef4444" stroke-width="6" stroke-dasharray="4 2"/>
+        <text x="110" y="165" style="font-size:11px;font-weight:800;fill:#b91c1c;text-anchor:middle">세포벽 없음 (단단함 없음)</text>
+        <text x="110" y="185" style="font-size:10px;fill:#334155;text-anchor:middle">자유로운 형태 변형 및 아메바 운동</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">식물은 뼈가 없는 대신 세포벽이 단단히 지탱하고, 동물은 세포벽이 없어 움직임이 자유로워요</text>
+      </g>`;
+    } else {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="40" y="80" width="560" height="280" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <rect x="40" y="80" width="560" height="42" rx="14" fill="#0f172a"/>
+      <text x="120" y="106" style="font-size:12px;font-weight:800;fill="#ffffff;text-anchor:middle">분류 기준</text>
+      <text x="300" y="106" style="font-size:12px;font-weight:800;fill="#86efac;text-anchor:middle">표본 A (식물계)</text>
+      <text x="470" y="106" style="font-size:12px;font-weight:800;fill="#fca5a5;text-anchor:middle">표본 B (동물계)</text>
+      
+      <line x1="40" y1="160" x2="600" y2="160" stroke="#f1f5f9" stroke-width="2"/>
+      <text x="120" y="145" style="font-size:11.5px;font-weight:700;fill="#334155;text-anchor:middle">1. 세포벽</text>
+      <text x="300" y="145" style="font-size:11.5px;font-weight:800;fill:#15803d;text-anchor:middle">있음 (셀룰로스)</text>
+      <text x="470" y="145" style="font-size:11.5px;font-weight:800;fill:#dc2626;text-anchor:middle">없음</text>
+
+      <line x1="40" y1="210" x2="600" y2="210" stroke="#f1f5f9" stroke-width="2"/>
+      <text x="120" y="195" style="font-size:11.5px;font-weight:700;fill="#334155;text-anchor:middle">2. 엽록체 (광합성)</text>
+      <text x="300" y="195" style="font-size:11.5px;font-weight:800;fill:#15803d;text-anchor:middle">관찰됨 (독립영양)</text>
+      <text x="470" y="195" style="font-size:11.5px;font-weight:800;fill:#dc2626;text-anchor:middle">미관찰 (종속영양)</text>
+
+      <line x1="40" y1="260" x2="600" y2="260" stroke="#f1f5f9" stroke-width="2"/>
+      <text x="120" y="245" style="font-size:11.5px;font-weight:700;fill="#334155;text-anchor:middle">3. 운동성</text>
+      <text x="300" y="245" style="font-size:11.5px;font-weight:700;fill:#475569;text-anchor:middle">고정 생활</text>
+      <text x="470" y="245" style="font-size:11.5px;font-weight:700;fill:#475569;text-anchor:middle">자유 이동 가능</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">과학적 분류: 명확한 기준에 따른 2분법 분류</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#15803d" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">외형보다 구조적 기준 우선</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">생물을 분류할 때는 단순한 겉모습 대신 세포 구조와 영양 섭취 방식 등 객관적 기준을 세워요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">계통수(Phylogenetic Tree) 기반 생물 분류 체계</text>
+      <g transform="translate(80, 85)">
+        <rect x="0" y="0" width="440" height="240" rx="12" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="220" y="35" style="font-size:13px;font-weight:800;fill:#0f172a;text-anchor:middle">공통 조상 (Common Ancestor)</text>
+        <path d="M220 50V100M220 100L120 160M220 100L320 160" stroke="#334155" stroke-width="3"/>
+        <rect x="60" y="160" width="120" height="40" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+        <text x="120" y="185" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">식물계 (광합성)</text>
+        <rect x="260" y="160" width="120" height="40" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+        <text x="320" y="185" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">동물계 (포식·운동)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">진화 과정에서 갈라져 나온 유전적·세포적 공통 조상을 바탕으로 과학적 계통을 세워요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '작은 생물의 구조를 확대해 살펴봐요. 현미경 모형은 확대의 관계를 보여 주며 실제 사진은 아니에요.' : c === 1 ? '대표적인 동물·식물 세포의 공통점과 차이를 비교해요. 식물 세포는 세포벽과 엽록체를 지녀요.' : '분류 기준을 먼저 정하고 같은 기준으로 표본을 비교해요. 겉모습 하나로 확정하지 않아요.';
 }else if(kind==='magnets'){
  controls=['다른 극을 마주 보기','같은 극을 마주 보기','자석 사이를 멀리','나침반과 가까운 자석'];
  const left=c===2?95:155,right=c===2?420:365,same=c===1;
@@ -619,79 +1385,990 @@ caption='에너지가 장치를 거치며 빛·운동·열 등으로 전환돼�
  }).join('')+`<rect x="160" y="377" width="320" height="26" rx="6" fill="#ffffffdf" stroke="#5a93a8"/>${text(320,395,'같은 입자 크기·개수 / 배열·간격·운동 비교','center')}</g>`;
  detail=`<g filter="url(#ex-shadow)">${circle(220,210,33,'#6da1b3')}${circle(420,210,33,'#6da1b3')}${p('M270 210H370','#9bb4b2',3.5)}<rect x="160" y="335" width="320" height="26" rx="6" fill="#ffffffdf" stroke="#6da1b3"/>${text(320,352,'점은 입자 자체의 사진이나 실제 크기가 아니에요','center')}</g>`;
  caption=c===3?'같은 수의 기체 입자가 더 좁은 공간에 있도록 나타냈어요. 압축했다고 입자 자체의 크기를 줄이지 않아요.':'입자 모형으로 상태의 배열·간격·운동 차이를 설명해요. 색 구슬을 실제 물질 속에서 보이는 알갱이와 혼동하지 않아요.';
-}else if(kind==='erosion'){
- controls=['완만한 흐름','빠르고 강한 흐름','파도가 바꾸는 해안'];
- if(c<2){
-  body=`<g filter="url(#ex-shadow)"><path d="M45 160L210 100L600 230V370L350 405L45 280Z" fill="#c3aa80" stroke="#938062" stroke-width="3"/><path d="M45 160L210 100L600 230L350 290Z" fill="#d9ce9e"/><path d="M180 120Q230 220 350 235Q430 250 485 300L535 274Q450 222 355 215Q250 205 220 109Z" fill="${c?'#65a3bf':'#8fc3d3'}"/>${Array.from({length:c?15:6},(_,i)=>circle(260+((phase+i*.08)%1)*240,205+((phase+i*.08)%1)*75,3.5+i%2,'#988052')).join('')}<path d="M470 282L585 290L540 335L480 320Z" fill="#bfae7b"/><rect x="70" y="315" width="40" height="22" rx="5" fill="#fff" stroke="#938062"/>${text(90,329,'깎임')}<rect x="330" y="175" width="40" height="22" rx="5" fill="#fff" stroke="#65a3bf"/>${text(350,189,'운반')}<rect x="525" y="355" width="40" height="22" rx="5" fill="#fff" stroke="#bfae7b"/>${text(545,369,'쌓임')}</g>`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M80 130H560V320H80Z" fill="#d6be94"/><path d="M80 130H220Q290 250 355 155L560 130V95H80Z" fill="#a6ccd2"/>${arrow('M200 210Q340 260 480 210')}<rect x="180" y="372" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#938062"/>${text(320,390,'흐르는 물이 알갱이를 옮기는 단면','center')}</g>`;
- }else{
-  body=`<g filter="url(#ex-shadow)"><path d="M70 130L325 105L420 185V360L70 330Z" fill="#c4ab82"/><path d="M325 105L420 185L395 315L300 290Z" fill="#9f8865"/><path d="M370 285Q440 245 640 260V420H330Z" fill="#81b8cc"/>${Array.from({length:4},(_,i)=>p(`M${380+i*55} ${290+i*16}q35 -30 65 0`,'#cce1e3',4.5)).join('')}<rect x="150" y="365" width="140" height="24" rx="6" fill="#ffffffdf" stroke="#81b8cc"/>${text(220,381,'바닷물과 해안의 변화','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)"><path d="M95 95H365V215L330 280H95Z" fill="#c3aa7e"/>${p('M350 260Q430 220 550 260','#6aa3bd',18)}${circle(365,300,15,'#b19770')}${circle(400,320,12,'#b19770')}<rect x="180" y="372" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#6aa3bd"/>${text(320,390,'파도와 해안 암석의 관계를 단순화','center')}</g>`;
- }
- caption=c===2?'파도는 해안을 깎거나 물질을 옮겨 쌓을 수 있어요. 이 모형만으로 실제 해안의 형성 시간과 원인을 모두 설명하지 않아요.':'물의 흐름이 지표의 물질을 깎고 운반하고 쌓는 관계를 관찰해요. 경사와 흐름의 조건을 달리한 정성 모형이에요.';
-}else if(kind==='strata'){
- controls=['퇴적층이 쌓이는 순서','지층 단면과 화석','암석 표본 비교'];
- if(c<2){
-  const colors=['#9f8a65','#af9b78','#c9b990','#d9ca9e'];
-  body=`<g filter="url(#ex-shadow)"><path d="M85 100L235 50L550 150L400 200Z" fill="#dbd1a8"/>`+colors.map((col,i)=>`<path d="M85 ${120+i*53}Q240 ${135+i*53} 400 ${200+i*35}L550 ${150+i*35}V${185+i*35}L400 ${235+i*35}Q240 ${180+i*53} 85 ${170+i*53}Z" fill="${col}" stroke="#938062" stroke-width="1.5"/>`).join('')+`${p('M240 230Q260 198 280 230Q260 250 240 230','#70694e',3)}${p('M255 210V240M245 216L271 233M270 216L247 234','#70694e',2)}<rect x="170" y="372" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#938062"/>${text(320,390,c===0?'흐트러지지 않은 층 · 아래쪽부터 비교':'지층 속 화석의 위치를 단서로 관찰','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${rect(110,95,420,55,'#d9ca9e')}${rect(110,150,420,55,'#c9b990')}${rect(110,205,420,55,'#af9b78')}${rect(110,260,420,55,'#9f8a65')}${p('M230 220Q275 185 320 220Q275 250 230 220','#68634b',4)}<rect x="180" y="365" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#68634b"/>${text(320,382,'층과 포함된 흔적을 함께 기록해요','center')}</g>`;
- }else{
-  body=`<g filter="url(#ex-shadow)">`+[['퇴적암','#c4af83'],['화성암','#818b8c'],['변성암','#a1958b']].map(([s,col],i)=>`<path d="M${75+i*190} 180L${135+i*190} 130L${205+i*190} 190L${185+i*190} 280L${100+i*190} 285Z" fill="${col}" stroke="#6e7a73" stroke-width="3"/>${i===0?p(`M${92+i*190} 215H${194+i*190}M${100+i*190} 245H${187+i*190}`,'#937f60',3):i===1?Array.from({length:20},(_,j)=>circle(290+j*19%85,177+j*23%80,2.5,'#516c6c')).join(''):p('M470 190L555 225M465 210L550 245M475 245L540 270','#756b63',4.5)}<rect x="${105+i*190}" y="333" width="80" height="24" rx="6" fill="#ffffffdf" stroke="#6e7a73"/>${text(145+i*190,348,s,'center')}`).join('')+`</g>`;
-  detail=body;
- }
- caption=c===2?'암석 표본의 알갱이와 무늬를 비교해요. 모든 암석에 화석이 들어 있는 것은 아니며 한 특징만으로 이름을 확정하지 않아요.':'지층의 겹침과 화석 같은 흔적을 함께 살펴 과거 환경의 단서를 찾아요. 아래가 오래되었다는 해석은 뒤집히지 않은 단순한 층을 가정해요.';
-}else if(kind==='earth-interior'){
- controls=['화산의 내부','단층에서 생기는 지진','판 경계의 움직임'];
- if(c===0){
-  body=`<g filter="url(#ex-shadow)"><path d="M35 340L250 160L290 115L345 125L395 170L610 340Z" fill="#a59473" stroke="#776c54" stroke-width="3"/><path d="M150 340L285 180L315 160L348 190L470 340Z" fill="#c7b38b"/><ellipse cx="320" cy="337" rx="95" ry="35" fill="#bd7c55"/>${p('M320 325V180L300 135','#bd7c55',28)}${p('M320 260L380 230','#b27a55',12)}${circle(320,310-phase*120,7.5,'#db9d6a')}<rect x="460" y="340" width="50" height="22" rx="5" fill="#fff" stroke="#bd7c55"/>${text(485,354,'마그마')}<rect x="180" y="385" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#776c54"/>${text(320,402,'지하의 물질이 올라오는 경로 · 단면','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${rect(100,105,440,235,'#c3af8c')}${p('M275 340V230L320 175L340 100','#b47855',30)}${arrow('M285 280L320 200','#bc875b')}<rect x="180" y="377" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#776c54"/>${text(320,395,'화산 분출과 지하 통로를 연결해요','center')}</g>`;
- }else{
-  const shift=c===2?18:8+phase*15;
-  body=`<g filter="url(#ex-shadow)"><path d="M60 140L260 90L320 155L130 215Z" fill="#d5c095"/><path d="M60 140L130 215V350L60 280Z" fill="#a48c68"/><path d="M130 215L320 155V290L130 350Z" fill="#bfa57d"/><g transform="translate(${shift} ${-shift})"><path d="M345 155L520 100L590 160L410 220Z" fill="#d5c095"/><path d="M345 155L410 220V355L345 290Z" fill="#9e8564"/><path d="M410 220L590 160V295L410 355Z" fill="#bfa57d"/></g>${arrow('M220 290L270 250')}${arrow('M450 270L400 310')}${circle(326,300,13,'#be9167')}<rect x="170" y="390" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#a48c68"/>${text(320,407,c===1?'끊어진 면에서 땅이 갑자기 움직이는 관계':'판의 경계와 여러 지표 변화','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${p('M90 150H295L350 285H550','#ad916b',35)}${p('M90 240H265L320 375H550','#ccb88f',35)}${p('M280 70L390 390','#748580',4.5)}<rect x="180" y="405" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#748580"/>${text(320,422,'지층과 단층의 상대 위치를 비교','center')}</g>`;
- }
- caption=c===0?'화산은 지하의 마그마 등이 지표로 나오는 과정과 연결돼요. 지하 통로와 분출 위치를 단면으로 살펴봐요.':'단층과 판 경계의 움직임이 땅의 흔들림과 연결될 수 있어요. 모든 지진이 화산 폭발 때문에 생긴다고 설명하지 않아요.';
-}else if(kind==='weather-climate'){
- controls=['낮 · 해풍','밤 · 육풍','짧은 기간 날씨 자료','긴 기간 기후 자료'];
- if(c<2){
-  const day=c===0;
-  body=`<g filter="url(#ex-shadow)">${rect(20,285,300,145,'url(#ex-water)')}${rect(320,285,300,145,'url(#ex-sand)')}${circle(105,95,day?29:22,day?'#e0b75e':'#b8c3c7')}<rect x="135" y="353" width="60" height="24" rx="5" fill="#fff" stroke="#68a5bc"/>${text(165,368,'바다','center')}<rect x="440" y="353" width="60" height="24" rx="5" fill="#fff" stroke="#bda57b"/>${text(470,368,'육지','center')}<rect x="95" y="253" width="140" height="24" rx="5" fill="#fff" stroke="#68a5bc"/>${text(165,268,day?'상대적으로 차가움':'상대적으로 따뜻함','center')}<rect x="400" y="253" width="140" height="24" rx="5" fill="#fff" stroke="#bda57b"/>${text(470,268,day?'상대적으로 따뜻함':'상대적으로 차가움','center')}${arrow(day?'M175 235H455':'M455 235H175')}${arrow(day?'M470 210V130':'M170 210V130')}${arrow(day?'M450 110H195':'M195 110H450')}${circle(day?175+phase*280:455-phase*280,235,5.5,'#8ab1c2')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${rect(70,250,500,60,'#c4ae87')}${arrow('M320 235V100')}${arrow('M160 160Q210 200 280 220')}${arrow('M480 160Q430 200 360 220')}<rect x="180" y="355" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#c4ae87"/>${text(320,372,'지표의 가열 차이와 공기 흐름을 연결','center')}</g>`;
- }else{
-  const data=c===2?[175,220,155,245,190,230]:[235,225,215,195,175,155];
-  body=`<g filter="url(#ex-shadow)">${rect(65,65,510,300,'#eff1e7')}${p('M110 315H555M110 330V100','#81958d',3.5)}${data.map((y,i)=>circle(145+i*72,y,6.5,'#66919d')).join('')}${p(data.map((y,i)=>(i?'L':'M')+(145+i*72)+' '+y).join(''),'#66919d',3.5)}<rect x="220" y="380" width="230" height="26" rx="6" fill="#ffffffdf" stroke="#81958d"/>${text(335,398,c===2?'며칠 동안의 관찰 예시':'장기간 평균의 변화 예시','center')}${text(130,85,'온도')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${text(320,120,'자료를 비교할 때의 질문','center')}${text(320,190,'관찰 기간은 충분히 긴가요?','center')}${text(320,250,'같은 기준으로 평균을 냈나요?','center')}${text(320,310,'하루의 변화와 긴 추세를 구분했나요?','center')}</g>`;
- }
- caption=c===0?'낮에 육지가 더 따뜻해지는 조건에서는 지표 부근에 바다에서 육지 쪽으로 부는 바람을 살펴볼 수 있어요.':c===1?'밤에 육지가 더 빠르게 식는 조건의 바람 방향을 비교해요. 실제 바람에는 여러 조건이 함께 작용해요.':c===2?'짧은 기간의 날씨는 오르내릴 수 있어요. 이 예시만으로 긴 기간 기후 추세를 확정하지 않아요.':'기후 변화를 살피려면 긴 기간과 일관된 관측 기준이 필요해요. 이 선은 실제 관측 보고서가 아닌 설명용 자료예요.';
-}else if(kind==='moon-seasons'){
- controls=['달의 위치와 모양','기울어진 자전축과 계절','높은 태양 · 짧은 그림자','낮은 태양 · 긴 그림자'];
- if(c===0){
-  const a=phase*Math.PI*2,mx=320+165*Math.cos(a),my=205+80*Math.sin(a),fraction=(1+Math.cos(a))/2,k=Math.cos(a),rx=Math.max(.01,Math.abs(k)*34),phaseShape=`<g transform="translate(500 368) scale(${Math.sin(a)>=0?1:-1} 1)"><path d="M0 -34A34 34 0 0 1 0 34A${rx} 34 0 0 ${k>=0?1:0} 0 -34Z" fill="#e8eae0"/></g>`;
-  body=`<g filter="url(#ex-shadow)"><circle cx="70" cy="190" r="32" fill="#fcd266" stroke="#e0ad3d" stroke-width="2"/>${arrow('M110 130H200','#d0b05b')}${arrow('M110 220H200','#d0b05b')}<ellipse cx="320" cy="205" rx="165" ry="80" fill="none" stroke="#a1bdc4" stroke-width="1.8" stroke-dasharray="5 6"/><circle cx="320" cy="205" r="45" fill="url(#planet)"/>${text(70,253,'태양','center essential')}${text(320,275,'지구','center essential')}${text(550,85,'달','center essential')}${p(`M540 95L${mx} ${my-25}`,'#9eb3b7',1.8)}${circle(mx,my,23,'#dbe1d6')}<path d="M${mx} ${my-23}A23 23 0 0 1 ${mx} ${my+23}Z" fill="#394c56"/><rect x="398" y="297" width="213" height="134" rx="14" fill="#e1ebeb" stroke="#84a4ac" stroke-width="2"/>${text(505,321,'지구에서 본 달','center essential')}${circle(500,368,34,'#283e4d')}${phaseShape}${p('M352 238Q390 270 412 343','#9eb3b7',1.8)}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${circle(230,210,90,'#dce2d0')}${circle(410,210,90,'#2c414d')}${arrow('M70 95H535','#cfae5a')}<rect x="180" y="347" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#cfae5a"/>${text(320,365,'태양빛을 받은 면과 보는 방향을 구분해요','center')}</g>`;
-  caption='달은 태양빛을 받은 면의 일부를 지구에서 보게 돼요. 위치와 보는 방향이 달라지며 위상이 바뀌는 것이고, 보통 지구 그림자가 가려서 생기는 변화가 아니에요.';
- }else if(c===1){
-  const x=320+205*Math.cos(phase*Math.PI*2),y=205+75*Math.sin(phase*Math.PI*2);
-  body=`<g filter="url(#ex-shadow)"><ellipse cx="320" cy="205" rx="205" ry="75" fill="none" stroke="#9bb7c0" stroke-width="2" stroke-dasharray="6 6"/><circle cx="320" cy="205" r="38" fill="#fbd366" stroke="#e0ad3d" stroke-width="2"/><g transform="translate(${x} ${y})"><circle cx="0" cy="0" r="42" fill="url(#planet)"/>${p('M-25 -62L25 62','#baa16c',4.5)}</g><rect x="180" y="55" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#9bb7c0"/>${text(320,72,'공전 중에도 자전축의 방향을 유지','center')}<rect x="180" y="360" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#9bb7c0"/>${text(320,378,'반구별 햇빛의 비춤 조건을 비교해요','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${circle(320,220,115,'url(#planet)')}${p('M268 80L375 365','#baa16c',4.5)}${arrow('M80 145H220','#d0b05b')}${arrow('M80 250H220','#d0b05b')}<rect x="170" y="398" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#baa16c"/>${text(320,416,'태양과 거리 하나로 계절을 설명하지 않아요','center')}</g>`;
-  caption='기울어진 자전축의 방향이 유지된 채 공전하면 반구별 햇빛을 받는 조건이 달라져요. 계절을 태양과의 거리 하나로 설명하지 않아요.';
- }else{
-  const low=c===3,sx=low?120:150,sy=low?140:40,end=320+(320-sx)*80/(220-sy);
-  body=`<g filter="url(#ex-shadow)">${rect(50,300,540,28,'#c7b68a')}${circle(sx,sy,28,'#fcd366',2)}${p('M320 220V300','#627c7d',9.5)}${p(`M${sx} ${sy}L320 220L${end} 300`,'#cca952',4)}${p(`M320 306H${end}`,'#4d646e',13)}<rect x="180" y="372" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#627c7d"/>${text(320,390,low?'태양 고도가 낮으면 그림자가 길어져요':'태양 고도가 높으면 그림자가 짧아져요','center')}</g>`;
-  detail=body;
-  caption='같은 막대와 같은 바닥에서 태양의 높이 조건을 비교해요. 광원과 막대 꼭대기를 잇는 빛의 진행을 연장해 그림자 길이와 연결해요.';
- }
-}else if(kind==='fair-test'){
- controls=['한 조건만 달리 비교','여러 조건을 함께 변경','같은 조건으로 반복 측정'];
- body=`<g filter="url(#ex-shadow)">`+[165,465].map((x,i)=>`${vessel(x-70,135,140,i===0?105:170,'url(#ex-liquid)')}${rect(x-75,345,150,12,c===1&&i?'#c2975e':'#7b9598')}${arrow(`M${x} 335V295`,'#b78f5e')}<rect x="${x-45}" y="380" width="90" height="24" rx="5" fill="#fff" stroke="#7b9598"/>${text(x,395,i?'B 조건':'A 조건','center')}`).join('')+`<rect x="180" y="65" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#7b9598"/>${text(320,82,c===0?'달리한 조건: 물의 양만':c===1?'달리한 조건: 물의 양 + 가열 조건':'같은 비교를 여러 번 기록','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(65,85,510,260,'#eff2e6')}${text(110,130,'비교할 조건')}${text(360,130,c===1?'둘 이상 달라짐':'하나만 달라짐')}${p('M80 155H560M80 230H560','#bfd1cb',2)}${text(110,200,'같게 둘 조건')}${text(360,200,'물질·처음 온도·장치')}${text(110,285,'관찰 결과')}${text(360,285,c===2?'반복한 기록을 비교':'근거를 남겨 설명')}</g>`;
- caption=c===1?'물의 양과 가열 조건을 함께 바꾸면 온도 변화의 원인을 하나로 가리기 어려워요.':c===2?'같은 방법으로 반복해 관찰하면 결과가 일관되는지 살펴볼 수 있어요. 한 번의 결과를 그대로 일반화하지 않아요.':'알아볼 조건 하나를 달리하고 다른 조건은 같게 두어야 원인과 결과를 비교하기 쉬워요.';
-}else if(kind==='star-sky'){
- controls=['같은 밤 · 시간 경과','다른 계절의 관찰','도시 불빛이 강한 조건'];
- const a=t*.8,points=[[225,100],[250,130],[295,135],[340,120],[375,150],[410,165],[430,195]];
- body=`<g filter="url(#ex-shadow)"><path d="M10 335Q140 290 270 335T630 320V430H10Z" fill="#5f7b83"/><path d="M20 340H620V410H20Z" fill="#203f54"/>`+Array.from({length:c===2?18:65},(_,i)=>circle(35+i*89%570,40+i*47%250,1.5+i%3*.4,'#e6e4cb')).join('')+`<g transform="rotate(${c===1?40:a*30} 320 120)">${p(points.map(([x,y],i)=>(i?'L':'M')+x+' '+y).join(''),'#9ec0cc',2.5)}${points.map(([x,y])=>circle(x,y,4.5,'#eee9cf')).join('')}</g><rect x="180" y="367" width="280" height="26" rx="6" fill="#1b364bd5" stroke="#9ec0cc"/>${text(320,385,'같은 장소·관찰 방향을 정해 비교','center white')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(75,95,490,240,'#1f364a')}${p('M130 160L205 195L270 185L345 215L430 185L510 240','#89adc0',3.5)}<rect x="180" y="372" width="280" height="26" rx="6" fill="#1b364bd5" stroke="#89adc0"/>${text(320,390,'별의 상대적 배열을 이어 관찰한 모형','center white')}</g>`;
- caption=c===1?'다른 계절에 같은 시각과 방향에서 보이는 별자리를 비교해요. 실제 별자리 배열은 별도 관측 자료와 연결해야 하며 이 그림은 설명용 모형이에요.':c===2?'주변 불빛이 강하면 희미한 별을 보기 어려워질 수 있어요. 별이 안 보인다고 별 자체가 사라진 것은 아니에요.':'같은 밤에도 시간이 지나면 별이 보이는 위치가 달라져요. 관찰 장소와 방향을 정해 상대적 배열과 위치를 비교해요.';
+}else if (kind === 'erosion') {
+    controls = ['완만한 흐름', '빠르고 강한 흐름', '파도가 바꾸는 해안'];
+    customSteps = ['지형 변화 관찰', '유수 작용 단면 분석'];
+
+    if (c < 2) {
+      const isFast = c === 1;
+      const speed = isFast ? 2.8 : 0.4;
+      const waterColor = isFast ? '#0284c7' : '#38bdf8';
+      const flowOffset = Math.round(phase * (isFast ? 120 : 40));
+
+      body = `<g filter="url(#ex-shadow)">
+      <path d="M40 150L200 90L600 220V370L360 405L40 280Z" fill="#a16207" stroke="#78350f" stroke-width="2.5"/>
+      <path d="M40 150L200 90L600 220L360 290Z" fill="#ca8a04" opacity="0.85"/>
+      <path d="M180 110Q230 220 350 235Q440 250 500 300L550 270Q450 220 355 210Q250 200 220 100Z" fill="${waterColor}" opacity="0.9"/>
+      <path d="M200 115Q240 210 350 222Q440 235 520 285" fill="none" stroke="#ffffff" stroke-width="${isFast ? 3.5 : 2}" stroke-dasharray="8 6" stroke-dashoffset="${-flowOffset}" opacity="0.85"/>
+      
+      ${Array.from({ length: isFast ? 14 : 5 }, (_, i) => {
+        const prog = (phase + i * (isFast ? 0.07 : 0.2)) % 1;
+        const px = 200 + prog * 320;
+        const py = 120 + prog * 160 + Math.sin(prog * Math.PI) * 20;
+        return `<circle cx="${px}" cy="${py}" r="${isFast ? 4.5 + (i % 3) * 1.5 : 3}" fill="#78350f" stroke="#451a03" stroke-width="1"/>`;
+      }).join('')}
+
+      <rect x="65" y="305" width="55" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="92" y="321" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">침식 (깎임)</text>
+
+      <rect x="330" y="165" width="55" height="24" rx="5" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="357" y="181" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">운반 (이동)</text>
+
+      <rect x="525" y="345" width="55" height="24" rx="5" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="552" y="361" style="font-size:11px;font-weight:800;fill:#16a34a;text-anchor:middle">퇴적 (쌓임)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="${isFast ? '#dc2626' : '#0284c7'}" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="${isFast ? '#dc2626' : '#0284c7'}"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${isFast ? '급경사·빠른 흐름: 강한 침식(V자곡 형성)과 자갈 운반' : '완경사·완만한 흐름: 곡류 형성 및 고운 흙 퇴적 우세'}</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="${isFast ? '#dc2626' : '#16a34a'}" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:${isFast ? '#dc2626' : '#16a34a'};text-anchor:middle">유속: ${speed} m/s (${isFast ? '침식 우세' : '퇴적 우세'})</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">흐르는 물은 지표면을 깎고(침식), 흙을 나르고(운반), 물살이 느려지면 내려놓아요(퇴적)</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">곡류(Meander) 하천의 공격사면(침식) vs 퇴적사면 단면</text>
+      <rect x="60" y="90" width="520" height="235" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <path d="M80 180Q200 180 250 250Q350 290 450 260Q520 180 560 180V320H80Z" fill="#a16207" opacity="0.85"/>
+      <path d="M180 210Q250 250 350 290Q450 260 520 210Z" fill="#38bdf8" opacity="0.8"/>
+      <path d="M440 200V250" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+      <text x="440" y="185" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">바깥쪽: 빠른 유속 → 침식</text>
+      <path d="M220 230V210" stroke="#16a34a" stroke-width="3"/>
+      <text x="220" y="185" style="font-size:11px;font-weight:800;fill:#16a34a;text-anchor:middle">안쪽: 느린 유속 → 퇴적</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">하천이 굽이쳐 흐를 때 원심력으로 바깥쪽은 물살이 빨라 깎이고, 안쪽은 느려져 모래가 쌓여요</text>
+      </g>`;
+    } else {
+      const waveShift = Math.sin(phase * Math.PI * 2) * 15;
+      body = `<g filter="url(#ex-shadow)">
+      <path d="M50 120L300 95L380 180V370L50 340Z" fill="#78350f" stroke="#451a03" stroke-width="2.5"/>
+      <path d="M380 250Q330 290 380 320Z" fill="#451a03"/>
+      <path d="M460 210L490 195L510 240L500 350L450 350Z" fill="#78350f" stroke="#451a03" stroke-width="2"/>
+      <path d="M330 280Q450 ${260 + waveShift} 610 270V410H330Z" fill="#0284c7" opacity="0.85"/>
+      <path d="M350 ${280 + waveShift}Q420 ${255 - waveShift} 560 ${275 + waveShift}" fill="none" stroke="#ffffff" stroke-width="3.5" stroke-dasharray="10 5"/>
+
+      <rect x="180" y="115" width="75" height="24" rx="5" fill="#fffffffa" stroke="#78350f" stroke-width="1.5"/>
+      <text x="217" y="131" style="font-size:11px;font-weight:800;fill:#78350f;text-anchor:middle">해식애 (절벽)</text>
+
+      <rect x="290" y="275" width="65" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="322" y="291" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">해식동</text>
+
+      <rect x="520" y="225" width="65" height="24" rx="5" fill="#fffffffa" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="552" y="241" style="font-size:11px;font-weight:800;fill:#ca8a04;text-anchor:middle">시스택 (바위)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">해안 침식: 파도의 충격력에 의한 해식애·시스택 형성</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">파랑 에너지 유압 쐐기 작용</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">끊임없이 부딪치는 파도가 절벽 아래를 깎아 동굴을 만들고, 무너져 외딴 바위섬이 남아요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">해안 파식대(Wave-cut Platform) 형성 메커니즘 단면</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="520" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <path d="M20 180H220V60H340V240H20Z" fill="#78350f" opacity="0.85"/>
+        <path d="M20 180H220" stroke="#0284c7" stroke-width="14" opacity="0.6"/>
+        <text x="120" y="160" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">파식대 (평탄면)</text>
+        <text x="280" y="100" style="font-size:11px;font-weight:800;fill:#78350f;text-anchor:middle">해식애 (후퇴하는 절벽)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">파도가 절벽 아래를 계속 깎아내면 상부가 붕괴하고 절벽이 후퇴하면서 평탄한 파식대가 생겨요</text>
+      </g>`;
+    }
+    caption = c === 2 ? '파도는 해안 바위를 끊임없이 깎아 절벽(해식애)과 동굴, 시스택 등 독특한 해안 지형을 만들어요.' : '물의 흐름이 빠를수록 강한 침식 작용이 일어나며, 느려지는 곳에서는 퇴적 작용이 활발해요.';
+  }
+
+  else if (kind === 'strata') {
+    controls = ['퇴적층이 쌓이는 순서', '지층 단면과 화석', '암석 표본 비교'];
+    customSteps = ['지층 구조 관찰', '지질 시대 표준 화석'];
+
+    if (c === 0) {
+      const strataLayers = [
+        { name: '1. 역암층 (Conglomerate)', color: '#78350f', textCol: '#ffffff', y: 280, note: '자갈·모래 퇴적' },
+        { name: '2. 사암층 (Sandstone)', color: '#ca8a04', textCol: '#ffffff', y: 215, note: '고운 모래 퇴적' },
+        { name: '3. 셰일층 (Shale)', color: '#64748b', textCol: '#ffffff', y: 150, note: '진흙 입자 퇴적' },
+        { name: '4. 석회암층 (Limestone)', color: '#cbd5e1', textCol: '#0f172a', y: 85, note: '조개·산호 유해' }
+      ];
+
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(60, 0)">
+        ${strataLayers.map((ly, i) => `
+          <g transform="translate(0, ${ly.y})">
+            <rect x="0" y="0" width="450" height="65" rx="4" fill="${ly.color}" stroke="#334155" stroke-width="1.5"/>
+            ${i === 0 ? [30, 90, 180, 260, 340, 410].map(cx => `<circle cx="${cx}" cy="32" r="8" fill="#451a03" stroke="#291102" stroke-width="1"/>`).join('') : i === 1 ? [40, 120, 200, 280, 360].map(cx => `<circle cx="${cx}" cy="32" r="2.5" fill="#fef08a"/>`).join('') : ''}
+            <text x="25" y="38" style="font-size:12px;font-weight:800;fill:${ly.textCol}">${ly.name}</text>
+            <text x="350" y="38" style="font-size:11px;font-weight:700;fill:${ly.textCol}">${ly.note}</text>
+          </g>
+        `).join('')}
+      </g>
+
+      <g transform="translate(545, 100)">
+        <line x1="0" y1="240" x2="0" y2="10" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+        <text x="18" y="235" style="font-size:11px;font-weight:800;fill:#78350f">먼저 쌓임 (오래됨)</text>
+        <text x="18" y="25" style="font-size:11px;font-weight:800;fill:#dc2626">나중 쌓임 (최근)</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">지층 누중의 법칙: 아래층이 위층보다 먼저 쌓임</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">수평 퇴적의 법칙 보존</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">뒤집히지 않은 정상적인 지층에서는 아래쪽에 있는 지층이 가장 먼저 쌓인 오래된 층이에요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">지층 시추 코어(Drill Core Sample) 고해상도 지질 분석</text>
+      <g transform="translate(100, 85)">
+        <rect x="0" y="0" width="100" height="240" rx="8" fill="#78350f" stroke="#451a03" stroke-width="2.5"/>
+        <rect x="0" y="0" width="100" height="60" rx="4" fill="#cbd5e1"/>
+        <rect x="0" y="60" width="100" height="60" rx="4" fill="#64748b"/>
+        <rect x="0" y="120" width="100" height="60" rx="4" fill="#ca8a04"/>
+        <rect x="0" y="180" width="100" height="60" rx="4" fill="#78350f"/>
+      </g>
+      <g transform="translate(240, 95)">
+        <text x="0" y="25" style="font-size:12px;font-weight:800;fill:#334155">심도 0~50m: 석회암 (조개 유해 침전)</text>
+        <text x="0" y="85" style="font-size:12px;font-weight:800;fill:#475569">심도 50~120m: 셰일 (호수·심해 진흙 압축)</text>
+        <text x="0" y="145" style="font-size:12px;font-weight:800;fill:#ca8a04">심도 120~200m: 사암 (강어귀 모래 결착)</text>
+        <text x="0" y="205" style="font-size:12px;font-weight:800;fill:#78350f">심도 200m+: 역암 (홍수 퇴적 둥근 자갈)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="366" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">원통형 코어를 채취해 퇴적 당시의 알갱이 크기와 퇴적 속도를 수직으로 정밀 복원해요</text>
+      </g>`;
+    } else if (c === 1) {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="60" y="85" width="520" height="75" rx="6" fill="#cbd5e1" stroke="#475569" stroke-width="1.5"/>
+      <ellipse cx="200" cy="122" rx="22" ry="15" fill="#f8fafc" stroke="#334155" stroke-width="1.5"/>
+      <text x="200" y="126" style="font-size:10px;font-weight:800;fill:#0f172a;text-anchor:middle">매머드 이</text>
+      <text x="340" y="127" style="font-size:12px;font-weight:800;fill:#0f172a">신생대 지층 (약 6,600만 년 전 ~ 현재)</text>
+
+      <rect x="60" y="165" width="520" height="75" rx="6" fill="#ca8a04" stroke="#854d0e" stroke-width="1.5"/>
+      <g transform="translate(190, 202)">
+        <circle cx="0" cy="0" r="18" fill="#fef08a" stroke="#78350f" stroke-width="1.5"/>
+        <path d="M-10 0Q0 -12 10 0Q0 12 -10 0" stroke="#78350f" stroke-width="1.5" fill="none"/>
+      </g>
+      <text x="340" y="207" style="font-size:12px;font-weight:800;fill:#ffffff">중생대 지층: 암모나이트 화석 (따뜻한 바다)</text>
+
+      <rect x="60" y="245" width="520" height="75" rx="6" fill="#78350f" stroke="#451a03" stroke-width="1.5"/>
+      <g transform="translate(190, 282)">
+        <ellipse cx="0" cy="0" rx="16" ry="22" fill="#451a03" stroke="#291102" stroke-width="1.5"/>
+        <line x1="-12" y1="-5" x2="12" y2="-5" stroke="#a16207" stroke-width="1.5"/>
+        <line x1="-12" y1="5" x2="12" y2="5" stroke="#a16207" stroke-width="1.5"/>
+      </g>
+      <text x="340" y="287" style="font-size:12px;font-weight:800;fill:#ffffff">고생대 지층: 삼엽충 화석 (원시 바다 환경)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">표준 화석: 지층이 퇴적된 지질 시대를 결정</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">생존 기간 짧고 분포 면적 넓음</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지층 속에 묻힌 화석을 분석하면 그 지층이 형성된 시대와 당시의 환경을 알 수 있어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">표준 화석 vs 시상 화석의 비교 분석</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="240" height="240" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="2"/>
+        <text x="120" y="30" style="font-size:13px;font-weight:800;fill:#0284c7;text-anchor:middle">표준 화석 (지질 시대 판단)</text>
+        <circle cx="120" cy="110" r="45" fill="#bae6fd"/>
+        <text x="120" y="115" style="font-size:11px;font-weight:800;fill:#0369a1;text-anchor:middle">삼엽충 · 공룡 · 매머드</text>
+        <text x="120" y="180" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">생존 기간 짧음</text>
+        <text x="120" y="205" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">분포 면적 전 지구적</text>
+      </g>
+      <g transform="translate(340, 85)">
+        <rect x="0" y="0" width="240" height="240" rx="10" fill="#f0fdf4" stroke="#86efac" stroke-width="2"/>
+        <text x="120" y="30" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">시상 화석 (과거 환경 판단)</text>
+        <circle cx="120" cy="110" r="45" fill="#bbf7d0"/>
+        <text x="120" y="115" style="font-size:11px;font-weight:800;fill:#166534;text-anchor:middle">고사리 · 산호 · 조개</text>
+        <text x="120" y="180" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">생존 기간 김</text>
+        <text x="120" y="205" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">특정 환경(따뜻한 얕은 바다 등)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">화석의 종류에 따라 시대를 알려주는 표준 화석과 환경을 알려주는 시상 화석으로 나뉘어요</text>
+      </g>`;
+    } else {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(45, 90)">
+        <rect x="0" y="0" width="160" height="250" rx="10" fill="#fefce8" stroke="#ca8a04" stroke-width="2"/>
+        <rect x="15" y="15" width="130" height="24" rx="5" fill="#ca8a04"/>
+        <text x="80" y="31" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">1. 퇴적암 (Sedimentary)</text>
+        <ellipse cx="80" cy="110" rx="55" ry="40" fill="#eab308" stroke="#a16207" stroke-width="2"/>
+        <line x1="35" y1="105" x2="125" y2="105" stroke="#78350f" stroke-width="2"/>
+        <line x1="40" y1="120" x2="120" y2="120" stroke="#78350f" stroke-width="2"/>
+        <text x="80" y="175" style="font-size:11px;font-weight:800;fill:#854d0e;text-anchor:middle">층리 구조 · 알갱이</text>
+        <text x="80" y="195" style="font-size:10px;fill:#475569;text-anchor:middle">화석 발견 가능</text>
+        <text x="80" y="225" style="font-size:10px;font-weight:700;fill:#ca8a04;text-anchor:middle">예: 사암, 셰일, 석회암</text>
+      </g>
+
+      <g transform="translate(240, 90)">
+        <rect x="0" y="0" width="160" height="250" rx="10" fill="#fff1f2" stroke="#e11d48" stroke-width="2"/>
+        <rect x="15" y="15" width="130" height="24" rx="5" fill="#e11d48"/>
+        <text x="80" y="31" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">2. 화성암 (Igneous)</text>
+        <ellipse cx="80" cy="110" rx="55" ry="40" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+        ${[45, 75, 105, 60, 95].map(cx => `<circle cx="${cx}" cy="${95 + cx % 20}" r="3.5" fill="#cbd5e1"/>`).join('')}
+        <text x="80" y="175" style="font-size:11px;font-weight:800;fill:#be123c;text-anchor:middle">마그마 냉각 결정</text>
+        <text x="80" y="195" style="font-size:10px;fill:#475569;text-anchor:middle">화석 없음 (녹아 소멸)</text>
+        <text x="80" y="225" style="font-size:10px;font-weight:700;fill:#e11d48;text-anchor:middle">예: 화강암, 현무암</text>
+      </g>
+
+      <g transform="translate(435, 90)">
+        <rect x="0" y="0" width="160" height="250" rx="10" fill="#f0fdf4" stroke="#16a34a" stroke-width="2"/>
+        <rect x="15" y="15" width="130" height="24" rx="5" fill="#16a34a"/>
+        <text x="80" y="31" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">3. 변성암 (Metamorphic)</text>
+        <ellipse cx="80" cy="110" rx="55" ry="40" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <path d="M40 95Q80 115 120 95M35 115Q80 135 125 115" stroke="#94a3b8" stroke-width="3" fill="none"/>
+        <text x="80" y="175" style="font-size:11px;font-weight:800;fill:#15803d;text-anchor:middle">엽리 구조 (줄무늬)</text>
+        <text x="80" y="195" style="font-size:10px;fill:#475569;text-anchor:middle">고온·고압 변형</text>
+        <text x="80" y="225" style="font-size:10px;font-weight:700;fill:#16a34a;text-anchor:middle">예: 편마암, 대리암</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">3대 암석군 분류: 퇴적암, 화성암, 변성암</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">형성 원인과 내부 구조 차이</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">알갱이가 쌓여 굳은 퇴적암, 마그마가 식은 화성암, 열과 압력으로 변한 변성암으로 구분해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">암석의 순환(Rock Cycle) 다이어그램</text>
+      <circle cx="320" cy="205" r="110" fill="none" stroke="#64748b" stroke-width="3" stroke-dasharray="8 6"/>
+      <rect x="260" y="70" width="120" height="36" rx="8" fill="#ca8a04"/>
+      <text x="320" y="93" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">퇴적암</text>
+      <rect x="150" y="260" width="120" height="36" rx="8" fill="#e11d48"/>
+      <text x="210" y="283" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">화성암</text>
+      <rect x="370" y="260" width="120" height="36" rx="8" fill="#16a34a"/>
+      <text x="430" y="283" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">변성암</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지구 내부와 표면의 끊임없는 지각 변동을 통해 암석은 한 종류에 머물지 않고 순환해요</text>
+      </g>`;
+    }
+    caption = c === 2 ? '암석은 생성 과정에 따라 알갱이가 쌓인 퇴적암, 마그마가 굳은 화성암, 열과 압력을 받은 변성암으로 분류해요.' : '지층은 아래에서부터 차례로 쌓이며, 지층 속 표준 화석을 통해 지질 시대를 추정해요.';
+  }
+
+  else if (kind === 'earth-interior') {
+    controls = ['화산의 내부', '단층에서 생기는 지진', '판 경계의 움직임'];
+    customSteps = ['단면 구조 관찰', '지각 변동 메커니즘'];
+
+    if (c === 0) {
+      body = `<g filter="url(#ex-shadow)">
+      <path d="M40 340L240 160L285 110L355 110L400 160L600 340Z" fill="#78350f" stroke="#451a03" stroke-width="3"/>
+      <path d="M120 340L260 210L380 210L520 340Z" fill="#a16207" opacity="0.8"/>
+      
+      <ellipse cx="320" cy="335" rx="110" ry="45" fill="#dc2626" stroke="#991b1b" stroke-width="3"/>
+      <path d="M320 335V160L300 115" stroke="#dc2626" stroke-width="32" stroke-linecap="round"/>
+      <path d="M320 335V160L300 115" stroke="#ea580c" stroke-width="18" stroke-linecap="round"/>
+      <path d="M320 250L385 220" stroke="#ea580c" stroke-width="12" stroke-linecap="round"/>
+
+      ${[0, 1, 2].map(i => {
+        const by = 330 - ((phase + i * 0.33) % 1) * 200;
+        return `<circle cx="316" cy="${by}" r="6.5" fill="#fef08a"/>`;
+      }).join('')}
+
+      <path d="M300 115C250 50 390 50 340 115Z" fill="#64748b" opacity="0.8"/>
+      <path d="M340 115Q390 150 440 220" fill="none" stroke="#ea580c" stroke-width="8" stroke-linecap="round"/>
+
+      <rect x="460" y="335" width="85" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="502" y="351" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">마그마방 (~1200℃)</text>
+
+      <rect x="180" y="210" width="65" height="24" rx="5" fill="#fffffffa" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="212" y="226" style="font-size:11px;font-weight:800;fill:#ea580c;text-anchor:middle">화도 (통로)</text>
+
+      <rect x="420" y="110" width="85" height="24" rx="5" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="462" y="126" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">화구 및 용암류</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#dc2626"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">화산 분출: 지하 마그마가 화도를 따라 상승·분출</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ea580c;text-anchor:middle">화산 쇄설물 + 화산 가스 + 용암</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">땅속 깊은 곳에서 암석이 녹아 생긴 마그마가 압력에 의해 화도를 타고 지표로 뿜어져 나와요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">마그마 분출과 점성(Viscosity)에 따른 화산 형태 비교</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#be123c;text-anchor:middle">종상 화산 (점성 큼 · 유문암질)</text>
+        <path d="M40 200Q115 60 190 200Z" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+        <text x="115" y="225" style="font-size:11px;font-weight:700;fill:#be123c;text-anchor:middle">경사 급함 · 폭발적 분출</text>
+      </g>
+      <g transform="translate(350, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#0369a1;text-anchor:middle">순상 화산 (점성 작음 · 현무암질)</text>
+        <path d="M20 200Q115 140 210 200Z" fill="#475569" stroke="#1e293b" stroke-width="2"/>
+        <text x="115" y="225" style="font-size:11px;font-weight:700;fill:#0369a1;text-anchor:middle">경사 완만 · 조용한 용암 분출</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">마그마 속 규산(SiO2) 함량과 점성에 따라 폭발적인 산 모양이나 완만한 방패 모양 화산이 돼요</text>
+      </g>`;
+    } else {
+      const isPlate = c === 2;
+      const shift = Math.sin(phase * Math.PI * 2) * 12;
+
+      body = `<g filter="url(#ex-shadow)">
+      <path d="M60 140L260 90L310 160L130 220Z" fill="#ca8a04"/>
+      <path d="M60 140L130 220V350L60 280Z" fill="#78350f"/>
+      <path d="M130 220L310 160V290L130 350Z" fill="#a16207"/>
+      
+      <g transform="translate(${shift}, ${-shift})">
+        <path d="M340 160L520 105L590 165L410 225Z" fill="#ca8a04"/>
+        <path d="M340 160L410 225V355L340 290Z" fill="#78350f"/>
+        <path d="M410 225L590 165V295L410 355Z" fill="#a16207"/>
+      </g>
+
+      <line x1="200" y1="285" x2="260" y2="245" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+      <line x1="480" y1="250" x2="420" y2="290" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+
+      <circle cx="325" cy="295" r="12" fill="#ef4444"/>
+      <text x="325" y="299" style="font-size:10px;font-weight:800;fill:#ffffff;text-anchor:middle">진원</text>
+      <circle cx="325" cy="295" r="${25 + ((phase * 40) % 40)}" fill="none" stroke="#f43f5e" stroke-width="2" stroke-dasharray="4 2"/>
+      <circle cx="325" cy="295" r="${50 + ((phase * 40) % 40)}" fill="none" stroke="#f43f5e" stroke-width="1.5" stroke-dasharray="6 3"/>
+
+      <circle cx="325" cy="180" r="6" fill="#dc2626"/>
+      <rect x="300" y="145" width="50" height="22" rx="4" fill="#fffffffa" stroke="#dc2626"/>
+      <text x="325" y="160" style="font-size:10px;font-weight:800;fill:#dc2626;text-anchor:middle">진앙</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#dc2626"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${isPlate ? '판 경계 운동: 수렴대에서의 충돌과 지각 변동' : '단층 지진: 지층이 끊어지며 탄성 에너지가 파동으로 방출'}</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">P파(종파) &amp; S파(횡파) 전파</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지층에 가해진 압축력이나 장력이 한계를 넘으면 지층이 어긋나며 거대한 지진파가 발생해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">단층면 탄성 반발(Elastic Rebound) 및 지진파 전달 메커니즘</text>
+      <g transform="translate(80, 85)">
+        <rect x="0" y="0" width="440" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="40" y1="120" x2="400" y2="120" stroke="#94a3b8" stroke-width="3" stroke-dasharray="6 4"/>
+        <line x1="220" y1="40" x2="220" y2="200" stroke="#dc2626" stroke-width="3"/>
+        <circle cx="220" cy="120" r="16" fill="#ef4444"/>
+        <text x="220" y="125" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">진원</text>
+        <text x="120" y="80" style="font-size:12px;font-weight:800;fill:#1d4ed8">P파 (종파: 7~8 km/s 빠름)</text>
+        <text x="120" y="165" style="font-size:12px;font-weight:800;fill:#ea580c">S파 (횡파: 3~4 km/s 큰 흔들림)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지반이 휘어지다 견디지 못하고 튕겨나가는 탄성 반발로 지진파가 발생해요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '화산은 지하의 마그마가 화도를 따라 지표로 분출하는 과정이에요.' : '단층과 판의 급격한 미끄러짐으로 축적된 에너지가 파동(지진)으로 전달돼요.';
+  }
+
+  else if (kind === 'weather-climate') {
+    controls = ['낮 · 해풍', '밤 · 육풍', '짧은 기간 날씨 자료', '긴 기간 기후 자료'];
+    customSteps = ['순환 메커니즘 관찰', '자료 비교 분석'];
+
+    if (c < 2) {
+      const isDay = c === 0;
+      const sunMoon = isDay ? `<circle cx="100" cy="90" r="28" fill="#fde047" stroke="#ea580c" stroke-width="2"/>` : `<circle cx="100" cy="90" r="22" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>`;
+
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="25" y="275" width="295" height="135" rx="8" fill="#0284c7" opacity="0.85"/>
+      <text x="170" y="350" style="font-size:15px;font-weight:800;fill:#ffffff;text-anchor:middle">바다 (Sea)</text>
+      <text x="170" y="375" style="font-size:11.5px;font-weight:700;fill:#e0f2fe;text-anchor:middle">${isDay ? '비열 큼 · 천천히 데워짐 (상대적 저온)' : '열 보존 · 천천히 식음 (상대적 고온)'}</text>
+
+      <rect x="320" y="275" width="295" height="135" rx="8" fill="#78350f" opacity="0.85"/>
+      <text x="470" y="350" style="font-size:15px;font-weight:800;fill:#ffffff;text-anchor:middle">육지 (Land)</text>
+      <text x="470" y="375" style="font-size:11.5px;font-weight:700;fill:#fef08a;text-anchor:middle">${isDay ? '비열 작음 · 빠르게 가열됨 (상대적 고온)' : '빠르게 냉각됨 (상대적 저온)'}</text>
+
+      ${sunMoon}
+
+      ${isDay ? `
+        <path d="M180 240H440" stroke="#0284c7" stroke-width="5" marker-end="url(#ex-arrow-cyan)"/>
+        <text x="310" y="230" style="font-size:13px;font-weight:800;fill:#0284c7;text-anchor:middle">해풍 (바다 → 육지)</text>
+        <path d="M470 230V130" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+        <text x="515" y="180" style="font-size:11px;font-weight:800;fill:#dc2626">상승 기류 (저기압)</text>
+        <path d="M440 120H180" stroke="#64748b" stroke-width="3" stroke-dasharray="6 3"/>
+        <path d="M160 130V230" stroke="#0284c7" stroke-width="4" marker-end="url(#ex-arrow-cyan)"/>
+        <text x="110" y="180" style="font-size:11px;font-weight:800;fill:#0284c7">하강 기류 (고기압)</text>
+      ` : `
+        <path d="M440 240H180" stroke="#ca8a04" stroke-width="5" marker-end="url(#ex-arrow-amber)"/>
+        <text x="310" y="230" style="font-size:13px;font-weight:800;fill:#ca8a04;text-anchor:middle">육풍 (육지 → 바다)</text>
+        <path d="M160 230V130" stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)"/>
+        <text x="110" y="180" style="font-size:11px;font-weight:800;fill:#dc2626">상승 기류 (저기압)</text>
+        <path d="M180 120H440" stroke="#64748b" stroke-width="3" stroke-dasharray="6 3"/>
+        <path d="M470 130V230" stroke="#ca8a04" stroke-width="4" marker-end="url(#ex-arrow-amber)"/>
+        <text x="515" y="180" style="font-size:11px;font-weight:800;fill:#ca8a04">하강 기류 (고기압)</text>
+      `}
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="${isDay ? '#0284c7' : '#ca8a04'}" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="${isDay ? '#0284c7' : '#ca8a04'}"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${isDay ? '낮의 해풍: 육지가 바다보다 빨리 데워져 바다에서 육지로 붊' : '밤의 육풍: 육지가 바다보다 빨리 식어 육지에서 바다로 붊'}</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">비열 차이에 의한 기압차 형성</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">모래(육지)와 물(바다)의 비열 차이로 인해 생기는 기온과 기압 차이가 바람을 일으켜요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">지표면 가열 차이와 등압선(Isobar) 기압 경도력 단면</text>
+      <g transform="translate(80, 85)">
+        <rect x="0" y="0" width="440" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="40" y1="70" x2="400" y2="70" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <line x1="40" y1="130" x2="400" y2="130" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <line x1="40" y1="190" x2="400" y2="190" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="4 2"/>
+        <text x="60" y="65" style="font-size:10px;fill:#64748b">1008 hPa</text>
+        <text x="60" y="125" style="font-size:10px;fill:#64748b">1012 hPa</text>
+        <text x="60" y="185" style="font-size:10px;fill:#64748b">1016 hPa (고기압)</text>
+        <path d="M120 180Q220 150 320 80" stroke="#0284c7" stroke-width="4" marker-end="url(#ex-arrow-cyan)"/>
+        <text x="260" y="145" style="font-size:12px;font-weight:800;fill:#0284c7">기압 경도력 바람</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">공기는 항상 기압이 높은 곳(고기압)에서 낮은 곳(저기압)으로 힘을 받아 이동해요</text>
+      </g>`;
+    } else {
+      const isShort = c === 2;
+      const data = isShort ? [180, 230, 160, 250, 190, 240, 200] : [240, 230, 215, 200, 185, 170, 160];
+
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="60" y="80" width="520" height="270" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <line x1="110" y1="310" x2="550" y2="310" stroke="#334155" stroke-width="2"/>
+      <line x1="110" y1="310" x2="110" y2="100" stroke="#334155" stroke-width="2"/>
+      
+      <path d="${data.map((y, i) => (i ? 'L' : 'M') + (150 + i * 60) + ' ' + y).join('')}" fill="none" stroke="${isShort ? '#ea580c' : '#dc2626'}" stroke-width="3.5"/>
+      ${data.map((y, i) => `<circle cx="${150 + i * 60}" cy="${y}" r="5.5" fill="${isShort ? '#ea580c' : '#dc2626'}"/>`).join('')}
+
+      <text x="90" y="110" style="font-size:11px;font-weight:800;fill:#334155">기온 (℃)</text>
+      <text x="540" y="330" style="font-size:11px;font-weight:800;fill:#334155">${isShort ? '일자' : '연도 (30년)'}</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="${isShort ? '#ea580c' : '#dc2626'}" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="${isShort ? '#ea580c' : '#dc2626'}"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${isShort ? '날씨 자료: 매일 매일의 불규칙한 단기 대기 상태' : '기후 자료: 30년 이상의 장기간 종합 평균 대기 추세'}</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">${isShort ? '일별 변동 폭 큼' : '장기 평년값 및 온난화 추세'}</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">날씨는 시시각각 변하는 짧은 상태이고, 기후는 수십 년간 축적된 규칙적인 평균 상태예요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">기후 평년값(Climate Normal) 산출 기준 분석</text>
+      <rect x="80" y="85" width="440" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="300" y="125" style="font-size:13px;font-weight:800;fill:#0f172a;text-anchor:middle">세계기상기구(WMO) 30년 표준 기간</text>
+      <text x="300" y="165" style="font-size:12px;fill:#334155;text-anchor:middle">1991년 ~ 2020년 30년 평균치 산정</text>
+      <text x="300" y="205" style="font-size:12px;font-weight:700;fill:#dc2626;text-anchor:middle">최근 10년간 기온 상승 편차 +0.8℃ 관측</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">충분히 긴 30년 자료를 누적해야 계절적 특성과 기후 변화 추세를 과학적으로 증명할 수 있어요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '낮에는 육지가 빨리 데워져 상승 기류가 생기므로 바다에서 육지로 해풍이 불어요.' : c === 1 ? '밤에는 육지가 빨리 식어 바다 쪽이 따뜻하므로 육지에서 바다로 육풍이 불어요.' : c === 2 ? '날씨는 날마다 변하는 단기 상태예요.' : '기후는 최소 30년 이상의 오랜 기간 관측한 종합적인 평균 상태를 말해요.';
+  }
+
+  else if (kind === 'moon-seasons') {
+    controls = ['달의 위치와 모양', '기울어진 자전축과 계절', '높은 태양 · 짧은 그림자', '낮은 태양 · 긴 그림자'];
+    customSteps = ['천체 운동 관찰', '위상 및 그림자 분석'];
+
+    if (c === 0) {
+      const a = phase * Math.PI * 2;
+      const mx = 320 + 155 * Math.cos(a);
+      const my = 205 + 75 * Math.sin(a);
+      const k = Math.cos(a);
+      const rx = Math.max(0.1, Math.abs(k) * 28);
+      const phaseShape = `<g transform="translate(520 355) scale(${Math.sin(a) >= 0 ? 1 : -1} 1)">
+        <path d="M0 -28A28 28 0 0 1 0 28A${rx} 28 0 0 ${k >= 0 ? 1 : 0} 0 -28Z" fill="#fef08a"/>
+      </g>`;
+
+      body = `<g filter="url(#ex-shadow)">
+      ${[130, 175, 220, 265].map(sy => `
+        <line x1="25" y1="${sy}" x2="150" y2="${sy}" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 3" marker-end="url(#ex-arrow-amber)"/>
+      `).join('')}
+      <text x="50" y="205" style="font-size:12px;font-weight:800;fill:#d97706;text-anchor:middle">햇빛 (Sunlight)</text>
+
+      <ellipse cx="320" cy="205" rx="155" ry="75" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6 4"/>
+
+      <circle cx="320" cy="205" r="42" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
+      <path d="M305 190Q325 175 345 200Q330 225 315 210Z" fill="#22c55e"/>
+      <text x="320" y="240" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">지구</text>
+
+      <circle cx="${mx}" cy="${my}" r="22" fill="#334155" stroke="#1e293b" stroke-width="1.5"/>
+      <path d="M${mx} ${my - 22}A22 22 0 0 0 ${mx} ${my + 22}Z" fill="#fef08a"/>
+
+      <rect x="420" y="280" width="200" height="130" rx="12" fill="#0f172a" stroke="#475569" stroke-width="2"/>
+      <text x="520" y="305" style="font-size:11px;font-weight:800;fill:#86efac;text-anchor:middle">지구에서 본 달의 모양</text>
+      <circle cx="520" cy="355" r="28" fill="#1e293b"/>
+      ${phaseShape}
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">달의 위상: 달의 공전에 따른 관측 각도 변화</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">삭 → 상현 → 망(보름) → 하현</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">달은 항상 햇빛을 받는 반쪽이 밝지만, 달이 지구를 공전함에 따라 보이는 모양이 달라져요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">달의 공전 각도(0°~360°)와 지구 관측 위상 기하학</text>
+      <circle cx="320" cy="205" r="100" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="5 3"/>
+      <circle cx="320" cy="205" r="24" fill="#0284c7"/>
+      ${[0, 90, 180, 270].map(deg => {
+        const rad = deg * Math.PI / 180;
+        const px = 320 + 100 * Math.cos(rad);
+        const py = 205 + 100 * Math.sin(rad);
+        return `<circle cx="${px}" cy="${py}" r="14" fill="#fef08a" stroke="#ca8a04" stroke-width="1.5"/>`;
+      }).join('')}
+      <text x="320" y="90" style="font-size:11px;font-weight:800;fill:#0f172a;text-anchor:middle">하현달 (270°)</text>
+      <text x="320" y="335" style="font-size:11px;font-weight:800;fill:#0f172a;text-anchor:middle">상현달 (90°)</text>
+      <text x="445" y="210" style="font-size:11px;font-weight:800;fill:#0f172a">보름달 (180°)</text>
+      <text x="195" y="210" style="font-size:11px;font-weight:800;fill:#0f172a">삭 (0°)</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">달이 지구 그림자에 가려지는 월식이 아닌, 햇빛을 받는 면을 보는 각도 차이로 위상이 변해요</text>
+      </g>`;
+    } else if (c === 1) {
+      const ex = 320 + 190 * Math.cos(phase * Math.PI * 2);
+      const ey = 205 + 70 * Math.sin(phase * Math.PI * 2);
+
+      body = `<g filter="url(#ex-shadow)">
+      <ellipse cx="320" cy="205" rx="190" ry="70" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6 4"/>
+      <circle cx="320" cy="205" r="38" fill="#f59e0b" stroke="#ea580c" stroke-width="2"/>
+      <text x="320" y="210" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">태양</text>
+
+      <g transform="translate(${ex}, ${ey})">
+        <circle cx="0" cy="0" r="38" fill="#0284c7"/>
+        <line x1="-20" y1="-55" x2="20" y2="55" stroke="#dc2626" stroke-width="3"/>
+        <text x="25" y="-45" style="font-size:10px;font-weight:800;fill:#dc2626">23.5°</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">계절의 변화: 자전축이 23.5° 기울어진 채 공전</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">남중 고도와 낮의 길이 변화</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지구 자전축이 기울어져 공전하기 때문에 반구별로 태양의 남중 고도와 낮 길이가 달라져요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">하지(여름) vs 동지(겨울)의 태양 입사광선 단면</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#fefce8" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">하지: 북반구 태양 직사 (고온)</text>
+        <circle cx="115" cy="120" r="55" fill="#0284c7"/>
+        <line x1="85" y1="45" x2="145" y2="195" stroke="#dc2626" stroke-width="3"/>
+        <path d="M0 100H60M0 130H60" stroke="#f59e0b" stroke-width="3"/>
+      </g>
+      <g transform="translate(350, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#f0f9ff" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">동지: 북반구 비스듬한 입사 (저온)</text>
+        <circle cx="115" cy="120" r="55" fill="#0284c7"/>
+        <line x1="85" y1="45" x2="145" y2="195" stroke="#dc2626" stroke-width="3"/>
+        <path d="M170 100H230M170 130H230" stroke="#f59e0b" stroke-width="3"/>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">태양과의 거리 차이가 아니라, 자전축 기울기에 의한 일사각과 낮 길이 차이가 계절을 만들어요</text>
+      </g>`;
+    } else {
+      const isHigh = c === 2;
+      const sunY = isHigh ? 75 : 160;
+      const sunX = 140;
+      const poleX = 320;
+      const poleH = 90;
+      const shadowLen = isHigh ? 45 : 165;
+
+      body = `<g filter="url(#ex-shadow)">
+      <line x1="50" y1="300" x2="590" y2="300" stroke="#78350f" stroke-width="4"/>
+
+      <circle cx="${sunX}" cy="${sunY}" r="32" fill="#f59e0b" stroke="#ea580c" stroke-width="2"/>
+      <text x="${sunX}" y="${sunY + 5}" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">태양 (${isHigh ? '76.5°' : '29.5°'})</text>
+
+      <rect x="${poleX - 5}" y="${300 - poleH}" width="10" height="${poleH}" rx="2" fill="#1e293b"/>
+      <text x="${poleX}" y="${280 - poleH}" style="font-size:11px;font-weight:800;fill:#0f172a;text-anchor:middle">수직 막대</text>
+
+      <line x1="${sunX}" y1="${sunY}" x2="${poleX + shadowLen}" y2="300" stroke="#f59e0b" stroke-width="3" stroke-dasharray="6 3"/>
+
+      <line x1="${poleX}" y1="302" x2="${poleX + shadowLen}" y2="302" stroke="#475569" stroke-width="10" stroke-linecap="round"/>
+      <text x="${poleX + shadowLen / 2}" y="325" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">그림자 길이: ${isHigh ? '짧음 (약 25cm)' : '김 (약 175cm)'}</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="${isHigh ? '#ea580c' : '#0284c7'}" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="${isHigh ? '#ea580c' : '#0284c7'}"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${isHigh ? '여름철 높은 고도(76.5°): 그림자가 짧고 일사량 집중' : '겨울철 낮은 고도(29.5°): 그림자가 길고 일사량 분산'}</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="${isHigh ? '#ea580c' : '#0284c7'}" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:${isHigh ? '#ea580c' : '#0284c7'};text-anchor:middle">태양 고도 ↔ 그림자 반비례</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">태양 고도가 높을수록 지표면에 도달하는 빛의 면적이 좁아져 단위 면적당 에너지가 커져요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">태양광선 입사각과 단위 면적당 도달 에너지 기하학적 분석</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#fefce8" stroke="#fde047" stroke-width="2"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">여름 (높은 남중 고도)</text>
+        <line x1="30" y1="70" x2="115" y2="180" stroke="#ea580c" stroke-width="4"/>
+        <line x1="200" y1="70" x2="145" y2="180" stroke="#ea580c" stroke-width="4"/>
+        <rect x="115" y="180" width="30" height="8" rx="2" fill="#ea580c"/>
+        <text x="115" y="210" style="font-size:11px;font-weight:800;fill:#ea580c;text-anchor:middle">면적 좁음 → 에너지 집중(고온)</text>
+      </g>
+      <g transform="translate(350, 85)">
+        <rect x="0" y="0" width="230" height="240" rx="10" fill="#f0f9ff" stroke="#38bdf8" stroke-width="2"/>
+        <text x="115" y="28" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">겨울 (낮은 남중 고도)</text>
+        <line x1="10" y1="90" x2="80" y2="180" stroke="#38bdf8" stroke-width="4"/>
+        <line x1="140" y1="90" x2="190" y2="180" stroke="#38bdf8" stroke-width="4"/>
+        <rect x="80" y="180" width="110" height="8" rx="2" fill="#0284c7"/>
+        <text x="115" y="210" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">면적 넓음 → 에너지 분산(저온)</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">태양 고도가 높을수록 같은 양의 빛이 좁은 면적에 집중되어 온도가 빠르게 올라가요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '달은 스스로 빛을 내지 않고 햇빛을 반사하며, 공전함에 따라 지구에서 보이는 밝은 부분의 모양이 달라져요.' : c === 1 ? '자전축이 기울어진 채 공전하므로 태양의 남중 고도와 낮의 길이가 계절마다 달라져요.' : c === 2 ? '태양 고도가 높으면 그림자가 짧아지고 기온이 높아져요.' : '태양 고도가 낮으면 그림자가 길어지고 기온이 낮아져요.';
+  }
+
+  else if (kind === 'fair-test') {
+    controls = ['한 조건만 달리 비교', '여러 조건을 함께 변경', '같은 조건으로 반복 측정'];
+    customSteps = ['실험 설계 비교', '탐구 타당도 분석'];
+
+    if (c === 0) {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 100)">
+        <rect x="0" y="0" width="180" height="230" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+        <text x="90" y="30" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">실험군 A (물 100 mL)</text>
+        <rect x="50" y="120" width="80" height="65" rx="6" fill="#38bdf8" opacity="0.8"/>
+        <rect x="30" y="195" width="120" height="18" rx="4" fill="#1e293b"/>
+        <text x="90" y="155" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">100 mL</text>
+        <text x="90" y="208" style="font-size:10px;font-weight:800;fill:#fde047;text-anchor:middle">500W 가열기</text>
+      </g>
+
+      <g transform="translate(360, 100)">
+        <rect x="0" y="0" width="180" height="230" rx="12" fill="#f0fdf4" stroke="#16a34a" stroke-width="2.5"/>
+        <text x="90" y="30" style="font-size:13px;font-weight:800;fill:#15803d;text-anchor:middle">실험군 B (물 200 mL)</text>
+        <rect x="50" y="85" width="80" height="100" rx="6" fill="#38bdf8" opacity="0.8"/>
+        <rect x="30" y="195" width="120" height="18" rx="4" fill="#1e293b"/>
+        <text x="90" y="135" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">200 mL</text>
+        <text x="90" y="208" style="font-size:10px;font-weight:800;fill:#fde047;text-anchor:middle">500W 가열기</text>
+      </g>
+
+      <rect x="250" y="180" width="140" height="42" rx="8" fill="#dcfce7" stroke="#16a34a" stroke-width="2"/>
+      <text x="320" y="200" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">✓ 통제 변인 일치</text>
+      <text x="320" y="214" style="font-size:10px;fill:#166534;text-anchor:middle">가열기·용기·초기온도 동일</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">공정한 탐구: 물의 양(조작 변인)만 1개 달리 비교</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#16a34a;text-anchor:middle">변인 통제 적합 (타당도 높음)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">원인을 확인하려면 오직 한 가지 조건(조작 변인)만 다르게 하고 나머지는 엄격히 같게 해야 해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">과학 탐구의 변인 통제 매트릭스 (Variable Matrix)</text>
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="520" height="240" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <rect x="0" y="0" width="520" height="38" rx="12" fill="#0f172a"/>
+        <text x="100" y="24" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">변인 종류</text>
+        <text x="260" y="24" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">실험 조건 설정</text>
+        <text x="430" y="24" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">역할과 목적</text>
+        <line x1="0" y1="90" x2="520" y2="90" stroke="#f1f5f9" stroke-width="2"/>
+        <text x="100" y="65" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">조작 변인</text>
+        <text x="260" y="65" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">물의 양만 1개 변경 (100 vs 200mL)</text>
+        <text x="430" y="65" style="font-size:11px;font-weight:700;fill:#dc2626;text-anchor:middle">원인 가설 검증</text>
+        <line x1="0" y1="150" x2="520" y2="150" stroke="#f1f5f9" stroke-width="2"/>
+        <text x="100" y="125" style="font-size:11px;font-weight:800;fill:#16a34a;text-anchor:middle">통제 변인</text>
+        <text x="260" y="125" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">가열기(500W), 비커, 초기온도 엄격 통제</text>
+        <text x="430" y="125" style="font-size:11px;font-weight:700;fill:#16a34a;text-anchor:middle">오차 및 혼란 방지</text>
+        <text x="100" y="185" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">종속 변인</text>
+        <text x="260" y="185" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">시간 경과에 따른 최종 물의 온도 측정</text>
+        <text x="430" y="185" style="font-size:11px;font-weight:700;fill:#0284c7;text-anchor:middle">결과 데이터 획득</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">독립 변인(조작·통제)과 종속 변인을 명확히 분리해야 타당한 결론을 이끌어낼 수 있어요</text>
+      </g>`;
+    } else if (c === 1) {
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 100)">
+        <rect x="0" y="0" width="180" height="230" rx="12" fill="#fff1f2" stroke="#f43f5e" stroke-width="2.5"/>
+        <text x="90" y="30" style="font-size:13px;font-weight:800;fill:#e11d48;text-anchor:middle">조건 A (물 100 mL)</text>
+        <rect x="50" y="120" width="80" height="65" rx="6" fill="#38bdf8" opacity="0.8"/>
+        <rect x="30" y="195" width="120" height="18" rx="4" fill="#1e293b"/>
+        <text x="90" y="155" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">유리 비커</text>
+        <text x="90" y="208" style="font-size:10px;font-weight:800;fill:#fde047;text-anchor:middle">500W 가열기</text>
+      </g>
+
+      <g transform="translate(360, 100)">
+        <rect x="0" y="0" width="180" height="230" rx="12" fill="#fff1f2" stroke="#f43f5e" stroke-width="2.5"/>
+        <text x="90" y="30" style="font-size:13px;font-weight:800;fill:#e11d48;text-anchor:middle">조건 B (식용유 200 mL)</text>
+        <rect x="50" y="85" width="80" height="100" rx="6" fill="#fde047" opacity="0.8"/>
+        <rect x="30" y="195" width="120" height="18" rx="4" fill="#dc2626"/>
+        <text x="90" y="135" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">금속 냄비</text>
+        <text x="90" y="208" style="font-size:10px;font-weight:800;fill:#ffffff;text-anchor:middle">1000W 버너</text>
+      </g>
+
+      <rect x="240" y="180" width="160" height="42" rx="8" fill="#ffe4e6" stroke="#f43f5e" stroke-width="2"/>
+      <text x="320" y="200" style="font-size:12px;font-weight:800;fill:#e11d48;text-anchor:middle">✗ 변인 통제 실패</text>
+      <text x="320" y="214" style="font-size:9.5px;fill:#be123c;text-anchor:middle">물질·용기·가열기 동시 변경</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#e11d48" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#e11d48"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">통제 실패: 여러 변인이 함께 바뀌어 원인 규명 불가</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#e11d48;text-anchor:middle">실험 결론 무효 (오류 발생)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">물의 양과 가열기를 동시에 바꾸면 온도 변화가 물 때문인지 불꽃 때문인지 알 수 없어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">혼란 변수(Confounding Variable) 제거 가이드</text>
+      <rect x="80" y="85" width="440" height="240" rx="12" fill="#fff1f2" stroke="#f43f5e" stroke-width="1.5"/>
+      <text x="300" y="125" style="font-size:13px;font-weight:800;fill:#be123c;text-anchor:middle">혼란 변수 발생 시 문제점</text>
+      <text x="300" y="165" style="font-size:12px;fill:#475569;text-anchor:middle">온도 상승의 원인이 물질(물/기름)인지, 버너 화력인지 불분명</text>
+      <text x="300" y="205" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">해결책: 오직 1개 조건만 바꾸고 나머지는 완벽히 고정</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">공정한 실험을 위해서는 바꾸지 말아야 할 조건을 꼼꼼히 찾아 모두 같게 통제해야 해요</text>
+      </g>`;
+    } else {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="60" y="80" width="520" height="270" rx="12" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+      <text x="320" y="115" style="font-size:14px;font-weight:800;fill:#1e293b;text-anchor:middle">3회 반복 측정 시 데이터 신뢰성 확보</text>
+      
+      ${[
+        { name: '1차 측정', val: 78, y: 155 },
+        { name: '2차 측정', val: 80, y: 205 },
+        { name: '3차 측정', val: 79, y: 255 }
+      ].map(tr => `
+        <text x="120" y="${tr.y + 16}" style="font-size:12px;font-weight:800;fill:#334155">${tr.name}</text>
+        <rect x="200" y="${tr.y}" width="${tr.val * 3.5}" height="24" rx="4" fill="#0284c7"/>
+        <text x="${210 + tr.val * 3.5}" y="${tr.y + 17}" style="font-size:12px;font-weight:800;fill:#0284c7">${tr.val} ℃</text>
+      `).join('')}
+
+      <line x1="200" y1="140" x2="200" y2="295" stroke="#94a3b8" stroke-width="2"/>
+      <text x="320" y="325" style="font-size:12px;font-weight:800;fill:#15803d;text-anchor:middle">평균값: 79.0 ℃ (오차 범위 ±1.0 ℃ 신뢰도 높음)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#15803d" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#15803d"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">반복 측정: 우연한 측정 오차를 줄이고 신뢰도 향상</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">데이터 재현성 검증 완료</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">단 한 번의 측정으로는 우연한 실수를 걸러낼 수 없으므로 여러 번 반복 측정해 평균을 구해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">오차 막대(Error Bar)와 통계적 신뢰도 분석</text>
+      <rect x="80" y="85" width="440" height="240" rx="12" fill="#f0fdf4" stroke="#86efac" stroke-width="1.5"/>
+      <line x1="200" y1="200" x2="400" y2="200" stroke="#334155" stroke-width="2"/>
+      <line x1="300" y1="120" x2="300" y2="280" stroke="#dc2626" stroke-width="3"/>
+      <line x1="285" y1="120" x2="315" y2="120" stroke="#dc2626" stroke-width="3"/>
+      <line x1="285" y1="280" x2="315" y2="280" stroke="#dc2626" stroke-width="3"/>
+      <circle cx="300" cy="200" r="6" fill="#15803d"/>
+      <text x="300" y="105" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">최댓값 (80℃)</text>
+      <text x="300" y="300" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">최솟값 (78℃)</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">반복 측정을 통해 오차 범위를 좁히고 신뢰할 수 있는 평균값을 도출해요</text>
+      </g>`;
+    }
+    caption = c === 0 ? '알아보고자 하는 하나의 조건만 달리하고 다른 조건은 모두 같게 통제해야 공정한 실험이에요.' : c === 1 ? '여러 조건을 한꺼번에 바꾸면 어떤 원인 때문에 결과가 나타났는지 알 수 없어요.' : '실험 결과를 신뢰하려면 같은 방법으로 여러 번 반복 측정하여 재현성을 확인해야 해요.';
+  }
+
+  else if (kind === 'star-sky') {
+    controls = ['같은 밤 · 시간 경과', '다른 계절의 관찰', '도시 불빛이 강한 조건'];
+    customSteps = ['성도 관찰', '일주 및 연주 운동 분석'];
+
+    const bigDipper = [
+      [220, 95], [245, 125], [290, 130], [335, 115], [370, 145], [405, 160], [425, 190]
+    ];
+
+    if (c === 0) {
+      const rot = (phase * 120);
+
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      ${Array.from({ length: 70 }, (_, i) => `<circle cx="${35 + (i * 89) % 570}" cy="${40 + (i * 47) % 250}" r="${1 + (i % 3) * 0.5}" fill="#ffffff" opacity="${0.4 + (i % 5) * 0.15}"/>`).join('')}
+
+      <circle cx="320" cy="130" r="6" fill="#fde047" stroke="#ffffff" stroke-width="2"/>
+      <text x="320" y="112" style="font-size:12px;font-weight:800;fill:#fde047;text-anchor:middle">북극성 (Polaris)</text>
+
+      <circle cx="320" cy="130" r="95" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.6"/>
+      <circle cx="320" cy="130" r="150" fill="none" stroke="#38bdf8" stroke-width="1.2" stroke-dasharray="6 4" opacity="0.6"/>
+
+      <g transform="rotate(${rot} 320 130)">
+        <path d="${bigDipper.map(([x, y], i) => (i ? 'L' : 'M') + x + ' ' + y).join('')}" fill="none" stroke="#38bdf8" stroke-width="2.5"/>
+        ${bigDipper.map(([x, y]) => `<circle cx="${x}" cy="${y}" r="4.5" fill="#ffffff" stroke="#0284c7" stroke-width="1.5"/>`).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">별의 일주 운동: 북극성 중심 반시계방향 15°/시간 회전</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">지구 자전 (서→동)의 겉보기 운동</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지구가 서쪽에서 동쪽으로 자전하기 때문에 밤하늘의 별들은 동쪽에서 서쪽으로 회전해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#38bdf8;text-anchor:middle">천구 좌표계와 북극성 회전축 분석도</text>
+      <circle cx="320" cy="210" r="120" fill="none" stroke="#38bdf8" stroke-width="2"/>
+      <line x1="320" y1="70" x2="320" y2="350" stroke="#fde047" stroke-width="2.5" stroke-dasharray="5 3"/>
+      <circle cx="320" cy="90" r="7" fill="#fde047"/>
+      <text x="320" y="78" style="font-size:12px;font-weight:800;fill:#fde047;text-anchor:middle">천구의 북극 (북극성)</text>
+      <ellipse cx="320" cy="210" rx="120" ry="35" fill="none" stroke="#64748b" stroke-width="1.5"/>
+      <text x="320" y="215" style="font-size:11px;font-weight:700;fill:#94a3b8;text-anchor:middle">천구 적도면</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지구 자전축을 북쪽으로 연장한 곳에 북극성이 있어, 북극성은 밤새 위치가 변하지 않아요</text>
+      </g>`;
+    } else if (c === 1) {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      
+      <g transform="translate(60, 85)">
+        <rect x="0" y="0" width="230" height="120" rx="10" fill="#1e293b" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="115" y="25" style="font-size:12px;font-weight:800;fill:#38bdf8;text-anchor:middle">봄철: 사자자리 · 목동자리</text>
+        <circle cx="70" cy="65" r="4" fill="#fff"/><circle cx="110" cy="80" r="4" fill="#fff"/><circle cx="150" cy="55" r="4" fill="#fff"/>
+        <path d="M70 65L110 80L150 55" stroke="#38bdf8" stroke-width="1.5"/>
+      </g>
+
+      <g transform="translate(350, 85)">
+        <rect x="0" y="0" width="230" height="120" rx="10" fill="#1e293b" stroke="#fde047" stroke-width="1.5"/>
+        <text x="115" y="25" style="font-size:12px;font-weight:800;fill:#fde047;text-anchor:middle">여름철: 백조자리 (데네브·베가·알타이르)</text>
+        <circle cx="115" cy="50" r="4" fill="#fff"/><circle cx="70" cy="95" r="4" fill="#fff"/><circle cx="160" cy="95" r="4" fill="#fff"/>
+        <path d="M115 50L70 95L160 95Z" stroke="#fde047" stroke-width="1.5" fill="none"/>
+      </g>
+
+      <g transform="translate(60, 230)">
+        <rect x="0" y="0" width="230" height="120" rx="10" fill="#1e293b" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="115" y="25" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">가을철: 페가수스자리 (가을철 사각형)</text>
+        <rect x="75" y="45" width="80" height="55" rx="2" fill="none" stroke="#ca8a04" stroke-width="1.5"/>
+      </g>
+
+      <g transform="translate(350, 230)">
+        <rect x="0" y="0" width="230" height="120" rx="10" fill="#1e293b" stroke="#f43f5e" stroke-width="1.5"/>
+        <text x="115" y="25" style="font-size:12px;font-weight:800;fill:#f43f5e;text-anchor:middle">겨울철: 오리온자리 (베텔게우스·리겔)</text>
+        <circle cx="85" cy="50" r="4" fill="#f43f5e"/><circle cx="145" cy="100" r="4" fill="#38bdf8"/>
+        <line x1="95" y1="75" x2="135" y2="75" stroke="#ffffff" stroke-width="2"/>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">계절별 별자리: 지구 공전에 따라 밤에 향하는 우주가 바뀜</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">지구 공전 (하루 약 1° 이동)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">지구가 태양 주위를 공전하기 때문에 계절마다 밤에 태양 반대편에 보이는 별자리가 달라져요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#38bdf8;text-anchor:middle">지구 공전 궤도와 계절별 밤하늘 방향</text>
+      <circle cx="320" cy="205" r="95" fill="none" stroke="#64748b" stroke-width="2" stroke-dasharray="6 4"/>
+      <circle cx="320" cy="205" r="28" fill="#f59e0b"/>
+      <circle cx="320" cy="110" r="14" fill="#0284c7"/>
+      <text x="320" y="100" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">여름</text>
+      <circle cx="320" cy="300" r="14" fill="#0284c7"/>
+      <text x="320" y="325" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">겨울</text>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">공전 궤도 상의 위치에 따라 밤(태양 반대쪽)에 바라보는 우주 공간이 달라져요</text>
+      </g>`;
+    } else {
+      body = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      
+      <g transform="translate(40, 85)">
+        <rect x="0" y="0" width="260" height="270" rx="12" fill="#070d1e" stroke="#38bdf8" stroke-width="2"/>
+        <text x="130" y="28" style="font-size:13px;font-weight:800;fill:#38bdf8;text-anchor:middle">청정 시골 밤하늘 (은하수 관찰)</text>
+        ${Array.from({ length: 65 }, (_, i) => `<circle cx="${15 + (i * 37) % 230}" cy="${40 + (i * 29) % 200}" r="${0.8 + (i % 3) * 0.6}" fill="#ffffff" opacity="${0.4 + (i % 4) * 0.2}"/>`).join('')}
+        <path d="M40 240Q130 140 220 50" stroke="#bae6fd" stroke-width="18" opacity="0.25"/>
+        <text x="130" y="245" style="font-size:11px;font-weight:800;fill:#86efac;text-anchor:middle">수천 개의 별과 은하수 뚜렷함</text>
+      </g>
+
+      <g transform="translate(340, 85)">
+        <rect x="0" y="0" width="260" height="270" rx="12" fill="#2d3748" stroke="#ca8a04" stroke-width="2"/>
+        <ellipse cx="130" cy="270" rx="120" ry="85" fill="#fde047" opacity="0.35"/>
+        <text x="130" y="28" style="font-size:13px;font-weight:800;fill:#fde047;text-anchor:middle">도시 밤하늘 (광공해)</text>
+        <circle cx="70" cy="90" r="3.5" fill="#ffffff"/>
+        <circle cx="190" cy="140" r="3.5" fill="#ffffff"/>
+        <text x="130" y="245" style="font-size:11px;font-weight:800;fill:#fca5a5;text-anchor:middle">밝은 1~2등성만 겨우 보임</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#0284c7"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">광공해: 도시의 인공조명이 희미한 별빛을 가림</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">별이 사라진 것이 아님 확인</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">도시 불빛이 너무 밝으면 먼 우주에서 오는 어두운 별빛이 묻혀 보이지 않게 돼요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0b132b"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#38bdf8;text-anchor:middle">보틀 척도(Bortle Scale) 기반 밤하늘 등급</text>
+      <g transform="translate(60, 90)">
+        <rect x="0" y="0" width="520" height="230" rx="12" fill="#1e293b" stroke="#475569" stroke-width="1.5"/>
+        <rect x="20" y="30" width="140" height="170" rx="8" fill="#070d1e"/>
+        <text x="90" y="65" style="font-size:12px;font-weight:800;fill:#38bdf8;text-anchor:middle">Class 1: 청정</text>
+        <text x="90" y="115" style="font-size:11px;fill:#cbd5e1;text-anchor:middle">은하수 명확</text>
+        <text x="90" y="145" style="font-size:11px;fill:#86efac;text-anchor:middle">한계 7.5등급</text>
+        <rect x="190" y="30" width="140" height="170" rx="8" fill="#1f2937"/>
+        <text x="260" y="65" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">Class 4: 교외</text>
+        <text x="260" y="115" style="font-size:11px;fill:#cbd5e1;text-anchor:middle">은하수 희미</text>
+        <text x="260" y="145" style="font-size:11px;fill:#fde047;text-anchor:middle">한계 6.0등급</text>
+        <rect x="360" y="30" width="140" height="170" rx="8" fill="#374151"/>
+        <text x="430" y="65" style="font-size:12px;font-weight:800;fill:#ef4444;text-anchor:middle">Class 8: 도심</text>
+        <text x="430" y="115" style="font-size:11px;fill:#cbd5e1;text-anchor:middle">은하수 안 보임</text>
+        <text x="430" y="145" style="font-size:11px;fill:#fca5a5;text-anchor:middle">한계 4.0등급</text>
+      </g>
+      <rect x="80" y="348" width="480" height="42" rx="8" fill="#fffffffa" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="373" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">인공 조명이 하늘로 향하지 않도록 갓을 씌우면 밤하늘의 별을 더 많이 보호할 수 있어요</text>
+      </g>`;
+    }
+    caption = c === 1 ? '지구의 공전으로 인해 계절마다 밤에 태양 반대편에 놓이는 별자리가 달라져요.' : c === 2 ? '도시의 인공조명이 너무 밝으면 희미한 별을 보기 어려워져요. 별 자체가 사라진 것은 아니에요.' : '지구 자전으로 인해 같은 밤에도 시간이 지나면 별들이 북극성을 중심으로 일주 운동을 해요.';
 }
 
 if(kind==='electricity'){
