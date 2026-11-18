@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261118-science-daily-required';
+const CACHE_NAME = 'smart-study-20261119-science-daily-ui-polish';
 
 try {
     importScripts('./firebase-config.js');
@@ -289,9 +289,9 @@ const STATIC_ASSETS = [
     './learning-plan.js',
     './unified-learning.js',
     './unified-learning.js?v=20261110-reading-writing',
-    './today-flow.js', './today-flow.js?v=20261118-science-daily',
+    './today-flow.js', './today-flow.js?v=20261119-ui-polish',
     './today-journey.js',
-    './today-flow.css', './today-flow.css?v=20261118-science-daily',
+    './today-flow.css', './today-flow.css?v=20261119-ui-polish',
     './study-focus.css',
     './learning-session.js',
     './weekly-assessment.js',
