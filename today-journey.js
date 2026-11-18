@@ -1,26 +1,27 @@
 (function(root){
  'use strict';
  const app=root.SmartStudy,api=app.LearningPlan,repo=app.LocalRepository;
- const names={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+ const names={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자',science:'과학'};
+ const taskName=t=>t.subject==='science'?`과학 · ${root.ScienceData?.domains.find(d=>d.id===(t.domainId||t.context?.domainId))?.title||'탐구'}`:names[t.subject];
  const escape=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
  const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
  function state(user,taskId){
   const plan=api.refreshEvidence(user),task=plan?.tasks.find(t=>t.id===taskId);
   if(!task)return null;
-  const sameDay=app.LearningProgress.evidence(user).filter(e=>e.subject===task.subject&&day(e.at)===plan.date);
+  const sameDay=app.LearningProgress.dailyEvidence(user).filter(e=>e.subject===task.subject&&day(e.at)===plan.date);
   if(task.status!=='completed'){
    const submitted=sameDay.find(e=>api.contextKey(task.subject,e.context)===api.contextKey(task.subject,task.context));
    if(submitted){Object.assign(task,{status:'completed',sessionId:submitted.report.sessionId,submittedAt:submitted.at,completedAt:Date.now()});api.savePlan(plan);}
   }
-  const alternative=task.required?null:sameDay.find(e=>api.catalog(task.subject,plan.profile).some(c=>api.contextKey(task.subject,c.context)===api.contextKey(task.subject,e.context)));
+  const alternative=task.required?null:sameDay.find(e=>(task.subject!=='science'||e.context.domainId===(task.domainId||task.context?.domainId))&&api.catalog(task.subject,plan.profile).some(c=>api.contextKey(task.subject,c.context)===api.contextKey(task.subject,e.context)));
   return {plan,task,completed:plan.tasks.filter(t=>t.status==='completed').length,total:plan.tasks.length,index:plan.tasks.indexOf(task)+1,phase:task.status==='completed'?3:task.studyConfirmed?2:1,alternative};
  }
- const icons={reading:'📖',korean_vocab:'📚',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮'};
+ const icons={reading:'📖',korean_vocab:'📚',english:'🔤',grammar:'🧩',english_reading:'📗',math:'🧮',math_formula:'📐',hanja:'🏮',science:'🔬'};
  function phases(phase){return `<ol class="journey-phases" aria-label="과목 진행"><li class="${phase>1?'done':'active'}">${phase>1?'✓':'1'} 📖 학습</li><li class="${phase>2?'done':phase===2?'active':''}">${phase>2?'✓':'2'} ✏️ 퀴즈</li><li class="${phase===3?'active':''}">✓ 완료</li></ol>`;}
  function openUnit(user,taskId,changed){
   const s=state(user,taskId);if(!s||repo.getActiveUser()!==user)return;
   const dialog=document.createElement('dialog');dialog.className='journey-dialog';dialog.setAttribute('aria-label','단원 선택');
-  const choices=api.catalog(s.task.subject,s.plan.profile);
+  const choices=api.catalog(s.task.subject,{...s.plan.profile,scienceDomain:s.task.domainId||s.task.context?.domainId});
   dialog.innerHTML=`<h2>${names[s.task.subject]} 단원 바꾸기</h2>${s.task.required&&s.phase!==3?'<p>보호자가 정한 필수 단원이에요.</p>':`<p>학습 기록은 그대로 보관해요.</p><select aria-label="학습할 단원">${choices.map((c,i)=>`<option value="${i}">${escape(c.label)}</option>`).join('')}</select><button class="journey-primary" data-choose>${s.phase===3?'선택 단원 자유 학습':'이 단원으로 변경'}</button>`}<p class="journey-message" role="status"></p><button class="journey-secondary" data-close>닫기</button>`;
   document.body.append(dialog);dialog.querySelector('[data-close]').onclick=()=>dialog.close();dialog.addEventListener('close',()=>dialog.remove());
   const choose=dialog.querySelector('[data-choose]');
@@ -54,7 +55,7 @@
   }
   const active=document.querySelector('#quizModeBtn.active');
   if(active){document.querySelector('#quizView, #quizPanel, #content')?.scrollIntoView({block:'start',behavior:'smooth'});return;}
-  const button=document.querySelector('#practiceQuiz, #startQuiz, #quizModeBtn');
+  const button=document.querySelector('#practiceQuiz, #startQuiz, #quizModeBtn, #scienceStartQuiz');
   const timer=typeof StudyTimer!=='undefined'?StudyTimer.getActiveStatus?.(s.task.subject):null;
   if(timer&&!timer.unlocked){box.textContent=`퀴즈 전 학습이 ${Math.ceil(timer.remainingSeconds/60)}분 남았어요.`;return;}
   if(!button&&!root.location.pathname.endsWith('math_viewer.html')&&!root.location.pathname.endsWith('math.html')){root.location.href=s.task.targetUrl;return;}
@@ -69,14 +70,14 @@
   const next=app.LearningProgress.nextTask(plan.tasks),completed=plan.tasks.filter(t=>t.status==='completed').length;
   const nextIndex=next?plan.tasks.indexOf(next)+1:plan.tasks.length;
   const hero=document.getElementById('nextActivity');
-  hero.innerHTML=`<div class="journey-heading"><span>${completed===plan.tasks.length?'오늘 학습 완료':`${nextIndex} / ${plan.tasks.length}단계`}</span><span>${completed}/${plan.tasks.length} 완료</span></div><progress class="journey-progress" max="${plan.tasks.length||1}" value="${completed}" aria-label="오늘 완료 활동"></progress><nav class="journey-track" aria-label="오늘 학습 순서">${plan.tasks.map((t,i)=>`<span class="${t.status==='completed'?'done':t.id===next?.id?'active':''}" ${t.id===next?.id?'aria-current="step"':''}><b>${t.status==='completed'?'✓':icons[t.subject]||i+1}</b> ${names[t.subject]}</span>`).join('')}</nav><h2>${next?`${icons[next.subject]} ${names[next.subject]}`:completed===plan.tasks.length?'오늘도 수고했어요!':'단원을 선택해 주세요'}</h2><p class="journey-unit">${next?escape(next.context.title):completed===plan.tasks.length?'모든 과목의 퀴즈 제출을 확인했어요.':'아래 과목에서 단원을 골라 주세요.'}</p>${next?phases(next.studyConfirmed?2:1):''}<div class="journey-actions">${next?`<a id="continueLearning" class="journey-primary" href="${escape(api.entryUrl(user,next))}">${next.studyConfirmed?'학습·퀴즈 이어가기':'학습 시작'} →</a><button id="changeCurrent" class="journey-secondary">${next.required?'지정 단원 확인':'단원 바꾸기'}</button>`:'<a class="journey-primary" href="index.html">홈으로 →</a>'}</div>${next?'<button id="checkCurrent" class="journey-link">퀴즈를 풀었는데 완료가 안 됐나요?</button><div id="journeyRecovery" class="journey-message"></div>':''}`;
+  hero.innerHTML=`<div class="journey-heading"><span>${completed===plan.tasks.length?'오늘 학습 완료':`${nextIndex} / ${plan.tasks.length}단계`}</span><span>${completed}/${plan.tasks.length} 완료</span></div><progress class="journey-progress" max="${plan.tasks.length||1}" value="${completed}" aria-label="오늘 완료 활동"></progress><nav class="journey-track" aria-label="오늘 학습 순서">${plan.tasks.map((t,i)=>`<span class="${t.status==='completed'?'done':t.id===next?.id?'active':''}" ${t.id===next?.id?'aria-current="step"':''}><b>${t.status==='completed'?'✓':icons[t.subject]||i+1}</b> ${taskName(t)}</span>`).join('')}</nav><h2>${next?`${icons[next.subject]} ${taskName(next)}`:completed===plan.tasks.length?'오늘도 수고했어요!':'단원을 선택해 주세요'}</h2><p class="journey-unit">${next?escape(next.context.title):completed===plan.tasks.length?'모든 과목의 퀴즈 제출을 확인했어요.':'아래 과목에서 단원을 골라 주세요.'}</p>${next?phases(next.studyConfirmed?2:1):''}<div class="journey-actions">${next?`<a id="continueLearning" class="journey-primary" href="${escape(api.entryUrl(user,next))}">${next.studyConfirmed?'학습·퀴즈 이어가기':'학습 시작'} →</a><button id="changeCurrent" class="journey-secondary">${next.required?'지정 단원 확인':'단원 바꾸기'}</button>`:'<a class="journey-primary" href="index.html">홈으로 →</a>'}</div>${next?'<button id="checkCurrent" class="journey-link">퀴즈를 풀었는데 완료가 안 됐나요?</button><div id="journeyRecovery" class="journey-message"></div>':''}`;
   if(next){document.getElementById('continueLearning').onclick=e=>{if(!next.diagnostic||!app.MockLearningReview){api.startTask(user,next.id);return;}e.preventDefault();const href=e.currentTarget.href;app.MockLearningReview.open(user,next,()=>{api.startTask(user,next.id);root.location.href=href;});};document.getElementById('changeCurrent').onclick=()=>openUnit(user,next.id,()=>renderPlan(user));document.getElementById('checkCurrent').onclick=()=>check(user,next.id,document.getElementById('journeyRecovery'),()=>renderPlan(user));}
   const container=document.getElementById('tasks');container.replaceChildren();
   for(const t of plan.tasks){const card=document.createElement('details');card.className=`task ${t.id===next?.id?'is-next':''} ${t.status==='completed'?'is-done':''}`;
-   card.innerHTML=`<summary><span class="task-title">${names[t.subject]}</span><span class="task-count">${t.status==='completed'?'✓ 완료':t.id===next?.id?'진행할 차례':'대기'}</span><span class="tag">${t.minutes}분</span></summary><div class="task-body"><p>${escape(t.context?.title||'단원 선택 필요')}</p><div class="journey-actions">${t.context?`<a class="go" href="${escape(api.entryUrl(user,t))}">${t.status==='completed'?'다시 학습':'이 과목 시작'} →</a>`:''}<button class="journey-secondary">${t.required&&t.status!=='completed'?'지정 단원 확인':'단원 바꾸기'}</button></div></div>`;
+   card.innerHTML=`<summary><span class="task-title">${taskName(t)}</span><span class="task-count">${t.status==='completed'?'✓ 완료':t.id===next?.id?'진행할 차례':'대기'}</span><span class="tag">${t.minutes}분</span></summary><div class="task-body"><p>${escape(t.context?.title||'단원 선택 필요')}</p><div class="journey-actions">${t.context?`<a class="go" href="${escape(api.entryUrl(user,t))}">${t.status==='completed'?'다시 학습':'이 과목 시작'} →</a>`:''}<button class="journey-secondary">${t.required&&t.status!=='completed'?'지정 단원 확인':'단원 바꾸기'}</button></div></div>`;
    const link=card.querySelector('a');if(link)link.onclick=e=>{if(t.status==='completed')return;if(!t.diagnostic||!app.MockLearningReview){api.startTask(user,t.id);return;}e.preventDefault();const href=e.currentTarget.href;app.MockLearningReview.open(user,t,()=>{api.startTask(user,t.id);root.location.href=href;});};card.querySelector('button').onclick=()=>openUnit(user,t.id,()=>renderPlan(user));container.append(card);
   }
   document.getElementById('timeNote').textContent='퀴즈 결과가 저장되면 과목이 완료돼요. 목표 시간은 학습 안내예요.';
  }
- app.TodayJourney={state,phases,openUnit,check,quiz,renderPlan,names};
+ app.TodayJourney={state,phases,openUnit,check,quiz,renderPlan,names,taskName};
 })(window);

@@ -3,7 +3,7 @@
     const app=root.SmartStudy=root.SmartStudy||{}, local=app.LocalRepository, plan=app.LearningPlan;
     if(!plan)return;
     const budgetPolicy=app.LearningBudgetPolicy;
-    const ids=budgetPolicy.subjects, allocations=budgetPolicy.allocations;
+    const baseIds=budgetPolicy.subjects, ids=[...baseIds,'science'], allocations=budgetPolicy.allocations;
     const day=at=>new Date(at).toLocaleDateString('sv-SE',{timeZone:'Asia/Seoul'});
     const subjectOf=r=>r.metadata?.source==='math-formula'?'math_formula':r.subject;
     // level_jun5 is 준5급; stripping 'level' alone printed '_jun5급'.
@@ -11,13 +11,13 @@
     const previousContext=plan.contextOf,previousCatalog=plan.catalog,previousTarget=plan.target;
     function contextOf(subject,r){
         const m=r?.metadata||r||{};
-        if(subject==='science')return m.levelId&&m.unitId?{levelId:m.levelId,unitId:m.unitId,domainId:m.domainId||m.domain,title:m.unitTitle||''}:null;
+        if(subject==='science'){const unit=root.ScienceData?.units.find(u=>u.levelId===m.levelId&&u.id===m.unitId);return unit?{levelId:unit.levelId,unitId:unit.id,domainId:unit.domainId,title:unit.title}:null;}
         if(subject==='math_formula')return m.formulaNumber||/^formula-\d+$/.test(m.unitId||'')?{unitId:m.unitId||`formula-${m.formulaNumber}`,title:m.formulaTitle||'',levelId:'formula'}:null;
         if(subject==='grammar')return m.stageId&&m.unitId?{levelId:m.stageId,unitId:m.unitId,title:m.unitTitle||''}:null;
         if(subject==='hanja')return m.unitId?{unitId:m.unitId,title:m.unitTitle||''}:null;
         return previousContext(subject,r);
     }
-    function evidence(user){
+    function evidence(user,daily=false){
         if(local.areReportsPersisted?.(user)===false)return [];
         const unique=new Map();
         for(const r of local.listReports(user)||[]){
@@ -33,8 +33,8 @@
             const subject=subjectOf(r),context=contextOf(subject,r);
             if(!context)continue;
             if(subject==='english_reading'&&total<5)continue;
-            if(subject==='science'&&root.SciencePolicy&&!root.SciencePolicy.validMasteryEvidence(r))continue;
-            if(subject==='science'&&(total!==10||attempts.length!==10||m.review||m.hintUsed||attempts.some(a=>a.round&&a.round!==1||a.assisted||a.hintUsed||a.exposure?.review)))continue;
+            if(subject==='science'&&root.SciencePolicy&&!(daily?root.SciencePolicy.validEvidence(r):root.SciencePolicy.validMasteryEvidence(r)))continue;
+            if(subject==='science'&&(total!==10||attempts.length!==10||(!daily&&(m.review||m.hintUsed||attempts.some(a=>a.round&&a.round!==1||a.assisted||a.hintUsed||a.exposure?.review)))))continue;
             const entry={subject,context,at,report:r,attempts:scored.slice(0,total)};
             const key=`${subject}:${r.sessionId}`;
             if(!unique.has(key)||Number(r.updatedAt||r.date)>Number(unique.get(key).report.updatedAt||unique.get(key).report.date))unique.set(key,entry);
@@ -42,7 +42,7 @@
         return [...unique.values()];
     }
     function rawCatalog(subject,profile){
-        if(subject==='science')return (root.ScienceData?.units||[]).filter(u=>u.levelId==='level1').map(u=>({label:`Level 1 · ${u.title}`,context:{levelId:u.levelId,unitId:u.id,domainId:u.domainId,title:u.title}}));
+        if(subject==='science')return (root.ScienceData?.units||[]).filter(u=>u.levelId==='level1'&&(!profile.scienceDomain||u.domainId===profile.scienceDomain)).map(u=>({label:`Level 1 · ${u.title}`,context:{levelId:u.levelId,unitId:u.id,domainId:u.domainId,title:u.title}}));
         if(subject==='hanja')return Object.keys(root.vocabHanja||{}).map(unitId=>({label:`한자 ${hanjaGrade(unitId)}`,context:{unitId,title:`한자 ${hanjaGrade(unitId)}`}}));
         if(subject==='grammar')return Object.entries(root.EnglishGrammarData||{}).filter(([id])=>profile.allGrades||id===(root.SmartStudy?.SubjectProgression&&profile.userId?root.SmartStudy.SubjectProgression.resolve('grammar',root.SmartStudy.SubjectProgression.profileGroup('grammar',profile.grade),profile.userId):(root.EnglishCurriculum?.grammarForProfile(profile.grade)||'elementary'))).flatMap(([levelId,data])=>(data.units||[]).map(u=>({label:`${data.title} · ${u.title}`,context:{levelId,unitId:u.id,title:u.title}})));
         if(subject==='math_formula'){
@@ -177,7 +177,7 @@
         p.profile={...p.profile,userId:p.userId};
         const entries=evidence(p.userId), settings=plan.getSettings(p.userId), original=p.tasks;
         const course=root.EnglishCourse?.build(root.EnglishReadingData||{units:[]},root.vocabData||{},local.listReports(p.userId),local.getWrongAnswers(p.userId),Date.now(),{grade:p.profile.grade,userId:p.userId});
-        p.tasks=ids.map((subject,index)=>{
+        p.tasks=baseIds.map((subject,index)=>{
             const existing=original.find(t=>t.subject===subject),scope=settings.scopes?.[subject];
             const assigned=Boolean(existing?.required||scope?.mode==='assigned');
             const assignedChoice=scope?.mode==='assigned'?catalog(subject,{...p.profile,allGrades:true}).find(c=>c.context.unitId===scope.unitId&&(!scope.levelId||c.context.levelId===scope.levelId)&&(!scope.semesterId||String(c.context.semesterId)===String(scope.semesterId))):null;
@@ -195,30 +195,48 @@
             const focus=diagnostic?.kind==='word'?'&word='+encodeURIComponent(diagnostic.word):diagnostic?.kind==='lesson'?'&lesson='+encodeURIComponent(diagnostic.lessonIndex):'';
             return {...(existing||{}),diagnostic,id:`${p.date}-${subject}`,subject,context,minutes:allocations[p.budget][index],targetUrl:target(subject,context)+linkedPassage+focus,
                 reasonText:assigned?(existing?.reasonText||'보호자가 지정한 단원을 학습해요.'):rec?.reason||'현재 학년에 맞는 자료가 없습니다.',required:Boolean(assigned),assignmentMode:assigned?'assigned':'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null};
-        });
+        }).concat(original.filter(t=>t.subject==='science'));
         if(root.SmartStudy.MockLearning)p.diagnosticSignature=root.SmartStudy.MockLearning.signature(p.userId);
         p.curriculumVersion=1;p.recommendationVersion='20261024-internal-levels';p.placementSignature=root.SmartStudy?.SubjectProgression?JSON.stringify(['reading','grammar','english_reading'].map(subject=>root.SmartStudy.SubjectProgression.resolve(subject,root.SmartStudy.SubjectProgression.profileGroup(subject,p.profile.grade),p.userId))):null;p.allocationPolicyVersion=budgetPolicy.version;p.settingsSnapshot=plan.settingsSignature(settings);
         return plan.savePlan(p);
     }
+    function ensureScience(p){
+        if(!p||p.date!==plan.today()||!root.ScienceData?.units?.length)return p;
+        let changed=false;
+        if(!p.scienceSchedule){p.scienceSchedule={version:1,domains:budgetPolicy.scienceDomains(p.userId,p.date)};changed=true;}
+        for(const domainId of p.scienceSchedule.domains){
+            const id=`${p.date}-science-${domainId}`;
+            if(p.tasks.some(t=>t.id===id))continue;
+            const rec=recommend('science',{...p.profile,userId:p.userId,scienceDomain:domainId},evidence(p.userId),p.userId);
+            if(!rec)continue;
+            p.tasks.push({id,subject:'science',domainId,context:rec.context,minutes:5,targetUrl:target('science',rec.context),
+                reasonText:rec.reason,required:false,dailyRequired:true,assignmentMode:'auto',status:'ready',startedAt:null,sessionId:null,completedAt:null});
+            changed=true;
+        }
+        return changed?plan.savePlan(p):p;
+    }
     const oldGet=plan.getPlan.bind(plan), oldCreate=plan.createPlan.bind(plan), oldRefresh=plan.refreshEvidence.bind(plan);
-    plan.getPlan=function(user,date){return upgrade(oldGet(user,date));};
-    plan.createPlan=function(user){return upgrade(oldCreate(user));};
+    plan.getPlan=function(user,date){return ensureScience(upgrade(oldGet(user,date)));};
+    plan.createPlan=function(user){return ensureScience(upgrade(oldCreate(user)));};
     plan.contextOf=contextOf;plan.catalog=catalog;plan.target=target;
     const oldSelect=plan.selectContext.bind(plan);
     plan.selectContext=function(planId,user,taskId,context){
         const p=this.getPlan(user),task=p?.tasks.find(t=>t.id===taskId);
-        if(!p?.curriculumVersion)return oldSelect(planId,user,taskId,context);
+        if(!p?.curriculumVersion&&task?.subject!=='science')return oldSelect(planId,user,taskId,context);
         if(p.id!==planId||!task||task.required||task.status==='completed')throw Error('완료했거나 보호자가 지정한 과제는 변경할 수 없습니다.');
         const choice=catalog(task.subject,p.profile).find(c=>this.contextKey(task.subject,c.context)===this.contextKey(task.subject,context));
         if(!choice)throw Error('학습 자료에 없는 단원입니다.');
+        if(task.subject==='science'&&choice.context.domainId!==(task.domainId||task.context?.domainId))throw Error('오늘 과학은 같은 분야 안에서 단원을 선택해 주세요.');
         if(outgrown(performance(task.subject,choice.context,evidence(user))))throw Error('충분히 익힌 범위예요. 오늘 학습에서는 다음 범위를 선택하고, 이 범위는 자유 복습에서 풀어 주세요.');
         if(this.contextKey(task.subject,task.context)===this.contextKey(task.subject,choice.context))return p;
         task.previousContexts=[...(task.previousContexts||[]),task.context].slice(-10);task.context=choice.context;task.diagnostic=null;task.targetUrl=target(task.subject,choice.context);task.status='ready';task.startedAt=null;task.studyConfirmed=false;task.sessionId=null;task.reasonText='선택한 범위를 공통 기록으로 확인해요.';return this.savePlan(p);
     };
     plan.refreshEvidence=function(user){
-        const p=this.getPlan(user);if(!p?.curriculumVersion)return oldRefresh(user);
-        const entries=evidence(user);let changed=false;
+        let p=this.getPlan(user);if(!p)return oldRefresh(user);
+        if(!p.curriculumVersion)p=oldRefresh(user)||p;
+        const entries=evidence(user,true);let changed=false;
         for(const t of p.tasks){
+            if(!p.curriculumVersion&&t.subject!=='science')continue;
             if(t.status==='completed'||!t.context)continue;
             const e=entries.find(e=>e.subject===t.subject&&day(e.at)===p.date&&this.contextKey(t.subject,e.context)===this.contextKey(t.subject,t.context));
             if(!e)continue;
@@ -235,5 +253,5 @@
         const pending=(tasks||[]).filter(t=>t.status!=='completed'&&t.context);
         return pending.find(t=>t.required)||pending.find(t=>t.status==='in_progress')||pending[0]||null;
     }
-    app.LearningProgress={recommendScope:(user,subject)=>recommend(subject,plan.getProfile(user),evidence(user),user),performance,outgrown,promotion:PROMOTION,mastery,nextTask,subjects:ids,evidence,contextOf,subjectOf,activity,allocations};
+    app.LearningProgress={recommendScope:(user,subject)=>recommend(subject,plan.getProfile(user),evidence(user),user),performance,outgrown,promotion:PROMOTION,mastery,nextTask,subjects:ids,baseSubjects:baseIds,evidence,dailyEvidence:user=>evidence(user,true),contextOf,subjectOf,activity,allocations};
 })(window);

@@ -69,7 +69,7 @@ assert.strictEqual(user.monthlyStats.studyTime, 0);
 
 
 const subjects = MissionManager.registeredSubjects(user);
-assert.deepStrictEqual(Array.from(subjects), ['reading','korean_vocab','english','english_reading','grammar','hanja','math']);
+assert.deepStrictEqual(Array.from(subjects), ['reading','korean_vocab','english','english_reading','grammar','hanja','math','science']);
 // Login alone, even with legacy attendance counters, must not earn new goals.
 user.weeklyStats.attendanceDays=7;user.monthlyStats.attendanceDays=30;
 UserSession.saveUserData(user);
@@ -79,8 +79,8 @@ assert.equal(UserSession.getUserData().missionProgress.weekly.w_attendance_5.pro
 const reports=[];
 for(let date=1;date<=27;date++)for(const subject of MissionManager.areas){
     const at=new Date(2026,8,date,12).getTime();
-    reports.push({subject:subject==='math_formula'?'math':subject,sessionId:`${subject}-${date}`,date:at,createdAt:at,totalQuestions:1,
-      metadata:{unitId:'unit-1',source:subject==='math_formula'?'math-formula':undefined,submittedAt:at,initialAttempts:[{correct:false}]}});
+    reports.push({subject:subject==='math_formula'?'math':subject,sessionId:`${subject}-${date}`,date:at,createdAt:at,totalQuestions:subject==='science'?10:1,
+      metadata:{unitId:'unit-1',source:subject==='math_formula'?'math-formula':undefined,submittedAt:at,initialAttempts:subject==='science'?Array.from({length:10},(_,i)=>({questionId:'sci-'+i,correct:false})):[{correct:false}]}});
 }
 const repo=context.SmartStudy.LocalRepository;
 repo.saveReports('period-test',reports);
@@ -125,5 +125,5 @@ second.metadata.submittedAt=new Date(2026,8,2,12).getTime();repo.saveReports('pe
 assert.equal(MissionManager.progressOf(user,MissionManager.DEFINITIONS.monthly[3]),1);
 console.log('Goal periods, evidence, parent budget, formula coverage, legacy rewards and repeat grants verified.');
 
-assert.equal(MissionManager.registeredSubjects().includes('science'), false, 'optional science must not enlarge required mission coverage');
-assert.equal(MissionManager.areas.length, 8, 'preserve the eight existing coverage areas');
+assert.equal(MissionManager.registeredSubjects().includes('science'), true, 'science contributes to required mission coverage');
+assert.equal(MissionManager.areas.length, 9, 'all nine learning areas contribute to coverage');

@@ -8,6 +8,15 @@
     });
     const api={
         version:2,subjects,allocations,
+        scienceDomains(user,date){
+            const domains=['life','physics','chemistry','earth'],weekday=new Date(date+'T12:00:00+09:00').getUTCDay();
+            if(weekday>=1&&weekday<=4)return [domains[weekday-1]];
+            if(weekday!==5)return [];
+            let seed=2166136261;
+            for(const character of String(user)+':'+date)seed=Math.imul(seed^character.charCodeAt(0),16777619)>>>0;
+            for(let i=domains.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[domains[i],domains[j]]=[domains[j],domains[i]];}
+            return domains.slice(0,2);
+        },
         allocate(budget){
             if(!allocations[budget])throw new Error('지원하지 않는 하루 목표입니다.');
             return subjects.map((subject,i)=>({subject,minutes:allocations[budget][i]}));
@@ -45,9 +54,9 @@
         migrate(plan){
             if(!plan||plan.allocationPolicyVersion===this.version)return plan;
             if(plan.tasks?.some(t=>t.status!=='ready'||t.startedAt||t.completedAt||t.submittedAt))return plan;
-            if(plan.tasks?.length!==subjects.length||subjects.some(s=>!plan.tasks.some(t=>t.subject===s)))return plan;
+            if(subjects.some(s=>!plan.tasks?.some(t=>t.subject===s)))return plan;
             const rows=this.allocate(plan.budget);
-            for(const task of plan.tasks)task.minutes=rows.find(t=>t.subject===task.subject).minutes;
+            for(const task of plan.tasks){const row=rows.find(t=>t.subject===task.subject);if(row)task.minutes=row.minutes;}
             plan.allocationPolicyVersion=this.version;
             return plan;
         }

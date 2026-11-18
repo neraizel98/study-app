@@ -28,7 +28,7 @@
     }
     function validMasteryEvidence(report, options = {}) {
         return validEvidence(report, options) && !report.metadata.review && !report.metadata.hintUsed
-            && report.metadata.initialAttempts.every(attempt => !attempt.hintUsed && !attempt.assisted);
+            && report.metadata.initialAttempts.every(attempt => !attempt.hintUsed && !attempt.assisted && !attempt.exposure?.review);
     }
     function shuffle(items) {
         const result = [...items];

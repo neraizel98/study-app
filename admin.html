@@ -454,14 +454,14 @@
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#ffffff;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 위 8과목을 순서대로 진행합니다. 국어 독해·국어 어휘·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다. 국어 어휘 시간은 하루 목표에 더해집니다.</p>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">기본 8개 활동에 과학을 매일 추가합니다. 월 생명 · 화 물리 · 수 화학 · 목 지구·우주 · 금 서로 다른 두 분야이며, 같은 날의 분야는 유지됩니다. 과학은 분야마다 5분·10문항이고 같은 분야 안에서 단원을 바꿀 수 있습니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             const weeklySettings=SmartStudy.WeeklySchedule.normalize(value.weekly);
             const examSettings=document.createElement('details');examSettings.className='plan-exam';
             const summary=document.createElement('summary');summary.textContent='주간 과정 · 모의고사 시간';examSettings.append(summary);
             const note=document.createElement('p');note.className='plan-exam-note';note.textContent='월~금 학습 · 토 과목별25문항 시험 · 일 오답 복습. 시험 시간은 평일 목표와 별도입니다. 시작한 시험에는 변경이 적용되지 않습니다.';examSettings.append(note);
             const examFields=document.createElement('div');examFields.className='plan-exam-fields';examSettings.append(examFields);
-            for(const [subject,label] of Object.entries({reading:'국어',english:'영어',math:'수학',hanja:'한자'})){
+            for(const [subject,label] of Object.entries({reading:'국어',english:'영어',math:'수학',hanja:'한자',science:'과학'})){
                 const line=document.createElement('label');line.className='plan-exam-field';line.textContent=label+' 시험';const box=document.createElement('span');box.className='plan-exam-input';const input=document.createElement('input');input.type='number';input.inputMode='numeric';input.min=5;input.max=60;input.step=1;input.required=true;input.value=weeklySettings.mockSectionMinutes[subject];input.dataset.examMinutes=subject;input.setAttribute('aria-label',label+' 시험 시간(분)');const unit=document.createElement('span');unit.textContent='분';box.append(input,unit);line.append(box);examFields.append(line);
             }
             card.append(examSettings);
@@ -469,12 +469,12 @@
             card.querySelector('[data-plan="grade"]').value = String(value.grade || 6);
             card.querySelector('[data-plan="semester"]').value = String(value.semester || 2);
             const scopeState=Object.fromEntries(['reading','korean_vocab','english','english_reading','math'].map(subject=>[subject,{...(value.scopes?.[subject]||{mode:'auto'})}]));
-            const subjectNames={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+            const subjectNames={reading:'국어 독해',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자',science:'과학'};
             function drawScopes(){
                 const profile={grade:Number(card.querySelector('[data-plan="grade"]').value),semester:Number(card.querySelector('[data-plan="semester"]').value)};
                 const host=card.querySelector('[data-plan="scopes"]');host.replaceChildren();
 
-                SmartStudy.LearningProgress.subjects.forEach((subject,index)=>{
+                SmartStudy.LearningProgress.baseSubjects.forEach((subject,index)=>{
                     const choices=SmartStudy.LearningPlan.catalog(subject,profile),row=document.createElement('div');
                     row.dataset.planSubject=subject;row.className='plan-scope-row';
                     row.style.cssText='display:flex;flex-wrap:wrap;gap:8px;align-items:center;';
@@ -489,8 +489,9 @@
                     const sync=()=>{unit.disabled=mode.value!=='assigned'||!choices.length;note.textContent=!choices.length?'현재 학년·학기에 지원 단원이 없습니다.':mode.value==='auto'?'오답과 최근 학습을 우선 추천합니다.':'완료 전에는 학습자가 단원을 바꿀 수 없습니다.';if(!choices.length)return;const context=choices[Number(unit.value)]?.context;scopeState[subject]=mode.value==='assigned'&&context?{mode:'assigned',unitId:context.unitId,...(subject!=='english'?{levelId:context.levelId}:{}),...(subject==='math'?{semesterId:String(context.semesterId)}:{})}:{mode:'auto'};};
                     mode.onchange=sync;unit.onchange=sync;sync();host.append(row);
                 });
+                const science=document.createElement('div');science.dataset.planSubject='science';science.className='plan-scope-row';science.textContent='🔬 과학 · 요일별 필수 · 월~목 5분 / 금 10분 · Level 1 분야 내 자동 추천';host.append(science);
             }
-            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value),minutes=SmartStudy.LearningProgress.allocations[budget];card.querySelector('[data-plan="allocation"]').textContent=`8과목 합계 ${minutes.reduce((a,b)=>a+b,0)}분`;drawScopes();};
+            const allocation=()=>{const budget=Number(card.querySelector('[data-plan="budget"]').value);card.querySelector('[data-plan="allocation"]').textContent=`기본 ${budget}분 + 과학 · 월~목 ${budget+5}분 / 금 ${budget+10}분`;drawScopes();};
             card.querySelector('[data-plan="budget"]').onchange=allocation;
             card.querySelector('[data-plan="grade"]').onchange=drawScopes;card.querySelector('[data-plan="semester"]').onchange=drawScopes;allocation();
             card.querySelector('[data-plan="save"]').addEventListener('click', async event => {
@@ -754,8 +755,8 @@
             // 문제별 정답/오답 상세
             let detailBtn = '';
             let detailDiv = '';
-            if ((r.subject === 'english' || r.subject === 'hanja' || r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab') && r.sessionId) {
-                const items = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab')
+            if ((r.subject === 'english' || r.subject === 'hanja' || r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab' || r.subject === 'science') && r.sessionId) {
+                const items = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab' || r.subject === 'science')
                     ? (r.metadata?.attempts || [])
                     : (wa[r.subject] || []).filter(item =>
                         (item.history || []).some(h => h.sessionId === r.sessionId && (h.round||1) === round)
@@ -763,8 +764,8 @@
                 if (items.length) {
                     const detailId = `qd_${idx}`;
                     const chips = items.map(item => {
-                        const h = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab') ? null : item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
-                        const ok = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab') ? item.correct : h?.status === 'correct';
+                        const h = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab' || r.subject === 'science') ? null : item.history.find(h => h.sessionId === r.sessionId && (h.round||1) === round);
+                        const ok = (r.subject === 'grammar' || r.subject === 'reading' || r.subject === 'english_reading' || r.subject === 'korean_vocab' || r.subject === 'science') ? item.correct : h?.status === 'correct';
                         const label = r.subject === 'hanja'
                             ? `${item.hanja}(${item.eum||''}) ${item.meaning||''}`
                             : r.subject === 'grammar'
