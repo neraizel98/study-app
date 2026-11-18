@@ -454,7 +454,7 @@
                     <span data-plan="allocation" style="font-size:.75rem;color:var(--text-sub);"></span>
                     <button type="button" data-plan="save" style="padding:9px 14px;border:0;border-radius:9px;background:var(--accent);color:#ffffff;font-weight:700;cursor:pointer;">저장</button>
                     <span data-plan="message" style="font-size:.75rem;color:var(--text-sub);"></span>
-                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">기본 8개 활동에 과학을 매일 추가합니다. 월 생명 · 화 물리 · 수 화학 · 목 지구·우주 · 금 서로 다른 두 분야이며, 같은 날의 분야는 유지됩니다. 과학은 분야마다 5분·10문항이고 같은 분야 안에서 단원을 바꿀 수 있습니다.</p>`;
+                </div><div data-plan="scopes" style="display:grid;gap:8px;margin-top:12px;"></div><p style="font-size:.72rem;color:var(--text-sub);margin:8px 0 0;">학습자는 기본 8과목을 순서대로 진행하고 과학을 매일 추가합니다. 국어 독해·국어 어휘·영어 단어·영어 독해·수학은 단원을 지정할 수 있고, 문법·공식·한자는 자동 추천합니다. 월 생명 · 화 물리 · 수 화학 · 목 지구·우주 · 금 서로 다른 두 분야이며, 같은 날의 분야는 유지됩니다. 과학은 분야마다 5분·10문항이고 같은 분야 안에서 단원을 바꿀 수 있습니다.</p>`;
             card.querySelector('[data-plan="budget"]').value = String(value.budgetMinutes || 45);
             const weeklySettings=SmartStudy.WeeklySchedule.normalize(value.weekly);
             const examSettings=document.createElement('details');examSettings.className='plan-exam';
