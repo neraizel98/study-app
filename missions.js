@@ -12,13 +12,13 @@ const MissionManager = {
         weekly: [
             { id:'w_attendance_5', icon:'📅', title:'일주일에 5일 꾸준히', desc:'퀴즈를 끝까지 제출한 날 5일 만들기', target:5, exp:150, type:'quiz_days', period:'weekly' },
             { id:'w_total_time_3h', icon:'📚', title:'핵심 과목 반복하기', desc:'국어·영어·수학 각각 서로 다른 3일에 퀴즈 제출하기', target:3, exp:150, type:'core_days', period:'weekly' },
-            { id:'w_all_subjects', icon:'🧭', title:'7개 영역 빠짐없이', desc:'국어, 영어 단어·문법·독해, 수학, 수학 공식, 한자에서 각각 퀴즈 1회 제출하기', target:7, exp:100, type:'coverage', days:1, period:'weekly' },
+            { id:'w_all_subjects', icon:'🧭', title:'9개 영역 빠짐없이', desc:'국어 독해·어휘, 영어 단어·문법·독해, 수학·공식, 한자, 과학에서 각각 퀴즈 1회 제출하기', target:9, exp:100, type:'coverage', days:1, period:'weekly' },
             { id:'w_quiz_5', icon:'🔁', title:'시간을 두고 다시 확인', desc:'전에 푼 학습 범위를 다른 날 다시 푼 날 2일 만들기', target:2, exp:100, type:'review_days', period:'weekly' }
         ],
         monthly: [
             { id:'m_attendance_20', icon:'🗓', title:'한 달 학습 습관', desc:'퀴즈를 끝까지 제출한 날 16일 만들기', target:16, exp:400, type:'quiz_days', period:'monthly' },
             { id:'m_total_time_12h', icon:'📚', title:'핵심 과목 기본기 쌓기', desc:'국어·영어·수학 각각 서로 다른 12일에 퀴즈 제출하기', target:3, exp:400, type:'core_days', period:'monthly' },
-            { id:'m_all_subjects', icon:'🌳', title:'7개 영역 꾸준히', desc:'한자·수학 공식을 포함한 7개 영역에서 각각 서로 다른 4일에 퀴즈 제출하기', target:7, exp:300, type:'coverage', days:4, period:'monthly' },
+            { id:'m_all_subjects', icon:'🌳', title:'9개 영역 꾸준히', desc:'국어 독해·어휘와 과학을 포함한 9개 영역에서 각각 서로 다른 4일에 퀴즈 제출하기', target:9, exp:300, type:'coverage', days:4, period:'monthly' },
             { id:'m_quiz_20', icon:'🔁', title:'기억을 실력으로', desc:'전에 푼 학습 범위를 다른 날 다시 푼 날 8일 만들기', target:8, exp:400, type:'review_days', period:'monthly' }
         ]
     },
@@ -27,14 +27,15 @@ const MissionManager = {
         weekly:[{icon:'🎲',title:'가족 활동 선택 제안권',note:'활동·시간·비용은 보호자와 상의해요'}],
         monthly:[{icon:'🎡',title:'체험·나들이 선택 제안권',note:'장소·일정·비용은 보호자가 최종 결정해요'}]
     },
-    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().filter(s=>s.id!=='science').map(s=>s.id):['reading','korean_vocab','english','english_reading','grammar','hanja','math']; },
+    registeredSubjects() { return typeof SubjectRegistry!=='undefined'?SubjectRegistry.list().map(s=>s.id):['reading','korean_vocab','english','english_reading','grammar','hanja','math','science']; },
     get areas() { return [...new Set([...this.registeredSubjects(),'math_formula'])]; },
     budget(user) {
         const id=user?.id||UserSession.getActiveUser();
         const current=window.SmartStudy?.LocalRepository?.getPreference(`SmartStudy_DailyPlan_${encodeURIComponent(id)}_${this.periodKey('daily')}`,null);
-        if(current?.tasks?.some(t=>t.startedAt||t.completedAt||t.status!=='ready')&&[30,45,60].includes(Number(current.budget)))return Number(current.budget);
+        if(current?.tasks?.some(t=>t.startedAt||t.completedAt||t.status!=='ready')&&[30,45,60].includes(Number(current.budget)))return current.tasks.reduce((n,t)=>n+(Number(t.minutes)||0),0);
         const value=window.SmartStudy?.LocalRepository?.getPreference(`SmartStudy_ParentPlanSettings_${encodeURIComponent(id)}`,null);
-        return [30,45,60].includes(Number(value?.budgetMinutes))?Number(value.budgetMinutes):45;
+        const base=[30,45,60].includes(Number(value?.budgetMinutes))?Number(value.budgetMinutes):45;
+        return base+5*(window.SmartStudy?.LearningBudgetPolicy?.scienceDomains(id,this.periodKey('daily')).length||0);
     },
     targetOf(mission,user) { return mission.target==='budget'?this.budget(user)*60:mission.target; },
     family(subject) { return ['english','grammar','english_reading'].includes(subject)?'english':subject==='math_formula'?'math':subject==='korean_vocab'?'reading':subject; },
@@ -52,6 +53,7 @@ const MissionManager = {
             const at=Number(m.submittedAt||r.createdAt||r.date);
             const subject=m.source==='math-formula'?'math_formula':r.subject;
             if(r.deleted||m.assessment||m.status==='draft'||!r.sessionId||!this.areas.includes(subject)||!Number.isInteger(total)||total<1||attempts.length<total||attempts.slice(0,total).some(a=>typeof a.correct!=='boolean')||!Number.isFinite(at)||at<=0||at>Date.now())continue;
+            if(subject==='science'&&(window.SciencePolicy?!SciencePolicy.validEvidence(r):total!==10||attempts.length!==10))continue;
             const date=StudyPeriods.daily(new Date(at));
             const key=subject+':'+r.sessionId;
             // Only the first submission counts; a same-session retry cannot create a new learning day.
@@ -193,7 +195,7 @@ const MissionManager = {
         const done=defs.filter(m=>map[m.id]?.completed).length;
         document.getElementById('goalSummary').textContent=`${this.periodKey(category)} 시작 · ${done}/4 완료 · 전체 달성 시 ${defs.reduce((s,m)=>s+m.exp,0)} EXP`;
         const entries=this.evidence(user).filter(e=>e.date>=this.periodKey(category));
-        const names={reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자'};
+        const names={reading:'국어',korean_vocab:'국어 어휘',english:'영어 단어',grammar:'영어 문법',english_reading:'영어 독해',math:'수학',math_formula:'수학 공식',hanja:'한자',science:'과학'};
         container.innerHTML=defs.map(m=>{
             const p=map[m.id]||{}, target=this.targetOf(m,user), value=Math.min(target,Math.max(0,p.progress||0));
             const legacy=p.completed&&p.ruleVersion!==2;
