@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261118-all-models-complete';
+const CACHE_NAME = 'smart-study-20261118-textbook-art';
 
 try {
     importScripts('./firebase-config.js');
@@ -53,10 +53,11 @@ self.addEventListener('activate', event => {
 // 캐시할 파일 목록 (앱 핵심 파일)
 const STATIC_ASSETS = [
     './mock-exam-bank.js?v=20261116-mock25', './mock-exam.js?v=20261116-mock25', './mock-exam-ui.js?v=20261116-mock25', './mock-paper.js?v=20261116-mock25', './mock-paper-admin.js?v=20261116-mock25', './mock-paper-omr.js?v=20261116-mock25', './mock-admin.js?v=20261116-mock25', './firestore-repository.js?v=20261116-mock25',
-    './science-extension-models.js?v=20261118-all-models-complete', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMock25Expansion.js?v=20261116-mock25',
+    './science-extension-models.js?v=20261118-textbook-art', './science-cosmos-model.js?v=20261114-science-level1-complete', './ScienceLifeEarthExpansion.js?v=20261114-science-level1-complete', './SciencePhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMockLifeEarthExpansion.js?v=20261114-science-level1-complete', './ScienceMockPhysicalExpansion.js?v=20261114-science-level1-complete', './ScienceMock25Expansion.js?v=20261116-mock25',
     './science-orbit-three.js?v=20261114-science-level1-complete', './science-moon-three.js?v=20261116-visual-stage2', './vendor/three/three.module.js', './vendor/three/three.core.js',
     './science.html', './science.css?v=20261117-layout-refresh', './science-app.js?v=20261117-layout-refresh', './science-models.js?v=20261118-core-models', './ScienceData.js?v=20261114-science-level1-complete', './ScienceMockPhysical.js?v=20261114-science-level1-complete', './ScienceMockData.js?v=20261114-science-level1-complete', './science-policy.js',
     './assets/science/camel-desert.webp', './assets/science/duck-pond.webp', './assets/science/penguin-polar.webp',
+    './assets/science/bean-germination.webp', './assets/science/butterfly-lifecycle.webp', './assets/science/flower-cross-section.webp', './assets/science/frog-lifecycle.webp', './assets/science/fruit-seed-cross-section.webp', './assets/science/human-circulatory-system.webp', './assets/science/human-digestive-system.webp', './assets/science/human-respiratory-system.webp', './assets/science/strata-index-fossils.webp', './assets/science/volcano-cross-section.webp',
     './',
     './index.html',
     './theme.css',
