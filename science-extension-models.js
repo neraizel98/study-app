@@ -1236,155 +1236,1573 @@ ${footGraphic(463, 350, padW, toeGap, padH)}
       </g>`;
     }
     caption = c === 0 ? '작은 생물의 구조를 확대해 살펴봐요. 현미경 모형은 확대의 관계를 보여 주며 실제 사진은 아니에요.' : c === 1 ? '대표적인 동물·식물 세포의 공통점과 차이를 비교해요. 식물 세포는 세포벽과 엽록체를 지녀요.' : '분류 기준을 먼저 정하고 같은 기준으로 표본을 비교해요. 겉모습 하나로 확정하지 않아요.';
-}else if(kind==='magnets'){
- controls=['다른 극을 마주 보기','같은 극을 마주 보기','자석 사이를 멀리','나침반과 가까운 자석'];
- const left=c===2?95:155,right=c===2?420:365,same=c===1;
- body=`<g filter="url(#ex-shadow)">${rect(left,180,120,65,'url(#ex-mag-n)',5)}${rect(left+60,180,60,65,'url(#ex-mag-s)',3)}${rect(right,180,120,65,same?'url(#ex-mag-s)':'url(#ex-mag-n)',5)}${rect(right+60,180,60,65,same?'url(#ex-mag-n)':'url(#ex-mag-s)',3)}${text(left+30,222,'N','center white')}${text(left+90,222,'S','center white')}${text(right+30,222,same?'S':'N','center white')}${text(right+90,222,same?'N':'S','center white')}${same?arrow(`M${left+120} 295H${left+65}`)+arrow(`M${right} 295H${right+60}`):arrow(`M${left+120} 295H${left+165}`)+arrow(`M${right} 295H${right-45}`)}${p(`M${left+20} 174Q320 35 ${right+105} 174M${left+20} 251Q320 375 ${right+105} 251`,'#afbdad',2)}<rect x="200" y="377" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#b0c4ba"/>${text(320,395,same?'같은 극: 서로 밀어내는 방향':'다른 극: 서로 끌어당기는 방향','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(90,180,180,70,'url(#ex-mag-n)')}${rect(370,180,180,70,'url(#ex-mag-s)')}${Array.from({length:9},(_,i)=>p(`M${285+i*8} ${105+i%3*35}l9 5`,'#5c7771',2)).join('')}<rect x="200" y="347" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#8fa9a3"/>${text(320,362,'가까운 공간의 자석 작용을 확대','center')}</g>`;
- if(c===3){
-  body=`<g filter="url(#ex-shadow)">${circle(300,215,110,'#d3dfdc')}${circle(300,215,93,'#f3f5eb')}${text(300,91,'북 N','center')}${text(300,363,'남 S','center')}<g transform="rotate(${25+Math.sin(t*4)*8} 300 215)"><path d="M300 126L282 215L318 215Z" fill="#c65546"/><path d="M300 304L282 215L318 215Z" fill="#3f7f96"/></g>${circle(300,215,8,'#4a686e')}${rect(465,155,90,50,'url(#ex-mag-n)')}${rect(510,155,45,50,'url(#ex-mag-s)')}${text(486,189,'N','center white')}${text(532,189,'S','center white')}<rect x="170" y="402" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#a4bec4"/>${text(320,417,'가까운 자석이 나침반 방향에 영향을 줄 수 있어요','center')}</g>`;
-  detail=body;
- }
- caption=c===3?'나침반 바늘은 자석이에요. 주변에 다른 자석이 가까이 있을 때의 영향을 관찰해요. 표시된 방향은 단순화한 관계이며 실제 각도 측정값은 아니에요.':c===2?'극의 조건을 같게 두고 거리를 달리해 작용을 비교해요. 선은 자기장의 관계를 나타내는 모형이며 실제 실이 아니에요.':same?'같은 극끼리는 서로 밀어내요. 화살표는 두 자석에 작용하는 힘의 방향을 나타내요.':'다른 극끼리는 서로 끌어당겨요. 한쪽만 움직이는 그림과 두 물체에 작용하는 힘을 구분해요.';
-}else if(kind==='sound'){
- controls=['작은 진폭 · 같은 빠르기','큰 진폭 · 같은 빠르기','같은 진폭 · 더 빠른 진동'];
- const amp=c===1?58:26,freq=c===2?11:6;let d='';
- for(let x=95;x<=560;x+=3)d+=(x===95?'M':'L')+x+' '+(210+Math.sin((x-95)/465*Math.PI*freq+t*18)*amp);
- body=`<g filter="url(#ex-shadow)">${rect(60,135,38,150,'#a3865c',4)}${rect(560,135,20,150,'#a3865c',4)}${p(d,'#508395',5)}${p('M85 210H575','#b3c7c4',1.5)}<rect x="200" y="87" width="240" height="24" rx="6" fill="#ffffffdf" stroke="#a3bcc0"/>${text(320,102,'실제 줄의 진동을 단순화한 모형','center')}<rect x="180" y="332" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#8fa9b0"/>${text(320,348,c===1?'진폭이 큼 · 더 큰 소리와 연결':c===2?'진동이 빠름 · 더 높은 소리와 연결':'진폭이 작음 · 더 작은 소리와 연결','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)"><path d="M120 130H165L235 90V325L165 285H120Z" fill="#7fa4a6"/>${Array.from({length:5},(_,i)=>p(`M${285+i*48} 130Q${325+i*48+Math.sin(t*8)*5} 210 ${285+i*48} 290`,'#9cb3b7',3.5)).join('')}<rect x="200" y="367" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#9bb1b5"/>${text(320,382,'주변 공기의 진동이 퍼지는 관계','center')}</g>`;
- caption=c===1?'진동의 폭인 진폭을 크게 바꾸었어요. 진동의 빠르기를 같게 두어 소리 크기와 연결해 살펴봐요.':c===2?'같은 시간 동안 더 많이 진동하는 조건이에요. 진폭을 같게 두고 소리 높이와 연결해 비교해요.':'소리는 물체의 진동과 연결돼요. 줄의 움직임과 소리가 생기는 원인을 함께 관찰해요.';
-}else if(kind==='optics'){
- controls=['빛과 그림자','거울에서 빛의 반사','볼록렌즈에서 빛의 굴절'];
- if(c===0){
-  const shadow=(zoom)=>`<g filter="url(#ex-shadow)">${circle(100,210,zoom?18:25,'#fcd36c')}<path d="M310 145L540 74V346L310 275Z" fill="#3e5663" opacity=".22"/>${rect(540,55,16,310,'#bfd4d4')}${p('M548 74V346','#3b5463',16)}${p('M100 210L310 145L540 74M100 210L310 275L540 346','#dfb958',3.5)}${arrow('M125 210H300','#c99e3a')}${rect(310,145,30,130,'#55707a')}<rect x="75" y="287" width="50" height="22" rx="5" fill="#fff" stroke="#d5b868"/>${text(100,301,'광원','center essential')}<rect x="300" y="307" width="50" height="22" rx="5" fill="#fff" stroke="#55707a"/>${text(325,321,'물체','center essential')}<rect x="505" y="392" width="50" height="22" rx="5" fill="#fff" stroke="#3b5463"/>${text(530,406,'그림자','center essential')}</g>`;
-  body=shadow(false);
-  detail=shadow(true)+`<rect x="160" y="432" width="320" height="24" rx="6" fill="#ffffffdf" stroke="#b6cbce"/>${text(320,447,'가운데 빛은 차단되고 가장자리 빛은 곧게 진행해요','center')}`;
-  caption='빛은 같은 물질 안에서 곧게 진행해요. 물체를 통과하지 못한 빛 때문에 뒤쪽 스크린에 어두운 그림자가 생겨요.';
- }else if(c===1){
-  body=`<g filter="url(#ex-shadow)">${p('M345 80V350','#7ea0aa',14)}${p('M345 80L365 90M345 120L365 130M345 160L365 170M345 200L365 210M345 240L365 250M345 280L365 290M345 320L365 330','#b0c5c8',3)}${arrow('M100 100L340 215','#d8af4b')}${arrow('M340 215L100 330','#d8af4b')}${p('M130 215H360','#a5bcc0',2)}<rect x="105" y="235" width="60" height="22" rx="5" fill="#fff" stroke="#a5bcc0"/>${text(135,249,'기준선','essential')}<rect x="180" y="377" width="200" height="26" rx="6" fill="#ffffffdf" stroke="#d8af4b"/>${text(270,393,'들어오는 빛과 반사된 빛','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${p('M320 90V340','#7ea0aa',10)}${p('M110 100L320 215L110 330','#d8af4b',5)}${p('M130 215H380','#b0c5c8',2)}<rect x="180" y="377" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#7ea0aa"/>${text(320,393,'거울 면과 수직인 기준선으로 각도 비교','center')}</g>`;
-  caption='거울에 도달한 빛은 반사돼요. 기준선에 대한 들어오는 방향과 반사되는 방향의 관계를 관찰해요.';
- }else{
-  body=`<g filter="url(#ex-shadow)"><path d="M320 80Q260 210 320 340Q380 210 320 80Z" fill="url(#ex-glass)" stroke="#6d949f" stroke-width="3"/>${p('M70 145H302L490 210M70 210H540M70 275H302L490 210','#d8af4b',3.5)}${circle(490,210,6,'#c49733')}<rect x="170" y="377" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#6d949f"/>${text(320,395,'물질의 경계에서 진행 방향이 달라져요','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${rect(180,110,280,200,'#c0dde0')}${p('M90 70L180 150L460 298L530 360','#d8af4b',5)}${p('M125 150H240M405 298H525','#9bb2b9',2)}<rect x="170" y="377" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#9bb2b9"/>${text(320,395,'매질 경계에서 굴절 · 법선은 경계면에 수직','center')}</g>`;
-  caption='볼록렌즈는 빛이 물질의 경계를 지날 때 굴절하는 성질을 이용해요. 이 광선 그림은 렌즈의 원리를 단순화했어요.';
- }
-}else if(kind==='electricity'){
- controls=['닫힌 회로 · 전구 켜짐','열린 회로 · 전구 꺼짐','전자석 · 전류 있음','전자석 · 전류 없음'];
- const closed=c===0||c===2,magnet=c>=2;
- body=`<g filter="url(#ex-shadow)">${rect(92,205,110,62,'#7c999c')}${text(118,245,'+','center')}${text(177,245,'−','center')}${p('M95 210V110H485V180M485 280V340H145V267','#6e8484',5.5)}${p(closed?'M265 110H330':'M265 110L325 70','#bf9b62',7)}${circle(265,110,5.5,'#516c6f')}${circle(330,110,5.5,'#516c6f')}`;
- if(!magnet)body+=`<path d="M457 262Q420 225 440 186Q485 140 528 186Q550 225 511 262V286H457Z" fill="${closed?'#fae7a0':'#d8e4e2'}" stroke="#719097" stroke-width="3"/>${p('M470 253L480 218L491 238L503 216L509 253','#a98e54',3)}<rect x="445" y="370" width="80" height="24" rx="6" fill="#ffffffdf" stroke="#719097"/>${text(485,385,closed?'전구 켜짐':'전구 꺼짐','center')}`;
- else body+=`${p('M430 222H560','#7c8b91',20)}${Array.from({length:9},(_,i)=>`<ellipse cx="${438+i*12}" cy="${222}" rx="12" ry="35" fill="none" stroke="#ab8348" stroke-width="4"/>`).join('')}${Array.from({length:3},(_,i)=>p(`M${450+i*35} ${closed?281:320}q-10 15 0 20q10 5 10-10`,'#728389',3.5)).join('')}<rect x="360" y="370" width="250" height="24" rx="6" fill="#ffffffdf" stroke="#7c8b91"/>${text(485,385,closed?'철심 가까이 철 물체가 끌려요':'전류를 끄면 작용이 달라져요','center')}`;
- if(closed)body+=circle(145+phase*280,110,5.5,'#d6b461');
- body+=`</g>`;
- detail=`<g filter="url(#ex-shadow)">${p('M100 210H245M395 210H540','#769496',7.5)}${closed?p('M245 210H395','#ba9656',8.5):p('M245 210L375 125','#ba9656',8.5)}${circle(245,210,10,'#506e75')}${circle(395,210,10,'#506e75')}<rect x="200" y="335" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#ba9656"/>${text(320,351,closed?'이어진 경로 · 닫힌 스위치':'끊긴 경로 · 열린 스위치','center')}</g>`;
- caption=magnet?'코일에 전류가 흐르는 조건과 끊는 조건을 비교해요. 전자석의 작용은 회로 연결 상태에 따라 달라져요.':'전구가 켜지려면 전지와 전구 등이 끊기지 않은 회로로 연결돼야 해요. 전류가 전구에서 전부 없어지는 모형은 아니에요.';
-}else if(kind==='energy-transfer'){
- controls=['손 발전기 → 전구','전지 → 모터','태양 전지 → 모터'];
- const sourceTitle=c===0?'손 발전기 (운동 에너지)':c===1?'화학 전지 (화학 에너지)':'태양 전지판 (빛 에너지)';
- const targetTitle=c===0?'전구 (빛 + 열 에너지)':'모터 (운동 + 열 에너지)';
- const flowX=195+(phase*245);
- body=`<g filter="url(#ex-shadow)">
-<rect x="25" y="20" width="245" height="34" rx="8" fill="#1b2a38cc" stroke="#377363" stroke-width="1.5"/>
-${text(38,42,'Every Joule 에너지 전환 시뮬레이션','white')}
-<g transform="translate(45, 100)">
-  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
-  <rect x="15" y="15" width="120" height="26" rx="6" fill="#00b4d822" stroke="#00b4d8"/>
-  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#0b6375">에너지 공급원</text>
-  ${c===0?`<g transform="translate(75, 105)"><circle r="36" fill="#d2dedd" stroke="#6f8f94" stroke-width="2"/><circle r="12" fill="#9dbbbe"/><path d="M0 0L${30*Math.cos(t*8)} ${30*Math.sin(t*8)}" stroke="#e09d3b" stroke-width="5" stroke-linecap="round"/><circle cx="${30*Math.cos(t*8)}" cy="${30*Math.sin(t*8)}" r="7" fill="#b96a20"/></g>`:c===1?`<g transform="translate(75, 105)"><rect x="-40" y="-30" width="80" height="60" rx="8" fill="#8ca6a2" stroke="#5f7e7a" stroke-width="2"/><text x="-20" y="7" font-size="18" font-weight="700" fill="#fff">+</text><text x="15" y="7" font-size="18" font-weight="700" fill="#fff">−</text></g>`:`<g transform="translate(75, 105)"><rect x="-45" y="-35" width="90" height="70" rx="6" fill="#4a6e87" stroke="#314e63" stroke-width="2"/><path d="M-45 -12H45M-45 12H45M-15 -35V35M15 -35V35" stroke="#7aa4c0" stroke-width="1.5"/><circle cx="0" cy="-60" r="14" fill="#f8cc66" filter="url(#ex-glow-amber)"/><path d="M0 -42V-35" stroke="#e29b28" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/></g>`}
-  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${sourceTitle.split(' ')[0]}</text>
-</g>
-<g filter="url(#ex-glow-cyan)">
-  <path d="M195 195H445" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round"/>
-  <circle cx="${flowX}" cy="195" r="7" fill="#ffffff" filter="url(#ex-glow-cyan)"/>
-  <path d="M425 195L445 195" fill="none" stroke="#00d0ea" stroke-width="6" stroke-linecap="round" marker-end="url(#ex-arrow-cyan)"/>
-</g>
-<text x="320" y="180" class="center" font-size="12" font-weight="700" fill="#008fa3">전기 에너지 전달 (흐름)</text>
-<g transform="translate(445, 100)">
-  <rect x="0" y="0" width="150" height="175" rx="12" fill="#f4f1e6" stroke="#90a7aa" stroke-width="2"/>
-  <rect x="15" y="15" width="120" height="26" rx="6" fill="#f5ab3522" stroke="#f5ab35"/>
-  <text x="75" y="32" class="center" font-size="12" font-weight="700" fill="#996213">에너지 변환 장치</text>
-  ${c===0?`<g transform="translate(75, 100)" filter="url(#ex-glow-amber)"><ellipse cx="0" cy="-5" rx="30" ry="34" fill="#fff7d6" stroke="#d4ab48" stroke-width="2"/><path d="M-8 10L-12 25H12L8 10Z" fill="#a4a49c"/><path d="M-10 0Q0 -22 10 0" fill="none" stroke="#f5ab35" stroke-width="3"/></g>`:`<g transform="translate(75, 100)"><circle r="36" fill="#6f9098" stroke="#486870" stroke-width="2"/><path d="M0 0L${32*Math.cos(t*14)} ${32*Math.sin(t*14)}" stroke="#00d0ea" stroke-width="5" stroke-linecap="round" filter="url(#ex-glow-cyan)"/><circle r="8" fill="#dce6e7"/></g>`}
-  <text x="75" y="160" class="center" font-size="12" font-weight="700" fill="#304f56">${targetTitle.split(' ')[0]}</text>
-</g>
-<g filter="url(#ex-glow-amber)" transform="translate(320, 235)">
-  <path d="M0 0V55" fill="none" stroke="#f5ab35" stroke-width="3.5" stroke-dasharray="5 3" marker-end="url(#ex-arrow-amber)"/>
-  <rect x="-85" y="65" width="170" height="26" rx="6" fill="#f5ab3525" stroke="#f5ab35"/>
-  <text x="0" y="82" class="center" font-size="11" font-weight="700" fill="#996213">방출되는 열에너지 (손실)</text>
-</g>
-<rect x="140" y="386" width="360" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
-${text(320, 406, `${sourceTitle} → 전기 전달 → ${targetTitle}`, 'center')}
-</g>`;
-detail=`<g filter="url(#ex-shadow)">
-<rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
-<text x="320" y="55" class="center" font-size="18" font-weight="700" fill="#203d47">에너지 보존 법칙 (Every Joule 에너지 흐름도)</text>
-<g transform="translate(50, 90)">
-  <rect x="0" y="35" width="130" height="155" rx="10" fill="#e2edf0" stroke="#7ba5ad" stroke-width="2"/>
-  <text x="65" y="105" class="center" font-size="14" font-weight="700" fill="#1b4d57">입력 에너지</text>
-  <text x="65" y="130" class="center" font-size="12" fill="#3b656e">100 Joule</text>
-  <path d="M130 65H320Q360 65 360 40H490" fill="none" stroke="#00b4d8" stroke-width="22" filter="url(#ex-glow-cyan)" stroke-linecap="round"/>
-  <text x="420" y="28" class="center" font-size="12" font-weight="700" fill="#008fa3">유용한 에너지 변환 (빛/운동)</text>
-  <path d="M130 160H260Q320 160 320 200H490" fill="none" stroke="#f5ab35" stroke-width="14" filter="url(#ex-glow-amber)" stroke-linecap="round"/>
-  <text x="420" y="190" class="center" font-size="12" font-weight="700" fill="#a46d1e">주변으로 흩어지는 열에너지</text>
-  <rect x="100" y="240" width="340" height="32" rx="8" fill="#183642" stroke="#2c5b6e"/>
-  <text x="270" y="261" class="center white" font-size="13" font-weight="700">총 에너지 보존: E(입력) = E(유용) + E(열손실)</text>
-</g>
-<rect x="130" y="375" width="380" height="30" rx="8" fill="#ffffffea" stroke="#b0c8ce" stroke-width="1.5"/>
-${text(320, 395, '장치에서 에너지가 새로 생기거나 사라지지 않고 형태만 바뀌어요', 'center')}
-</g>`;
-caption='에너지가 장치를 거치며 빛·운동·열 등으로 전환돼요. 전체 에너지의 총합은 항상 보존돼요.';
-}else if(kind==='force-graph'){
- controls=['추 1개','추 2개','추 3개'];
- const n=Math.min(3,c+1),len=90+n*27;let spring='M165 80';
- for(let i=0;i<12;i++)spring+=`L${i%2?175:155} ${85+i*len/12}`;
- body=`<g filter="url(#ex-shadow)">${p('M85 60H240','#6d8d8e',9)}${p(spring,'#698b94',4.5)}${p(`M165 ${85+len}V${110+len}`,'#698b94',4.5)}${rect(133,105+len,65,n*20,'#a89063')}<rect x="115" y="347" width="100" height="24" rx="6" fill="#ffffffdf" stroke="#a89063"/>${text(165,361,'같은 용수철','center')}${p('M315 320H585M335 340V95','#6e8783',3.5)}${p('M335 320L405 270L475 220L545 170','#6a95a3',3.5)}${[0,1,2].map(i=>circle(405+i*70,270-i*50,i===c?9:5.5,i===c?'#c99d4a':'#6b95a3')).join('')}<rect x="370" y="367" width="180" height="24" rx="6" fill="#ffffffdf" stroke="#6a95a3"/>${text(460,381,'추의 수와 늘어난 길이','center')}${text(346,75,'늘어난 길이')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${p('M180 90V290M380 90V345','#aac0be',3)}${p('M180 90H225M380 90H425','#819d9d',4)}${rect(155,290,50,25,'#b1945d')}${rect(355,345,50,55,'#b1945d')}<rect x="200" y="185" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#819d9d"/>${text(320,202,'처음 길이와 나중 길이의 차이','center')}</g>`;
- caption='같은 용수철에 추를 더하는 조건과 늘어난 길이를 연결해요. 그래프의 선은 물체가 실제로 이동한 길이 아니며, 관찰한 범위의 관계를 나타내요.';
-}else if(kind==='materials'){
- controls=['철 막대','마른 나무 조각','투명 플라스틱 판','고무 띠'];
- const color=['#93a5a9','#b89869','#b1d6dd','#b89b77'][c]||'#93a5a9';
- body=`<g filter="url(#ex-shadow)"><path d="M130 155L470 110L535 190L195 235Z" fill="${color}" opacity="${c===2?.45:1}" stroke="#6e8c93" stroke-width="3"/><path d="M195 235L535 190V225L195 270Z" fill="${color}" opacity=".7"/>${c===1?Array.from({length:7},(_,i)=>p(`M${175+i*43} 157L${210+i*43} 205`,'#886c47',1.8)).join(''):''}${c===2?`${p('M245 75V320M375 55V300','#d6b55e',4)}<rect x="200" y="355" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#6e8c93"/>${text(320,372,'뒤의 모양이 비쳐 보여요','center')}`:c===3?`${arrow('M140 310H70')}${arrow('M470 280H560')}<rect x="180" y="355" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#6e8c93"/>${text(320,372,'힘을 주었다 놓을 때의 변형 관찰','center')}`:`<rect x="200" y="350" width="240" height="26" rx="6" fill="#ffffffdf" stroke="#6e8c93"/>${text(320,367,c===0?'재료 표본의 광택과 단단함':'결과 성질을 가진 재료 표본','center')}`}</g>`;
- detail=c===3?`<g filter="url(#ex-shadow)"><path d="M150 210Q320 80 490 210Q320 340 150 210Z" fill="none" stroke="#b49467" stroke-width="28"/>${arrow('M135 210H55')}${arrow('M505 210H585')}<rect x="180" y="360" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#b49467"/>${text(320,377,'같은 띠를 늘렸다 놓아 비교해요','center')}</g>`:`<g filter="url(#ex-shadow)">${rect(80,100,480,220,'#f2f2e5')}${text(120,150,'관찰 항목')}${text(350,150,'이 표본의 특징')}${p('M90 170H550M90 235H550','#b8cdcd',2)}${text(120,210,'빛 통과')}${text(350,210,c===2?'통과해 보임':'잘 통과하지 않음')}${text(120,280,'용도 선택')}${text(350,280,'여러 성질을 함께 비교')}</g>`;
- caption='같은 모양의 표본이라도 재료에 따라 성질이 달라요. 여기서 관찰한 표본의 성질을 그 재료의 모든 종류에 그대로 일반화하지 않아요.';
-}else if(kind==='solutions'){
- controls=['적은 설탕 · 충분히 젓기','많은 설탕 · 일부 남음','같은 많은 양 · 따뜻한 물'];
- const remain=c===1?12:c===2?4:0;
- body=vessel(190,130,260,190)+Array.from({length:18},(_,i)=>circle(217+i*53%205,175+i*37%120,4.5,'#e3ece6')).join('')+Array.from({length:remain},(_,i)=>`<rect x="${245+i*17%150}" y="${290+i%2*13}" width="9" height="9" fill="#e2d6b3" stroke="#a69975"/>`).join('')+p(`M390 70L${360+Math.sin(t*8)*20} 260`,'#9e8c67',8)+`<rect x="170" y="365" width="300" height="26" rx="6" fill="#ffffffdf" stroke="#87aab3"/>`+text(320,382,remain?'바닥에 남은 설탕과 녹은 설탕을 구분':'눈에 안 보여도 물질은 남아 있어요','center');
- detail=`<g filter="url(#ex-shadow)">${rect(90,100,460,230,'#cee5e8')}${Array.from({length:24},(_,i)=>circle(115+i*47%400,125+i*29%180,5.5,i%3?'#83b7c5':'#cfb47c')).join('')}<rect x="180" y="370" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#83b7c5"/>${text(320,387,'물과 녹은 설탕을 다르게 표시한 확대 모형','center')}</g>`;
- caption=c===2?'같은 물질의 양을 넣고 물 온도 조건을 바꾸어 비교해요. 모형의 점과 남은 양은 정성적인 설명이며 실제 용해도 수치가 아니에요.':c===1?'설탕을 계속 더하면 같은 물에서 모두 녹지 못하고 일부가 남을 수 있어요. 젓기와 넣은 양을 구분해 살펴요.':'설탕이 녹아 보이지 않아도 물질이 없어진 것은 아니에요. 용액 전체에 퍼져 있는 관계를 확대 모형으로 살펴요.';
-}else if(kind==='gases'){
- controls=['닫힌 주사기 · 큰 부피','닫힌 주사기 · 압축','산소와 이산화탄소 성질'];
- if(c<2){
-  const end=c===1?365:520;
-  body=`<g filter="url(#ex-shadow)">${rect(105,135,440,145,'#d6e9ea',12)}${rect(end,135,18,145,'#72919a',4)}${p(`M${end+18} 208H590`,'#6f8c95',14)}${rect(585,166,12,84,'#6f8c95',4)}${p('M105 190H65V224H105','#6f8c95',5)}${rect(52,180,14,55,'#ab966d',4)}${Array.from({length:12},(_,i)=>circle(130+(i*47%(end-155))+Math.sin(t*6+i)*3,165+i*29%84,7.5,'#68a1b6')).join('')}<rect x="180" y="330" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#72919a"/>${text(320,348,'입자 수·입자 크기 동일 / 간격 변화','center')}<rect x="45" y="285" width="50" height="22" rx="5" fill="#fff" stroke="#ab966d"/>${text(70,299,'막힘','center')}</g>`;
-  detail=`<g filter="url(#ex-shadow)">${rect(110,105,c===1?260:420,220,'#d0e4e6')}${Array.from({length:12},(_,i)=>circle(140+i*(c===1?17:29)%((c===1?260:420)-55),140+i*37%155,9.5,'#68a1b6')).join('')}<rect x="180" y="375" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#68a1b6"/>${text(320,392,'기체도 공간을 차지하고 압축될 수 있어요','center')}</g>`;
- }else{
-  body=[175,465].map((x,i)=>`${vessel(x-80,110,160,210,'#dce8e5')}${p(`M${x} 235V300`,'#9e8f69',14)}${i===0?`<path d="M${x} 170Q${x-30} 210 ${x} 235Q${x+30} 210 ${x} 170Z" fill="#e5bb5d"/>`:''}<rect x="${x-75}" y="355" width="150" height="24" rx="6" fill="#ffffffdf" stroke="#9e8f69"/>${text(x,370,i===0?'산소가 있는 조건':'이산화탄소가 많은 조건','center')}`).join('');
-  detail=`<g filter="url(#ex-shadow)"><rect x="180" y="115" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#72919a"/>${text(320,132,'같은 가상 장치에서 반응을 비교','center')}${rect(120,180,400,110,'#e8eee0')}${text(320,225,'산소: 연소를 도울 수 있음','center')}${text(320,265,'이산화탄소: 성질이 다름','center')}</g>`;
- }
- caption=c<2?'주사기 입구를 막은 채 부피를 줄이면 같은 기체가 더 좁은 공간을 차지해요. 기체 입자 자체를 작게 그리지 않아요.':'기체마다 성질이 달라요. 이 장면은 가상 비교이며 산소 자체가 연료처럼 타는 물질이라는 뜻은 아니에요.';
-}else if(kind==='indicators'){
- controls=['산성 용액 · BTB','중성 용액 · BTB','염기성 용액 · BTB','같은 염기성 · 다른 지시약'];
- const color=['#dec75b','#7bb883','#6da3c2','#8ba973'][c]||'#7bb883';
- body=`<g filter="url(#ex-shadow)">${p('M180 100V300Q180 342 220 342Q260 342 260 300V100','#7e9da4',5.5)}<path d="M185 200V300Q185 335 220 335Q255 335 255 300V200Z" fill="${color}"/><ellipse cx="220" cy="200" rx="35" ry="8" fill="${color}"/>${rect(380,120,170,170,'#f3f1e5')}${text(465,159,'관찰 색 표','center')}${[0,1,2].map((i)=>rect(400,185+i*29,35,18,['#dec75b','#7bb883','#6da3c2'][i],4)+text(450,199+i*29,['산성','중성','염기성'][i])).join('')}${circle(220,80+phase*90,7.5,color)}<rect x="180" y="375" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#7e9da4"/>${text(320,392,'색 변화는 지시약과 용액을 함께 확인','center')}</g>`;
- detail=`${vessel(120,145,155,170,'#6da3c2')}${vessel(365,145,155,170,'#8ba973')}<rect x="150" y="345" width="95" height="24" rx="6" fill="#fff" stroke="#6da3c2"/>${text(198,360,'BTB','center')}<rect x="365" y="345" width="155" height="24" rx="6" fill="#fff" stroke="#8ba973"/>${text(442,360,'적양배추 지시약 모형','center')}`;
- caption=c===3?'같은 염기성 용액도 지시약이 다르면 관찰 색이 달라요. 모든 지시약이 같은 색 규칙을 가진 것은 아니에요.':'가상 용액에 BTB 지시약을 넣었을 때의 색을 표와 비교해 분류해요. 용액 이름이나 투명한 겉모습만으로 판단하지 않아요.';
-}else if(kind==='combustion'){
- controls=['산소 공급 · 연소 지속','산소 공급이 부족','냉각하는 소화 원리'];
- const active=c===0;
- body=`<g filter="url(#ex-shadow)">${rect(280,235,80,125,'#d6c49e',6)}${p('M320 235V206','#765f46',6)}${active?`<path d="M320 120Q270 184 320 218Q370 185 320 120Z" fill="#e59f42"/><path d="M320 160Q298 194 320 218Q341 193 320 160Z" fill="#f8e08d"/>`:circle(320,212,5.5,'#948f80')}${c===1?`<path d="M200 350V100Q320 40 440 100V350" fill="url(#ex-glass)" stroke="#5f8894" stroke-width="5"/>`:c===2?`${arrow('M490 135L370 220','#6ea5ba')}${Array.from({length:8},(_,i)=>circle(390+i*14,180+i%3*13,4.5,'#8ec0ce')).join('')}`:`${arrow('M120 190H255','#76a2ad')}${arrow('M515 190H385','#76a2ad')}`}<rect x="180" y="382" width="280" height="26" rx="6" fill="#ffffffdf" stroke="#5f8894"/>${text(320,400,'가상 모형으로 연소와 소화의 조건 관찰','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${rect(90,130,460,185,'#edf1e1')}${text(320,175,'연료 + 산소 공급 + 발화 조건','center')}${p('M170 220H470','#adc0aa',3)}${text(320,275,c===1?'산소 공급을 줄이는 관계':c===2?'온도를 낮추는 관계':'필요 조건을 함께 살펴요','center')}</g>`;
- caption=c===0?'연소에는 연료와 산소 공급, 알맞은 발화 조건 등이 필요해요. 산소와 연료의 역할을 구분해요.':c===1?'산소 공급이 부족해지는 조건에서는 연소가 유지되기 어려워요. 모형의 덮개는 원리를 설명하는 가상 장치예요.':'냉각해 연소 조건을 바꾸는 소화 원리를 살펴봐요. 이 장면은 가상 모형이며 실제 화재의 모든 소화 방법을 정하는 안내는 아니에요.';
-}else if(kind==='particle-model'){
- controls=['고체의 배열','액체의 배열과 움직임','기체의 간격과 움직임','기체를 압축'];
- const gas=c>=2,w=c===3?250:430;
- body=`<g filter="url(#ex-shadow)">`+rect(100,95,w,250,'url(#ex-glass)')+Array.from({length:20},(_,i)=>{
-  let x=135+(i%5)*(gas?(w-65)/4:45),y=gas?130+Math.floor(i/5)*55:240+Math.floor(i/5)*25;
-  if(c!==0){x+=Math.sin(t*(gas?8:4)+i)*(gas?10:4);y+=Math.cos(t*(gas?6:3)+i)*(gas?9:4);}
-  return circle(x,y,8.5,'#5a93a8');
- }).join('')+`<rect x="160" y="377" width="320" height="26" rx="6" fill="#ffffffdf" stroke="#5a93a8"/>${text(320,395,'같은 입자 크기·개수 / 배열·간격·운동 비교','center')}</g>`;
- detail=`<g filter="url(#ex-shadow)">${circle(220,210,33,'#6da1b3')}${circle(420,210,33,'#6da1b3')}${p('M270 210H370','#9bb4b2',3.5)}<rect x="160" y="335" width="320" height="26" rx="6" fill="#ffffffdf" stroke="#6da1b3"/>${text(320,352,'점은 입자 자체의 사진이나 실제 크기가 아니에요','center')}</g>`;
- caption=c===3?'같은 수의 기체 입자가 더 좁은 공간에 있도록 나타냈어요. 압축했다고 입자 자체의 크기를 줄이지 않아요.':'입자 모형으로 상태의 배열·간격·운동 차이를 설명해요. 색 구슬을 실제 물질 속에서 보이는 알갱이와 혼동하지 않아요.';
+
+}else if (kind === 'magnets') {
+    controls = ['다른 극을 마주 보기', '같은 극을 마주 보기', '자석 사이를 멀리', '나침반과 가까운 자석'];
+    customSteps = ['자석과 자기력선', '자구(자석 미세 구조)'];
+
+    if (c === 0) {
+      // 다른 극을 마주 보기 (N-S 인력)
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Left Bar Magnet (S-N) -->
+      <g transform="translate(100, 180)">
+        <rect x="0" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="35" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="70" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="105" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <!-- Right Bar Magnet (S-N) -->
+      <g transform="translate(400, 180)">
+        <rect x="0" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="35" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="70" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="105" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <!-- Magnetic Field Lines (Attraction looping between N and S) -->
+      <g fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ex-arrow-coral)">
+        <path d="M240 210 Q320 210 395 210"/>
+        <path d="M240 190 Q320 140 395 190"/>
+        <path d="M240 230 Q320 280 395 230"/>
+        <path d="M240 175 Q320 90 395 175"/>
+        <path d="M240 245 Q320 330 395 245"/>
+      </g>
+      <!-- Attraction Force Vectors -->
+      <g stroke="#0284c7" stroke-width="4" marker-end="url(#ex-arrow-cobalt)">
+        <line x1="240" y1="280" x2="290" y2="280"/>
+        <line x1="400" y1="280" x2="350" y2="280"/>
+      </g>
+      <text x="320" y="300" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">끌어당기는 힘 (인력)</text>
+
+      <!-- Top Principle Badge -->
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">다른 극 사이(N-S): 서로 끌어당기는 인력(Attraction) 작용</text>
+
+      <!-- Top Telemetry Badge -->
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">자기력: 인력 (+18.2 N)</text>
+
+      <!-- Bottom Principle Ribbon -->
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">자석의 다른 극(N극과 S극)을 마주 보게 놓으면 자기력선이 이어지며 서로 끌어당겨요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">자석 내부 자구(Magnetic Domain) 정렬 모형</text>
+      <!-- Unmagnetized iron -->
+      <g transform="translate(50, 90)">
+        <rect x="0" y="0" width="230" height="230" rx="8" fill="#e2e8f0" stroke="#64748b" stroke-width="2"/>
+        <text x="115" y="30" style="font-size:13px;font-weight:800;fill:#334155;text-anchor:middle">자화 전 (보통 철못)</text>
+        <g stroke="#64748b" stroke-width="2" marker-end="url(#ex-arrow)">
+          <line x1="40" y1="70" x2="80" y2="90"/>
+          <line x1="120" y1="80" x2="160" y2="60"/>
+          <line x1="180" y1="120" x2="150" y2="160"/>
+          <line x1="70" y1="140" x2="40" y2="170"/>
+          <line x1="100" y1="180" x2="140" y2="200"/>
+        </g>
+        <text x="115" y="215" style="font-size:11px;font-weight:700;fill:#64748b;text-anchor:middle">자구 방향 불규칙 (자력 상쇄)</text>
+      </g>
+      <!-- Magnetized bar -->
+      <g transform="translate(360, 90)">
+        <rect x="0" y="0" width="230" height="230" rx="8" fill="#fee2e2" stroke="#dc2626" stroke-width="2"/>
+        <text x="115" y="30" style="font-size:13px;font-weight:800;fill:#dc2626;text-anchor:middle">자화 후 (영구 자석)</text>
+        <g stroke="#dc2626" stroke-width="2.5" marker-end="url(#ex-arrow-coral)">
+          <line x1="40" y1="80" x2="190" y2="80"/>
+          <line x1="40" y1="120" x2="190" y2="120"/>
+          <line x1="40" y1="160" x2="190" y2="160"/>
+        </g>
+        <text x="115" y="215" style="font-size:11px;font-weight:700;fill:#dc2626;text-anchor:middle">자구 방향 일치 (강한 자력 합성)</text>
+      </g>
+      <rect x="40" y="350" width="560" height="45" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="377" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">철 내부 미세 자구들이 외부 자기장에 의해 한 방향으로 정렬되면 강한 자석의 성질을 띠게 돼요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 같은 극을 마주 보기 (N-N 척력)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 180)">
+        <rect x="0" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="35" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="70" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="105" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <g transform="translate(400, 180)">
+        <rect x="0" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="35" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+        <rect x="70" y="0" width="70" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="105" y="38" style="font-size:22px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+      </g>
+      <g fill="none" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ex-arrow-coral)">
+        <path d="M240 195 Q300 195 310 110"/>
+        <path d="M400 195 Q340 195 330 110"/>
+        <path d="M240 225 Q300 225 310 310"/>
+        <path d="M400 225 Q340 225 330 310"/>
+      </g>
+      <circle cx="320" cy="210" r="12" fill="#f1f5f9" stroke="#94a3b8" stroke-dasharray="3,3"/>
+      <text x="320" y="214" style="font-size:10px;font-weight:800;fill:#64748b;text-anchor:middle">B=0</text>
+      <g stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)">
+        <line x1="240" y1="280" x2="180" y2="280"/>
+        <line x1="400" y1="280" x2="460" y2="280"/>
+      </g>
+      <text x="320" y="300" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">밀어내는 힘 (척력)</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">같은 극 사이(N-N): 서로 밀어내는 척력(Repulsion) 작용</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">자기력: 척력 (-24.5 N)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">자석의 같은 극(N극과 N극, S극과 S극)끼리는 서로 강하게 밀어내어 가운데에 자기력이 0인 지점이 생겨요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 자석 사이를 멀리
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(60, 180)">
+        <rect x="0" y="0" width="60" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="30" y="38" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="60" y="0" width="60" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="90" y="38" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <g transform="translate(460, 180)">
+        <rect x="0" y="0" width="60" height="60" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="30" y="38" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="60" y="0" width="60" height="60" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="90" y="38" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <line x1="180" y1="210" x2="460" y2="210" stroke="#64748b" stroke-width="2" stroke-dasharray="4,4"/>
+      <rect x="270" y="196" width="100" height="28" rx="6" fill="#ffffff" stroke="#64748b" stroke-width="1"/>
+      <text x="320" y="215" style="font-size:12px;font-weight:800;fill:#1e293b;text-anchor:middle">거리 d = 25 cm</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">거리와 자기력: 거리가 멀어질수록 자력이 급격히 감소</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">자기력: 약화 (1.8 N)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">자석 사이 거리가 멀어지면 서로 끌어당기거나 밀어내는 자기력의 세기가 빠르게 약해져요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 3) {
+      // 나침반과 가까운 자석
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(250, 185)">
+        <rect x="0" y="0" width="70" height="50" rx="4" fill="url(#ex-mag-s)" stroke="#1e3a8a" stroke-width="1.5"/>
+        <text x="35" y="32" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">S</text>
+        <rect x="70" y="0" width="70" height="50" rx="4" fill="url(#ex-mag-n)" stroke="#991b1b" stroke-width="1.5"/>
+        <text x="105" y="32" style="font-size:20px;font-weight:900;fill:#ffffff;text-anchor:middle">N</text>
+      </g>
+      <g transform="translate(130, 210)">
+        <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+        <polygon points="0,-22 8,0 0,0 -8,0" fill="#dc2626"/>
+        <polygon points="0,22 8,0 0,0 -8,0" fill="#1d4ed8"/>
+        <circle cx="0" cy="0" r="4" fill="#0f172a"/>
+      </g>
+      <g transform="translate(510, 210)">
+        <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+        <polygon points="0,22 8,0 0,0 -8,0" fill="#dc2626"/>
+        <polygon points="0,-22 8,0 0,0 -8,0" fill="#1d4ed8"/>
+        <circle cx="0" cy="0" r="4" fill="#0f172a"/>
+      </g>
+      <g transform="translate(320, 95)">
+        <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+        <polygon points="-22,0 0,-8 0,0 0,8" fill="#dc2626"/>
+        <polygon points="22,0 0,-8 0,0 0,8" fill="#1d4ed8"/>
+        <circle cx="0" cy="0" r="4" fill="#0f172a"/>
+      </g>
+      <g transform="translate(320, 325)">
+        <circle cx="0" cy="0" r="30" fill="#ffffff" stroke="#334155" stroke-width="2"/>
+        <polygon points="-22,0 0,-8 0,0 0,8" fill="#dc2626"/>
+        <polygon points="22,0 0,-8 0,0 0,8" fill="#1d4ed8"/>
+        <circle cx="0" cy="0" r="4" fill="#0f172a"/>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">나침반 바늘의 정렬: 자석 주위 자기력선의 방향을 가리킴</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">나침반 N극 → 자석 S극</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">자석 주위에 나침반을 놓으면 나침반 바늘의 N극은 자석의 S극을, S극은 자석의 N극을 가리켜요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '자석의 다른 극(N-S)은 서로 끌어당겨요. 자기력선이 마주 보며 연결되어 인력이 작용해요.' : c === 1 ? '자석의 같은 극(N-N)은 서로 밀어내요. 자기력선이 서로 부딪혀 바깥으로 휘어지며 척력이 발생해요.' : c === 2 ? '자석 사이 거리가 멀어질수록 자력이 급격하게 감소해요.' : '나침반 바늘은 자석 주위의 자기력선 접선 방향을 따라 정렬돼요.';
+  } else if (kind === 'sound') {
+    controls = ['작은 진폭 · 같은 빠르기', '큰 진폭 · 같은 빠르기', '같은 진폭 · 더 빠른 진동'];
+    customSteps = ['음파와 공기 밀소파', '오실로스코프 파형 분석'];
+
+    const amp = c === 1 ? 14 : 6;
+    const freq = c === 2 ? 2.5 : 1.2;
+    const vibOffset = Math.sin(phase * Math.PI * 4 * freq) * amp;
+
+    body = `<g filter="url(#ex-shadow)">
+      <!-- Acoustic Resonance Box & Tuning Fork -->
+      <g transform="translate(80, 140)">
+        <!-- Wooden Box -->
+        <rect x="0" y="140" width="100" height="65" rx="6" fill="#b45309" stroke="#78350f" stroke-width="2"/>
+        <ellipse cx="50" cy="172" rx="18" ry="14" fill="#451a03"/>
+        <!-- Steel Stem -->
+        <rect x="44" y="90" width="12" height="50" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+        <!-- U-prong base -->
+        <path d="M30 90 Q50 95 70 90 V20 Q70 12 50 12 Q30 12 30 20 Z" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+        <!-- Vibrating Left Prong -->
+        <rect x="${30 - vibOffset}" y="15" width="10" height="75" rx="3" fill="#94a3b8" stroke="#334155" stroke-width="1.5"/>
+        <!-- Vibrating Right Prong -->
+        <rect x="${60 + vibOffset}" y="15" width="10" height="75" rx="3" fill="#94a3b8" stroke="#334155" stroke-width="1.5"/>
+      </g>
+
+      <!-- Longitudinal Sound Wavefronts (Air Molecules Compression & Rarefaction) -->
+      <g transform="translate(200, 160)">
+        ${Array.from({ length: 8 }, (_, i) => {
+          const x = 30 + i * (c === 2 ? 28 : 48);
+          const isDense = i % 2 === 0;
+          return `<g transform="translate(${x}, 0)">
+            <line x1="0" y1="20" x2="0" y2="120" stroke="${isDense ? (c === 1 ? '#0284c7' : '#38bdf8') : '#94a3b8'}" stroke-width="${isDense ? (c === 1 ? 7 : 4) : 1.5}" stroke-linecap="round" stroke-dasharray="${isDense ? 'none' : '4,4'}"/>
+            <text x="0" y="140" style="font-size:10px;font-weight:700;fill:${isDense ? '#0284c7' : '#94a3b8'};text-anchor:middle">${isDense ? '밀(밀집)' : '소(희박)'}</text>
+          </g>`;
+        }).join('')}
+      </g>
+
+      <!-- Wave Direction Arrow -->
+      <g transform="translate(210, 130)" stroke="#16a34a" stroke-width="3" marker-end="url(#ex-arrow)">
+        <line x1="0" y1="0" x2="380" y2="0"/>
+      </g>
+      <text x="400" y="125" style="font-size:11px;font-weight:800;fill:#16a34a;text-anchor:middle">음파 진행 방향 (종파)</text>
+
+      <!-- Top Principle Badge -->
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">${c === 0 ? '진폭이 작음: 음차가 살짝 진동하여 작은 소리 발생' : c === 1 ? '진폭이 큼: 음차가 크게 진동하여 큰 소리(에너지 큼) 발생' : '진동수가 큼: 1초에 더 빠르게 진동하여 높은 음 발생'}</text>
+
+      <!-- Top Telemetry Badge -->
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">${c === 0 ? '진폭: 1.2 mm · 42 dB (작은 소리)' : c === 1 ? '진폭: 4.8 mm · 78 dB (큰 소리)' : '진동수: 512 Hz · 높은 소리(고음)'}</text>
+
+      <!-- Bottom Principle Ribbon -->
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">${c === 0 ? '소리의 세기는 진폭에 비례해요. 진폭이 작으면 전달되는 공기 압력 변화가 작아 조용한 소리가 나요.' : c === 1 ? '진폭이 크면 공기를 강하게 밀어내어 밀도 차이가 커지고 큰 소리로 멀리까지 전달돼요.' : '진동수가 많아지면 파장이 짧아지고 1초당 고막을 두드리는 횟수가 늘어나 높은 소리로 인지돼요.'}</text>
+    </g>`;
+
+    detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#0f172a" stroke="#334155" stroke-width="2"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#38bdf8;text-anchor:middle">디지털 오실로스코프(Oscilloscope) 음파 파형 정밀 분석</text>
+      <!-- Grid Lines -->
+      <g stroke="#1e293b" stroke-width="1">
+        ${Array.from({ length: 9 }, (_, i) => `<line x1="50" y1="${80 + i * 35}" x2="590" y2="${80 + i * 35}"/>`).join('')}
+        ${Array.from({ length: 15 }, (_, i) => `<line x1="${60 + i * 36}" y1="80" x2="${60 + i * 36}" y2="360"/>`).join('')}
+      </g>
+      <!-- Center Zero Line -->
+      <line x1="50" y1="220" x2="590" y2="220" stroke="#475569" stroke-width="1.5"/>
+      <!-- Sine Wave Form (Green Phosphor) -->
+      <path d="M60 220 Q96 120 132 220 Q168 320 204 220 Q240 120 276 220 Q312 320 348 220 Q384 120 420 220 Q456 320 492 220 Q528 120 564 220" fill="none" stroke="#22c55e" stroke-width="3.5" filter="url(#ex-glow-cyan)"/>
+      <!-- Dimension Markers -->
+      <!-- Amplitude A -->
+      <line x1="276" y1="220" x2="276" y2="120" stroke="#facc15" stroke-width="2.5" marker-end="url(#ex-arrow-amber)"/>
+      <text x="290" y="170" style="font-size:12px;font-weight:800;fill:#facc15">진폭 (소리 크기 A)</text>
+      <!-- Wavelength Lambda -->
+      <line x1="132" y1="220" x2="276" y2="220" stroke="#38bdf8" stroke-width="3" marker-end="url(#ex-arrow-cyan)"/>
+      <text x="204" y="240" style="font-size:12px;font-weight:800;fill:#38bdf8;text-anchor:middle">1주기 (진동수 f = 1/T)</text>
+      <rect x="40" y="370" width="560" height="34" rx="6" fill="#1e293b" stroke="#38bdf8" stroke-width="1"/>
+      <text x="320" y="392" style="font-size:12px;font-weight:700;fill:#f8fafc;text-anchor:middle">파형의 높낮이(진폭)는 소리의 세기를 결정하고, 마루와 마루 사이 간격(진동수)은 음의 높낮이를 결정해요</text>
+    </g>`;
+
+    caption = c === 0 ? '진폭이 작으면 조용한 소리가 나요. 공기 입자의 압축 폭이 좁아요.' : c === 1 ? '진폭이 크면 큰 소리가 나요. 진동 에너지가 커져 공기 밀도 차이가 극대화돼요.' : '진동수가 크면 높은 소리가 나요. 1초 동안 진동하는 횟수가 많아 파장이 촘촘해져요.';
+  } else if (kind === 'optics') {
+    controls = ['빛과 그림자', '거울에서 빛의 반사', '볼록렌즈에서 빛의 굴절'];
+    customSteps = ['광선 추적 실험', '렌즈 상의 굴절 메커니즘'];
+
+    if (c === 0) {
+      // 빛과 그림자
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Light Source Flashlight -->
+      <g transform="translate(60, 190)">
+        <polygon points="0,0 45,0 75,-25 75,45 45,20 0,20" fill="#64748b" stroke="#334155" stroke-width="1.5"/>
+        <ellipse cx="75" cy="10" rx="6" ry="35" fill="#fef08a"/>
+      </g>
+      <!-- Collimated Light Rays -->
+      <polygon points="140,165 310,140 310,280 140,255" fill="#fef08a" opacity="0.35"/>
+      <polygon points="310,140 540,90 540,330 310,280" fill="#fef08a" opacity="0.25"/>
+      <!-- Opaque Obstacle Cylinder -->
+      <g transform="translate(310, 160)">
+        <rect x="0" y="0" width="30" height="100" rx="6" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <text x="15" y="55" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">불투명체</text>
+      </g>
+      <!-- Screen with Umbra -->
+      <g transform="translate(540, 80)">
+        <rect x="0" y="0" width="16" height="260" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>
+        <rect x="0" y="55" width="16" height="150" fill="#0f172a"/>
+        <text x="-10" y="135" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:end">진한 그림자</text>
+      </g>
+      <!-- Ray Lines -->
+      <line x1="140" y1="165" x2="540" y2="135" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+      <line x1="140" y1="255" x2="540" y2="285" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4,4"/>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">빛의 직진: 빛은 곧게 나아가며 장애물 뒤에 그림자를 형성</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">광선 경로: 완전 직진</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">빛은 균일한 매질에서 곧게 나아가므로, 불투명한 물체를 만나면 통과하지 못해 뒤편에 그림자가 생겨요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">광원의 크기와 본그림자(Umbra)·반그림자(Penumbra) 구조</text>
+      <circle cx="90" cy="210" r="45" fill="#fef08a" stroke="#f59e0b" stroke-width="2"/>
+      <text x="90" y="215" style="font-size:12px;font-weight:800;fill:#78350f;text-anchor:middle">확장 광원</text>
+      <!-- Obstacle -->
+      <circle cx="280" cy="210" r="30" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+      <text x="280" y="215" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">물체</text>
+      <!-- Screen with Penumbra & Umbra -->
+      <g transform="translate(520, 80)">
+        <rect x="0" y="0" width="18" height="260" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="0" y="60" width="18" height="140" fill="#475569"/>
+        <rect x="0" y="90" width="18" height="80" fill="#0f172a"/>
+        <text x="-12" y="135" style="font-size:11px;font-weight:800;fill:#0f172a;text-anchor:end">본그림자</text>
+        <text x="-12" y="80" style="font-size:11px;font-weight:700;fill:#475569;text-anchor:end">반그림자</text>
+      </g>
+      <line x1="90" y1="165" x2="520" y2="170" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <line x1="90" y1="255" x2="520" y2="250" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <line x1="90" y1="165" x2="520" y2="60" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <line x1="90" y1="255" x2="520" y2="340" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="3,3"/>
+      <rect x="40" y="360" width="560" height="38" rx="6" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="384" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">광원이 점이 아니라 면적을 가질 때는 빛이 완전히 차단된 본그림자와 일부만 닿는 반그림자가 생겨요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 거울에서 빛의 반사
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Plane Mirror -->
+      <g transform="translate(140, 310)">
+        <rect x="0" y="0" width="360" height="16" rx="3" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+        <line x1="0" y1="16" x2="360" y2="16" stroke="#0284c7" stroke-width="3"/>
+      </g>
+      <!-- Normal Line (법선) -->
+      <line x1="320" y1="100" x2="320" y2="310" stroke="#64748b" stroke-width="2" stroke-dasharray="6,6"/>
+      <text x="330" y="125" style="font-size:12px;font-weight:800;fill:#64748b">법선 (수직선)</text>
+      <!-- Incident Ray -->
+      <g stroke="#dc2626" stroke-width="3.5" marker-end="url(#ex-arrow-coral)">
+        <line x1="140" y1="150" x2="320" y2="310"/>
+      </g>
+      <text x="210" y="205" style="font-size:12px;font-weight:800;fill:#dc2626">입사 광선 (40°)</text>
+      <!-- Reflected Ray -->
+      <g stroke="#0284c7" stroke-width="3.5" marker-end="url(#ex-arrow-cobalt)">
+        <line x1="320" y1="310" x2="500" y2="150"/>
+      </g>
+      <text x="430" y="205" style="font-size:12px;font-weight:800;fill:#0284c7">반사 광선 (40°)</text>
+      <!-- Angle Arcs -->
+      <path d="M290 280 Q305 270 320 270" fill="none" stroke="#dc2626" stroke-width="2"/>
+      <text x="285" y="260" style="font-size:11px;font-weight:800;fill:#dc2626">입사각</text>
+      <path d="M320 270 Q335 270 350 280" fill="none" stroke="#0284c7" stroke-width="2"/>
+      <text x="355" y="260" style="font-size:11px;font-weight:800;fill:#0284c7">반사각</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">반사의 법칙: 입사각(Angle of Incidence) = 반사각</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">입사각 40° = 반사각 40°</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">거울 표면에 부딪힌 빛은 법선을 기준으로 입사각과 반사각이 항상 같은 각도로 튕겨 나가요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 볼록렌즈에서 빛의 굴절
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Optical Axis -->
+      <line x1="50" y1="210" x2="590" y2="210" stroke="#94a3b8" stroke-width="1.5" stroke-dasharray="5,5"/>
+      <text x="580" y="200" style="font-size:10px;font-weight:700;fill:#94a3b8">광축</text>
+      <!-- Convex Lens -->
+      <g transform="translate(300, 90)">
+        <path d="M20 0 Q45 120 20 240 Q-5 120 20 0 Z" fill="url(#ex-glass)" stroke="#0284c7" stroke-width="2"/>
+        <line x1="20" y1="0" x2="20" y2="240" stroke="#38bdf8" stroke-width="1" stroke-dasharray="2,2"/>
+      </g>
+      <!-- Real Focal Point F -->
+      <circle cx="480" cy="210" r="5" fill="#dc2626"/>
+      <text x="480" y="235" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">초점 F</text>
+      <!-- Parallel Incoming Rays and Converging Refracted Rays -->
+      <g stroke="#f59e0b" stroke-width="2.5" marker-end="url(#ex-arrow-amber)">
+        <!-- Top ray -->
+        <line x1="70" y1="140" x2="320" y2="140"/>
+        <line x1="320" y1="140" x2="540" y2="235"/>
+        <!-- Center ray -->
+        <line x1="70" y1="210" x2="320" y2="210"/>
+        <line x1="320" y1="210" x2="540" y2="210"/>
+        <!-- Bottom ray -->
+        <line x1="70" y1="280" x2="320" y2="280"/>
+        <line x1="320" y1="280" x2="540" y2="185"/>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">볼록렌즈의 굴절: 평행하게 들어온 빛을 한 초점으로 모음</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">초점 거리 f = 16 cm (빛 모음)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">가운데가 두꺼운 볼록렌즈는 통과하는 빛을 두 번 굴절시켜 반대편의 초점(F)으로 모아줘요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '빛이 곧게 나아가다 불투명한 물체를 만나면 뒤편에 선명한 그림자가 생겨요.' : c === 1 ? '매끄러운 거울 면에 빛이 닿으면 입사각과 반사각이 서로 같게 반사돼요.' : '볼록렌즈는 가장자리보다 가운데가 두꺼워 나란한 빛을 한 점(초점)에 모아 줘요.';
+  } else if (kind === 'electricity') {
+    controls = ['닫힌 회로 · 전구 켜짐', '열린 회로 · 전구 꺼짐', '전자석 · 전류 있음', '전자석 · 전류 없음'];
+    customSteps = ['전기 회로 구성', '필라멘트 줄열/자기장'];
+
+    if (c === 0) {
+      // 닫힌 회로 · 전구 켜짐
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Battery (AA 1.5V) -->
+      <g transform="translate(100, 180)">
+        <rect x="0" y="0" width="70" height="80" rx="6" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <rect x="25" y="-12" width="20" height="12" rx="2" fill="#eab308" stroke="#ca8a04" stroke-width="1.5"/>
+        <text x="35" y="35" style="font-size:16px;font-weight:900;fill:#ef4444;text-anchor:middle">+</text>
+        <text x="35" y="65" style="font-size:20px;font-weight:900;fill:#38bdf8;text-anchor:middle">−</text>
+      </g>
+      <!-- Circuit Wires -->
+      <path d="M135 168 V100 H480 V180" fill="none" stroke="#dc2626" stroke-width="4.5"/>
+      <path d="M135 260 V330 H480 V260" fill="none" stroke="#1d4ed8" stroke-width="4.5"/>
+      <!-- Closed Switch -->
+      <g transform="translate(260, 100)">
+        <circle cx="0" cy="0" r="6" fill="#334155"/>
+        <circle cx="60" cy="0" r="6" fill="#334155"/>
+        <line x1="0" y1="0" x2="60" y2="0" stroke="#16a34a" stroke-width="4"/>
+      </g>
+      <!-- Glowing Incandescent Bulb -->
+      <g transform="translate(480, 220)">
+        <!-- Yellow Radiating Glow -->
+        <circle cx="0" cy="0" r="45" fill="#fef08a" opacity="0.55" filter="url(#ex-glow-amber)"/>
+        <!-- Glass Bulb -->
+        <circle cx="0" cy="0" r="28" fill="#fef9c3" stroke="#eab308" stroke-width="2"/>
+        <!-- Filament -->
+        <path d="M-10 10 L-6 -8 L0 6 L6 -8 L10 10" fill="none" stroke="#ea580c" stroke-width="2.5"/>
+        <!-- Base socket -->
+        <rect x="-14" y="24" width="28" height="18" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      </g>
+      <!-- Moving Electron dots -->
+      ${Array.from({ length: 6 }, (_, i) => `<circle cx="${180 + ((phase + i * 0.16) % 1) * 260}" cy="100" r="4.5" fill="#facc15"/>`).join('')}
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">폐회로(Closed Circuit): 전하가 끊김 없이 연속해서 흐름</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">전류 0.35 A · 전구 점등</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">전지와 전구, 스위치가 도선으로 완전히 연결된 닫힌 회로에서만 전류가 흘러 불이 켜져요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">백열전구 필라멘트(텅스텐 이중 코일) 줄열(Joule Heat) 방출 원리</text>
+      <!-- Enlarged Bulb Chamber -->
+      <g transform="translate(140, 90)">
+        <ellipse cx="80" cy="110" rx="90" ry="110" fill="#fef9c3" stroke="#ca8a04" stroke-width="2.5" opacity="0.6"/>
+        <!-- Coiled Filament -->
+        <path d="M30 140 Q40 60 80 50 Q120 60 130 140" fill="none" stroke="#ea580c" stroke-width="4.5"/>
+        <text x="80" y="40" style="font-size:12px;font-weight:800;fill:#b45309;text-anchor:middle">텅스텐 고저항 발열부</text>
+      </g>
+      <g transform="translate(360, 110)">
+        <rect x="0" y="0" width="220" height="190" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="110" y="30" style="font-size:13px;font-weight:800;fill:#0f172a;text-anchor:middle">미세 전자 충돌</text>
+        <text x="20" y="65" style="font-size:11px;font-weight:700;fill:#334155">• 전자 흐름 저항 충돌</text>
+        <text x="20" y="95" style="font-size:11px;font-weight:700;fill:#334155">• 필라멘트 온도 2,500℃ 가열</text>
+        <text x="20" y="125" style="font-size:11px;font-weight:700;fill:#334155">• 가시광선 빛 에너지 방출</text>
+        <text x="20" y="155" style="font-size:11px;font-weight:800;fill:#dc2626">• P = I²R 발열 원리</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="6" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">가늘고 긴 텅스텐 선에 전자가 부딪히며 높은 전기 저항으로 고온의 백열광을 방출해요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 열린 회로 · 전구 꺼짐
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 180)">
+        <rect x="0" y="0" width="70" height="80" rx="6" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <rect x="25" y="-12" width="20" height="12" rx="2" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+        <text x="35" y="35" style="font-size:16px;font-weight:900;fill:#94a3b8;text-anchor:middle">+</text>
+        <text x="35" y="65" style="font-size:20px;font-weight:900;fill:#94a3b8;text-anchor:middle">−</text>
+      </g>
+      <path d="M135 168 V100 H480 V180" fill="none" stroke="#64748b" stroke-width="4.5"/>
+      <path d="M135 260 V330 H480 V260" fill="none" stroke="#64748b" stroke-width="4.5"/>
+      <!-- Open Switch -->
+      <g transform="translate(260, 100)">
+        <circle cx="0" cy="0" r="6" fill="#334155"/>
+        <circle cx="60" cy="0" r="6" fill="#334155"/>
+        <line x1="0" y1="0" x2="45" y2="-28" stroke="#dc2626" stroke-width="4"/>
+        <text x="30" y="-35" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">스위치 열림 (단선)</text>
+      </g>
+      <!-- Dark Bulb -->
+      <g transform="translate(480, 220)">
+        <circle cx="0" cy="0" r="28" fill="#e2e8f0" stroke="#94a3b8" stroke-width="2"/>
+        <path d="M-10 10 L-6 -8 L0 6 L6 -8 L10 10" fill="none" stroke="#64748b" stroke-width="2"/>
+        <rect x="-14" y="24" width="28" height="18" fill="#94a3b8" stroke="#475569" stroke-width="1.5"/>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">개회로(Open Circuit): 회로 중간이 끊어져 전류 차단</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">전류 0.0 A · 전구 소등</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">스위치를 열면 회로가 끊겨 전하가 이동할 수 없으므로 전류가 흐르지 않고 전구가 꺼져요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 전자석 · 전류 있음
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Iron Core Nail with Coiled Wire -->
+      <g transform="translate(180, 160)">
+        <!-- Iron Nail -->
+        <rect x="0" y="35" width="260" height="30" rx="4" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+        <polygon points="260,30 290,50 260,70" fill="#64748b"/>
+        <!-- Copper Coil Windings -->
+        ${Array.from({ length: 9 }, (_, i) => `<ellipse cx="${40 + i * 22}" cy="50" rx="6" ry="24" fill="none" stroke="#ea580c" stroke-width="4.5"/>`).join('')}
+      </g>
+      <!-- Attracted Paperclips -->
+      <g transform="translate(470, 210)" stroke="#475569" stroke-width="2.5" fill="none">
+        <rect x="0" y="0" width="12" height="35" rx="6"/>
+        <rect x="15" y="-10" width="12" height="35" rx="6" transform="rotate(25)"/>
+        <rect x="25" y="10" width="12" height="35" rx="6" transform="rotate(-15)"/>
+      </g>
+      <!-- Magnetic Field Lines Loops -->
+      <path d="M190 140 Q310 90 430 140" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="4,4" marker-end="url(#ex-arrow-coral)"/>
+      <path d="M190 260 Q310 310 430 260" fill="none" stroke="#dc2626" stroke-width="2.5" stroke-dasharray="4,4" marker-end="url(#ex-arrow-coral)"/>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">전자석(Electromagnet): 코일에 전류가 흐를 때 강한 자력 발생</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">전자석 활성 (클립 흡착)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">도선을 감은 철못에 전류를 흘려주면 영구 자석처럼 주위에 자기장을 형성하여 쇠붙이를 끌어당겨요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 3) {
+      // 전자석 · 전류 없음
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 160)">
+        <rect x="0" y="35" width="260" height="30" rx="4" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>
+        <polygon points="260,30 290,50 260,70" fill="#94a3b8"/>
+        ${Array.from({ length: 9 }, (_, i) => `<ellipse cx="${40 + i * 22}" cy="50" rx="6" ry="24" fill="none" stroke="#94a3b8" stroke-width="4.5"/>`).join('')}
+      </g>
+      <!-- Fallen Paperclips in Dish -->
+      <g transform="translate(440, 290)">
+        <ellipse cx="40" cy="15" rx="55" ry="18" fill="#e2e8f0" stroke="#94a3b8" stroke-width="1.5"/>
+        <g stroke="#64748b" stroke-width="2.5" fill="none">
+          <rect x="15" y="5" width="12" height="30" rx="6" transform="rotate(75)"/>
+          <rect x="40" y="0" width="12" height="30" rx="6" transform="rotate(15)"/>
+          <rect x="55" y="8" width="12" height="30" rx="6" transform="rotate(-60)"/>
+        </g>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">전류 차단: 전류가 끊어지면 자석 성질이 즉시 소멸</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#64748b" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#64748b;text-anchor:middle">자력 소멸 (클립 낙하)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">전류가 끊어지면 자기장이 사라져 자석의 성질을 잃고 붙어 있던 클립들이 아래로 떨어져요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '닫힌 회로에서는 전류가 흘러 전구에 불이 켜져요.' : c === 1 ? '스위치를 열어 회로가 끊어지면 전류가 흐르지 않아 전구가 꺼져요.' : c === 2 ? '전류가 흐르는 코일은 자석의 성질을 띠어 철 클립을 끌어당겨요.' : '전류를 끊으면 자석의 성질이 사라져 붙어 있던 클립이 모두 떨어져요.';
+  } else if (kind === 'energy-transfer') {
+    controls = ['손 발전기 → 전구', '전지 → 모터', '태양 전지 → 모터'];
+    customSteps = ['에너지 전환 과정', '생키(Sankey) 에너지 수지표'];
+
+    if (c === 0) {
+      // 손 발전기 → 전구
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Hand Crank Generator -->
+      <g transform="translate(100, 160)">
+        <rect x="0" y="40" width="110" height="90" rx="8" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
+        <text x="55" y="90" style="font-size:13px;font-weight:800;fill:#ffffff;text-anchor:middle">손 발전기</text>
+        <!-- Crank Handle -->
+        <circle cx="55" cy="40" r="14" fill="#cbd5e1" stroke="#475569" stroke-width="2"/>
+        <line x1="55" y1="40" x2="85" y2="10" stroke="#475569" stroke-width="6" stroke-linecap="round"/>
+        <circle cx="85" cy="10" r="8" fill="#dc2626"/>
+      </g>
+      <!-- Wires -->
+      <path d="M210 200 H430" fill="none" stroke="#f59e0b" stroke-width="5"/>
+      <!-- Glowing Bulb -->
+      <g transform="translate(430, 200)">
+        <circle cx="0" cy="0" r="40" fill="#fef08a" opacity="0.6" filter="url(#ex-glow-amber)"/>
+        <circle cx="0" cy="0" r="26" fill="#fef9c3" stroke="#eab308" stroke-width="2"/>
+        <path d="M-8 8 L-4 -6 L0 6 L4 -6 L8 8" fill="none" stroke="#ea580c" stroke-width="2"/>
+      </g>
+      <!-- Energy Step Badges -->
+      <g transform="translate(60, 290)">
+        <rect x="0" y="0" width="150" height="34" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="75" y="22" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">역학적(운동) 에너지</text>
+      </g>
+      <text x="250" y="312" style="font-size:16px;font-weight:900;fill:#64748b">→</text>
+      <g transform="translate(280, 290)">
+        <rect x="0" y="0" width="120" height="34" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="60" y="22" style="font-size:11px;font-weight:800;fill:#b45309;text-anchor:middle">전기 에너지</text>
+      </g>
+      <text x="430" y="312" style="font-size:16px;font-weight:900;fill:#64748b">→</text>
+      <g transform="translate(460, 290)">
+        <rect x="0" y="0" width="130" height="34" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="65" y="22" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">빛·열 에너지</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">에너지 전환: 운동 에너지 → 전기 에너지 → 빛·열 에너지</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">발전 전환 효율: 72%</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">손잡이를 돌리는 운동 에너지가 발전기에서 전기 에너지로 바뀌고, 전구에서 빛과 열로 전환돼요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">생키 다이어그램(Sankey Diagram) 에너지 보존 수지표</text>
+      <!-- Input Band (100J) -->
+      <path d="M60 160 H240 V280 H60 Z" fill="#0284c7"/>
+      <text x="150" y="225" style="font-size:14px;font-weight:800;fill:#ffffff;text-anchor:middle">역학적 입력 100J</text>
+      <!-- Branch Useful (72J) -->
+      <path d="M240 160 C320 160 360 130 420 130 H550 V210 H420 C360 210 320 220 240 220 Z" fill="#f59e0b"/>
+      <text x="480" y="175" style="font-size:13px;font-weight:800;fill:#ffffff;text-anchor:middle">유효 빛/전기 72J</text>
+      <!-- Branch Thermal Loss (28J) -->
+      <path d="M240 220 C300 220 330 290 390 290 H550 V340 H390 C330 340 300 280 240 280 Z" fill="#ef4444"/>
+      <text x="470" y="320" style="font-size:12px;font-weight:800;fill:#ffffff;text-anchor:middle">비가역 열손실 28J</text>
+
+      <rect x="40" y="360" width="560" height="40" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="385" style="font-size:12px;font-weight:800;fill:#0f172a;text-anchor:middle">에너지 보존 법칙: 전환 전후의 총 에너지 합은 100J로 항상 일정하게 보존돼요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 전지 → 모터
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Chemical Battery -->
+      <g transform="translate(100, 170)">
+        <rect x="0" y="0" width="100" height="70" rx="6" fill="#10b981" stroke="#047857" stroke-width="2"/>
+        <text x="50" y="42" style="font-size:13px;font-weight:800;fill:#ffffff;text-anchor:middle">화학 전지</text>
+      </g>
+      <path d="M200 205 H380" fill="none" stroke="#f59e0b" stroke-width="5"/>
+      <!-- Motor with Propeller Fan -->
+      <g transform="translate(420, 205)">
+        <circle cx="0" cy="0" r="30" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <text x="0" y="5" style="font-size:11px;font-weight:800;fill:#ffffff;text-anchor:middle">모터</text>
+        <!-- Rotating Blades -->
+        <g stroke="#0284c7" stroke-width="6" stroke-linecap="round">
+          <line x1="-50" y1="0" x2="50" y2="0"/>
+          <line x1="0" y1="-50" x2="0" y2="50"/>
+        </g>
+      </g>
+      <!-- Flow Text -->
+      <g transform="translate(60, 290)">
+        <rect x="0" y="0" width="150" height="34" rx="6" fill="#d1fae5" stroke="#10b981" stroke-width="1.5"/>
+        <text x="75" y="22" style="font-size:11px;font-weight:800;fill:#047857;text-anchor:middle">전지의 화학 에너지</text>
+      </g>
+      <text x="250" y="312" style="font-size:16px;font-weight:900;fill:#64748b">→</text>
+      <g transform="translate(280, 290)">
+        <rect x="0" y="0" width="120" height="34" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="60" y="22" style="font-size:11px;font-weight:800;fill:#b45309;text-anchor:middle">전기 에너지</text>
+      </g>
+      <text x="430" y="312" style="font-size:16px;font-weight:900;fill:#64748b">→</text>
+      <g transform="translate(460, 290)">
+        <rect x="0" y="0" width="130" height="34" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="65" y="22" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">모터의 운동 에너지</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">에너지 전환: 화학 에너지 → 전기 에너지 → 모터 운동 에너지</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">모터 회전: 1,800 RPM</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">전지 속 물질의 화학 에너지가 도선을 따라 전기 에너지로 전달된 후 모터를 회전시키는 운동 에너지로 바뀌어요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 태양 전지 → 모터
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Sun Radiating Light -->
+      <g transform="translate(90, 110)">
+        <circle cx="0" cy="0" r="28" fill="#facc15" stroke="#eab308" stroke-width="2"/>
+        ${Array.from({ length: 8 }, (_, i) => {
+          const a = (i * Math.PI) / 4;
+          return `<line x1="${Math.cos(a) * 35}" y1="${Math.sin(a) * 35}" x2="${Math.cos(a) * 48}" y2="${Math.sin(a) * 48}" stroke="#f59e0b" stroke-width="2.5"/>`;
+        }).join('')}
+      </g>
+      <!-- Solar Panel -->
+      <g transform="translate(180, 190)">
+        <polygon points="0,30 90,0 120,60 30,90" fill="#1e3a8a" stroke="#172554" stroke-width="2"/>
+        <line x1="30" y1="20" x2="60" y2="80" stroke="#38bdf8" stroke-width="1.5"/>
+        <line x1="60" y1="10" x2="90" y2="70" stroke="#38bdf8" stroke-width="1.5"/>
+        <text x="60" y="55" style="font-size:11px;font-weight:800;fill:#ffffff">태양 전지판</text>
+      </g>
+      <!-- Wire to Motor -->
+      <path d="M300 230 H450" fill="none" stroke="#f59e0b" stroke-width="4.5"/>
+      <g transform="translate(480, 230)">
+        <circle cx="0" cy="0" r="28" fill="#334155" stroke="#0f172a" stroke-width="2"/>
+        <!-- Pinwheel fan -->
+        <g stroke="#0284c7" stroke-width="5" stroke-linecap="round">
+          <line x1="-38" y1="0" x2="38" y2="0"/>
+          <line x1="0" y1="-38" x2="0" y2="38"/>
+        </g>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">에너지 전환: 태양의 빛 에너지 → 태양전지 전기 → 운동 에너지</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">광전 변환 가동 중</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">햇빛의 빛 에너지를 태양 전지판이 흡수하여 전기를 만들고, 이 전기가 모터를 돌려 바람개비를 회전시켜요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '손잡이를 돌리는 운동 에너지가 전기 에너지를 거쳐 전구의 빛과 열 에너지로 바뀌어요.' : c === 1 ? '전지 속 화학 에너지가 전기 에너지를 거쳐 모터를 회전시키는 운동 에너지로 바뀌어요.' : '태양의 빛 에너지를 태양 전지가 전기로 바꾸고, 모터가 이를 다시 운동 에너지로 전환해요.';
+  } else if (kind === 'force-graph') {
+    controls = ['추 1개', '추 2개', '추 3개'];
+    customSteps = ['용수철 늘어남과 그래프', '탄성 한계와 금속 격자'];
+
+    const weightCount = c + 1;
+    const deltaY = weightCount * 35;
+
+    body = `<g filter="url(#ex-shadow)">
+      <!-- Stand and Ruler -->
+      <g transform="translate(80, 80)">
+        <!-- Top Horizontal Bar -->
+        <rect x="0" y="0" width="140" height="14" rx="3" fill="#64748b" stroke="#334155" stroke-width="1.5"/>
+        <!-- Metric Ruler (0 to 20 cm) -->
+        <rect x="120" y="14" width="26" height="260" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        ${Array.from({ length: 11 }, (_, i) => `
+          <line x1="120" y1="${20 + i * 24}" x2="132" y2="${20 + i * 24}" stroke="#334155" stroke-width="1.5"/>
+          <text x="136" y="${24 + i * 24}" style="font-size:9px;font-weight:700;fill:#475569">${i * 2}</text>
+        `).join('')}
+        <!-- Spring -->
+        <g transform="translate(60, 14)">
+          <line x1="0" y1="0" x2="0" y2="15" stroke="#334155" stroke-width="2"/>
+          <!-- Elongating Spring Coils -->
+          <path d="M0 15 ${Array.from({ length: 12 }, (_, i) => `q ${i % 2 === 0 ? 12 : -12} ${(deltaY + 70) / 24} 0 ${(deltaY + 70) / 12}`).join(' ')}" fill="none" stroke="#475569" stroke-width="2.5"/>
+          <!-- Hanging Hook -->
+          <line x1="0" y1="${85 + deltaY}" x2="0" y2="${100 + deltaY}" stroke="#334155" stroke-width="2"/>
+          <!-- Red Indicator Needle pointing to ruler -->
+          <polygon points="0,${100 + deltaY} 60,${100 + deltaY} 50,${96 + deltaY} 50,${104 + deltaY}" fill="#dc2626"/>
+          <!-- Brass Weights -->
+          ${Array.from({ length: weightCount }, (_, i) => `
+            <g transform="translate(-20, ${100 + deltaY + i * 26})">
+              <rect x="0" y="0" width="40" height="24" rx="4" fill="#f59e0b" stroke="#b45309" stroke-width="1.5"/>
+              <text x="20" y="16" style="font-size:10px;font-weight:800;fill:#451a03;text-anchor:middle">1.0 N</text>
+            </g>
+          `).join('')}
+        </g>
+      </g>
+
+      <!-- Side Graph (F vs Delta X Linear Plot) -->
+      <g transform="translate(320, 100)">
+        <rect x="0" y="0" width="280" height="240" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <text x="140" y="25" style="font-size:12px;font-weight:800;fill:#1e293b;text-anchor:middle">추의 무게와 늘어난 길이 (훅의 법칙)</text>
+        <!-- Axes -->
+        <line x1="45" y1="200" x2="255" y2="200" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="250" y="218" style="font-size:10px;font-weight:800;fill:#334155">무게 F (N)</text>
+        <line x1="45" y1="200" x2="45" y2="40" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="35" y="42" style="font-size:10px;font-weight:800;fill:#334155;text-anchor:end">늘어난 길이 (cm)</text>
+
+        <!-- Grid Lines & Linear Line -->
+        <line x1="45" y1="200" x2="235" y2="70" stroke="#dc2626" stroke-width="2.5"/>
+        <!-- Plotted Data Points -->
+        <circle cx="105" cy="160" r="5" fill="${weightCount >= 1 ? '#0284c7' : '#94a3b8'}"/>
+        <text x="105" y="180" style="font-size:9px;font-weight:700;fill:#0284c7;text-anchor:middle">(1N, 2.5)</text>
+        <circle cx="165" cy="115" r="5" fill="${weightCount >= 2 ? '#0284c7' : '#94a3b8'}"/>
+        <text x="165" y="135" style="font-size:9px;font-weight:700;fill:#0284c7;text-anchor:middle">(2N, 5.0)</text>
+        <circle cx="225" cy="70" r="5" fill="${weightCount >= 3 ? '#0284c7' : '#94a3b8'}"/>
+        <text x="225" y="90" style="font-size:9px;font-weight:700;fill:#0284c7;text-anchor:middle">(3N, 7.5)</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">훅의 법칙: 용수철이 늘어난 길이는 매단 추의 무게에 비례</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">F = ${weightCount}.0 N · Δx = ${(weightCount * 2.5).toFixed(1)} cm</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">추의 무게가 2배, 3배가 되면 늘어난 길이도 정확히 2배, 3배가 되어 물체의 무게를 잴 수 있어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">탄성 한계(Elastic Limit)와 금속 격자의 소성 변형</text>
+      <g transform="translate(60, 90)">
+        <rect x="0" y="0" width="480" height="230" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <!-- Stress-Strain Curve -->
+        <path d="M40 190 L180 80 Q260 65 320 80 T440 140" fill="none" stroke="#dc2626" stroke-width="3"/>
+        <line x1="180" y1="40" x2="180" y2="200" stroke="#f59e0b" stroke-width="1.5" stroke-dasharray="4,4"/>
+        <text x="110" y="60" style="font-size:12px;font-weight:800;fill:#16a34a">탄성 구간 (원상 복귀)</text>
+        <text x="300" y="60" style="font-size:12px;font-weight:800;fill:#dc2626">소성 변형 구간 (영구 변형)</text>
+        <text x="180" y="215" style="font-size:11px;font-weight:800;fill:#b45309;text-anchor:middle">탄성 한계선</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">탄성 한계 내에서는 무게에 비례하여 늘어나지만, 한계를 넘는 무거운 추를 달면 원래대로 돌아오지 않아요</text>
+      </g>`;
+    caption = c === 0 ? '추 1개를 달면 용수철이 일정한 길이만큼 늘어나요.' : c === 1 ? '추 2개를 달면 무게가 2배가 되어 늘어난 길이도 정확히 2배가 돼요.' : '추 3개를 달면 늘어난 길이도 3배가 돼요. 탄성 한계 안에서는 힘과 길이가 비례해요.';
+  } else if (kind === 'materials') {
+    controls = ['철 막대', '마른 나무 조각', '투명 플라스틱 판', '고무 띠'];
+    customSteps = ['물질별 물리적 특성', '미세 원자 결합 구조'];
+
+    if (c === 0) {
+      // 철 막대
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 160)">
+        <rect x="0" y="0" width="220" height="40" rx="4" fill="#94a3b8" stroke="#475569" stroke-width="2"/>
+        <line x1="10" y1="8" x2="210" y2="8" stroke="#e2e8f0" stroke-width="3"/>
+        <text x="110" y="26" style="font-size:14px;font-weight:800;fill:#0f172a;text-anchor:middle">철 막대 (Iron Rod)</text>
+      </g>
+      <!-- Property Badges -->
+      <g transform="translate(360, 110)">
+        <rect x="0" y="0" width="200" height="40" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="15" y="25" style="font-size:12px;font-weight:800;fill:#16a34a">전기 전도성: 매우 우수</text>
+        <rect x="0" y="55" width="200" height="40" rx="6" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="15" y="80" style="font-size:12px;font-weight:800;fill:#0284c7">굳기: 단단함 (모스 4.5)</text>
+        <rect x="0" y="110" width="200" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="15" y="135" style="font-size:12px;font-weight:800;fill:#dc2626">자성: 자석에 강하게 붙음</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">금속(철): 은백색 광택이 있고 단단하며 전기가 매우 잘 통함</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">전기 전도율 100% (도체)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">철은 튼튼하고 단단하여 건축재로 쓰이며, 자유전자가 있어 열과 전기를 잘 전달해요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">금속 결합(Metallic Bonding)과 자유전자 모델</text>
+      <g transform="translate(100, 100)">
+        <rect x="0" y="0" width="400" height="220" rx="8" fill="#f1f5f9" stroke="#94a3b8" stroke-width="2"/>
+        ${Array.from({ length: 4 }, (_, r) => Array.from({ length: 6 }, (_, col) => `
+          <circle cx="${45 + col * 60}" cy="${35 + r * 50}" r="18" fill="#94a3b8" stroke="#334155" stroke-width="2"/>
+          <text x="${45 + col * 60}" y="${40 + r * 50}" style="font-size:12px;font-weight:900;fill:#ffffff;text-anchor:middle">Fe²⁺</text>
+        `).join('')).join('')}
+        <!-- Free electrons -->
+        ${Array.from({ length: 14 }, (_, i) => `<circle cx="${25 + (i * 26) % 350}" cy="${20 + (i * 35) % 180}" r="4" fill="#facc15"/>`).join('')}
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">금속 양이온 사이를 자유전자가 바다처럼 자유롭게 이동하기 때문에 전기와 열을 탁월하게 전달해요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 마른 나무 조각
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 160)">
+        <rect x="0" y="0" width="220" height="50" rx="4" fill="#d97706" stroke="#92400e" stroke-width="2"/>
+        <line x1="20" y1="15" x2="200" y2="15" stroke="#b45309" stroke-width="2"/>
+        <line x1="10" y1="35" x2="210" y2="35" stroke="#b45309" stroke-width="2"/>
+        <text x="110" y="32" style="font-size:14px;font-weight:800;fill:#ffffff;text-anchor:middle">마른 나무 (Wood)</text>
+      </g>
+      <g transform="translate(360, 110)">
+        <rect x="0" y="0" width="200" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="15" y="25" style="font-size:12px;font-weight:800;fill:#dc2626">전기 전도성: 전기가 통하지 않음</text>
+        <rect x="0" y="55" width="200" height="40" rx="6" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="15" y="80" style="font-size:12px;font-weight:800;fill:#0284c7">밀도: 0.65 g/cm³ (물에 뜸)</text>
+        <rect x="0" y="110" width="200" height="40" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="15" y="135" style="font-size:12px;font-weight:800;fill:#16a34a">자연 나이테 고유 결 보유</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">나무: 가볍고 물에 뜨며 전기가 통하지 않는 절연체</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#d97706" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#d97706;text-anchor:middle">부력 작용 (물에 뜸)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">나무는 가볍고 물보다 밀도가 작아 물에 뜨며, 전기가 통하지 않아 안전한 손잡이나 가구에 쓰여요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 투명 플라스틱 판
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 160)">
+        <rect x="0" y="0" width="220" height="50" rx="6" fill="#e0f2fe" stroke="#38bdf8" stroke-width="2" opacity="0.8"/>
+        <line x1="20" y1="10" x2="70" y2="10" stroke="#ffffff" stroke-width="3"/>
+        <text x="110" y="32" style="font-size:14px;font-weight:800;fill:#0284c7;text-anchor:middle">투명 플라스틱 (Acrylic)</text>
+      </g>
+      <g transform="translate(360, 110)">
+        <rect x="0" y="0" width="200" height="40" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="15" y="25" style="font-size:12px;font-weight:800;fill:#16a34a">광투과율: 92% (매우 투명)</text>
+        <rect x="0" y="55" width="200" height="40" rx="6" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="15" y="80" style="font-size:12px;font-weight:800;fill:#0284c7">방수성: 물을 흡수하지 않음</text>
+        <rect x="0" y="110" width="200" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="15" y="135" style="font-size:12px;font-weight:800;fill:#b45309">가공성: 가볍고 쉽게 성형</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">플라스틱: 투명하고 물에 젖지 않으며 다양한 모양 가공 가능</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">광투과율 92% (투명성)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">플라스틱은 유리처럼 투명하면서도 잘 깨지지 않고 물을 튕겨내어 생활 용기로 널리 활용돼요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 3) {
+      // 고무 띠
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 160)">
+        <path d="M0 25 Q110 -15 220 25 Q110 65 0 25 Z" fill="#ef4444" stroke="#b91c1c" stroke-width="2"/>
+        <text x="110" y="30" style="font-size:14px;font-weight:800;fill:#ffffff;text-anchor:middle">고무 띠 (Rubber Band)</text>
+      </g>
+      <g transform="translate(360, 110)">
+        <rect x="0" y="0" width="200" height="40" rx="6" fill="#eff6ff" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="15" y="25" style="font-size:12px;font-weight:800;fill:#0284c7">탄성 복원력: 99% 회복</text>
+        <rect x="0" y="55" width="200" height="40" rx="6" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="15" y="80" style="font-size:12px;font-weight:800;fill:#16a34a">유연성: 잡아당기면 잘 늘어남</text>
+        <rect x="0" y="110" width="200" height="40" rx="6" fill="#fef2f2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="15" y="135" style="font-size:12px;font-weight:800;fill:#dc2626">충격 흡수 및 미끄럼 방지</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">고무: 탄성이 매우 커서 늘어났다 놓으면 원래대로 돌아옴</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">탄성 복원력 우수</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">고무는 유연하고 탄성이 뛰어나 물건을 묶거나 미끄럼을 방지하는 신발 바닥 등에 적합해요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '철은 광택이 있고 단단하며 전기와 열을 아주 잘 전달해요.' : c === 1 ? '마른 나무는 물에 뜨고 전기가 통하지 않으며 고유의 결이 있어요.' : c === 2 ? '플라스틱은 투명하고 가벼우며 물에 젖지 않고 모양을 만들기 쉬워요.' : '고무는 잡아당기면 길게 늘어나고 놓으면 원래대로 되돌아오는 탄성이 커요.';
+  } else if (kind === 'solutions') {
+    controls = ['적은 설탕 · 충분히 젓기', '많은 설탕 · 일부 남음', '같은 많은 양 · 따뜻한 물'];
+    customSteps = ['용해 과정과 포화 관찰', '수화 분자 구조와 용해도'];
+
+    if (c === 0) {
+      // 적은 설탕 · 충분히 젓기
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Beaker with Clear Water -->
+      <g transform="translate(180, 100)">
+        <path d="M30 40 V230 Q30 250 50 250 H210 Q230 250 230 230 V40" fill="url(#ex-glass)" stroke="#475569" stroke-width="3"/>
+        <path d="M33 110 H227 V230 Q227 247 210 247 H50 Q33 247 33 230 Z" fill="url(#ex-water)" opacity="0.6"/>
+        <!-- Stirring Rod -->
+        <line x1="160" y1="20" x2="110" y2="230" stroke="#cbd5e1" stroke-width="6" stroke-linecap="round"/>
+        <!-- Dissolved sugar particles dispersed evenly -->
+        ${Array.from({ length: 16 }, (_, i) => `<circle cx="${55 + (i * 37) % 150}" cy="${130 + (i * 23) % 100}" r="3.5" fill="#ffffff" stroke="#0284c7" stroke-width="1"/>`).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">용해(Dissolution): 용질이 용매에 골고루 섞여 투명해짐</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">불포화 용액 (완전 용해)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">적은 양의 설탕을 넣고 저어주면 입자가 물 분자 사이로 골고루 퍼져 투명한 용액이 돼요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">수화(Hydration) 현상과 용질-용매 분자 상호작용</text>
+      <!-- Center Sugar Molecule surrounded by H2O -->
+      <g transform="translate(240, 180)">
+        <circle cx="0" cy="0" r="38" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+        <text x="0" y="6" style="font-size:13px;font-weight:900;fill:#0f172a;text-anchor:middle">설탕 분자</text>
+        <!-- Surrounding Water Dipoles -->
+        ${Array.from({ length: 6 }, (_, i) => {
+          const a = (i * Math.PI) / 3;
+          const x = Math.cos(a) * 80;
+          const y = Math.sin(a) * 80;
+          return `<g transform="translate(${x}, ${y})">
+            <circle cx="0" cy="0" r="14" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>
+            <text x="0" y="4" style="font-size:9px;font-weight:800;fill:#ffffff;text-anchor:middle">H₂O</text>
+          </g>`;
+        }).join('')}
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">극성을 띤 물 분자들이 설탕 분자를 둘러싸며 결합을 떼어내어 용액 전체로 균일하게 확산시켜요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 많은 설탕 · 일부 남음
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 100)">
+        <path d="M30 40 V230 Q30 250 50 250 H210 Q230 250 230 230 V40" fill="url(#ex-glass)" stroke="#475569" stroke-width="3"/>
+        <path d="M33 110 H227 V230 Q227 247 210 247 H50 Q33 247 33 230 Z" fill="url(#ex-water)" opacity="0.6"/>
+        <!-- Undissolved sugar layer at bottom -->
+        <rect x="45" y="225" width="170" height="22" rx="4" fill="#ffffff" stroke="#94a3b8" stroke-width="1"/>
+        <text x="130" y="240" style="font-size:11px;font-weight:800;fill:#334155;text-anchor:middle">녹지 않고 남은 설탕 (침전)</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">포화(Saturation): 일정 온도에서 녹을 수 있는 한계 도달</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">포화 상태 · 침전 발생</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">일정한 양의 물에 녹을 수 있는 용질의 양에는 한계가 있어, 더 많이 넣으면 바닥에 가라앉아요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 같은 많은 양 · 따뜻한 물
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 100)">
+        <path d="M30 40 V230 Q30 250 50 250 H210 Q230 250 230 230 V40" fill="url(#ex-glass)" stroke="#475569" stroke-width="3"/>
+        <path d="M33 110 H227 V230 Q227 247 210 247 H50 Q33 247 33 230 Z" fill="#bae6fd" opacity="0.75"/>
+        <!-- Steam Wisps Rising -->
+        <path d="M80 30 Q90 10 80 0 M130 30 Q140 10 130 0 M180 30 Q190 10 180 0" stroke="#94a3b8" stroke-width="2" fill="none" opacity="0.6"/>
+        <!-- All dissolved in warm water -->
+        ${Array.from({ length: 28 }, (_, i) => `<circle cx="${50 + (i * 29) % 160}" cy="${125 + (i * 17) % 110}" r="3" fill="#ffffff" stroke="#0284c7" stroke-width="1"/>`).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">온도와 용해도: 따뜻한 물에서는 용해도가 증가함</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">수온 60℃ (완전 용해)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">물의 온도가 높아지면 물 분자의 운동이 활발해져 고체 설탕을 훨씬 더 많이 녹일 수 있어요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '적은 양의 설탕은 물에 완전히 녹아 투명한 용액이 돼요.' : c === 1 ? '설탕을 계속 넣으면 더 이상 녹지 못하고 바닥에 가라앉아 포화 상태가 돼요.' : '물의 온도를 높여주면 용해도가 증가해 바닥에 남았던 설탕도 모두 녹아요.';
+  } else if (kind === 'gases') {
+    controls = ['닫힌 주사기 · 큰 부피', '닫힌 주사기 · 압축', '산소와 이산화탄소 성질'];
+    customSteps = ['기체 압축 및 성질 실험', 'P-V 보일 법칙 분석'];
+
+    if (c === 0) {
+      // 닫힌 주사기 · 큰 부피 (1.0 atm, 60mL)
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Gas Syringe Barrel -->
+      <g transform="translate(100, 150)">
+        <rect x="0" y="0" width="360" height="100" rx="4" fill="url(#ex-glass)" stroke="#475569" stroke-width="2"/>
+        <line x1="0" y1="50" x2="-25" y2="50" stroke="#0f172a" stroke-width="8"/>
+        <!-- Rubber Stopper blocking nozzle -->
+        <rect x="-35" y="35" width="14" height="30" rx="3" fill="#dc2626"/>
+        <!-- Plunger at 60mL -->
+        <rect x="300" y="5" width="24" height="90" rx="3" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+        <rect x="324" y="42" width="140" height="16" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="464" y="25" width="14" height="50" rx="3" fill="#94a3b8"/>
+        <!-- Sparse Gas Particles -->
+        ${Array.from({ length: 14 }, (_, i) => `<circle cx="${30 + (i * 24) % 260}" cy="${20 + (i * 19) % 65}" r="5" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>`).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">기체의 성질: 입자 사이 거리가 멀어 공간을 가득 채움</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">부피 V = 60 mL · 1.0 atm</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">기체 입자는 서로 멀리 떨어져 자유롭게 운동하며 주사기 내부 전체를 가득 채우고 있어요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">보일의 법칙(Boyle's Law) P-V 등온 곡선 분석</text>
+      <g transform="translate(100, 90)">
+        <rect x="0" y="0" width="400" height="220" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="50" y1="190" x2="360" y2="190" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="350" y="210" style="font-size:11px;font-weight:800;fill:#334155">부피 V (mL)</text>
+        <line x1="50" y1="190" x2="50" y2="30" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="40" y="30" style="font-size:11px;font-weight:800;fill:#334155;text-anchor:end">압력 P (atm)</text>
+        <!-- Hyperbola curve P * V = const -->
+        <path d="M70 50 Q100 130 190 160 T340 180" fill="none" stroke="#0284c7" stroke-width="3"/>
+        <circle cx="100" cy="130" r="5" fill="#dc2626"/>
+        <text x="110" y="125" style="font-size:11px;font-weight:800;fill:#dc2626">(30mL, 2.0atm)</text>
+        <circle cx="240" cy="170" r="5" fill="#0284c7"/>
+        <text x="250" y="165" style="font-size:11px;font-weight:800;fill:#0284c7">(60mL, 1.0atm)</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">온도가 일정할 때 기체의 부피는 압력에 반비례하여 줄어들며, P × V 값은 항상 일정해요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 닫힌 주사기 · 압축 (2.0 atm, 30mL)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(100, 150)">
+        <rect x="0" y="0" width="360" height="100" rx="4" fill="url(#ex-glass)" stroke="#475569" stroke-width="2"/>
+        <line x1="0" y1="50" x2="-25" y2="50" stroke="#0f172a" stroke-width="8"/>
+        <rect x="-35" y="35" width="14" height="30" rx="3" fill="#dc2626"/>
+        <!-- Plunger pushed in to 30mL -->
+        <rect x="150" y="5" width="24" height="90" rx="3" fill="#1e293b" stroke="#0f172a" stroke-width="1.5"/>
+        <rect x="174" y="42" width="140" height="16" fill="#cbd5e1" stroke="#64748b" stroke-width="1.5"/>
+        <rect x="314" y="25" width="14" height="50" rx="3" fill="#94a3b8"/>
+        <!-- Force Push Arrow -->
+        <g stroke="#dc2626" stroke-width="4" marker-end="url(#ex-arrow-coral)">
+          <line x1="390" y1="50" x2="335" y2="50"/>
+        </g>
+        <!-- Compressed Dense Gas Particles -->
+        ${Array.from({ length: 14 }, (_, i) => `<circle cx="${20 + (i * 20) % 120}" cy="${15 + (i * 17) % 70}" r="5" fill="#38bdf8" stroke="#0284c7" stroke-width="1.5"/>`).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">보일의 법칙: 외부 압력을 가하면 기체의 부피가 압축됨</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">부피 V = 30 mL · 2.0 atm</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">기체는 입자 사이의 빈 공간이 넓기 때문에 피스톤을 누르면 쉽게 부피가 반으로 줄어들어요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 산소와 이산화탄소 성질 비교
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Oxygen Flask -->
+      <g transform="translate(100, 110)">
+        <path d="M40 0 H80 V40 L110 130 Q115 145 100 145 H20 Q5 145 10 130 L40 40 Z" fill="url(#ex-glass)" stroke="#475569" stroke-width="2"/>
+        <text x="60" y="110" style="font-size:16px;font-weight:900;fill:#0284c7;text-anchor:middle">O₂ (산소)</text>
+        <!-- Re-ignited Ember Splint -->
+        <line x1="60" y1="0" x2="60" y2="70" stroke="#78350f" stroke-width="3"/>
+        <circle cx="60" cy="70" r="14" fill="#facc15" filter="url(#ex-glow-amber)"/>
+        <text x="60" y="170" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">깜부기불이 다시 타오름</text>
+      </g>
+      <!-- CO2 Flask -->
+      <g transform="translate(380, 110)">
+        <path d="M40 0 H80 V40 L110 130 Q115 145 100 145 H20 Q5 145 10 130 L40 40 Z" fill="url(#ex-glass)" stroke="#475569" stroke-width="2"/>
+        <text x="60" y="110" style="font-size:16px;font-weight:900;fill:#64748b;text-anchor:middle">CO₂ (이산화탄소)</text>
+        <!-- Extinguished Splint -->
+        <line x1="60" y1="0" x2="60" y2="70" stroke="#78350f" stroke-width="3"/>
+        <circle cx="60" cy="70" r="4" fill="#334155"/>
+        <text x="60" y="170" style="font-size:12px;font-weight:800;fill:#64748b;text-anchor:middle">불꽃이 꺼지고 석회수 백탁</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">기체 성질: 산소(조연성, 연소 도움) vs 이산화탄소(소화성)</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">기체 반응 특성 분석</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">산소는 물질이 타는 것을 도와 불꽃을 살리고, 이산화탄소는 불을 끄며 석회수를 뿌옇게 흐리게 해요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '기체는 입자 사이의 빈 공간이 매우 넓어 용기 전체를 고르게 채워요.' : c === 1 ? '피스톤을 세게 누르면 입자 사이 공간이 좁아지며 부피가 쉽게 압축돼요.' : '산소는 물질의 연소를 돕고, 이산화탄소는 불을 끄며 석회수를 뿌옇게 흐리게 해요.';
+  } else if (kind === 'indicators') {
+    controls = ['산성 용액 · BTB', '중성 용액 · BTB', '염기성 용액 · BTB', '같은 염기성 · 다른 지시약'];
+    customSteps = ['용액 액성과 지시약', 'pH 척도 및 이온 농도'];
+
+    if (c === 0) {
+      // 산성 용액 · BTB (노란색)
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Test Tube with Yellow Solution -->
+      <g transform="translate(240, 90)">
+        <rect x="50" y="0" width="60" height="200" rx="30" fill="url(#ex-glass)" stroke="#475569" stroke-width="2.5"/>
+        <path d="M52 60 H108 V170 Q108 198 80 198 Q52 198 52 170 Z" fill="#facc15" opacity="0.85"/>
+        <text x="80" y="140" style="font-size:13px;font-weight:900;fill:#78350f;text-anchor:middle">묽은 염산</text>
+      </g>
+      <!-- Dropping Pipette -->
+      <g transform="translate(320, 40)">
+        <polygon points="0,0 8,0 4,45 0,45" fill="#cbd5e1" stroke="#64748b" stroke-width="1"/>
+        <circle cx="4" cy="55" r="4" fill="#facc15"/>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">산성 용액: BTB 용액을 떨어뜨리면 노란색으로 변함</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ca8a04" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ca8a04;text-anchor:middle">산성 (pH 2.0) · 노란색</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">식초나 묽은 염산 같은 산성 용액에 BTB 지시약을 넣으면 맑은 노란색을 띠게 돼요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">수소 이온(H⁺)과 수산화 이온(OH⁻) 농도 및 pH 스케일</text>
+      <!-- pH Bar 1 to 14 -->
+      <g transform="translate(60, 100)">
+        <defs>
+          <linearGradient id="ex-ph-grad" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0%" stop-color="#ef4444"/>
+            <stop offset="25%" stop-color="#facc15"/>
+            <stop offset="50%" stop-color="#22c55e"/>
+            <stop offset="75%" stop-color="#38bdf8"/>
+            <stop offset="100%" stop-color="#7c3aed"/>
+          </linearGradient>
+        </defs>
+        <rect x="0" y="0" width="480" height="35" rx="6" fill="url(#ex-ph-grad)" stroke="#334155" stroke-width="1.5"/>
+        <text x="30" y="55" style="font-size:12px;font-weight:800;fill:#ef4444">pH 1 (강산)</text>
+        <text x="240" y="55" style="font-size:12px;font-weight:800;fill:#16a34a;text-anchor:middle">pH 7 (중성)</text>
+        <text x="450" y="55" style="font-size:12px;font-weight:800;fill:#7c3aed;text-anchor:end">pH 14 (강염기)</text>
+      </g>
+      <!-- Ion balance boxes -->
+      <g transform="translate(60, 190)">
+        <rect x="0" y="0" width="140" height="130" rx="8" fill="#fef2f2" stroke="#ef4444" stroke-width="1.5"/>
+        <text x="70" y="30" style="font-size:13px;font-weight:800;fill:#ef4444;text-anchor:middle">산성 용액</text>
+        <text x="70" y="65" style="font-size:14px;font-weight:900;fill:#dc2626;text-anchor:middle">[H⁺] > [OH⁻]</text>
+        <text x="70" y="100" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">BTB: 노란색</text>
+
+        <rect x="170" y="0" width="140" height="130" rx="8" fill="#f0fdf4" stroke="#16a34a" stroke-width="1.5"/>
+        <text x="240" y="30" style="font-size:13px;font-weight:800;fill:#16a34a;text-anchor:middle">중성 용액</text>
+        <text x="240" y="65" style="font-size:14px;font-weight:900;fill:#16a34a;text-anchor:middle">[H⁺] = [OH⁻]</text>
+        <text x="240" y="100" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">BTB: 초록색</text>
+
+        <rect x="340" y="0" width="140" height="130" rx="8" fill="#eff6ff" stroke="#2563eb" stroke-width="1.5"/>
+        <text x="410" y="30" style="font-size:13px;font-weight:800;fill:#2563eb;text-anchor:middle">염기성 용액</text>
+        <text x="410" y="65" style="font-size:14px;font-weight:900;fill:#2563eb;text-anchor:middle">[H⁺] < [OH⁻]</text>
+        <text x="410" y="100" style="font-size:11px;font-weight:700;fill:#334155;text-anchor:middle">BTB: 파란색</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">용액 속 수소 이온 농도에 따라 지시약 분자의 화학 구조가 바뀌어 고유한 색을 나타내요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 중성 용액 · BTB (초록색)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(240, 90)">
+        <rect x="50" y="0" width="60" height="200" rx="30" fill="url(#ex-glass)" stroke="#475569" stroke-width="2.5"/>
+        <path d="M52 60 H108 V170 Q108 198 80 198 Q52 198 52 170 Z" fill="#22c55e" opacity="0.85"/>
+        <text x="80" y="140" style="font-size:13px;font-weight:900;fill:#064e3b;text-anchor:middle">증류수</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">중성 용액: BTB 용액을 떨어뜨리면 초록색으로 유지됨</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#16a34a;text-anchor:middle">중성 (pH 7.0) · 초록색</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">순수한 물이나 소금물처럼 산성도 염기성도 아닌 중성 용액에서는 BTB가 초록색을 띱니다</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 염기성 용액 · BTB (파란색)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(240, 90)">
+        <rect x="50" y="0" width="60" height="200" rx="30" fill="url(#ex-glass)" stroke="#475569" stroke-width="2.5"/>
+        <path d="M52 60 H108 V170 Q108 198 80 198 Q52 198 52 170 Z" fill="#2563eb" opacity="0.85"/>
+        <text x="80" y="140" style="font-size:13px;font-weight:900;fill:#ffffff;text-anchor:middle">수산화나트륨</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">염기성 용액: BTB 용액을 떨어뜨리면 짙은 파란색으로 변함</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#2563eb" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#2563eb;text-anchor:middle">염기성 (pH 12.0) · 파란색</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">유리세정제나 수산화나트륨 같은 염기성 용액에 BTB 지시약을 넣으면 선명한 파란색으로 변해요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 3) {
+      // 같은 염기성 · 다른 지시약 (페놀프탈레인)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(240, 90)">
+        <rect x="50" y="0" width="60" height="200" rx="30" fill="url(#ex-glass)" stroke="#475569" stroke-width="2.5"/>
+        <path d="M52 60 H108 V170 Q108 198 80 198 Q52 198 52 170 Z" fill="#ec4899" opacity="0.9"/>
+        <text x="80" y="140" style="font-size:12px;font-weight:900;fill:#ffffff;text-anchor:middle">페놀프탈레인</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">페놀프탈레인 지시약: 염기성 용액에서만 붉은색(자주색)으로 변함</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ec4899" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ec4899;text-anchor:middle">페놀프탈레인: 붉은색</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">페놀프탈레인은 산성과 중성에서는 무색이지만, 염기성 용액을 만나면 붉은색으로 변해 쉽게 구별돼요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? 'BTB 용액은 산성에서 노란색, 중성에서 초록색, 염기성에서 파란색으로 변해요.' : c === 1 ? '증류수처럼 산성과 염기성 어느 쪽도 아닌 중성 용액에서는 BTB가 초록색이에요.' : c === 2 ? '수산화나트륨이나 비눗물 같은 염기성 용액에서는 BTB가 파란색으로 변해요.' : '페놀프탈레인 용액은 염기성 용액에서만 붉은색으로 변해 염기성을 확인하는 데 쓰여요.';
+  } else if (kind === 'combustion') {
+    controls = ['산소 공급 · 연소 지속', '산소 공급이 부족', '냉각하는 소화 원리'];
+    customSteps = ['연소와 소화 원리', '연소의 삼각요소와 소화법'];
+
+    if (c === 0) {
+      // 산소 공급 · 연소 지속
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Candle Stand and Wax Candle -->
+      <g transform="translate(270, 160)">
+        <rect x="25" y="60" width="50" height="110" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="50" y1="60" x2="50" y2="40" stroke="#0f172a" stroke-width="3"/>
+        <!-- Candle Flame Layers -->
+        <!-- Outer Flame (Orange) -->
+        <path d="M50 0 Q65 25 50 45 Q35 25 50 0 Z" fill="#f97316" opacity="0.85" filter="url(#ex-glow-amber)"/>
+        <!-- Inner Flame (Yellow) -->
+        <path d="M50 10 Q60 28 50 45 Q40 28 50 10 Z" fill="#facc15"/>
+        <!-- Core (Blue) -->
+        <ellipse cx="50" cy="42" rx="6" ry="4" fill="#38bdf8"/>
+      </g>
+      <!-- Oxygen Inflow Arrows -->
+      <g fill="none" stroke="#0284c7" stroke-width="2.5" marker-end="url(#ex-arrow-cyan)">
+        <path d="M140 180 Q200 190 280 200"/>
+        <path d="M460 180 Q400 190 320 200"/>
+      </g>
+      <text x="170" y="170" style="font-size:12px;font-weight:800;fill:#0284c7">산소(O₂) 공급</text>
+      <text x="430" y="170" style="font-size:12px;font-weight:800;fill:#0284c7">산소(O₂) 공급</text>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">연소의 3요소: 탈 물질 + 산소 공급 + 발화점 이상의 온도</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#ea580c" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#ea580c;text-anchor:middle">연소 지속 (불꽃 활성)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">공기 중의 산소가 계속 공급되고 온도가 유지되면 물질이 지속적으로 타며 빛과 열을 내요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">연소의 삼각요소(Fire Triangle)와 소화의 3대 원리</text>
+      <!-- Triangle -->
+      <g transform="translate(140, 90)">
+        <polygon points="180,20 60,220 300,220" fill="none" stroke="#dc2626" stroke-width="4"/>
+        <text x="180" y="10" style="font-size:14px;font-weight:900;fill:#dc2626;text-anchor:middle">1. 발화점 이상의 온도</text>
+        <text x="30" y="235" style="font-size:14px;font-weight:900;fill:#0284c7;text-anchor:middle">2. 산소(O₂)</text>
+        <text x="330" y="235" style="font-size:14px;font-weight:900;fill:#f59e0b;text-anchor:middle">3. 탈 물질</text>
+        <!-- Center Flame Icon -->
+        <circle cx="180" cy="140" r="28" fill="#fef08a" stroke="#f97316" stroke-width="2"/>
+        <text x="180" y="145" style="font-size:13px;font-weight:900;fill:#ea580c;text-anchor:middle">연소</text>
+      </g>
+      <!-- 3 Methods badges -->
+      <g transform="translate(460, 110)">
+        <rect x="0" y="0" width="130" height="40" rx="6" fill="#fee2e2" stroke="#dc2626" stroke-width="1.5"/>
+        <text x="65" y="25" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">냉각 소화 (물 분사)</text>
+        <rect x="0" y="55" width="130" height="40" rx="6" fill="#e0f2fe" stroke="#0284c7" stroke-width="1.5"/>
+        <text x="65" y="80" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">질식 소화 (산소 차단)</text>
+        <rect x="0" y="110" width="130" height="40" rx="6" fill="#fef3c7" stroke="#f59e0b" stroke-width="1.5"/>
+        <text x="65" y="135" style="font-size:11px;font-weight:800;fill:#b45309;text-anchor:middle">제거 소화 (연료 차단)</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">연소의 3요소 중 단 하나라도 제거하면 불이 꺼지는 것이 바로 소화의 근본 원리예요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 산소 공급이 부족 (집기병 덮기, 질식 소화)
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Inverted Glass Bell Jar covering candle -->
+      <g transform="translate(220, 110)">
+        <rect x="0" y="0" width="200" height="180" rx="20" fill="url(#ex-glass)" stroke="#475569" stroke-width="2.5"/>
+        <!-- Diminished Extinguishing Flame -->
+        <g transform="translate(100, 110)">
+          <rect x="-25" y="0" width="50" height="70" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+          <line x1="0" y1="0" x2="0" y2="-15" stroke="#0f172a" stroke-width="2"/>
+          <!-- Dying Sparkle -->
+          <circle cx="0" cy="-18" r="4" fill="#ea580c"/>
+          <!-- Smoke Puff -->
+          <circle cx="0" cy="-35" r="8" fill="#cbd5e1" opacity="0.6"/>
+          <circle cx="8" cy="-50" r="12" fill="#cbd5e1" opacity="0.4"/>
+        </g>
+        <text x="100" y="45" style="font-size:11px;font-weight:800;fill:#dc2626;text-anchor:middle">밀폐 공간 산소 소진</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">질식 소화(산소 차단): 밀폐 용기로 산소를 막아 불 끄기</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">산소 고갈 (불꽃 소화)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">집기병을 덮으면 내부 산소가 빠르게 소비되어 산소 농도가 낮아지며 촛불이 저절로 꺼져요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 냉각하는 소화 원리 (물 분사)
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(270, 160)">
+        <rect x="25" y="60" width="50" height="110" rx="4" fill="#f8fafc" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="50" y1="60" x2="50" y2="40" stroke="#0f172a" stroke-width="3"/>
+        <circle cx="50" cy="40" r="4" fill="#475569"/>
+      </g>
+      <!-- Water Droplets and Steam Clouds -->
+      <g fill="#0284c7">
+        <circle cx="280" cy="170" r="5"/>
+        <circle cx="310" cy="180" r="4"/>
+        <circle cx="340" cy="165" r="5"/>
+      </g>
+      <!-- Steam Evaporation Cloud -->
+      <g transform="translate(320, 130)" fill="#e2e8f0" stroke="#cbd5e1" stroke-width="1.5">
+        <circle cx="0" cy="0" r="22"/>
+        <circle cx="20" cy="-10" r="18"/>
+        <circle cx="-15" cy="-8" r="16"/>
+        <text x="0" y="5" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">수증기 증발</text>
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">냉각 소화(온도 낮춤): 물을 뿌려 기화열로 발화점 미만 냉각</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">온도 급랭 (발화점 미만)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">물을 뿌리면 물이 수증기로 변하며 많은 열을 빼앗아 가 온도를 발화점 아래로 떨어뜨려 불을 꺼요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '탈 물질, 산소, 발화점 이상의 온도가 갖추어지면 연소가 지속돼요.' : c === 1 ? '밀폐된 집기병을 덮어 산소 공급을 차단하면 불이 저절로 꺼져요 (질식 소화).' : '물을 뿌려 물질의 온도를 발화점 아래로 낮추면 불이 꺼져요 (냉각 소화).';
+  } else if (kind === 'particle-model') {
+    controls = ['고체의 배열', '액체의 배열과 움직임', '기체의 간격과 움직임', '기체를 압축'];
+    customSteps = ['물질 상태별 입자 배열', '온도 가열 곡선과 상변화'];
+
+    if (c === 0) {
+      // 고체의 배열
+      body = `<g filter="url(#ex-shadow)">
+      <!-- Chamber Container -->
+      <g transform="translate(180, 110)">
+        <rect x="0" y="0" width="280" height="230" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+        <!-- Highly regular crystalline grid (Solid) -->
+        ${Array.from({ length: 4 }, (_, r) => Array.from({ length: 5 }, (_, col) => `
+          <circle cx="${50 + col * 45}" cy="${60 + r * 45}" r="16" fill="#0284c7" stroke="#0369a1" stroke-width="2"/>
+          <!-- Subtle vibration lines around each sphere -->
+          <line x1="${30 + col * 45}" y1="${60 + r * 45}" x2="${33 + col * 45}" y2="${60 + r * 45}" stroke="#94a3b8" stroke-width="2"/>
+          <line x1="${67 + col * 45}" y1="${60 + r * 45}" x2="${70 + col * 45}" y2="${60 + r * 45}" stroke="#94a3b8" stroke-width="2"/>
+        `).join('')).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">고체 상태: 입자들이 규칙적으로 배열되어 제자리 진동</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0284c7;text-anchor:middle">모양과 부피 일정 (인력 강함)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">고체는 입자 사이의 인력이 매우 강하여 일정한 모양과 부피를 유지하며 제자리에서만 살짝 떨려요</text>
+      </g>`;
+
+      detail = `<g filter="url(#ex-shadow)">
+      <rect x="20" y="20" width="600" height="395" rx="14" fill="#faf8f2" stroke="#d5cebc" stroke-width="1.5"/>
+      <text x="320" y="55" style="font-size:15px;font-weight:800;fill:#1e293b;text-anchor:middle">상태 변화에 따른 가열 곡선(Heating Curve)과 상태 비교</text>
+      <g transform="translate(80, 90)">
+        <rect x="0" y="0" width="440" height="220" rx="8" fill="#ffffff" stroke="#cbd5e1" stroke-width="1.5"/>
+        <line x1="40" y1="190" x2="410" y2="190" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="400" y="210" style="font-size:11px;font-weight:800;fill:#334155">가열 시간</text>
+        <line x1="40" y1="190" x2="40" y2="30" stroke="#334155" stroke-width="2" marker-end="url(#ex-arrow)"/>
+        <text x="35" y="30" style="font-size:11px;font-weight:800;fill:#334155;text-anchor:end">온도 (℃)</text>
+        <!-- Heating Curve with plateaus -->
+        <path d="M40 180 L100 130 H180 L250 80 H330 L380 40" fill="none" stroke="#dc2626" stroke-width="3"/>
+        <text x="140" y="120" style="font-size:11px;font-weight:800;fill:#0284c7;text-anchor:middle">융해(녹는점 0℃)</text>
+        <text x="290" y="70" style="font-size:11px;font-weight:800;fill:#f59e0b;text-anchor:middle">기화(끓는점 100℃)</text>
+      </g>
+      <rect x="40" y="355" width="560" height="40" rx="8" fill="#ffffffea" stroke="#0284c7" stroke-width="1.5"/>
+      <text x="320" y="380" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">상태가 변하는 동안에는 공급된 열에너지가 입자 간 인력을 끊는 데 사용되어 온도가 일정하게 유지돼요</text>
+      </g>`;
+    } else if (c === 1) {
+      // 액체의 배열과 움직임
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 110)">
+        <rect x="0" y="0" width="280" height="230" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+        <!-- Loosely packed particles at container bottom (Liquid) -->
+        ${Array.from({ length: 18 }, (_, i) => {
+          const x = 35 + (i * 42) % 210 + (i % 2 === 0 ? 10 : 0);
+          const y = 130 + (i * 24) % 85;
+          return `<g transform="translate(${x}, ${y})">
+            <circle cx="0" cy="0" r="15" fill="#0d9488" stroke="#115e59" stroke-width="2"/>
+            <path d="M-6 8 Q0 14 8 10" stroke="#5eead4" stroke-width="2" fill="none"/>
+          </g>`;
+        }).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">액체 상태: 입자들이 비교적 가깝지만 자유롭게 미끄러져 흐름</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#0d9488" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#0d9488;text-anchor:middle">모양 변화 · 부피 일정</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">액체는 입자 사이 인력이 고체보다 약해 담는 그릇에 따라 모양이 변하지만 부피는 일정해요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 2) {
+      // 기체의 간격과 움직임
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 110)">
+        <rect x="0" y="0" width="280" height="230" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+        <!-- Sparse particles with rapid motion arrows (Gas) -->
+        ${Array.from({ length: 8 }, (_, i) => {
+          const x = 40 + (i * 68) % 210;
+          const y = 35 + (i * 54) % 165;
+          const angle = (i * 45) * Math.PI / 180;
+          return `<g transform="translate(${x}, ${y})">
+            <circle cx="0" cy="0" r="12" fill="#e11d48" stroke="#9f1239" stroke-width="2"/>
+            <line x1="0" y1="0" x2="${Math.cos(angle) * 25}" y2="${Math.sin(angle) * 25}" stroke="#dc2626" stroke-width="2.5" marker-end="url(#ex-arrow-coral)"/>
+          </g>`;
+        }).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">기체 상태: 입자 사이 거리가 매우 멀고 모든 방향으로 활발히 운동</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#e11d48" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#e11d48;text-anchor:middle">모양과 부피 모두 변함</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">기체 입자는 서로 끌어당기는 힘이 거의 없어 공간 전체로 매우 빠르게 날아다니며 퍼져 나가요</text>
+      </g>`;
+      detail = body;
+    } else if (c === 3) {
+      // 기체를 압축
+      body = `<g filter="url(#ex-shadow)">
+      <g transform="translate(180, 110)">
+        <rect x="0" y="0" width="280" height="230" rx="8" fill="#f8fafc" stroke="#334155" stroke-width="2.5"/>
+        <!-- Plunger compressing top half -->
+        <rect x="0" y="0" width="280" height="100" fill="#cbd5e1" stroke="#64748b" stroke-width="2"/>
+        <text x="140" y="55" style="font-size:13px;font-weight:800;fill:#1e293b;text-anchor:middle">외부 가압 피스톤</text>
+        <!-- Compressed Squeezed Gas Particles -->
+        ${Array.from({ length: 8 }, (_, i) => {
+          const x = 35 + (i * 65) % 210;
+          const y = 135 + (i * 26) % 75;
+          return `<g transform="translate(${x}, ${y})">
+            <circle cx="0" cy="0" r="12" fill="#e11d48" stroke="#9f1239" stroke-width="2"/>
+            <line x1="0" y1="0" x2="14" y2="10" stroke="#dc2626" stroke-width="2"/>
+          </g>`;
+        }).join('')}
+      </g>
+
+      <rect x="25" y="24" width="370" height="34" rx="8" fill="#ffffffea" stroke="#16a34a" stroke-width="1.5"/>
+      <circle cx="42" cy="41" r="5" fill="#16a34a"/>
+      <text x="56" y="46" style="font-size:12px;font-weight:800;fill:#0f172a">기체의 압축: 빈 공간이 좁아지며 부피가 쉽게 압축됨</text>
+
+      <rect x="420" y="24" width="195" height="34" rx="8" fill="#ffffffea" stroke="#dc2626" stroke-width="1.5"/>
+      <text x="517" y="46" style="font-size:12px;font-weight:800;fill:#dc2626;text-anchor:middle">입자 간격 급감 (압축)</text>
+
+      <rect x="40" y="388" width="560" height="28" rx="7" fill="#fffffffa" stroke="#16a34a" stroke-width="1.5"/>
+      <text x="320" y="406" style="font-size:12px;font-weight:700;fill:#0f172a;text-anchor:middle">기체를 압축해도 입자 자체의 크기는 변하지 않고, 입자들 사이의 빈 공간만 좁아지는 거예요</text>
+      </g>`;
+      detail = body;
+    }
+    caption = c === 0 ? '고체는 입자들이 규칙적으로 단단히 배열되어 제자리에서만 진동해요.' : c === 1 ? '액체는 입자 사이 거리가 비교적 가깝지만 자유롭게 미끄러져 흐를 수 있어요.' : c === 2 ? '기체는 입자 사이 거리가 매우 멀고 모든 방향으로 매우 빠르게 운동해요.' : '기체를 압축해도 입자 자체의 크기는 줄지 않고 입자 사이의 빈 공간만 줄어들어요.';
 }else if (kind === 'erosion') {
     controls = ['완만한 흐름', '빠르고 강한 흐름', '파도가 바꾸는 해안'];
     customSteps = ['지형 변화 관찰', '유수 작용 단면 분석'];
