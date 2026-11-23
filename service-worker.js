@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261119-science-daily-ui-polish';
+const CACHE_NAME = 'smart-study-20261123-mock-integrity';
 
 try {
     importScripts('./firebase-config.js');

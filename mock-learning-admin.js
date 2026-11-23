@@ -40,7 +40,8 @@
    if (!loaded) { clear.hidden = true; return; }
    if (chosen) {
     const c = components(chosen.payload), total = Object.values(c).reduce((n, x) => n + x.total, 0), correct = Object.values(c).reduce((n, x) => n + x.correct, 0);
-    reference.append(node('strong', 'mock-learning-score', `영어 ${total ? `${Math.round(correct / total * 100)}점` : '점수 자료 없음'}`), node('p', null, `기준 시험: ${label(chosen)}`), node('p', 'mock-learning-state', timing(chosen)));
+    const points=chosen.payload.mode==='paper'?root.MockPaper.scores(chosen.payload).english:Math.round(correct/total*100);
+    reference.append(node('strong', 'mock-learning-score', `영어 ${total ? `${points}점` : '점수 자료 없음'}`), node('p', null, `기준 시험: ${label(chosen)}`), node('p', 'mock-learning-state', timing(chosen)));
     const grid = node('div', 'mock-learning-counts');
     for (const s of Object.keys(subjects)) grid.append(node('span', null, `${subjects[s]} ${c[s].correct}/${c[s].total} 정답`));
     reference.append(grid);

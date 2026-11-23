@@ -23,6 +23,9 @@ for(const [version,total,minutes] of [['classic100-v1',100,[35,35,35,25]],['scie
   const paper={...d,status:'paper',mode:'paper',generatedAt:NOW,paper:{timeLimits:{}}};delete paper.submittedAt;
   const scored=api.paperResult(paper,Object.fromEntries(paper.questions.map(q=>[q.id,'A'])),NOW+1);
   assert.equal(scored.initialAttempts.length,total);assert(scored.initialAttempts.every(a=>a.correct));
+  assert.equal(api.validPaperGrading(scored),true);
+  const inconsistent=structuredClone(scored);inconsistent.initialAttempts[0].correct=false;
+  assert.equal(api.validPaperGrading(inconsistent),false);
   assert.deepEqual(Array.from(scored.sections,s=>s.durationSeconds/60),minutes);
   const target=setup(version);target.api.restore('learner',[{learnerId:'learner',payload:scored,published:true}]);
   assert.equal(target.api.getById('learner',d.assessmentId).questions.length,total);

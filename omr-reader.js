@@ -239,19 +239,36 @@
                 if (!H) continue;
                 const v = verify(img, H, layout), rank = v.ticks + v.paper;
                 if (v.ticks >= 0.6 && v.paper >= 0.35 && (!best || rank > best.rank + 1e-9)) best = { H, score: v.ticks, rank, pts: dst };
-                else if (v.ticks >= 0.3 && v.ticks < 0.6) {
-                    const edge = verify(img, H, layout, 0.3);
+                else if (v.ticks < 0.6) {
+                    const edge = verify(img, H, layout, 0);
                     if (edge.paper >= 0.35) recovery.push({ H, score: v.ticks, rank: v.ticks + edge.paper, pts: dst });
                 }
             }
             if (best && best.score >= 0.95 && best.rank >= 1.8) break;
         }
         if (best) return best;
+        let recovered = null;
         for (const candidate of recovery.sort((a, b) => b.rank - a.rank).slice(0, 8)) {
-            if (!root.OmrLayout.decode(readCode(img, candidate.H, layout)).valid) continue;
-            const score = nearbyTicks(img, candidate.H, layout);
-            if (score >= 0.9) return { ...candidate, recovered: true, nearbyScore: score };
+            // Keep an intact code authoritative, including the existing wrong-card rejection.
+            if (root.OmrLayout.decode(readCode(img, candidate.H, layout)).valid) {
+                const score = nearbyTicks(img, candidate.H, layout);
+                if (score >= 0.9) return { ...candidate, recovered: true, nearbyScore: score };
+            }
+            // A curved sheet can shift its interior relative to all four visible corners.
+            // Search only a small physical displacement; never guess the code from the expected bits.
+            const offsets = [0, -0.5, 0.5, -1, 1, -1.5, 1.5, -2, 2, -2.5, 2.5, -3, 3];
+            for (const dy of offsets) for (const dx of offsets) {
+                const H = dx || dy ? mul(candidate.H, [1, 0, dx, 0, 1, dy, 0, 0, 1]) : candidate.H;
+                const detected = root.OmrLayout.decode(readCode(img, H, layout));
+                if (!detected.valid || detected.attemptNo !== layout.code.attemptNo || detected.hash !== layout.code.hash) continue;
+                const edge = verify(img, H, layout, 0);
+                if (edge.paper < 0.35 || edge.ticks < 0.3) continue;
+                const score = nearbyTicks(img, H, layout);
+                const rank = edge.ticks + edge.paper;
+                if (score >= 0.9 && (!recovered || rank > recovered.rank)) recovered = { ...candidate, H, rank, score: edge.ticks, recovered: true, nearbyScore: score };
+            }
         }
+        if (recovered) return recovered;
         return null;
     }
 

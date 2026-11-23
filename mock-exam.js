@@ -381,6 +381,28 @@
         });
         return submissionSnapshot(draft);
     }
+    function validPaperGrading(payload) {
+        try {
+            const questions=payload.questions, expected=new Map(questions.map(q=>[q.id,attemptFor(q,payload.responses?.[q.id]??'')]));
+            if(expected.size!==questions.length)return false;
+            const matches=(rows,ids)=>Array.isArray(rows)&&rows.length===ids.length&&new Set(rows.map(a=>a.questionId)).size===ids.length&&rows.every(a=>{
+                const e=expected.get(a.questionId);
+                return ids.includes(a.questionId)&&e&&['subject','selectedAnswer','correct','correctAnswer'].every(k=>a[k]===e[k]);
+            });
+            if(!matches(payload.initialAttempts,questions.map(q=>q.id)))return false;
+            const definitions=contract(payload).definitions;
+            if(payload.sections.length!==definitions.length)return false;
+            for(const [i,s] of payload.sections.entries()){
+                const definition=definitions[i];
+                if(s.id!==definition.id||s.name!==definition.name||JSON.stringify(s.subjects)!==JSON.stringify(definition.subjects)||!matches(s.initialAttempts,questionsFor(payload,definition).map(q=>q.id)))return false;
+            }
+            const reports=reportsFor(payload);
+            return payload.reports.length===reports.length&&reports.every(r=>{
+                const saved=payload.reports.filter(x=>x.sessionId===r.sessionId);
+                return saved.length===1&&['subject','totalQuestions','initialScore','finalScore'].every(k=>saved[0][k]===r[k])&&matches(saved[0].metadata?.initialAttempts,r.metadata.initialAttempts.map(a=>a.questionId));
+            });
+        } catch (_) { return false; }
+    }
     async function sync(user, week) {
         assertUser(user); let draft = get(user, week); if (!draft?.submittedAt) return { synced: false, reason: 'incomplete' };
         const assessmentId=draft.assessmentId;
@@ -398,6 +420,6 @@
         }
     }
     app.MockExam = { areas, definitions, contract, validSnapshot, maxAttempts: MAX_ATTEMPTS, isPaper, weekId, key, list, get, getById, restore, create, validateBank, questionsFor, reconcile, answer, move, recordActivity, finishSection,
-        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, hydrateSnapshot, paperResult, paperTimeLimits, paperMinutes, sectionTime, paperExtraMinutes: PAPER_EXTRA_MINUTES, isPaperResult, sync };
+        skipBreak, markLeave, markReturn, markTranslation, reportsFor, saveReports, submissionSnapshot, hydrateSnapshot, paperResult, validPaperGrading, paperTimeLimits, paperMinutes, sectionTime, paperExtraMinutes: PAPER_EXTRA_MINUTES, isPaperResult, sync };
     if (typeof module !== 'undefined' && module.exports) module.exports = app.MockExam;
 })(typeof window !== 'undefined' ? window : globalThis);

@@ -4,6 +4,21 @@ const now=Date.parse('2026-11-13T10:00:00+09:00'),DAY=86400000;
 const load=(s,f)=>vm.runInContext(fs.readFileSync(f,'utf8'),s.c,{filename:f});
 function prepared(){const s=setup(now,{examVersion:'classic100-v1'});for(const f of ['MockKoreanReadingG7More.js','MockKoreanReading25More.js','MockEnglishReadingMiddle1More.js','mock-paper.js','omr-layout.js'])load(s,f);return s;}
 function addVocabulary(s){const u=s.c.KoreanVocabData.levels.level1.units[0];s.reports.push({userId:'learner',subject:'korean_vocab',sessionId:'vocab25',date:now-DAY,totalQuestions:8,metadata:{levelId:'level1',unitId:u.id,unitTitle:u.title,initialAttempts:u.words.slice(0,8).map(w=>({wordId:w.id,type:'meaning',question:`‘${w.word}’의 뜻으로 알맞은 것은?`,correctAnswer:w.meaning,correct:true}))}});}
+test('completed reading exposure reviews retain exam scope without accepting assisted or partial reviews',()=>{
+ const s=prepared(),r=s.reports.find(r=>r.subject==='english_reading');
+ r.metadata.review=true;
+ let b=s.api.build('learner',now);
+ assert.equal(b.quotas.english_reading,12,'review is learned reading scope, not permission to omit reading');
+ assert(b.complete,JSON.stringify(b.shortages));
+ assert(b.weeklyCoverage.english_reading.days>0);
+ for(const invalid of ['hint','partial','assisted']){
+  const x=prepared(),review=x.reports.find(r=>r.subject==='english_reading');review.metadata.review=true;
+  if(invalid==='hint')review.metadata.hintUsed=true;
+  if(invalid==='partial')review.metadata.initialAttempts.pop();
+  if(invalid==='assisted')review.metadata.initialAttempts[0].assisted=true;
+  assert.equal(x.api.learnedScopes(x.reports,now).some(g=>g.subject==='english_reading'),false,invalid);
+ }
+});
 function threeRounds(s,expectedTotal){const history=[],seen=new Set();for(let attemptNo=1;attemptNo<=3;attemptNo++){const b=s.api.build('learner',now,{attemptNo,history});assert(b.complete,JSON.stringify(b.shortages));assert.equal(b.items.length,expectedTotal);assert(s.c.SmartStudy.MockExam.validateBank(b));for(const q of b.items){assert(!seen.has(q.fingerprint),q.id);seen.add(q.fingerprint);assert(s.c.MockExamQuality.validateItem(q).ok,q.id);}for(const group of s.c.SmartStudy.MockExam.contract(b).definitions)assert.equal(b.items.filter(q=>group.subjects.includes(q.subject)).length,25);history.push({userId:'learner',startedAt:now,questions:b.items});}return history;}
 test('new100 keeps component ratios,25 per area, and3 distinct full rounds',()=>{const s=prepared();addVocabulary(s);const b=s.api.build('learner',now);assert.deepEqual(JSON.parse(JSON.stringify(b.quotas)),{reading:18,korean_vocab:7,english:7,grammar:6,english_reading:12,math:20,math_formula:5,hanja:25});threeRounds(s,100);});
 test('all7 English levels support3 rounds while previously studied passages stay excluded',()=>{for(const grade of ['grade6','middle1','middle2','middle3','high1','high2','high3']){const s=prepared(),u=s.c.EnglishReadingData.units.find(u=>(u.gradeId||'grade6')===grade&&u.passages.length),p=u.passages[0],r=s.reports.find(r=>r.subject==='english_reading');r.metadata={levelId:grade,unitId:u.id,passageId:p.id,initialAttempts:p.questions.map(q=>({questionId:q.id,question:q.prompt,correctAnswer:q.choices[q.answerIndex],correct:true,passageId:p.id}))};r.totalQuestions=p.questions.length;const h=threeRounds(s,100);assert(h.every(d=>d.questions.filter(q=>q.subject==='english_reading').every(q=>q.passageId!==p.id)));}});
