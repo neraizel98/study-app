@@ -44,14 +44,16 @@
         const draft = app.MockExam?.hydrateSnapshot?.(result.snapshot)||result.snapshot;
         const heading=node('div',null,'released-heading'),titles=node('div');titles.append(node('span','MY LEARNING REPORT','assessment-eyebrow'),node('h2',`나의 모의고사 · ${draft.attemptNo||1}회차`));heading.append(titles,node('span','결과 공개 완료','assessment-tag'));container.append(heading);
         const all=draft.sections.flatMap(s=>s.initialAttempts||[]),correctAll=all.filter(a=>a.correct).length;
+        const paperScores=draft.mode==='paper'?root.MockPaper.scores(draft):null;
+        if(paperScores)container.append(node('p','점수는 문제지의 문항별 배점으로 계산하며, 전체 점수는 과목 점수의 평균입니다.','released-first-note'));
         const overview=node('div',null,'released-overview'),description=node('div');description.append(node('span','전체 정답'),node('p',`${all.length}문항 중 ${correctAll}문항을 맞혔어요`));
-        const overall=node('strong',all.length?String(Math.round(correctAll/all.length*100)):'—');overall.append(node('small','점'));overview.append(description,overall);container.append(overview);
+        const overall=node('strong',paperScores?String(Math.round(Object.values(paperScores).reduce((a,b)=>a+b,0)/Object.keys(paperScores).length)):all.length?String(Math.round(correctAll/all.length*100)):'—');overall.append(node('small','점'));overview.append(description,overall);container.append(overview);
         if (result.publishedAt) container.append(node('p', `공개 시각: ${new Date(result.publishedAt).toLocaleString('ko-KR')}`, 'released-date'));
         const grid = node('div', null, 'score-grid');
         for (const section of draft.sections) {
             const attempts = section.initialAttempts || [], correct = attempts.filter(a => a.correct).length;
             const card = node('div', null, 'score-card');
-            card.append(node('h3',section.name));const score=node('strong',attempts.length?`${Math.round(correct/attempts.length*100)}점`:'—');score.append(node('small',attempts.length?`${correct} / ${attempts.length} 정답`:'평가 자료 없음'));card.append(score);
+            card.append(node('h3',section.name));const score=node('strong',attempts.length?`${paperScores?.[section.id]??Math.round(correct/attempts.length*100)}점`:'—');score.append(node('small',attempts.length?`${correct} / ${attempts.length} 정답`:'평가 자료 없음'));card.append(score);
             const parts=section.subjects.map(subject=>({subject,attempts:attempts.filter(a=>a.subject===subject)})).filter(part=>part.attempts.length);
             if(parts.length>1)for(const part of parts)card.append(node('p',`${names[part.subject]} ${part.attempts.filter(a=>a.correct).length}/${part.attempts.length}`));
             // Time per 교시; a paper round scored without entered times says "시간 기록 없음".

@@ -336,7 +336,12 @@
         show();
     }
 
-    root.MockPaper = { render, points, areas, read, STORAGE_KEY, AREAS, PARTS };
+    // Use the exact printed order and printed item weights, including legacy papers.
+    function scores(snapshot) {
+        const attempts=new Map((snapshot.initialAttempts||snapshot.sections?.flatMap(s=>s.initialAttempts||[])||[]).map(a=>[a.questionId,a]));
+        return Object.fromEntries(areas(snapshot.questions).map(area=>[area.id,area.questions.reduce((n,q)=>n+(attempts.get(q.item.id)?.correct===true?q.points:0),0)]));
+    }
+    root.MockPaper = { render, points, areas, scores, read, STORAGE_KEY, AREAS, PARTS };
     if (root.document?.getElementById) {
         if (root.document.readyState === 'loading') root.document.addEventListener('DOMContentLoaded', boot); else boot();
     }

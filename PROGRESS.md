@@ -1,8 +1,8 @@
-﻿# Mock integrity repair
-Goal: repair missing English reading scope; prevent inconsistent OMR scores; investigate real photo failure.
-Completed: live read-only audit of Ujun week Nov16 attempt1. All100 saved answers regrade identically. Korean whole20/25 vs reading13/18. All11 recent English reading sessions flagged review; valid unassisted exposure reviews now establish exam scope only. Added grading copy validation and explicit Korean reading label.
-Verified: mock25 integration8, paper OMR13, engine6. Live nonpersisted replay with qualifying review scope restores English7/6/12, full100, no shortages.
-Remaining: full regression, independent diff review, PR; photo recognition still needs failing original photo. Actual differing scores awaiting user clarification. Do not modify learner records or regenerate saved exam.
-
-Final verification: all110 root test files passed. Reviewer PASS after canonical section membership guard; independent27 scenarios passed. Actual OMR photo remains unavailable and incident score discrepancy not confirmed.
-Self evaluation: accuracy4 (live evidence vs unconfirmed incident separated), completeness3 (real photo pending), clarity4 (explicit scope labels), actionability4 (reviewable branch), conciseness4. Mean3.8. Next: obtain failed photo and original differing scores; local browser QA and release remain pending.
+# Mock integrity repair
+Goal: repair English reading omission, weighted paper score mismatch, and investigate real photo failure.
+Completed: live read-only audit found all11 recent English reading sessions marked review; qualify unassisted complete reviews for exam scope only. Replay restores English7/6/12 and100 questions.
+Actual score cause confirmed: printed difficulty-weighted points differ from correctness ratio. Korean wrong printed rows8/9/10/14/17 cost5+5+4+4+4=22, so78 not80. English67 not76. MockPaper.scores now supplies admin cards/charts, learner results/mean and diagnostic baseline. Counts stay counts; existing answers and records unchanged.
+Integrity: reject inconsistent top/section/report correctness, responses, scores, canonical section membership before first paper result save. Do not regrade or rewrite stored exams.
+Verification: full110 root run108pass and2 initial configuration failures; both cloud-progress-merge and mock-paper-admin corrected and separately PASS. Final targeted paperOMR14, paper12, repository6, dashboard pass; earlier mock25 integration8 and engine6 pass. Live browser patched scoring on actual immutable record produces Korean78/English67. Reviewer requested final check.
+Remaining: user failing OMR original photo; recognition issue not fixed. Draft PR64; no merge/deploy. Remove this file before merge.
+Self evaluation: accuracy4 (incident now reproduced), completeness3 (photo pending), clarity4 (points distinct from correct count), actionability4 (reviewable PR), conciseness4; average3.8. Follow up actual photo before claiming overall completion.

@@ -181,7 +181,7 @@ test('after publication the learner sees score, answers and explanations; wrong 
  const id=paper.payload.assessmentId,saved=w.cloud.docs.get(`learner|${id}`).payload,wrong=saved.initialAttempts.filter(a=>!a.correct).length,right=55-wrong;assert(wrong>0&&right>0);
  // The weekly chart uses round 1, so this paper round is the week's point.
  const mathScore=app.MockAdmin.scores(saved).math,config=w.parent.charts.at(-1),labels=config.data.labels,at=labels.indexOf(WEEK.slice(5));
- assert(at>=0);assert.equal(config.data.datasets.find(d=>d.label==='수학').data[at],Math.round(mathScore.correct/mathScore.total*100));
+ assert(at>=0);assert.equal(config.data.datasets.find(d=>d.label==='수학').data[at],mathScore.points);
  await buttons(host,'학습자에게 공개')[0].onclick();
  const L=w.learner,result=await L.app.MockExamResults.load('learner',id);assert.equal(result.published,true);assert.equal(result.snapshot.mode,'paper');
  const view=new El('div');L.app.MockExamResults.render(view,result);const text=textOf(view);
@@ -386,4 +386,17 @@ test('failed photo can be transcribed only after its printed code matches; every
  assert(buttons(o.panel,'채점하고 저장')[0].disabled);assert.equal(items(o.panel).filter(n=>n.className.includes('is-uncertain')).length,55);
  assert(all(o.panel).some(n=>n.attributes['aria-label']==='업로드한 답안지 원본'));
  c.readerResult={ok:false,error:'wrong-card'};await o.take();assert.equal(buttons(o.panel,'사진 보며 답안 입력').length,0);
+});
+
+test('printed Korean weights give78 points for20 correct and both result screens use printed points',()=>{
+ const w=world(),c=w.parent.c;
+ const challenging=new Set([2,3,8,9,11,15]),wrong=new Set([8,9,10,14,17]);
+ const questions=Array.from({length:25},(_,i)=>({id:'weighted-'+(i+1),subject:i<18?'reading':'korean_vocab',kind:'choice',question:'Question '+(i+1),difficulty:i>=18?'basic':challenging.has(i+1)?'challenge':'standard',answer:'A',choices:['A','B','C','D'],explanation:'Explanation'}));
+ const attempts=questions.map((q,i)=>({questionId:q.id,subject:q.subject,correct:!wrong.has(i+1),selectedAnswer:wrong.has(i+1)?'B':'A'}));
+ const p={mode:'paper',questions,initialAttempts:attempts,sections:[{id:'reading',name:'국어',subjects:['reading','korean_vocab'],initialAttempts:attempts}]};
+ assert.equal(c.MockPaper.scores(p).reading,78);
+ assert.equal(w.parent.app.MockAdmin.scores(p).reading.points,78);
+ const host=new El('div');w.parent.app.MockExamResults.render(host,{published:true,snapshot:p});
+ assert.match(textOf(host),/78점/);assert.match(textOf(host),/국어 독해 13\/18/);
+ assert.equal(attempts.filter(a=>a.correct).length,20);
 });
