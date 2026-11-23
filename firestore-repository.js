@@ -235,6 +235,7 @@
   const sections=payload?.sections||[],c=mockContract(payload),order=c?.order||[];
   if(payload?.status!=='submitted'||payload.mode!=='paper'||payload.kind!=='mock'||payload.userId!==user||payload.integrity?.source!=='paper-omr'||!Number.isInteger(payload.submittedAt)
    ||sections.length!==order.length||!sections.every((s,i)=>s.id===order[i]&&s.state==='ended')||payload.questions?.length!==c?.total||payload.initialAttempts?.length!==c?.total||!(payload.reports?.length>=4&&payload.reports.length<=c?.reports))throw new Error('채점 결과가 올바르지 않습니다.');
+  if(!app.MockExam?.validPaperGrading?.(payload))throw new Error('답안과 채점 결과가 일치하지 않습니다. 저장하지 않았습니다. 시험지를 다시 열어 확인해 주세요.');
   const r=await ref(user,payload.assessmentId);
   await timed((await client.getDB()).runTransaction(async tx=>{const old=await tx.get(r);if(!old.exists)throw new Error('종이 시험지 기록이 없습니다.');const data=old.data(),p=data.payload||{};
    if(data.published)throw new Error('이미 공개한 결과는 다시 채점할 수 없습니다.');

@@ -59,13 +59,18 @@
   }
   return all.length>=total&&all.slice(0,total).every(a=>a&&typeof a.correct==='boolean')?all.slice(0,total):null;
  }
+ // Exposure review can establish a reading syllabus without establishing new mastery.
+ function scopeReviewAllowed(r){
+  const m=r.metadata||{},a=firstAttempts(r);
+  return !m.review||(r.subject==='english_reading'&&!m.hintUsed&&a&&a.length===Number(r.totalQuestions)&&a.every(x=>(!x.round||x.round===1)&&!x.assisted&&!x.hintUsed));
+ }
  // windowDays(subject) lets hanja look back further: earlier grades studied months ago are still "previously studied".
  function learnedScopes(reports,now,windowDays=()=>21){
   const groups=new Map(),unique=new Map();
   for(const r of reports){
    if(!r||typeof r!=='object')continue;
    const m=r.metadata||{},subject=m.source==='math-formula'?'math_formula':r.subject,at=Number(m.submittedAt||r.createdAt||r.date),total=Number(r.totalQuestions),attempts=firstAttempts(r);
-   if(!quotas[subject]||!r.sessionId||m.assessment||m.assessmentId||m.mockExam||m.examTraining||m.review||m.status==='draft'||m.status==='partial'||!Number.isInteger(total)||total<1||!attempts||!Number.isFinite(at)||at>now||at<now-(Number(windowDays(subject))||21)*DAY)continue;
+   if(!quotas[subject]||!r.sessionId||m.assessment||m.assessmentId||m.mockExam||m.examTraining||!scopeReviewAllowed(r)||m.status==='draft'||m.status==='partial'||!Number.isInteger(total)||total<1||!attempts||!Number.isFinite(at)||at>now||at<now-(Number(windowDays(subject))||21)*DAY)continue;
    const c=contextOf(subject,r);if(!c)continue;
    const sessionKey=`${subject}:${r.sessionId}`;const entry={r,subject,at,context:c,attempts:attempts.slice(0,total)};
    if(!unique.has(sessionKey)||Number(r.updatedAt||r.date)>Number(unique.get(sessionKey).r.updatedAt||unique.get(sessionKey).r.date))unique.set(sessionKey,entry);
@@ -140,7 +145,7 @@
   // fresh source (then oldest-first re-exposure), so a subject is never blocked while older studied units remain.
   const primaryScope=g=>!strict||!currentSubjects.has(g.subject)||g.lastAt>=weekStart;
   const weeklyCoverage=Object.fromEntries(Object.keys(quotas).map(subject=>{
-   const dates=reports.filter(r=>{const m=r.metadata||{};return (m.source==='math-formula'?'math_formula':r.subject)===subject&&!m.assessment&&!m.assessmentId&&!m.mockExam&&!m.examTraining&&!m.review&&m.status!=='draft'&&m.status!=='partial'&&Number(r.totalQuestions)>0&&firstAttempts(r)!==null;}).map(r=>Number(r.metadata?.submittedAt||r.createdAt||r.date)).filter(at=>Number.isFinite(at)&&at<=now);
+   const dates=reports.filter(r=>{const m=r.metadata||{};return (m.source==='math-formula'?'math_formula':r.subject)===subject&&!m.assessment&&!m.assessmentId&&!m.mockExam&&!m.examTraining&&scopeReviewAllowed(r)&&m.status!=='draft'&&m.status!=='partial'&&Number(r.totalQuestions)>0&&firstAttempts(r)!==null;}).map(r=>Number(r.metadata?.submittedAt||r.createdAt||r.date)).filter(at=>Number.isFinite(at)&&at<=now);
    const days=new Set(dates.filter(at=>at>=weekStart).map(at=>new Date(at+9*3600000).toISOString().slice(0,10))),newThisWeek=dates.length>0&&Math.min(...dates)>=weekStart;
    return [subject,{days:days.size,newThisWeek,weight:quotas[subject]*(newThisWeek?Math.min(5,days.size)/5:1)}];
   }));

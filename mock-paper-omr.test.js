@@ -331,6 +331,11 @@ test('Firestore map order does not block grading; changed exam content and ident
  const sorted=v=>Array.isArray(v)?v.map(sorted):v&&typeof v==='object'?Object.fromEntries(Object.keys(v).sort().map(k=>[k,sorted(v[k])])):v;
  assert.notEqual(JSON.stringify(original.questions),JSON.stringify(sorted(original.questions)),'reproduces the old stringify mismatch');
  const mutations=[
+  p=>{p.initialAttempts[0].correct=!p.initialAttempts[0].correct;},
+  p=>{p.sections[0].initialAttempts[0].correct=!p.sections[0].initialAttempts[0].correct;},
+  p=>{p.initialAttempts[0].selectedAnswer='different answer';},
+  p=>{p.reports[0].initialScore+=1;},
+  p=>{p.reports[0].metadata.initialAttempts[0].correct=!p.reports[0].metadata.initialAttempts[0].correct;},
   p=>p.questions.reverse(),
   p=>{const q=p.questions.find(q=>q.choices?.length>1);q.choices.reverse();},
   p=>{p.questions[0].answer='altered';},

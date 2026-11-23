@@ -1,0 +1,5 @@
+﻿# Mock integrity repair
+Goal: repair missing English reading scope; prevent inconsistent OMR scores; investigate real photo failure.
+Completed: live read-only audit of Ujun week Nov16 attempt1. All100 saved answers regrade identically. Korean whole20/25 vs reading13/18. All11 recent English reading sessions flagged review; valid unassisted exposure reviews now establish exam scope only. Added grading copy validation and explicit Korean reading label.
+Verified: mock25 integration8, paper OMR13, engine6. Live nonpersisted replay with qualifying review scope restores English7/6/12, full100, no shortages.
+Remaining: full regression, independent diff review, PR; photo recognition still needs failing original photo. Actual differing scores awaiting user clarification. Do not modify learner records or regenerate saved exam.
