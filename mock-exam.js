@@ -390,7 +390,12 @@
                 return ids.includes(a.questionId)&&e&&['subject','selectedAnswer','correct','correctAnswer'].every(k=>a[k]===e[k]);
             });
             if(!matches(payload.initialAttempts,questions.map(q=>q.id)))return false;
-            for(const s of payload.sections)if(!matches(s.initialAttempts,questionsFor(payload,s).map(q=>q.id)))return false;
+            const definitions=contract(payload).definitions;
+            if(payload.sections.length!==definitions.length)return false;
+            for(const [i,s] of payload.sections.entries()){
+                const definition=definitions[i];
+                if(s.id!==definition.id||s.name!==definition.name||JSON.stringify(s.subjects)!==JSON.stringify(definition.subjects)||!matches(s.initialAttempts,questionsFor(payload,definition).map(q=>q.id)))return false;
+            }
             const reports=reportsFor(payload);
             return payload.reports.length===reports.length&&reports.every(r=>{
                 const saved=payload.reports.filter(x=>x.sessionId===r.sessionId);
