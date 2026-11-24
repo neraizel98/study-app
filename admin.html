@@ -512,7 +512,7 @@
                         scopes:scopeState,
                         weekly:SmartStudy.WeeklySchedule.normalize({...weeklySettings,mockSectionMinutes:Object.fromEntries([...card.querySelectorAll("[data-exam-minutes]")].map(input=>[input.dataset.examMinutes,Number(input.value)]))})
                     });
-                    message.style.color = '#20852b'; message.textContent = '✅ 서버에 저장됨';
+                    message.style.color = '#20852b'; message.textContent = '✅ 서버에 저장됨 · 이미 시작한 오늘 계획은 유지되며, 변경한 설정은 다음 계획부터 적용됩니다.';
                 } catch (error) {
                     message.style.color = '#eb0f00'; message.textContent = `저장 실패: ${error.message}`;
                 } finally { button.disabled = false; }
