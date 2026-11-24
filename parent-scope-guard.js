@@ -23,11 +23,16 @@
             &&params.get('semester')===String(context.semesterId||'')&&params.get('unit')===String(context.unitId||'');
         return false;
     }
+    function timeSatisfied(plan,task,user){
+        if(task.status==='completed')return true;
+        const daily=app.LocalRepository.getUser?.(user)?.dailyStats;
+        return daily?.date===plan.date&&Number(task.minutes)>0&&Number(daily.learningTime?.[task.subject]||0)>=Number(task.minutes)*60;
+    }
     function banner(task,onTarget){
         if(document.getElementById('parentScopeGuard'))return;
         const box=document.createElement('aside');box.id='parentScopeGuard';
         box.style.cssText='margin:12px auto;padding:12px 15px;max-width:900px;box-sizing:border-box;border:1px solid #c28800;border-radius:12px;background:#ffffff;color:#8f7200;font-weight:700;line-height:1.5;';
-        box.append(document.createTextNode(onTarget?`📌 보호자 필수 단원 학습 중 · ${String(task.context?.title||'지정 단원')} · 이 단원 퀴즈를 제출한 뒤 오늘 학습으로 돌아오면 자유 학습이 열립니다.`:'📌 먼저 완료할 보호자 지정 단원이 있습니다. '));
+        box.append(document.createTextNode(onTarget?`📌 보호자 필수 단원 학습 중 · ${String(task.context?.title||'지정 단원')} · 이 과목의 배정 시간을 채우면 다른 단원도 자유롭게 공부할 수 있습니다.`:'📌 먼저 완료할 보호자 지정 단원이 있습니다. '));
         if(!onTarget){const link=document.createElement('a');link.style.color='#23845c';link.href=task.targetUrl;link.textContent=`${String(task.context?.title||'필수 단원')}으로 이동`;box.append(link);}
         (document.querySelector('main,.wrap')||document.body).prepend(box);
     }
@@ -53,7 +58,7 @@
             }
             return;
         }
-        const pending=(plan.tasks||[]).filter(task=>task.required&&task.status!=='completed'&&task.context);
+        const pending=(plan.tasks||[]).filter(task=>task.required&&!timeSatisfied(plan,task,user)&&task.context);
         if(!pending.length)return;
         if(location.pathname.endsWith('/index.html')||location.pathname.endsWith('/')){
             pending.forEach(task=>{const link=document.querySelector(`a[href="${task.subject}.html"]`);if(link){link.href=task.targetUrl;link.querySelector('.lang-desc')?.append(' · 보호자 필수 단원 먼저');}});return;
@@ -67,6 +72,7 @@
         }
         const returnToTarget=event=>{event.preventDefault();event.stopImmediatePropagation();location.href=task.targetUrl;};
         document.addEventListener('click',event=>{
+            if(timeSatisfied(app.LocalRepository.getPreference(key,plan),task,user)){document.getElementById('parentScopeGuard')?.remove();return;}
             const link=event.target.closest?.('a[href]');
             if(link){const url=new URL(link.href,location.href);if(subjectForUrl(url)===task.subject&&!matchesUrl(task,url)){returnToTarget(event);return;}}
             const control=event.target.closest?.('[data-unit],[data-level],[data-grade],[data-group],[data-semester],#nextLesson');if(!control)return;
@@ -85,7 +91,7 @@
                 if(current&&lesson>=current.lessons.length-1&&units[units.indexOf(current)+1]?.id!==context.unitId)returnToTarget(event);
             }
         },true);
-        root.addEventListener('popstate',()=>{if(!matchesUrl(task,new URL(location.href)))location.replace(task.targetUrl);});
+        root.addEventListener('popstate',()=>{if(!timeSatisfied(app.LocalRepository.getPreference(key,plan),task,user)&&!matchesUrl(task,new URL(location.href)))location.replace(task.targetUrl);});
     }
     document.addEventListener('DOMContentLoaded',()=>apply().catch(error=>console.warn('[Parent scope]',error.message)));
 })(window);

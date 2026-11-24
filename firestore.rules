@@ -39,10 +39,11 @@ service cloud.firestore {
         && w.learningDays in [5,6] && w.miniCheck is bool
         && w.mockSectionMinutes is map
         && w.mockSectionMinutes.keys().hasAll(['reading','english','math','hanja'])
-        && w.mockSectionMinutes.keys().hasOnly(['reading','english','math','hanja'])
+        && w.mockSectionMinutes.keys().hasOnly(['reading','english','math','hanja','science'])
         && w.mockSectionMinutes.reading is int && w.mockSectionMinutes.reading >= 5 && w.mockSectionMinutes.reading <= 60
         && w.mockSectionMinutes.english is int && w.mockSectionMinutes.english >= 5 && w.mockSectionMinutes.english <= 60
         && w.mockSectionMinutes.math is int && w.mockSectionMinutes.math >= 5 && w.mockSectionMinutes.math <= 60
+        && (!w.mockSectionMinutes.keys().hasAny(['science']) || (w.mockSectionMinutes.science is int && w.mockSectionMinutes.science >= 5 && w.mockSectionMinutes.science <= 60))
         && w.mockSectionMinutes.hanja is int && w.mockSectionMinutes.hanja >= 5 && w.mockSectionMinutes.hanja <= 60;
     }
     function validEnglishReadingScope(scope) {

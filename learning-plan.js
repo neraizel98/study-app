@@ -25,7 +25,7 @@
             englishActivity:value?.englishActivity==='reading'?'reading':'vocabulary',
             scopes:Object.fromEntries(subjects.map(subject=>[subject,normalizeScope(subject,value?.scopes?.[subject])])),
             source:value?.source||fallback.source,
-            ...(value?.weekly ? {weekly:root.WeeklySchedule?.normalize(value.weekly)||value.weekly} : {})
+            ...(value?.weekly ? {weekly:app.WeeklySchedule?.normalize(value.weekly)||value.weekly} : {})
         };
     };
     const contextOf=(subject,item)=>{
