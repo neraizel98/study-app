@@ -58,7 +58,7 @@
             const db = await client.getDB();
             return db.collection('learnerPlanSettings').doc(userId).set({
                 budgetMinutes, grade, semester, englishActivity,
-                ...(settings.weekly ? {weekly:root.WeeklySchedule.normalize(settings.weekly)} : {}),
+                ...(settings.weekly ? {weekly:root.SmartStudy.WeeklySchedule.normalize(settings.weekly)} : {}),
                 scopes: Object.fromEntries(SUBJECTS.map(subject => [subject, {
                     mode: scopes[subject].mode,
                     ...(scopes[subject].mode === 'assigned' ? {

@@ -3,7 +3,7 @@
  * ============================================================
  */
 
-const CACHE_NAME = 'smart-study-20261123-mock-integrity';
+const CACHE_NAME = 'smart-study-20261124-parent-plan';
 
 try {
     importScripts('./firebase-config.js');

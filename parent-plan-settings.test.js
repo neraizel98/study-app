@@ -22,6 +22,7 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     context.SmartStudy={FirebaseClient:{getDB:async()=>db,getCurrentUser:async()=>({uid:authUid})}};
     vm.createContext(context);
     vm.runInContext(fs.readFileSync('english-curriculum.js','utf8'),context);
+    vm.runInContext(fs.readFileSync('weekly-schedule.js','utf8'),context);
     vm.runInContext(fs.readFileSync('firestore-repository.js','utf8'),context);
     return { repository:context.SmartStudy.FirestoreRepository,writes };
 }
@@ -46,6 +47,12 @@ function repositoryFor({ role, authUid = 'google-user' }) {
     assert(!('publisher' in admin.writes[0].value),'new saves must not overwrite the preserved legacy publisher field');
     assert.deepEqual(JSON.parse(JSON.stringify(admin.writes[0].options.mergeFields)),['budgetMinutes','grade','semester','englishActivity','scopes','updatedAt','updatedBy'],
         'the scopes map must replace atomically so assigned fields cannot remain after switching to auto');
+    await admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:30,grade:7,semester:1,
+        scopes:{...scopes,math:{mode:'auto'}},weekly:{mockSectionMinutes:{science:40}}});
+    const saved=await admin.repository.getLearnerPlanSettings('우준');
+    assert.deepEqual(JSON.parse(JSON.stringify(saved.scopes.math)),{mode:'auto'},'assigned fields are removed after saving automatic mode');
+    assert.equal(saved.weekly.mockSectionMinutes.science,40,'weekly settings use the actual SmartStudy namespace and preserve science');
+    assert.equal(saved.weekly.mockSectionMinutes.reading,20,'legacy weekly defaults remain compatible');
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:20,grade:6,semester:2,scopes}));
     await assert.rejects(()=>admin.repository.saveLearnerPlanSettings('우준',{budgetMinutes:45,grade:6,semester:2,
         scopes:{...scopes,reading:{mode:'auto',unitId:'stale'}}}));
